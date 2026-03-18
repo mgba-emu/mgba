@@ -92,6 +92,7 @@ mSCRIPT_DEFINE_STRUCT(mScriptCallbackManager)
 		"- `shutdown`: The emulation has been powered off\n"
 		"- `start`: The emulation has started\n"
 		"- `stop`: The emulation has voluntarily shut down\n"
+		"- `memoryBlocksChanged`: The list list of struct::mScriptCoreAdapter.memory domains has changed\n"
 	)
 	mSCRIPT_DEFINE_DOCSTRING("Add a callback of the named type. The returned id can be used to remove it later")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCallbackManager, add)

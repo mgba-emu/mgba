@@ -258,7 +258,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::AutorunScriptModel</name>
     <message>
-        <location filename="../scripting/AutorunScriptModel.cpp" line="29"/>
+        <location filename="../scripting/AutorunScriptModel.cpp" line="31"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -556,7 +556,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::DebuggerConsoleController</name>
     <message>
-        <location filename="../DebuggerConsoleController.cpp" line="176"/>
+        <location filename="../DebuggerConsoleController.cpp" line="183"/>
         <source>Could not open CLI history for writing</source>
         <translation>無法開啟用於寫入的 CLI 歷史</translation>
     </message>
@@ -564,7 +564,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::DisplayGL</name>
     <message>
-        <location filename="../DisplayGL.cpp" line="313"/>
+        <location filename="../DisplayGL.cpp" line="314"/>
         <source>Failed to create an OpenGL 3 context, trying old-style...</source>
         <translation>建立OpenGL3環境失敗，請嘗試舊形式...</translation>
     </message>
@@ -902,7 +902,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::GBAApp</name>
     <message>
-        <location filename="../GBAApp.cpp" line="78"/>
+        <location filename="../GBAApp.cpp" line="82"/>
         <source>Enable Discord Rich Presence</source>
         <translation>啟用 Discord Rich Presence</translation>
     </message>
@@ -3008,13 +3008,13 @@ Download size: %3</source>
 <context>
     <name>QGBA::InputController</name>
     <message>
-        <location filename="../InputController.cpp" line="727"/>
-        <location filename="../InputController.cpp" line="748"/>
+        <location filename="../InputController.cpp" line="732"/>
+        <location filename="../InputController.cpp" line="753"/>
         <source>Could not find a valid camera format!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../InputController.cpp" line="729"/>
+        <location filename="../InputController.cpp" line="734"/>
         <source>Camera supported format: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3172,47 +3172,47 @@ Download size: %3</source>
 <context>
     <name>QGBA::LogController</name>
     <message>
-        <location filename="../LogController.cpp" line="97"/>
+        <location filename="../LogController.cpp" line="96"/>
         <source>[%1] %2: %3</source>
         <translation>[%1] %2: %3</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="108"/>
+        <location filename="../LogController.cpp" line="107"/>
         <source>An error occurred</source>
         <translation>錯誤發生</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="180"/>
+        <location filename="../LogController.cpp" line="179"/>
         <source>DEBUG</source>
         <translation>DEBUG</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="182"/>
+        <location filename="../LogController.cpp" line="181"/>
         <source>STUB</source>
         <translation>STUB</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="184"/>
+        <location filename="../LogController.cpp" line="183"/>
         <source>INFO</source>
         <translation>INFO</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="186"/>
+        <location filename="../LogController.cpp" line="185"/>
         <source>WARN</source>
         <translation>WARN</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="188"/>
+        <location filename="../LogController.cpp" line="187"/>
         <source>ERROR</source>
         <translation>ERROR</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="190"/>
+        <location filename="../LogController.cpp" line="189"/>
         <source>FATAL</source>
         <translation>FATAL</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="192"/>
+        <location filename="../LogController.cpp" line="191"/>
         <source>GAME ERROR</source>
         <translation>GAME ERROR</translation>
     </message>
@@ -3638,8 +3638,9 @@ Download size: %3</source>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="108"/>
-        <source>Dump across banks</source>
-        <translation>跨記憶庫傾印</translation>
+        <source>Dump across banks within region</source>
+        <comment>Generate dump with bytes all within the same region of memory, even if it crosses the bank boundary</comment>
+        <translation type="unfinished">跨記憶庫傾印</translation>
     </message>
 </context>
 <context>
@@ -4180,17 +4181,17 @@ Download size: %3</source>
 <context>
     <name>QGBA::OverrideView</name>
     <message>
-        <location filename="../OverrideView.cpp" line="54"/>
+        <location filename="../OverrideView.cpp" line="67"/>
         <source>Official MBCs</source>
         <translation>官方記憶庫控制器 (MBC)</translation>
     </message>
     <message>
-        <location filename="../OverrideView.cpp" line="58"/>
+        <location filename="../OverrideView.cpp" line="71"/>
         <source>Licensed MBCs</source>
         <translation>已授權的記憶庫控制器 (MBC)</translation>
     </message>
     <message>
-        <location filename="../OverrideView.cpp" line="62"/>
+        <location filename="../OverrideView.cpp" line="75"/>
         <source>Unlicensed MBCs</source>
         <translation>未授權的記憶庫控制器 (MBC)</translation>
     </message>
@@ -4581,12 +4582,12 @@ Download size: %3</source>
 <context>
     <name>QGBA::ReportView</name>
     <message>
-        <location filename="../ReportView.cpp" line="360"/>
+        <location filename="../ReportView.cpp" line="419"/>
         <source>Bug report archive</source>
         <translation>錯誤回報記錄</translation>
     </message>
     <message>
-        <location filename="../ReportView.cpp" line="360"/>
+        <location filename="../ReportView.cpp" line="419"/>
         <source>ZIP archive (*.zip)</source>
         <translation>ZIP 壓縮檔 (*.zip)</translation>
     </message>
@@ -4808,12 +4809,12 @@ Download size: %3</source>
 <context>
     <name>QGBA::ScriptingController</name>
     <message>
-        <location filename="../scripting/ScriptingController.cpp" line="277"/>
+        <location filename="../scripting/ScriptingController.cpp" line="279"/>
         <source>Lua scripts (*.lua)</source>
         <translation type="unfinished">Lua 腳本 (*.lua)</translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingController.cpp" line="279"/>
+        <location filename="../scripting/ScriptingController.cpp" line="281"/>
         <source>All files (*.*)</source>
         <translation type="unfinished">所有檔案 (*.*)</translation>
     </message>
@@ -4834,7 +4835,7 @@ Download size: %3</source>
         <translation>腳本</translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.ui" line="45"/>
+        <location filename="../scripting/ScriptingView.ui" line="71"/>
         <source>Run</source>
         <translation>運行</translation>
     </message>
@@ -4849,32 +4850,42 @@ Download size: %3</source>
         <translation>載入最近的腳本</translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.ui" line="111"/>
+        <location filename="../scripting/ScriptingView.ui" line="108"/>
+        <source>View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../scripting/ScriptingView.ui" line="118"/>
         <source>Load script...</source>
         <translation>加載腳本...</translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.ui" line="116"/>
+        <location filename="../scripting/ScriptingView.ui" line="123"/>
         <source>&amp;Load most recent</source>
         <translation>載入最近的(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.ui" line="121"/>
+        <location filename="../scripting/ScriptingView.ui" line="128"/>
         <source>&amp;Reset</source>
         <translation>重新啟動 (&amp;R)</translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.ui" line="126"/>
+        <location filename="../scripting/ScriptingView.ui" line="133"/>
         <source>0</source>
         <translation>0</translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.ui" line="131"/>
+        <location filename="../scripting/ScriptingView.ui" line="138"/>
         <source>Edit autorun scripts...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.cpp" line="62"/>
+        <location filename="../scripting/ScriptingView.ui" line="143"/>
+        <source>Clear console</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../scripting/ScriptingView.cpp" line="66"/>
         <source>Select script to load</source>
         <translation>選擇要載入的腳本</translation>
     </message>
@@ -5824,48 +5835,48 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 <context>
     <name>QGBA::ShaderSelector</name>
     <message>
-        <location filename="../ShaderSelector.cpp" line="76"/>
+        <location filename="../ShaderSelector.cpp" line="77"/>
         <source>No shader active</source>
         <translation>無使用中的著色器</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="90"/>
-        <location filename="../ShaderSelector.cpp" line="93"/>
+        <location filename="../ShaderSelector.cpp" line="91"/>
+        <location filename="../ShaderSelector.cpp" line="94"/>
         <source>Load shader</source>
         <translation>讀取著色器</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="92"/>
+        <location filename="../ShaderSelector.cpp" line="93"/>
         <source>mGBA Shaders</source>
         <translation>mGBA 著色器</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="123"/>
+        <location filename="../ShaderSelector.cpp" line="124"/>
         <source>Error loading shader</source>
         <translation>載入著色器時出錯</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="123"/>
+        <location filename="../ShaderSelector.cpp" line="124"/>
         <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
         <translation>著色器“%1”無法成功載入。</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="145"/>
+        <location filename="../ShaderSelector.cpp" line="146"/>
         <source>No shader loaded</source>
         <translation>未讀取著色器</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="153"/>
+        <location filename="../ShaderSelector.cpp" line="154"/>
         <source>by %1</source>
         <translation>由 %1</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="164"/>
+        <location filename="../ShaderSelector.cpp" line="165"/>
         <source>Preprocessing</source>
         <translation>預處理</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="171"/>
+        <location filename="../ShaderSelector.cpp" line="172"/>
         <source>Pass %1</source>
         <translation>通道 %1</translation>
     </message>
@@ -6239,12 +6250,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <translation>影片記錄檔 (*.mvl)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1023"/>
+        <location filename="../Window.cpp" line="1036"/>
         <source>Crash</source>
         <translation>當機</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1024"/>
+        <location filename="../Window.cpp" line="1037"/>
         <source>The game has crashed with the following error:
 
 %1</source>
@@ -6253,97 +6264,97 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1031"/>
+        <location filename="../Window.cpp" line="1044"/>
         <source>Couldn&apos;t Start</source>
         <translation>無法啟動</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1032"/>
+        <location filename="../Window.cpp" line="1045"/>
         <source>Could not start game.</source>
         <translation>無法啟動遊戲。</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1046"/>
+        <location filename="../Window.cpp" line="1059"/>
         <source>Unimplemented BIOS call</source>
         <translation>未實裝的 BIOS 呼叫</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1047"/>
+        <location filename="../Window.cpp" line="1060"/>
         <source>This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience.</source>
         <translation>此遊戲使用了未實裝的 BIOS 呼叫。為了獲得最佳體驗，請使用官方 BIOS。</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1069"/>
+        <location filename="../Window.cpp" line="1082"/>
         <source>Failed to create an appropriate display device, falling back to software display. Games may run slowly, especially with larger windows.</source>
         <translation>建立適當的顯示裝置失敗，回歸到軟體顯示。遊戲可能會跑得很慢，尤其在使用大螢幕的時候。</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1167"/>
+        <location filename="../Window.cpp" line="1180"/>
         <source>Really make portable?</source>
         <translation>這真的可攜？</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1168"/>
+        <location filename="../Window.cpp" line="1181"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
         <translation>模擬器會從執行檔所在的資料夾讀取設定檔。確定要繼續嗎？</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1180"/>
+        <location filename="../Window.cpp" line="1193"/>
         <source>Restart needed</source>
         <translation>需要重新啟動</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1181"/>
+        <location filename="../Window.cpp" line="1194"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
         <translation>有些變更在模擬器重新啟動前不會生效。</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1192"/>
+        <location filename="../Window.cpp" line="1205"/>
         <source>Reset needed</source>
         <translation>需要重啟</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1193"/>
+        <location filename="../Window.cpp" line="1206"/>
         <source>Some changes will not take effect until the game is reset.</source>
         <translation>某些改動需要重新啟動才會生效。</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1232"/>
+        <location filename="../Window.cpp" line="1245"/>
         <source> -  Player %1 of %2</source>
         <translation> -  玩家 %1 共 %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1243"/>
+        <location filename="../Window.cpp" line="1256"/>
         <source>%1 - %2</source>
         <translation>%1 - %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1245"/>
+        <location filename="../Window.cpp" line="1258"/>
         <source>%1 - %2 - %3</source>
         <translation>%1 - %2 - %3</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1247"/>
+        <location filename="../Window.cpp" line="1260"/>
         <source>%1 - %2 (%3 fps) - %4</source>
         <translation>%1 - %2 (%3 fps) - %4</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1311"/>
+        <location filename="../Window.cpp" line="1324"/>
         <source>&amp;File</source>
         <translation>檔案 (&amp;F)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1313"/>
+        <location filename="../Window.cpp" line="1326"/>
         <source>Load &amp;ROM...</source>
         <translation>讀取 ROM (&amp;R) ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1316"/>
+        <location filename="../Window.cpp" line="1329"/>
         <source>Load ROM in archive...</source>
         <translation>從壓縮檔讀取ROM...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1317"/>
+        <location filename="../Window.cpp" line="1330"/>
         <source>Add folder to library...</source>
         <translation>加入資料夾至收藏...</translation>
     </message>
@@ -6389,118 +6400,118 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <translation>%2 張電子閱讀器卡中的 %1 張已成功轉換。</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1321"/>
+        <location filename="../Window.cpp" line="1334"/>
         <source>Load alternate save game...</source>
         <translation>讀取另一份存檔...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1324"/>
+        <location filename="../Window.cpp" line="1337"/>
         <source>Load temporary save game...</source>
         <translation>讀取暫時存檔...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1357"/>
+        <location filename="../Window.cpp" line="1370"/>
         <source>Load &amp;patch...</source>
         <translation>讀取並修補 (&amp;P) ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1360"/>
+        <location filename="../Window.cpp" line="1373"/>
         <source>Boot BIOS</source>
         <translation>啟動 BIOS</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1454"/>
+        <location filename="../Window.cpp" line="1467"/>
         <source>Replace ROM...</source>
         <translation>取代 ROM...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1364"/>
+        <location filename="../Window.cpp" line="1377"/>
         <source>Scan e-Reader dotcodes...</source>
         <translation>掃描 e-Reader 點碼...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1805"/>
+        <location filename="../Window.cpp" line="1818"/>
         <source>Convert e-Reader card image to raw...</source>
         <translation>轉換 e-Reader 卡片圖檔為原始資料...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1368"/>
+        <location filename="../Window.cpp" line="1381"/>
         <source>ROM &amp;info...</source>
         <translation>ROM 資訊 (&amp;I)...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1370"/>
+        <location filename="../Window.cpp" line="1383"/>
         <source>Recent</source>
         <translation>最近使用</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1770"/>
+        <location filename="../Window.cpp" line="1783"/>
         <source>Make portable</source>
         <translation>可攜化</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1373"/>
+        <location filename="../Window.cpp" line="1386"/>
         <source>&amp;Load state</source>
         <translation>讀取即時存檔 (&amp;L)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1378"/>
+        <location filename="../Window.cpp" line="1391"/>
         <source>Load state file...</source>
         <translation>讀取即時存檔...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1383"/>
+        <location filename="../Window.cpp" line="1396"/>
         <source>&amp;Save state</source>
         <translation>儲存即時存檔 (&amp;S)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1388"/>
+        <location filename="../Window.cpp" line="1401"/>
         <source>Save state file...</source>
         <translation>儲存即時存檔...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1393"/>
+        <location filename="../Window.cpp" line="1406"/>
         <source>Quick load</source>
         <translation>快速讀取</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1394"/>
+        <location filename="../Window.cpp" line="1407"/>
         <source>Quick save</source>
         <translation>快速儲存</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1396"/>
+        <location filename="../Window.cpp" line="1409"/>
         <source>Load recent</source>
         <translation>讀取最近存檔</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1401"/>
+        <location filename="../Window.cpp" line="1414"/>
         <source>Save recent</source>
         <translation>儲存最近存檔</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1409"/>
+        <location filename="../Window.cpp" line="1422"/>
         <source>Undo load state</source>
         <translation>取消讀取即時存檔</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1412"/>
+        <location filename="../Window.cpp" line="1425"/>
         <source>Undo save state</source>
         <translation>取消儲存即時存檔</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1419"/>
-        <location filename="../Window.cpp" line="1424"/>
+        <location filename="../Window.cpp" line="1432"/>
+        <location filename="../Window.cpp" line="1437"/>
         <source>State &amp;%1</source>
         <translation>即時存檔 (&amp;%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1550"/>
+        <location filename="../Window.cpp" line="1563"/>
         <source>Load camera image...</source>
         <translation>讀取相機影像...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1330"/>
+        <location filename="../Window.cpp" line="1343"/>
         <source>Convert save game...</source>
         <translation>轉換存檔...</translation>
     </message>
@@ -6510,462 +6521,462 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <translation>GameShark 存檔 (*.gsv *.sps *.xps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1142"/>
+        <location filename="../Window.cpp" line="1155"/>
         <source>Failed to start audio processor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1320"/>
+        <location filename="../Window.cpp" line="1333"/>
         <source>Save games</source>
         <translation>遊戲存檔</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1333"/>
+        <location filename="../Window.cpp" line="1346"/>
         <source>Import GameShark Save...</source>
         <translation>匯入 GameShark 存檔...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1336"/>
+        <location filename="../Window.cpp" line="1349"/>
         <source>Export GameShark Save...</source>
         <translation>匯出 GameShark 存檔...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1343"/>
+        <location filename="../Window.cpp" line="1356"/>
         <source>Automatically determine</source>
         <translation>自動判斷</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1347"/>
+        <location filename="../Window.cpp" line="1360"/>
         <source>Use player %0 save game</source>
         <translation>使用玩家 %0 存檔</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1431"/>
+        <location filename="../Window.cpp" line="1444"/>
         <source>New multiplayer window</source>
         <translation>新增多人遊戲視窗</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1434"/>
+        <location filename="../Window.cpp" line="1447"/>
         <source>Connect to Dolphin...</source>
         <translation>連接 Dolphin...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1440"/>
+        <location filename="../Window.cpp" line="1453"/>
         <source>Report bug...</source>
         <translation>回報錯誤...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1446"/>
+        <location filename="../Window.cpp" line="1459"/>
         <source>About...</source>
         <translation>關於...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1447"/>
+        <location filename="../Window.cpp" line="1460"/>
         <source>E&amp;xit</source>
         <translation>離開 (&amp;E)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1449"/>
+        <location filename="../Window.cpp" line="1462"/>
         <source>&amp;Emulation</source>
         <translation>模擬 (&amp;E)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1450"/>
+        <location filename="../Window.cpp" line="1463"/>
         <source>&amp;Reset</source>
         <translation>重新啟動 (&amp;R)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1451"/>
+        <location filename="../Window.cpp" line="1464"/>
         <source>Sh&amp;utdown</source>
         <translation>關機 (&amp;S)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1455"/>
+        <location filename="../Window.cpp" line="1468"/>
         <source>Yank game pak</source>
         <translation>拔除遊戲卡帶</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1458"/>
+        <location filename="../Window.cpp" line="1471"/>
         <source>&amp;Pause</source>
         <translation>暫停 (&amp;P)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1467"/>
+        <location filename="../Window.cpp" line="1480"/>
         <source>&amp;Next frame</source>
         <translation>下一畫格 (&amp;N)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1471"/>
+        <location filename="../Window.cpp" line="1484"/>
         <source>Fast forward (held)</source>
         <translation>快轉 (長按)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1477"/>
+        <location filename="../Window.cpp" line="1490"/>
         <source>&amp;Fast forward</source>
         <translation>快轉 (&amp;F)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1481"/>
+        <location filename="../Window.cpp" line="1494"/>
         <source>Fast forward speed</source>
         <translation>快轉速率</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1486"/>
+        <location filename="../Window.cpp" line="1499"/>
         <source>Unbounded</source>
         <translation>無限制</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1490"/>
+        <location filename="../Window.cpp" line="1503"/>
         <source>%0x</source>
         <translation>%0x</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1494"/>
+        <location filename="../Window.cpp" line="1507"/>
         <source>Increase fast forward speed</source>
         <translation>加快快轉速度</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1501"/>
+        <location filename="../Window.cpp" line="1514"/>
         <source>Decrease fast forward speed</source>
         <translation>降低快轉速度</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1508"/>
+        <location filename="../Window.cpp" line="1521"/>
         <source>Rewind (held)</source>
         <translation>倒轉 (長按)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1520"/>
+        <location filename="../Window.cpp" line="1533"/>
         <source>Re&amp;wind</source>
         <translation>倒轉 (&amp;R)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1525"/>
+        <location filename="../Window.cpp" line="1538"/>
         <source>Step backwards</source>
         <translation>逐格倒轉</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1532"/>
+        <location filename="../Window.cpp" line="1545"/>
         <source>Solar sensor</source>
         <translation>日光感測器</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1533"/>
+        <location filename="../Window.cpp" line="1546"/>
         <source>Increase solar level</source>
         <translation>增加日光等級</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1534"/>
+        <location filename="../Window.cpp" line="1547"/>
         <source>Decrease solar level</source>
         <translation>降低日光等級</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1535"/>
+        <location filename="../Window.cpp" line="1548"/>
         <source>Brightest solar level</source>
         <translation>最大日光等級</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1538"/>
+        <location filename="../Window.cpp" line="1551"/>
         <source>Darkest solar level</source>
         <translation>最小日光等級</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1544"/>
+        <location filename="../Window.cpp" line="1557"/>
         <source>Brightness %1</source>
         <translation>亮度 %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1552"/>
+        <location filename="../Window.cpp" line="1565"/>
         <source>Game Boy Printer...</source>
         <translation>Game Boy 印表機...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1561"/>
+        <location filename="../Window.cpp" line="1574"/>
         <source>BattleChip Gate...</source>
         <translation>戰鬥晶片閘...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1565"/>
+        <location filename="../Window.cpp" line="1578"/>
         <source>Audio/&amp;Video</source>
         <translation>音訊/視訊 (&amp;V)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1566"/>
+        <location filename="../Window.cpp" line="1579"/>
         <source>Frame size</source>
         <translation>畫格大小</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1568"/>
+        <location filename="../Window.cpp" line="1581"/>
         <source>%1×</source>
         <translation>%1×</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1609"/>
+        <location filename="../Window.cpp" line="1622"/>
         <source>Toggle fullscreen</source>
         <translation>切換全螢幕</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1612"/>
+        <location filename="../Window.cpp" line="1625"/>
         <source>&amp;Lock frame size</source>
         <translation>鎖定幀大小(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1625"/>
+        <location filename="../Window.cpp" line="1638"/>
         <source>Lock aspect ratio</source>
         <translation>鎖定長寬比</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1637"/>
+        <location filename="../Window.cpp" line="1650"/>
         <source>Force integer scaling</source>
         <translation>強制整數倍放大</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1649"/>
+        <location filename="../Window.cpp" line="1662"/>
         <source>Interframe blending</source>
         <translation>畫格間混合</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1658"/>
+        <location filename="../Window.cpp" line="1671"/>
         <source>Bilinear filtering</source>
         <translation>雙線性過濾</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1666"/>
+        <location filename="../Window.cpp" line="1679"/>
         <source>Frame&amp;skip</source>
         <translation>跳過畫格 (&amp;S)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1679"/>
+        <location filename="../Window.cpp" line="1692"/>
         <source>Mute</source>
         <translation>靜音</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1686"/>
+        <location filename="../Window.cpp" line="1699"/>
         <source>FPS target</source>
         <translation>FPS 目標</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1694"/>
+        <location filename="../Window.cpp" line="1707"/>
         <source>Native (59.7275)</source>
         <translation>原生 (59.7275)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1709"/>
+        <location filename="../Window.cpp" line="1722"/>
         <source>Take &amp;screenshot</source>
         <translation>螢幕截圖 (&amp;S)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1711"/>
+        <location filename="../Window.cpp" line="1724"/>
         <source>F12</source>
         <translation>F12</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1715"/>
+        <location filename="../Window.cpp" line="1728"/>
         <source>Record A/V...</source>
         <translation>錄製音訊/影像...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1716"/>
+        <location filename="../Window.cpp" line="1729"/>
         <source>Record GIF/WebP/APNG...</source>
         <translation>錄製 GIF/WebP/APNG...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1720"/>
+        <location filename="../Window.cpp" line="1733"/>
         <source>Video layers</source>
         <translation>視訊圖層</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1721"/>
+        <location filename="../Window.cpp" line="1734"/>
         <source>Audio channels</source>
         <translation>音訊通道</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1723"/>
+        <location filename="../Window.cpp" line="1736"/>
         <source>Adjust layer placement...</source>
         <translation>調整圖層位置...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1727"/>
+        <location filename="../Window.cpp" line="1740"/>
         <source>Hide &amp;menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1732"/>
+        <location filename="../Window.cpp" line="1745"/>
         <source>&amp;Tools</source>
         <translation>工具 (&amp;T)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1733"/>
+        <location filename="../Window.cpp" line="1746"/>
         <source>View &amp;logs...</source>
         <translation>查看記錄檔 (&amp;L)...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1735"/>
+        <location filename="../Window.cpp" line="1748"/>
         <source>Game &amp;overrides...</source>
         <translation>遊戲替代 (&amp;O)...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1748"/>
+        <location filename="../Window.cpp" line="1761"/>
         <source>Game Pak sensors...</source>
         <translation>遊戲卡帶感測器...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1761"/>
+        <location filename="../Window.cpp" line="1774"/>
         <source>&amp;Cheats...</source>
         <translation>金手指 (&amp;C)...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1763"/>
+        <location filename="../Window.cpp" line="1776"/>
         <source>Scripting...</source>
         <translation>腳本...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1766"/>
+        <location filename="../Window.cpp" line="1779"/>
         <source>Create forwarder...</source>
         <translation>建立轉發器...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1769"/>
+        <location filename="../Window.cpp" line="1782"/>
         <source>Settings...</source>
         <translation>設定...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1774"/>
+        <location filename="../Window.cpp" line="1787"/>
         <source>Open debugger console...</source>
         <translation>打開除錯器控制台...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1776"/>
+        <location filename="../Window.cpp" line="1789"/>
         <source>Start &amp;GDB server...</source>
         <translation>啟動 GDB 伺服器 (&amp;G)...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1784"/>
+        <location filename="../Window.cpp" line="1797"/>
         <source>Game state views</source>
         <translation>遊戲狀態視圖</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1785"/>
+        <location filename="../Window.cpp" line="1798"/>
         <source>View &amp;palette...</source>
         <translation>檢視調色盤 (&amp;P)...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1786"/>
+        <location filename="../Window.cpp" line="1799"/>
         <source>View &amp;sprites...</source>
         <translation>檢視角色圖 (&amp;S)...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1787"/>
+        <location filename="../Window.cpp" line="1800"/>
         <source>View &amp;tiles...</source>
         <translation>檢視圖塊 (&amp;T)...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1788"/>
+        <location filename="../Window.cpp" line="1801"/>
         <source>View &amp;map...</source>
         <translation>檢視映射 (&amp;M)...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1789"/>
+        <location filename="../Window.cpp" line="1802"/>
         <source>&amp;Frame inspector...</source>
         <translation>畫格檢視器 (&amp;F)...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1790"/>
+        <location filename="../Window.cpp" line="1803"/>
         <source>View memory...</source>
         <translation>檢視記憶體...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1791"/>
+        <location filename="../Window.cpp" line="1804"/>
         <source>Search memory...</source>
         <translation>搜尋記憶體...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1792"/>
+        <location filename="../Window.cpp" line="1805"/>
         <source>View &amp;I/O registers...</source>
         <translation>檢視 I/O 暫存器 (&amp;I)...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1795"/>
+        <location filename="../Window.cpp" line="1808"/>
         <source>Log memory &amp;accesses...</source>
         <translation>記錄記憶體存取(&amp;a)...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1809"/>
+        <location filename="../Window.cpp" line="1822"/>
         <source>Record debug video log...</source>
         <translation>錄製除錯影片記錄檔。</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1810"/>
+        <location filename="../Window.cpp" line="1823"/>
         <source>Stop debug video log</source>
         <translation>停止除錯影片記錄檔</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1814"/>
+        <location filename="../Window.cpp" line="1827"/>
         <source>Exit fullscreen</source>
         <translation>離開全螢幕</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1816"/>
+        <location filename="../Window.cpp" line="1829"/>
         <source>GameShark Button (held)</source>
         <translation>Gameshark 按鈕 (長按)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1822"/>
+        <location filename="../Window.cpp" line="1835"/>
         <source>Autofire</source>
         <translation>自動連射</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1823"/>
+        <location filename="../Window.cpp" line="1836"/>
         <source>Autofire A</source>
         <translation>自動連射 A</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1828"/>
+        <location filename="../Window.cpp" line="1841"/>
         <source>Autofire B</source>
         <translation>自動連射 B</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1833"/>
+        <location filename="../Window.cpp" line="1846"/>
         <source>Autofire L</source>
         <translation>自動連射 L</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1838"/>
+        <location filename="../Window.cpp" line="1851"/>
         <source>Autofire R</source>
         <translation>自動連射 R</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1843"/>
+        <location filename="../Window.cpp" line="1856"/>
         <source>Autofire Start</source>
         <translation>自動連射 Start</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1848"/>
+        <location filename="../Window.cpp" line="1861"/>
         <source>Autofire Select</source>
         <translation>自動連射 Select</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1853"/>
+        <location filename="../Window.cpp" line="1866"/>
         <source>Autofire Up</source>
         <translation>自動連射 上</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1858"/>
+        <location filename="../Window.cpp" line="1871"/>
         <source>Autofire Right</source>
         <translation>自動連射 右</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1863"/>
+        <location filename="../Window.cpp" line="1876"/>
         <source>Autofire Down</source>
         <translation>自動連射 下</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1868"/>
+        <location filename="../Window.cpp" line="1881"/>
         <source>Autofire Left</source>
         <translation>自動連射 左</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="2073"/>
+        <location filename="../Window.cpp" line="2086"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>

@@ -54,6 +54,7 @@ struct mGUIAutosaveContext {
 	Mutex mutex;
 	Condition cond;
 	bool running;
+	bool pending;
 };
 #endif
 

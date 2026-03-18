@@ -79,8 +79,10 @@ void mInputMapSave(const struct mInputMap*, uint32_t type, struct Configuration*
 bool mInputProfileLoad(struct mInputMap*, uint32_t type, const struct Configuration*, const char* profile);
 void mInputProfileSave(const struct mInputMap*, uint32_t type, struct Configuration*, const char* profile);
 
-const char* mInputGetPreferredDevice(const struct Configuration*, const char* platformName, uint32_t type, int playerId);
-void mInputSetPreferredDevice(struct Configuration*, const char* platformName, uint32_t type, int playerId, const char* deviceName);
+const char* mInputGetPreferredDeviceType(const struct Configuration*, const char* platformName, uint32_t type, int playerId);
+const char* mInputGetPreferredDeviceSerial(const struct Configuration*, const char* platformName, uint32_t type, int playerId);
+void mInputSetPreferredDeviceType(struct Configuration*, const char* platformName, uint32_t type, int playerId, const char* deviceType);
+void mInputSetPreferredDeviceSerial(struct Configuration*, const char* platformName, uint32_t type, int playerId, const char* serial);
 
 const char* mInputGetCustomValue(const struct Configuration* config, const char* platformName, uint32_t type, const char* key,
                                  const char* profile);

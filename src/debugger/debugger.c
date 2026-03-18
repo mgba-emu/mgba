@@ -118,6 +118,7 @@ void mDebuggerDetachModule(struct mDebugger* debugger, struct mDebuggerModule* m
 				module->deinit(module);
 			}
 		}
+		module->p = NULL;
 		mDebuggerModuleListShift(&debugger->modules, i, 1);
 		break;
 	}

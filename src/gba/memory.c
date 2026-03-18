@@ -360,13 +360,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		cpu->memory.activeMask = 0;
 
 		if (!gba->yankedRomSize && mCoreCallbacksListSize(&gba->coreCallbacks)) {
-			size_t c;
-			for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
-				struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
-				if (callbacks->coreCrashed) {
-					callbacks->coreCrashed(callbacks->context);
-				}
-			}
+			mCALLBACKS_INVOKE(gba, coreCrashed);
 		}
 
 		if (gba->yankedRomSize || !gba->hardCrash) {

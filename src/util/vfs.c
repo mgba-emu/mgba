@@ -172,8 +172,8 @@ void separatePath(const char* path, char* dirname, char* basename, char* extensi
 	if (!path) {
 		return;
 	}
-	char* dotPoint = strrchr(path, '.');
-	char* separatorPoint = strnrstr(path, PATH_SEP, strlen(path));
+	const char* dotPoint = strrchr(path, '.');
+	const char* separatorPoint = strnrstr(path, PATH_SEP, strlen(path));
 	if (separatorPoint) {
 		if (dirname) {
 			ptrdiff_t len = separatorPoint - path;
@@ -250,6 +250,38 @@ void makeAbsolute(const char* path, const char* base, char* out) {
 	}
 #endif
 	strncpy(out, buf, PATH_MAX);
+}
+
+bool upDirectory(char* path) {
+#ifdef _WIN32
+	WCHAR wbuf[PATH_MAX];
+	WCHAR vol[PATH_MAX];
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, wbuf, PATH_MAX);
+	if (!GetVolumePathNameW(wbuf, vol, sizeof(vol) / sizeof(*vol))) {
+		return false;
+	}
+#endif
+
+	while (true) {
+		char* end = strnrstr(path, PATH_SEP, strlen(path));
+		if (!end) {
+			return false;
+		}
+		if (!end[1]) {
+			end[0] = '\0';
+			// Trailing slash
+			continue;
+		}
+#ifdef _WIN32
+		end[1] = '\0';
+		MultiByteToWideChar(CP_UTF8, 0, path, -1, wbuf, PATH_MAX);
+		if (wcsncmp(wbuf, vol, PATH_MAX) == 0) {
+			return false;
+		}
+#endif
+		end[0] = '\0';
+		return true;
+	}
 }
 
 #if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)

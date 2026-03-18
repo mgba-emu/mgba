@@ -1134,7 +1134,7 @@ void EReaderScanConnectAnchors(struct EReaderScan* scan) {
 	for (i = 0; i < EReaderAnchorListSize(&scan->anchors); ++i) {
 		struct EReaderAnchor* anchor = EReaderAnchorListGetPointer(&scan->anchors, i);
 		float closest = scan->scale * 2.f;
-		float threshold;
+		float threshold = 1.25f * closest;
 		size_t j;
 		for (j = 0; j < EReaderAnchorListSize(&scan->anchors); ++j) {
 			if (i == j) {
@@ -1146,7 +1146,7 @@ void EReaderScanConnectAnchors(struct EReaderScan* scan) {
 			float distance = hypotf(dx, dy);
 			if (distance < closest) {
 				closest = distance;
-				threshold = 1.25 * closest;
+				threshold = 1.25f * closest;
 			}
 		}
 		if (closest >= scan->scale) {

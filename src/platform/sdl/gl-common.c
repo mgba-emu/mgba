@@ -101,7 +101,11 @@ bool mSDLGLCommonInit(struct mSDLRenderer* renderer) {
 #endif
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	renderer->window = SDL_CreateWindow(projectName, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (SDL_WINDOW_FULLSCREEN * renderer->player.fullscreen));
+#else
 	renderer->window = SDL_CreateWindow(projectName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->player.fullscreen));
+#endif
 	renderer->glCtx = SDL_GL_CreateContext(renderer->window);
 	if (!renderer->glCtx) {
 		SDL_DestroyWindow(renderer->window);

@@ -8,7 +8,7 @@
 #include "DebuggerController.h"
 
 #include <QMutex>
-#include <QStringList>
+#include <QStringListModel>
 #include <QWaitCondition>
 
 #include <mgba/internal/debugger/cli-debugger.h>
@@ -23,7 +23,7 @@ Q_OBJECT
 public:
 	DebuggerConsoleController(QObject* parent = nullptr);
 
-	QStringList history() const { return m_history; }
+	QStringListModel* history() { return m_history; }
 
 signals:
 	void log(const QString&);
@@ -53,7 +53,7 @@ private:
 
 	QMutex m_mutex;
 	QWaitCondition m_cond;
-	QStringList m_history;
+	QStringListModel* m_history;
 	QStringList m_lines;
 	QByteArray m_last;
 

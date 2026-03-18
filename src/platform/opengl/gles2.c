@@ -1100,7 +1100,7 @@ bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 			struct mGLES2Shader* shaderBlock = calloc(inShaders, sizeof(struct mGLES2Shader));
 			int n;
 			for (n = 0; n < inShaders; ++n) {
-				char passName[12];
+				char passName[16];
 				snprintf(passName, sizeof(passName), "pass.%u", n);
 				const char* fs = ConfigurationGetValue(&description, passName, "fragmentShader");
 				const char* vs = ConfigurationGetValue(&description, passName, "vertexShader");

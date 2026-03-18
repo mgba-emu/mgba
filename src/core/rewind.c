@@ -92,6 +92,12 @@ void mCoreRewindAppend(struct mCoreRewindContext* context, struct mCore* core) {
 }
 
 void _rewindDiff(struct mCoreRewindContext* context) {
+	size_t size = context->previousState->size(context->previousState);
+	if (!size) {
+		// We are appending the first state
+		return;
+	}
+
 	++context->current;
 	if (context->size < mCoreRewindPatchesSize(&context->patchMemory)) {
 		++context->size;
@@ -101,7 +107,6 @@ void _rewindDiff(struct mCoreRewindContext* context) {
 	}
 	struct PatchFast* patch = mCoreRewindPatchesGetPointer(&context->patchMemory, context->current);
 	size_t size2 = context->currentState->size(context->currentState);
-	size_t size = context->previousState->size(context->previousState);
 	if (size2 > size) {
 		context->previousState->truncate(context->previousState, size2);
 		size = size2;

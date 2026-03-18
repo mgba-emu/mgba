@@ -237,7 +237,7 @@ static void _GBSIOLockstepNodeProcessEvents(struct mTiming* timing, void* user, 
 		mTimingDeschedule(timing, &node->event);
 		mTimingSchedule(timing, &node->event, cycles);
 	} else {
-		node->d.p->p->earlyExit = true;
+		GBInterrupt(node->d.p->p);
 		mTimingSchedule(timing, &node->event, cyclesLate + 1);
 	}
 }

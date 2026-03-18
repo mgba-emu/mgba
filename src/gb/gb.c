@@ -58,6 +58,11 @@ static const uint8_t _cgbBiosHram[GB_SIZE_HRAM] = {
 #define AGB_BIOS_CHECKSUM 0xFFD6B0F1
 #define AGB0_BIOS_CHECKSUM 0x570337EA
 
+#define FORTUNE_BIOS_CHECKSUM 0x66CC6D94
+#define GAMEFIGHTER_BIOS_CHECKSUM 0x908BA8DE
+#define KONGFENG_GBBC_BIOS_CHECKSUM 0x69236128
+#define MAXSTATION_BIOS_CHECKSUM 0x783E69C2
+
 mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
 
 static void GBInit(void* cpu, struct mCPUComponent* component);
@@ -394,13 +399,7 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 			}
 		}
 
-		size_t c;
-		for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
-			struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
-			if (callbacks->savedataUpdated) {
-				callbacks->savedataUpdated(callbacks->context);
-			}
-		}
+		mCALLBACKS_INVOKE(gb, savedataUpdated);
 	}
 }
 
@@ -579,6 +578,11 @@ bool GBIsBIOS(struct VFile* vf) {
 	case CGBE_BIOS_CHECKSUM:
 	case AGB_BIOS_CHECKSUM:
 	case AGB0_BIOS_CHECKSUM:
+	// Bootleg consoles
+	case FORTUNE_BIOS_CHECKSUM:
+	case GAMEFIGHTER_BIOS_CHECKSUM:
+	case KONGFENG_GBBC_BIOS_CHECKSUM:
+	case MAXSTATION_BIOS_CHECKSUM:
 		return true;
 	default:
 		return false;
@@ -592,12 +596,18 @@ bool GBIsCompatibleBIOS(struct VFile* vf, enum GBModel model) {
 	case MGB_BIOS_CHECKSUM:
 	case SGB_BIOS_CHECKSUM:
 	case SGB2_BIOS_CHECKSUM:
+	// Bootleg consoles
+	case FORTUNE_BIOS_CHECKSUM:
+	case GAMEFIGHTER_BIOS_CHECKSUM:
+	case MAXSTATION_BIOS_CHECKSUM:
 		return model < GB_MODEL_CGB;
 	case CGB_BIOS_CHECKSUM:
 	case CGB0_BIOS_CHECKSUM:
 	case CGBE_BIOS_CHECKSUM:
 	case AGB_BIOS_CHECKSUM:
 	case AGB0_BIOS_CHECKSUM:
+	// Bootleg consoles
+	case KONGFENG_GBBC_BIOS_CHECKSUM:
 		return model >= GB_MODEL_CGB;
 	default:
 		return false;
@@ -880,6 +890,10 @@ void GBDetectModel(struct GB* gb) {
 		switch (_GBBiosCRC32(gb->biosVf)) {
 		case DMG_BIOS_CHECKSUM:
 		case DMG0_BIOS_CHECKSUM:
+		// Bootleg consoles
+		case FORTUNE_BIOS_CHECKSUM:
+		case GAMEFIGHTER_BIOS_CHECKSUM:
+		case MAXSTATION_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_DMG;
 			break;
 		case MGB_BIOS_CHECKSUM:
@@ -894,6 +908,8 @@ void GBDetectModel(struct GB* gb) {
 		case CGB_BIOS_CHECKSUM:
 		case CGB0_BIOS_CHECKSUM:
 		case CGBE_BIOS_CHECKSUM:
+		// Bootleg consoles
+		case KONGFENG_GBBC_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;
 			break;
 		case AGB_BIOS_CHECKSUM:
@@ -1174,14 +1190,7 @@ void GBGetGameInfo(const struct GB* gb, struct mGameInfo* info) {
 
 void GBFrameStarted(struct GB* gb) {
 	GBTestKeypadIRQ(gb);
-
-	size_t c;
-	for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
-		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
-		if (callbacks->videoFrameStarted) {
-			callbacks->videoFrameStarted(callbacks->context);
-		}
-	}
+	mCALLBACKS_INVOKE(gb, videoFrameStarted);
 }
 
 void GBFrameEnded(struct GB* gb) {
@@ -1209,14 +1218,12 @@ void GBFrameEnded(struct GB* gb) {
 		gb->video.renderer->getPixels(gb->video.renderer, &stride, (const void**) &pixels);
 		gb->stream->postVideoFrame(gb->stream, pixels, stride);
 	}
+	mCALLBACKS_INVOKE(gb, videoFrameEnded);
+}
 
-	size_t c;
-	for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
-		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
-		if (callbacks->videoFrameEnded) {
-			callbacks->videoFrameEnded(callbacks->context);
-		}
-	}
+void GBInterrupt(struct GB* gb) {
+	gb->earlyExit = true;
+	mTimingInterrupt(&gb->timing);
 }
 
 enum GBModel GBNameToModel(const char* model) {

@@ -16,7 +16,7 @@ struct Patch {
 	struct VFile* vf;
 
 	size_t (*outputSize)(struct Patch* patch, size_t inSize);
-	bool (*applyPatch)(struct Patch* patch, const void* in, size_t inSize, void* out, size_t outSize);
+	bool (*applyPatch)(struct Patch* patch, const void* restrict in, size_t inSize, void* restrict out, size_t outSize);
 };
 
 bool loadPatch(struct VFile* vf, struct Patch* patch);

@@ -50,9 +50,16 @@ enum GBAGameSharkType {
 	GSA_ASSIGN_LIST = 0x3,
 	GSA_PATCH = 0x6,
 	GSA_BUTTON = 0x8,
-	GSA_IF_EQ = 0xD,
-	GSA_IF_EQ_RANGE = 0xE,
+	GSA_IF = 0xD,
+	GSA_IF_RANGE = 0xE,
 	GSA_HOOK = 0xF
+};
+
+enum GBAGameSharkIfType {
+	GSA_IF_EQ = 0,
+	GSA_IF_NE = 1,
+	GSA_IF_LE = 2,
+	GSA_IF_GE = 3,
 };
 
 enum GBAActionReplay3Condition {

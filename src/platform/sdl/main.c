@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+	if (!SDL_OK(SDL_Init(SDL_INIT_VIDEO))) {
 		printf("Could not initialize video: %s\n", SDL_GetError());
 		mArgumentsDeinit(&args);
 		return 1;
@@ -117,6 +117,9 @@ int main(int argc, char** argv) {
 	mCoreConfigSetDefaultIntValue(&renderer.core->config, "logToStdout", true);
 	mCoreConfigLoadDefaults(&renderer.core->config, &opts);
 	mCoreLoadConfig(renderer.core);
+	mStandardLoggerInit(&_logger);
+	mStandardLoggerConfig(&_logger, &renderer.core->config);
+	mLogSetDefaultLogger(&_logger.d);
 
 	renderer.viewportWidth = renderer.core->opts.width;
 	renderer.viewportHeight = renderer.core->opts.height;
@@ -153,7 +156,7 @@ int main(int argc, char** argv) {
 	mSDLInitBindingsGBA(&renderer.core->inputMap);
 	mSDLInitEvents(&renderer.events);
 	mSDLEventsLoadConfig(&renderer.events, mCoreConfigGetInput(&renderer.core->config));
-	mSDLAttachPlayer(&renderer.events, &renderer.player);
+	mSDLAttachPlayer(&renderer.events, &renderer.player, -1);
 	mSDLPlayerLoadConfig(&renderer.player, mCoreConfigGetInput(&renderer.core->config));
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -163,8 +166,6 @@ int main(int argc, char** argv) {
 	int ret;
 
 	// TODO: Use opts and config
-	mStandardLoggerInit(&_logger);
-	mStandardLoggerConfig(&_logger, &renderer.core->config);
 	ret = mSDLRun(&renderer, &args);
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&renderer.core->inputMap);

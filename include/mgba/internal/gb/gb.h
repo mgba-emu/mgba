@@ -197,6 +197,8 @@ void GBTestKeypadIRQ(struct GB* gb);
 void GBFrameStarted(struct GB* gb);
 void GBFrameEnded(struct GB* gb);
 
+void GBInterrupt(struct GB* gb);
+
 CXX_GUARD_END
 
 #endif

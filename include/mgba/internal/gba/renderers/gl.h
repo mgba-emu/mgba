@@ -44,7 +44,7 @@ struct GBAVideoGLBackground {
 	GLuint tex;
 
 	unsigned index;
-	int enabled;
+	int enabledAtY;
 	unsigned priority;
 	uint32_t charBase;
 	uint32_t oldCharBase;
@@ -204,6 +204,7 @@ struct GBAVideoGLRenderer {
 
 	int firstAffine;
 	int firstY;
+	int lastY;
 
 	int scale;
 };

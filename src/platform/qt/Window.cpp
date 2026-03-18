@@ -732,7 +732,7 @@ void Window::showEvent(QShowEvent* event) {
 			}
 
 			if (m_config->getOption("muteOnMinimize").toInt()) {
-				m_inactiveMute = false;
+				m_minimizedMute = false;
 				updateMute();
 			}
 		}
@@ -781,7 +781,7 @@ void Window::hideEvent(QHideEvent* event) {
 		m_controller->setPaused(true);
 	}
 	if (m_config->getOption("muteOnMinimize").toInt()) {
-		m_inactiveMute = true;
+		m_minimizedMute = true;
 		updateMute();
 	}
 }
@@ -841,6 +841,20 @@ void Window::dropEvent(QDropEvent* event) {
 	event->accept();
 	setController(m_manager->loadGame(url.toLocalFile()), url.toLocalFile());
 }
+
+#ifndef Q_OS_MAC
+void Window::changeEvent(QEvent* event) {
+	if (event->type() == QEvent::WindowStateChange) {
+		if (isFullScreen()) {
+			if (m_controller && !m_controller->isPaused()) {
+				showMenu(false);
+			} else {
+				showMenu(true);
+			}
+		}
+	}
+}
+#endif
 
 void Window::enterFullScreen() {
 	if (!isVisible()) {
@@ -964,6 +978,9 @@ void Window::gameStopped() {
 	for (auto& action : m_platformActions) {
 		action->setEnabled(true);
 	}
+	for (auto& action : m_nonMpActions) {
+		action->setEnabled(true);
+	}
 	for (auto& action : m_gameActions) {
 		action->setEnabled(false);
 	}
@@ -989,12 +1006,7 @@ void Window::gameStopped() {
 #endif
 	}
 
-	std::shared_ptr<CoreController> controller;
-	m_controller.swap(controller);
-	QTimer::singleShot(0, this, [controller]() {
-		// Destroy the controller after everything else has cleaned up
-		Q_UNUSED(controller);
-	});
+	m_cleanupController = std::move(m_controller);
 	detachWidget();
 	updateTitle();
 
@@ -1005,9 +1017,10 @@ void Window::gameStopped() {
 			m_scripting->setVideoBackend(nullptr);
 		}
 #endif
-		m_display.reset();
+		m_cleanupDisplay = std::move(m_display);
 		close();
 	}
+	QTimer::singleShot(0, this, &Window::delayedCleanup);
 #ifndef Q_OS_MAC
 	showMenu(true);
 #endif
@@ -2336,7 +2349,7 @@ void Window::updateMute() {
 		return;
 	}
 
-	bool mute = m_inactiveMute;
+	bool mute = m_inactiveMute || m_minimizedMute;
 
 	if (!mute) {
 		QString multiplayerAudio = m_config->getQtOption("multiplayerAudio").toString();
@@ -2355,6 +2368,13 @@ void Window::setLogo() {
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
 	centralWidget()->unsetCursor();
+}
+
+void Window::delayedCleanup() {
+	// Destroy the controller after everything else has cleaned up, except for the display
+	m_cleanupController.reset();
+	// The display needs to be cleaned up last so the core can clean up the OpenGL resources
+	m_cleanupDisplay.reset();
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

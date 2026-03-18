@@ -121,6 +121,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		switch (gba->memory.unl.type) {
 		case GBA_UNL_CART_NONE:
 		case GBA_UNL_CART_VFAME:
+		default:
 			cart = (struct GBACartridge*) gba->memory.rom;
 			break;
 		case GBA_UNL_CART_MULTICART:

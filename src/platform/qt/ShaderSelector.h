@@ -12,6 +12,7 @@
 #include "ui_ShaderSelector.h"
 
 struct mGLES2Shader;
+class QFormLayout;
 class QGridLayout;
 struct VideoShader;
 
@@ -47,7 +48,9 @@ signals:
 private:
 	void addUniform(QGridLayout*, const QString& section, const QString& name, float* value, float min, float max, int y, int x);
 	void addUniform(QGridLayout*, const QString& section, const QString& name, int* value, int min, int max, int y, int x);
-	QWidget* makePage(mGLES2Shader*, const QString& name, int pass);
+	void addMatchingUniformRows(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, const QString& uniformName, bool addAll);
+	void parseShaderIni(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, QIODevice* file);
+	QWidget* makePage(mGLES2Shader*, const QString& name, int pass, bool defaultPage);
 
 	Ui::ShaderSelector m_ui;
 	Display* m_display;

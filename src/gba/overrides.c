@@ -205,27 +205,8 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ { 0, 0, 0, 0 }, 0, 0, GBA_IDLE_LOOP_NONE, false }
 };
 
-bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOverride* override) {
-	override->savetype = GBA_SAVEDATA_AUTODETECT;
-	override->hardware = HW_NONE;
-	override->idleLoop = GBA_IDLE_LOOP_NONE;
-	override->vbaBugCompat = false;
+bool GBAOverrideFindConfig(const struct Configuration* config, struct GBACartridgeOverride* override) {
 	bool found = false;
-
-	int i;
-	for (i = 0; _overrides[i].id[0]; ++i) {
-		if (memcmp(override->id, _overrides[i].id, sizeof(override->id)) == 0) {
-			*override = _overrides[i];
-			found = true;
-			break;
-		}
-	}
-	if (!found && override->id[0] == 'F') {
-		// Classic NES Series
-		override->savetype = GBA_SAVEDATA_EEPROM;
-		found = true;
-	}
-
 	if (config) {
 		char sectionName[16];
 		snprintf(sectionName, sizeof(sectionName), "override.%c%c%c%c", override->id[0], override->id[1], override->id[2], override->id[3]);
@@ -262,7 +243,7 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 			char* end;
 			long type = strtoul(hardware, &end, 0);
 			if (end && !*end) {
-				override->hardware = type;
+				override->hardware = type & ~HW_NO_OVERRIDE;
 				found = true;
 			}
 		}
@@ -275,6 +256,33 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 				found = true;
 			}
 		}
+	}
+	return found;
+}
+
+bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOverride* override) {
+	override->savetype = GBA_SAVEDATA_AUTODETECT;
+	override->hardware = HW_NO_OVERRIDE;
+	override->idleLoop = GBA_IDLE_LOOP_NONE;
+	override->vbaBugCompat = false;
+	bool found = false;
+
+	int i;
+	for (i = 0; _overrides[i].id[0]; ++i) {
+		if (memcmp(override->id, _overrides[i].id, sizeof(override->id)) == 0) {
+			*override = _overrides[i];
+			found = true;
+			break;
+		}
+	}
+	if (!found && override->id[0] == 'F') {
+		// Classic NES Series
+		override->savetype = GBA_SAVEDATA_EEPROM;
+		found = true;
+	}
+
+	if (config) {
+		found = GBAOverrideFindConfig(config, override) || found;
 	}
 	return found;
 }
@@ -332,6 +340,7 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 
 	if (override->hardware != HW_NO_OVERRIDE) {
 		GBAHardwareClear(&gba->memory.hw);
+		gba->memory.hw.devices &= ~HW_NO_OVERRIDE;
 
 		if (override->hardware & HW_RTC) {
 			GBAHardwareInitRTC(&gba->memory.hw);
@@ -427,6 +436,8 @@ void GBAOverrideApplyDefaults(struct GBA* gba, const struct Configuration* overr
 			override.savetype = GBA_SAVEDATA_FLASH1M;
 			override.hardware = HW_RTC;
 			override.vbaBugCompat = true;
+			// Allow overrides from config file but not from defaults
+			GBAOverrideFindConfig(overrides, &override);
 			GBAOverrideApply(gba, &override);
 		} else if (GBAOverrideFind(overrides, &override)) {
 			GBAOverrideApply(gba, &override);

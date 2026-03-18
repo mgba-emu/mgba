@@ -719,6 +719,8 @@ static void _GBCoreReset(struct mCore* core) {
 		}
 	}
 
+	mCALLBACKS_INVOKE(gb, memoryBlocksChanged);
+
 	SM83Reset(core->cpu);
 
 	if (core->opts.skipBios) {
@@ -1431,7 +1433,7 @@ static void _GBVLPStartFrameCallback(void *context) {
 		GBVideoProxyRendererUnshim(&gb->video, &gbcore->proxyRenderer);
 		mVideoLogContextRewind(gbcore->logContext, core);
 		GBVideoProxyRendererShim(&gb->video, &gbcore->proxyRenderer);
-		gb->earlyExit = true;
+		GBInterrupt(gb);
 	}
 }
 
@@ -1500,8 +1502,10 @@ static bool _GBVLPLoadState(struct mCore* core, const void* buffer) {
 	gb->cpu->pc = GB_BASE_HRAM;
 	gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
 
+	mTimingClear(&gb->timing);
 	GBVideoReset(&gb->video);
-	gb->timing.root = NULL;
+	mTimingClear(&gb->timing);
+
 	GBVideoDeserialize(&gb->video, state);
 	GBIODeserialize(gb, state);
 	GBAudioReset(&gb->audio);

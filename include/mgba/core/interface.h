@@ -13,6 +13,16 @@ CXX_GUARD_START
 #include <mgba-util/image.h>
 #include <mgba-util/vector.h>
 
+#define mCALLBACKS_INVOKE(BOARD, CALLBACK) do {\
+		size_t c; \
+		for (c = 0; c < mCoreCallbacksListSize(&(BOARD)->coreCallbacks); ++c) { \
+			const struct mCoreCallbacks* callbacks = mCoreCallbacksListGetConstPointer(&(BOARD)->coreCallbacks, c); \
+			if (callbacks->CALLBACK) { \
+				callbacks->CALLBACK(callbacks->context); \
+			} \
+		} \
+	} while (0);
+
 struct mCore;
 struct mStateExtdataItem;
 
@@ -40,6 +50,7 @@ struct mCoreCallbacks {
 	void (*keysRead)(void* context);
 	void (*savedataUpdated)(void* context);
 	void (*alarm)(void* context);
+	void (*memoryBlocksChanged)(void* context);
 };
 
 DECLARE_VECTOR(mCoreCallbacksList, struct mCoreCallbacks);

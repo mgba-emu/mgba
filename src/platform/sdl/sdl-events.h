@@ -6,7 +6,7 @@
 #ifndef SDL_EVENTS_H
 #define SDL_EVENTS_H
 
-#include <mgba-util/common.h>
+#include "sdl-common.h"
 
 CXX_GUARD_START
 
@@ -14,16 +14,6 @@ CXX_GUARD_START
 #include <mgba/core/log.h>
 #include <mgba-util/circle-buffer.h>
 #include <mgba-util/vector.h>
-
-#include <SDL.h>
-// Altivec sometimes defines this
-#ifdef vector
-#undef vector
-#endif
-#ifdef bool
-#undef bool
-#define bool _Bool
-#endif
 
 mLOG_DECLARE_CATEGORY(SDL_EVENTS);
 
@@ -38,7 +28,10 @@ struct Configuration;
 struct SDL_JoystickCombo {
 	size_t index;
 	SDL_Joystick* joystick;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_Gamepad* controller;
+	SDL_JoystickID id;
+#elif SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GameController* controller;
 	SDL_Haptic* haptic;
 	SDL_JoystickID id;
@@ -49,11 +42,15 @@ struct SDL_JoystickCombo {
 
 DECLARE_VECTOR(SDL_JoystickList, struct SDL_JoystickCombo);
 
+struct mSDLUniqueJoystick {
+	const char* type;
+	const char* serial;
+};
+
 struct mSDLPlayer;
 struct mSDLEvents {
 	struct SDL_JoystickList joysticks;
-	const char* preferredJoysticks[MAX_PLAYERS];
-	int playersAttached;
+	struct mSDLUniqueJoystick preferredJoysticks[MAX_PLAYERS];
 	struct mSDLPlayer* players[MAX_PLAYERS];
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	int screensaverSuspendDepth;
@@ -105,10 +102,11 @@ struct mSDLPlayer {
 bool mSDLInitEvents(struct mSDLEvents*);
 void mSDLDeinitEvents(struct mSDLEvents*);
 
-bool mSDLAttachPlayer(struct mSDLEvents*, struct mSDLPlayer*);
+bool mSDLAttachPlayer(struct mSDLEvents*, struct mSDLPlayer*, int playerId);
 void mSDLDetachPlayer(struct mSDLEvents*, struct mSDLPlayer*);
 void mSDLEventsLoadConfig(struct mSDLEvents*, const struct Configuration*);
 void mSDLPlayerChangeJoystick(struct mSDLEvents*, struct mSDLPlayer*, size_t index);
+void mSDLPlayerChangeId(struct mSDLEvents*, struct mSDLPlayer*, int id);
 void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration*);
 
 void mSDLPlayerLoadConfig(struct mSDLPlayer*, const struct Configuration*);
@@ -124,8 +122,13 @@ void mSDLSuspendScreensaver(struct mSDLEvents*);
 void mSDLResumeScreensaver(struct mSDLEvents*);
 void mSDLSetScreensaverSuspendable(struct mSDLEvents*, bool suspendable);
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+const char* mSDLButtonName(SDL_Gamepad*, SDL_GamepadButton);
+const char* mSDLAxisName(SDL_Gamepad*, SDL_GamepadAxis);
+#else
 const char* mSDLButtonName(SDL_GameController*, SDL_GameControllerButton);
 const char* mSDLAxisName(SDL_GameController*, SDL_GameControllerAxis);
+#endif
 #endif
 
 CXX_GUARD_END

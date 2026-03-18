@@ -424,9 +424,8 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	}
 	if (!mCoreSyncProduceAudio(audio->p->sync, &audio->psg.buffer)) {
 		// Interrupted
-		audio->p->earlyExit = true;
+		GBAInterrupt(audio->p);
 	}
-
 	mTimingSchedule(timing, &audio->sampleEvent, SAMPLE_INTERVAL - cyclesLate);
 }
 

@@ -21,6 +21,7 @@ enum GBACheatGameSharkVersion {
 };
 
 struct GBACheatSet;
+void GBACheatEncryptGameShark(uint32_t* op1, uint32_t* op2, const uint32_t* seeds);
 void GBACheatDecryptGameShark(uint32_t* op1, uint32_t* op2, const uint32_t* seeds);
 void GBACheatReseedGameShark(uint32_t* seeds, uint16_t params, const uint8_t* t1, const uint8_t* t2);
 void GBACheatSetGameSharkVersion(struct GBACheatSet* cheats, enum GBACheatGameSharkVersion version);

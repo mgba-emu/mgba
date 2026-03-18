@@ -12,6 +12,8 @@
 
 #include "platform/sdl/sdl-events.h"
 
+#include <QTimer>
+
 #include <memory>
 
 namespace QGBA {
@@ -30,6 +32,8 @@ Q_OBJECT
 public:
 	SDLInputDriver(InputController*, QObject* parent = nullptr);
 	~SDLInputDriver();
+
+	void setPlayerId(int id) override;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	uint32_t type() const override { return SDL_BINDING_CONTROLLER; }
@@ -75,6 +79,9 @@ private:
 	QList<std::shared_ptr<SDLGamepad>> m_gamepads;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+	QTimer m_gamepadTimer;
+
+private slots:
 	void updateGamepads();
 #endif
 };
@@ -83,8 +90,6 @@ class SDLGamepad : public Gamepad {
 Q_OBJECT
 
 public:
-	SDLGamepad(SDLInputDriver*, int index, QObject* parent = nullptr);
-
 	QList<bool> currentButtons() override;
 	QList<int16_t> currentAxes() override;
 	QList<GamepadHatEvent::Direction> currentHats() override;
@@ -98,12 +103,15 @@ public:
 
 	QString name() const override;
 	QString visibleName() const override;
+	QString serial() const override;
 
+private:
+	// These are private because they need the lock to already be held before calling
+	SDLGamepad(SDLInputDriver*, int index, QObject* parent = nullptr);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	bool updateIndex();
 #endif
 
-private:
 	friend class SDLInputDriver;
 
 	size_t m_index;
@@ -111,6 +119,8 @@ private:
 	char m_guid[34]{};
 	SDL_JoystickID m_id;
 #endif
+	QString m_visibleName;
+	QString m_serial;
 
 	bool verify() const;
 };
