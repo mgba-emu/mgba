@@ -3630,7 +3630,7 @@ Tamanho do download: %3</translation>
         <location filename="../MemoryDump.ui" line="108"/>
         <source>Dump across banks within region</source>
         <comment>Generate dump with bytes all within the same region of memory, even if it crosses the bank boundary</comment>
-        <translation type="unfinished">Dumpar através dos bancos</translation>
+        <translation>Dumpar através dos bancos dentro da região</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="24"/>
@@ -4852,7 +4852,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="108"/>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>Visualizar</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="118"/>
@@ -4882,7 +4882,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="143"/>
         <source>Clear console</source>
-        <translation type="unfinished"></translation>
+        <translation>Limpar o console</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="66"/>
