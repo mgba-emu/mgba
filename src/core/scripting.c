@@ -9,6 +9,10 @@
 #include <mgba/core/serialize.h>
 #ifdef M_CORE_GBA
 #include <mgba/gba/interface.h>
+#include <mgba/internal/gba/gba.h>
+#endif
+#ifdef M_CORE_GB
+#include <mgba/internal/gb/gb.h>
 #endif
 #include <mgba/script/base.h>
 #include <mgba/script/context.h>
@@ -411,6 +415,75 @@ static void _mScriptCoreWriteRegister(struct mCore* core, const char* regName, i
 	core->writeRegister(core, regName, &in);
 }
 
+static uint16_t _mScriptCoreReadPalette(struct mCore* core, uint32_t index) {
+	const uint16_t* palette;
+	uint32_t count;
+
+	switch (core->platform(core)) {
+#ifdef M_CORE_GBA
+	case mPLATFORM_GBA:
+		struct GBA* gba = (struct GBA*) core->board;
+		palette = gba->video.palette;
+		count = 512;
+		break;
+#endif
+#ifdef M_CORE_GB
+	case mPLATFORM_GB:
+		struct GB* gb = (struct GB*) core->board;
+		palette = gb->video.palette;
+		count = 64;
+		break;
+#endif
+	default:
+		return 0x8000;
+	}
+
+	if (index >= count) {
+		return 0x8000;
+	}
+
+	uint16_t color;
+	LOAD_16LE(color, 2 * index, palette);
+
+	return color;
+}
+
+static void _mScriptCoreWritePalette(struct mCore* core, uint32_t index, uint16_t color) {
+	uint16_t* palette;
+	switch (core->platform(core)) {
+#ifdef M_CORE_GBA
+	case mPLATFORM_GBA:
+		if (index >= 512) {
+			return;
+		}
+		struct GBA* gba = (struct GBA*) core->board;
+		palette = gba->video.palette;
+
+		STORE_16LE(color, 2 * index, palette);
+
+		struct GBAVideoRenderer* gbaRenderer = gba->video.renderer;
+		gbaRenderer->writePalette(gbaRenderer, index, palette[index]);
+		break;
+#endif
+#ifdef M_CORE_GB
+	case mPLATFORM_GB:
+		if (index >= 64) {
+			return;
+		}
+		struct GB* gb = (struct GB*) core->board;
+		palette = gb->video.palette;
+
+		STORE_16LE(color, 2 * index, palette);
+
+		struct GBVideoRenderer* gbRenderer = gb->video.renderer;
+		gbRenderer->writePalette(gbRenderer, index, palette[index]);
+		break;
+#endif
+	default:
+		break;
+	}
+}
+
 static struct mScriptValue* _mScriptCoreSaveState(struct mCore* core, int32_t flags) {
 	struct VFile* vf = VFileMemChunk(NULL, 0);
 	if (!mCoreSaveStateNamed(core, vf, flags)) {
@@ -532,6 +605,10 @@ mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite32, 2, U32, address, U32, va
 mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WRAPPER, readRegister, _mScriptCoreReadRegister, 1, CHARP, regName);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, writeRegister, _mScriptCoreWriteRegister, 2, CHARP, regName, S32, value);
 
+// Palette functions
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, U16, readPalette, _mScriptCoreReadPalette, 1, U32, index);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, writePalette, _mScriptCoreWritePalette, 2, U32, index, U16, color);
+
 // Savestate functions
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, WSTR, saveStateBuffer, _mScriptCoreSaveState, 1, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, loadStateBuffer, _mScriptCoreLoadState, 2, STR, buffer, S32, flags);
@@ -618,6 +695,11 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, readRegister)
 	mSCRIPT_DEFINE_DOCSTRING("Write the value of the register with the given name")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, writeRegister)
+
+	mSCRIPT_DEFINE_DOCSTRING("Read a 16-bit value encoding the RGB channels in 5 bits each from the given palette index (0-indexed). See util.unpackColor")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, readPalette)
+	mSCRIPT_DEFINE_DOCSTRING("Write a 16-bit value encoding the RGB channels in 5 bits each to the given palette index (0-indexed). See util.packColor")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, writePalette)
 
 	mSCRIPT_DEFINE_DOCSTRING("Save state and return as a buffer. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateBuffer)

@@ -14,6 +14,7 @@
 #include "script/test.h"
 
 #ifdef M_CORE_GBA
+#include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/memory.h>
 #define TEST_PLATFORM mPLATFORM_GBA
 #define RAM_BASE GBA_BASE_IWRAM
@@ -23,6 +24,10 @@
 #define RAM_BASE GB_BASE_WORKING_RAM_BANK0
 #else
 #error "Need a valid platform for testing"
+#endif
+
+#ifdef M_CORE_GB
+#include <mgba/internal/gb/gb.h>
 #endif
 
 struct mScriptTestLogger {
@@ -324,6 +329,74 @@ M_TEST_DEFINE(screenshot) {
 	TEST_PROGRAM("assert(im.height >= 144)");
 
 	free(buffer);
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+}
+
+M_TEST_DEFINE(readPalette) {
+	SETUP_LUA;
+	CREATE_CORE;
+
+	uint16_t* palette = 0;
+
+	switch(core->platform(core)) {
+#ifdef M_CORE_GBA
+		case mPLATFORM_GBA:
+			struct GBA* gba = (struct GBA*) core->board;
+			palette = gba->video.palette;
+			break;
+#endif
+#ifdef M_CORE_GB
+		case mPLATFORM_GB:
+			struct GB* gb = (struct GB*) core->board;
+			palette = gb->video.palette;
+			break;
+#endif
+		default:
+			break;
+	}
+
+	if (palette != 0) {
+		palette[0] = 123;
+
+		TEST_PROGRAM("assert(emu.readPalette)")
+		TEST_PROGRAM("assert(emu:readPalette(0) == 123)")
+	}
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+}
+
+M_TEST_DEFINE(writePalette) {
+	SETUP_LUA;
+	CREATE_CORE;
+
+	uint16_t* palette = 0;
+
+	switch(core->platform(core)) {
+#if(TEST_PLATFORM == mPLATFORM_GBA)
+		case mPLATFORM_GBA:
+			struct GBA* gba = (struct GBA*) core->board;
+			palette = gba->video.palette;
+			break;
+#endif
+#if(TEST_PLATFORM == mPLATFORM_GB)
+		case mPLATFORM_GB:
+			struct GB* gb = (struct GB*) core->board;
+			palette = gb->video.palette;
+			break;
+#endif
+		default:
+			break;
+	}
+
+	if (palette != 0) {
+		TEST_PROGRAM("assert(emu.writePalette)")
+		TEST_PROGRAM("emu:writePalette(0, 123)")
+
+		assert_true(palette[0] == 123);
+	}
+
 	mScriptContextDeinit(&context);
 	TEARDOWN_CORE;
 }
@@ -860,6 +933,8 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(memoryWrite),
 	cmocka_unit_test(logging),
 	cmocka_unit_test(screenshot),
+	cmocka_unit_test(readPalette),
+	cmocka_unit_test(writePalette),
 #ifdef ENABLE_DEBUGGERS
 #ifdef M_CORE_GBA
 	cmocka_unit_test(basicBreakpointGBA),
