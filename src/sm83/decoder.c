@@ -109,28 +109,28 @@ DEFINE_DECODER_SM83(LDSP_HL, \
 	info->op2.reg = SM83_REG_HL;)
 
 DEFINE_DECODER_SM83(LDAIOC, \
-	info->mnemonic = SM83_MN_LD; \
+	info->mnemonic = SM83_MN_LDH; \
 	info->op1.reg = SM83_REG_A; \
 	info->op2.reg = SM83_REG_C; \
 	info->op2.immediate = 0xFF00; \
 	info->op2.flags = SM83_OP_FLAG_MEMORY;)
 
 DEFINE_DECODER_SM83(LDIOCA, \
-	info->mnemonic = SM83_MN_LD; \
+	info->mnemonic = SM83_MN_LDH; \
 	info->op1.reg = SM83_REG_C; \
 	info->op1.immediate = 0xFF00; \
 	info->op1.flags = SM83_OP_FLAG_MEMORY; \
 	info->op2.reg = SM83_REG_A;)
 
 DEFINE_DECODER_SM83(LDAIO, \
-	info->mnemonic = SM83_MN_LD; \
+	info->mnemonic = SM83_MN_LDH; \
 	info->op1.reg = SM83_REG_A; \
 	info->op2.immediate = 0xFF00; \
 	info->op2.flags = SM83_OP_FLAG_MEMORY; \
 	return 1;)
 
 DEFINE_DECODER_SM83(LDIOA, \
-	info->mnemonic = SM83_MN_LD; \
+	info->mnemonic = SM83_MN_LDH; \
 	info->op1.immediate = 0xFF00; \
 	info->op1.flags = SM83_OP_FLAG_MEMORY; \
 	info->op2.reg = SM83_REG_A; \
@@ -475,6 +475,7 @@ static const char* _sm83MnemonicStrings[] = {
 	"jp",
 	"jr",
 	"ld",
+	"ldh",
 	"nop",
 	"or",
 	"pop",

@@ -62,6 +62,7 @@ Other fixes:
  - Qt: Fix crashes when exiting with OpenGL renderer
  - Qt: Fix hiding menu if fullscreen is entered by WM itself (fixes mgba.io/i/3713)
  - SDL: Use SDL_PumpEvents to ensure hotplug events are caught (fixes mgba.io/i/3406)
+ - SM83: Decode I/O-relative loads as ldh instead of ld (fixes mgba.io/i/3744)
 Misc:
  - 3DS: Change title ID to avoid conflict with commercial title (fixes mgba.io/i/3023)
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
