@@ -174,6 +174,8 @@ const char* ApplicationUpdater::platform() {
 #endif
 #elif defined(Q_OS_LINUX) && defined(__x86_64__)
 	return "appimage-x64";
+#elif defined(Q_OS_LINUX) && defined(__aarch64__)
+	return "appimage-arm64";
 #else
 	// Return one that will be up to date, but we can't download
 	return "win64";
