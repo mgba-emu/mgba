@@ -61,6 +61,7 @@ Other fixes:
  - Qt: Fix unexpected mute when window becomes focused while fast-forwarding
  - Qt: Fix crashes when exiting with OpenGL renderer
  - Qt: Fix hiding menu if fullscreen is entered by WM itself (fixes mgba.io/i/3713)
+ - Qt: Fix updating AppImage on Linux (fixes mgba.io/i/3742)
  - SDL: Use SDL_PumpEvents to ensure hotplug events are caught (fixes mgba.io/i/3406)
  - SM83: Decode I/O-relative loads as ldh instead of ld (fixes mgba.io/i/3744)
 Misc:

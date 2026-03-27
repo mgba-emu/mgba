@@ -53,7 +53,11 @@ ApplicationUpdater::ApplicationUpdater(ConfigController* config, QObject* parent
 	});
 
 	connect(this, &AbstractUpdater::updateDone, this, [this, config]() {
+#ifndef Q_OS_LINUX
 		QByteArray exe = GBAApp::applicationFilePath().toUtf8();
+#else
+		QByteArray exe = qgetenv("APPIMAGE");
+#endif
 		QByteArray path = updateInfo().url.path().toUtf8();
 		mUpdateRegister(config->config(), exe.constData(), path.constData());
 		config->write();
