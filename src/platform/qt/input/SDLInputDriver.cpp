@@ -8,6 +8,8 @@
 #include "ConfigController.h"
 #include "InputController.h"
 
+#include <QSet>
+
 #include <algorithm>
 
 using namespace QGBA;
@@ -183,24 +185,21 @@ void SDLInputDriver::updateGamepads() {
 	if (m_config) {
 		mSDLUpdateJoysticks(&s_sdlEvents, m_config->input());
 	}
+
+	QSet<size_t> knownGamepads;
 	for (int i = 0; i < m_gamepads.size(); ++i) {
-		if (m_gamepads.at(i)->updateIndex()) {
+		auto& gamepad = m_gamepads.at(i);
+		if (gamepad->updateIndex()) {
+			knownGamepads.insert(gamepad->m_index);
 			continue;
 		}
 		m_gamepads.removeAt(i);
 		--i;
 	}
-	std::sort(m_gamepads.begin(), m_gamepads.end(), [](const auto& a, const auto& b) {
-		return a->m_index < b->m_index;
-	});
 
-	for (size_t i = 0, j = 0; i < SDL_JoystickListSize(&s_sdlEvents.joysticks); ++i) {
-		if ((ssize_t) j < m_gamepads.size()) {
-			std::shared_ptr<SDLGamepad> gamepad = m_gamepads.at(j);
-			if (gamepad->m_index == i) {
-				++j;
-				continue;
-			}
+	for (size_t i = 0; i < SDL_JoystickListSize(&s_sdlEvents.joysticks); ++i) {
+		if (knownGamepads.contains(i)) {
+			continue;
 		}
 		// Can't use make_shared here due to friend restrictions
 		m_gamepads.append(std::shared_ptr<SDLGamepad>(new SDLGamepad(this, i)));
