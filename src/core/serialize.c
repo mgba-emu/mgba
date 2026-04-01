@@ -153,15 +153,7 @@ bool mStateExtdataDeserialize(struct mStateExtdata* extdata, struct VFile* vf) {
 }
 
 #ifdef USE_PNG
-static bool _savePNGState(struct mCore* core, struct VFile* vf, struct mStateExtdata* extdata) {
-	size_t stride;
-	const void* pixels = 0;
-
-	core->getPixels(core, &pixels, &stride);
-	if (!pixels) {
-		return false;
-	}
-
+static bool _savePNGState(struct mCore* core, struct VFile* vf, struct mStateExtdata* extdata, const void* pixels, size_t stride) {
 	size_t stateSize = core->stateSize(core);
 	void* state = anonymousMemoryMap(stateSize);
 	if (!state) {
@@ -459,9 +451,13 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 		}
 	}
 #ifdef USE_PNG
-	if (!(flags & SAVESTATE_SCREENSHOT)) {
-#else
-	UNUSED(flags);
+	size_t stride;
+	const void* pixels = NULL;
+	if (flags & SAVESTATE_SCREENSHOT) {
+		core->getPixels(core, &pixels, &stride);
+	}
+
+	if (!pixels) {
 #endif
 		vf->truncate(vf, stateSize);
 		void* state = vf->map(vf, stateSize, MAP_WRITE);
@@ -482,9 +478,8 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 		}
 		return true;
 #ifdef USE_PNG
-	}
-	else {
-		bool success = _savePNGState(core, vf, &extdata);
+	} else {
+		bool success = _savePNGState(core, vf, &extdata, pixels, stride);
 		mStateExtdataDeinit(&extdata);
 		if (cheatVf) {
 			cheatVf->close(cheatVf);
