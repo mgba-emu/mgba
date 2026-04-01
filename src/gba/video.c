@@ -21,6 +21,9 @@ mLOG_DEFINE_CATEGORY(GBA_VIDEO, "GBA Video", "gba.video");
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer);
+static uint32_t GBAVideoDummyRendererId(const struct GBAVideoRenderer* renderer);
+static bool GBAVideoDummyRendererLoadState(struct GBAVideoRenderer* renderer, const void* state, size_t size);
+static void GBAVideoDummyRendererSaveState(struct GBAVideoRenderer* renderer, void** state, size_t* size);
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoDummyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address);
 static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
@@ -103,6 +106,9 @@ void GBAVideoDummyRendererCreate(struct GBAVideoRenderer* renderer) {
 		.init = GBAVideoDummyRendererInit,
 		.reset = GBAVideoDummyRendererReset,
 		.deinit = GBAVideoDummyRendererDeinit,
+		.rendererId = GBAVideoDummyRendererId,
+		.loadState = GBAVideoDummyRendererLoadState,
+		.saveState = GBAVideoDummyRendererSaveState,
 		.writeVideoRegister = GBAVideoDummyRendererWriteVideoRegister,
 		.writeVRAM = GBAVideoDummyRendererWriteVRAM,
 		.writePalette = GBAVideoDummyRendererWritePalette,
@@ -323,6 +329,23 @@ static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer) {
 static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer) {
 	UNUSED(renderer);
 	// Nothing to do
+}
+
+static uint32_t GBAVideoDummyRendererId(const struct GBAVideoRenderer* renderer) {
+	UNUSED(renderer);
+	return 0xDEADBEEF;
+}
+
+static bool GBAVideoDummyRendererLoadState(struct GBAVideoRenderer* renderer, const void* state, size_t size) {
+	UNUSED(renderer);
+	UNUSED(state);
+	return size == 0;
+}
+
+static void GBAVideoDummyRendererSaveState(struct GBAVideoRenderer* renderer, void** state, size_t* size) {
+	UNUSED(renderer);
+	*state = NULL;
+	*size = 0;
 }
 
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer) {
