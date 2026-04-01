@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/arm/arm.h>
+#include <mgba/internal/gba/gba.h>
 
 #include <mgba/internal/arm/isa-arm.h>
 #include <mgba/internal/arm/isa-inlines.h>
@@ -250,6 +251,10 @@ void ARMRunLoop(struct ARMCore* cpu) {
 			ARMStep(cpu);
 		}
 	}
+	struct GBA* gba = (struct GBA*) cpu->master;
+	uint32_t pc = cpu->gprs[ARM_PC];
+	bool thumb = (cpu->executionMode == MODE_THUMB);
+	mCALLBACKS_INVOKE_IE(gba, pc, 0, thumb);
 	cpu->irqh.processEvents(cpu);
 }
 

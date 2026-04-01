@@ -209,6 +209,21 @@ struct mScriptCoreAdapter {
 	struct mScriptValue* luminanceCb;
 	struct GBALuminanceSource* oldLuminance;
 #endif
+	struct mScriptValue* memoryCallback;
+	bool memoryTraceEnabled;
+	struct mScriptValue* instructionCallback;
+	bool instructionTraceEnabled;
+	uint32_t transactionLogCapacity;
+	uint32_t transactionLogCount;
+	struct {
+		uint32_t cycle;
+		uint8_t type;
+		uint8_t size;
+		uint32_t address;
+		uint32_t value;
+	}* transactionLog;
+	struct mScriptValue* registerCallbacks[16];
+	struct mScriptValue* interruptCallback;
 };
 
 #define CALCULATE_SEGMENT_INFO \
@@ -1167,6 +1182,92 @@ static void _mScriptCoreAdapterWrite32(struct mScriptCoreAdapter* adapter, uint3
 #endif
 }
 
+static void _mScriptCoreAdapterTraceMemory(struct mScriptCoreAdapter* adapter, bool enabled, struct mScriptValue* callback) {
+	if (adapter->memoryCallback) {
+		mScriptValueDeref(adapter->memoryCallback);
+		adapter->memoryCallback = NULL;
+	}
+	adapter->memoryTraceEnabled = enabled;
+	if (enabled && callback) {
+		adapter->memoryCallback = callback;
+		mScriptValueRef(callback);
+	}
+}
+
+static void _mScriptCoreAdapterTraceInstructions(struct mScriptCoreAdapter* adapter, bool enabled, struct mScriptValue* callback) {
+	if (adapter->instructionCallback) {
+		mScriptValueDeref(adapter->instructionCallback);
+		adapter->instructionCallback = NULL;
+	}
+	adapter->instructionTraceEnabled = enabled;
+	if (enabled && callback) {
+		adapter->instructionCallback = callback;
+		mScriptValueRef(callback);
+	}
+}
+
+static void _mScriptCoreAdapterWatchRegister(struct mScriptCoreAdapter* adapter, const char* regName, struct mScriptValue* callback) {
+	static const char* const regNames[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12", "sp", "lr", "pc"};
+	int regIdx = -1;
+	for (int i = 0; i < 16; i++) {
+		if (strcmp(regName, regNames[i]) == 0) {
+			regIdx = i;
+			break;
+		}
+	}
+
+	if (regIdx >= 0) {
+		if (adapter->registerCallbacks[regIdx]) {
+			mScriptValueDeref(adapter->registerCallbacks[regIdx]);
+			adapter->registerCallbacks[regIdx] = NULL;
+		}
+		if (callback) {
+			adapter->registerCallbacks[regIdx] = callback;
+			mScriptValueRef(callback);
+		}
+	}
+}
+
+static void _mScriptCoreAdapterTraceInterrupts(struct mScriptCoreAdapter* adapter, bool enabled, struct mScriptValue* callback) {
+	if (adapter->interruptCallback) {
+		mScriptValueDeref(adapter->interruptCallback);
+		adapter->interruptCallback = NULL;
+	}
+	if (enabled && callback) {
+		adapter->interruptCallback = callback;
+		mScriptValueRef(callback);
+	}
+}
+
+static struct mScriptValue* _mScriptCoreAdapterGetBusTransactionLog(struct mScriptCoreAdapter* adapter) {
+	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
+	mScriptListInit(result->value.list, adapter->transactionLogCount);
+	uint32_t i;
+	for (i = 0; i < adapter->transactionLogCount; i++) {
+		struct mScriptValue* entry = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+		mScriptTableInit(entry->value.table, 4);
+		struct mScriptValue key, val;
+		key = mSCRIPT_MAKE_CHARP("cycle");
+		val = mSCRIPT_MAKE_U32(adapter->transactionLog[i].cycle);
+		mScriptTableInsert(entry->value.table, &key, &val);
+		key = mSCRIPT_MAKE_CHARP("type");
+		val = mSCRIPT_MAKE_U32(adapter->transactionLog[i].type);
+		mScriptTableInsert(entry->value.table, &key, &val);
+		key = mSCRIPT_MAKE_CHARP("address");
+		val = mSCRIPT_MAKE_U32(adapter->transactionLog[i].address);
+		mScriptTableInsert(entry->value.table, &key, &val);
+		key = mSCRIPT_MAKE_CHARP("value");
+		val = mSCRIPT_MAKE_U32(adapter->transactionLog[i].value);
+		mScriptTableInsert(entry->value.table, &key, &val);
+		*mScriptListAppend(result->value.list) = entry;
+	}
+	return result;
+}
+
+static void _mScriptCoreAdapterClearBusTransactionLog(struct mScriptCoreAdapter* adapter) {
+	adapter->transactionLogCount = 0;
+}
+
 mSCRIPT_DECLARE_STRUCT(mScriptCoreAdapter);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, W(mCore), _get, _mScriptCoreAdapterGet, 1, CHARP, name);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, _deinit, _mScriptCoreAdapterDeinit, 0);
@@ -1181,6 +1282,13 @@ mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, WSTR, readRange, _mScriptCoreA
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, write8, _mScriptCoreAdapterWrite8, 2, U32, address, U8, value);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, write16, _mScriptCoreAdapterWrite16, 2, U32, address, U16, value);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, write32, _mScriptCoreAdapterWrite32, 2, U32, address, U32, value);
+
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, traceMemory, _mScriptCoreAdapterTraceMemory, 2, BOOL, enabled, WRAPPER, callback);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, traceInstructions, _mScriptCoreAdapterTraceInstructions, 2, BOOL, enabled, WRAPPER, callback);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, watchRegister, _mScriptCoreAdapterWatchRegister, 2, CHARP, regName, WRAPPER, callback);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, traceInterrupts, _mScriptCoreAdapterTraceInterrupts, 2, BOOL, enabled, WRAPPER, callback);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, WTABLE, getBusTransactionLog, _mScriptCoreAdapterGetBusTransactionLog, 0);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, clearBusTransactionLog, _mScriptCoreAdapterClearBusTransactionLog, 0);
 
 #ifdef ENABLE_DEBUGGERS
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, U64, currentCycle, _mScriptCoreAdapterCurrentCycle, 0);
@@ -1248,6 +1356,19 @@ mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, write8)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, write16)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, write32)
+	mSCRIPT_DEFINE_DOCSTRING("Enable or disable memory access tracing. The callback receives a table with keys: type (string), address (u32), size (u32), value (u32)")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, traceMemory)
+	mSCRIPT_DEFINE_DOCSTRING("Enable or disable instruction tracing. The callback receives a table with keys: pc (u32), opcode (u32), thumb (bool)")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, traceInstructions)
+	mSCRIPT_DEFINE_DOCSTRING("Watch a CPU register for changes. The callback receives old and new values")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, watchRegister)
+	mSCRIPT_DEFINE_DOCSTRING("Enable or disable interrupt tracing")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, traceInterrupts)
+	mSCRIPT_DEFINE_DOCSTRING("Get the bus transaction log as a table of tables")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, getBusTransactionLog)
+	mSCRIPT_DEFINE_DOCSTRING("Clear the bus transaction log")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, clearBusTransactionLog)
+
 #ifdef ENABLE_DEBUGGERS
 	mSCRIPT_DEFINE_DOCSTRING("Get the current execution cycle")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, currentCycle)

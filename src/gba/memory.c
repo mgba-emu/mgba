@@ -753,6 +753,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		}
 		*cycleCounter += wait;
 	}
+	mCALLBACKS_INVOKE_MEM(gba, address, value, false);
 	return value;
 }
 
@@ -1103,6 +1104,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		}
 		*cycleCounter += wait;
 	}
+	mCALLBACKS_INVOKE_MEM(gba, address, value, true);
 }
 
 uint32_t GBAView32(struct ARMCore* cpu, uint32_t address) {

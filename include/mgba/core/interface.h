@@ -23,6 +23,26 @@ CXX_GUARD_START
 		} \
 	} while (0);
 
+#define mCALLBACKS_INVOKE_IE(BOARD, PC, OPCODE, THUMB) do {\
+		size_t c; \
+		for (c = 0; c < mCoreCallbacksListSize(&(BOARD)->coreCallbacks); ++c) { \
+			const struct mCoreCallbacks* callbacks = mCoreCallbacksListGetConstPointer(&(BOARD)->coreCallbacks, c); \
+			if (callbacks->instructionExecuted) { \
+				callbacks->instructionExecuted(callbacks->context, PC, OPCODE, THUMB); \
+			} \
+		} \
+	} while (0);
+
+#define mCALLBACKS_INVOKE_MEM(BOARD, ADDR, VALUE, WRITE) do {\
+		size_t c; \
+		for (c = 0; c < mCoreCallbacksListSize(&(BOARD)->coreCallbacks); ++c) { \
+			const struct mCoreCallbacks* callbacks = mCoreCallbacksListGetConstPointer(&(BOARD)->coreCallbacks, c); \
+			if (callbacks->memoryAccessed) { \
+				callbacks->memoryAccessed(callbacks->context, ADDR, VALUE, WRITE); \
+			} \
+		} \
+	} while (0);
+
 struct mCore;
 struct mStateExtdataItem;
 
@@ -51,6 +71,8 @@ struct mCoreCallbacks {
 	void (*savedataUpdated)(void* context);
 	void (*alarm)(void* context);
 	void (*memoryBlocksChanged)(void* context);
+	void (*instructionExecuted)(void* context, uint32_t pc, uint32_t opcode, bool thumb);
+	void (*memoryAccessed)(void* context, uint32_t addr, uint32_t value, bool write);
 };
 
 DECLARE_VECTOR(mCoreCallbacksList, struct mCoreCallbacks);
