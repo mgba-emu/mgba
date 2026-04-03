@@ -19,6 +19,7 @@ namespace QGBA {
 
 class ConfigController;
 class CoreController;
+class Gamepad;
 
 class ReportView : public QDialog {
 Q_OBJECT
@@ -41,7 +42,8 @@ protected:
 private:
 	void addCpuInfo(QStringList&);
 	void addGLInfo(QStringList&);
-	void addGamepadInfo(QStringList&);
+	void addControlsInfo(QStringList&);
+	void addGamepadInfo(QStringList&, const Gamepad*);
 	void addROMInfo(QStringList&, CoreController*);
 	void addScreenInfo(QStringList&, const QScreen*);
 	void addBios(QStringList&, const QString& path, const QString& name);
