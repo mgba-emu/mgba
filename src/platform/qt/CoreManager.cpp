@@ -178,7 +178,6 @@ CoreController* CoreManager::loadBIOS(int platform, const QString& path) {
 	if (m_multiplayer) {
 		cc->setMultiplayerController(m_multiplayer);
 	}
-	cc->setPath(path, info.dir().canonicalPath());
 	emit coreLoaded(cc);
 	return cc;
 }
