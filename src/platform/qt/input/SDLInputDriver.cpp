@@ -295,7 +295,7 @@ SDLGamepad::SDLGamepad(SDLInputDriver* driver, int index, QObject* parent)
 #endif
 }
 
-QList<bool> SDLGamepad::currentButtons() {
+QList<bool> SDLGamepad::currentButtons() const {
 	QReadLocker locker(&s_eventsRwLock);
 	if (!verify()) {
 		return {};
@@ -319,7 +319,7 @@ QList<bool> SDLGamepad::currentButtons() {
 	return buttons;
 }
 
-QList<int16_t> SDLGamepad::currentAxes() {
+QList<int16_t> SDLGamepad::currentAxes() const {
 	QReadLocker locker(&s_eventsRwLock);
 	if (!verify()) {
 		return {};
@@ -343,7 +343,7 @@ QList<int16_t> SDLGamepad::currentAxes() {
 	return axes;
 }
 
-QList<GamepadHatEvent::Direction> SDLGamepad::currentHats() {
+QList<GamepadHatEvent::Direction> SDLGamepad::currentHats() const {
 	QReadLocker locker(&s_eventsRwLock);
 	if (!verify()) {
 		return {};

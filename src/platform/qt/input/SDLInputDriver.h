@@ -90,9 +90,9 @@ class SDLGamepad : public Gamepad {
 Q_OBJECT
 
 public:
-	QList<bool> currentButtons() override;
-	QList<int16_t> currentAxes() override;
-	QList<GamepadHatEvent::Direction> currentHats() override;
+	QList<bool> currentButtons() const override;
+	QList<int16_t> currentAxes() const override;
+	QList<GamepadHatEvent::Direction> currentHats() const override;
 
 	int buttonCount() const override;
 	int axisCount() const override;
