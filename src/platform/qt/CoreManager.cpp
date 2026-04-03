@@ -5,9 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "CoreManager.h"
 
+#include <QMessageBox>
+
+#include "GBAApp.h"
 #include "CoreController.h"
 #include "LogController.h"
 #include "VFileDevice.h"
+#include "utils.h"
 
 #include <QDir>
 
@@ -71,16 +75,41 @@ CoreController* CoreManager::loadGame(const QString& path) {
 		}
 		archive->close(archive);
 	}
-	QDir dir(info.dir());
-	QDir tmpdir(QDir::tempPath());
-	if (info.canonicalFilePath().startsWith(tmpdir.canonicalPath())) {
-		LOG(QT, ERROR) << tr("The ROM appears to be loaded from a temporary directory. This will likely lead to data loss (e.g. saves, screenshots, etc.) if you continue. "
-			"Please put the ROM in a more suitable location and then re-open it. If you are loading the ROM from an archive, please extract the archive first.");
-	}
 	if (!vf) {
 		// Open bare file
 		vf = VFileOpen(info.canonicalFilePath().toUtf8().constData(), O_RDONLY);
 	}
+
+	if (!vf) {
+		return nullptr;
+	}
+
+	QDir dir(info.dir());
+	QDir tmpdir(QDir::tempPath());
+	if (info.canonicalFilePath().startsWith(tmpdir.canonicalPath())) {
+		bool bad = false;
+		if (m_config) {
+			mCoreOptions opts;
+			mCoreConfigMap(m_config, &opts);
+			bad = bad || !opts.savegamePath;
+			bad = bad || !opts.savestatePath;
+			bad = bad || !opts.screenshotPath;
+			bad = bad || !opts.cheatsPath;
+			mCoreConfigFreeOpts(&opts);
+		} else {
+			bad = true;
+		}
+		if (bad) {
+			QString newPath = saveFailed(vf, tr("Temporary file loaded"),
+			                             tr("The ROM appears to be loaded from a temporary directory, perhaps automatically extracted from an archive (e.g. a zip file)."),
+			                             "*." + info.suffix());
+			if (!newPath.isEmpty()) {
+				vf->close(vf);
+				return loadGame(newPath);
+			}
+		}
+	}
+
 	return loadGame(vf, info.fileName(), dir.canonicalPath());
 }
 
@@ -119,7 +148,15 @@ CoreController* CoreManager::loadGame(VFile* vf, const QString& path, const QStr
 	bytes = info.dir().canonicalPath().toUtf8();
 	mDirectorySetAttachBase(&core->dirs, VDirOpen(bytes.constData()));
 	if (!mCoreAutoloadSave(core)) {
-		LOG(QT, ERROR) << tr("Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).");
+		QString filter = romFilters(false, core->platform(core), true);
+		QString newPath = saveFailed(vf, tr("Could not open save file"),
+		                             tr("Failed to open save file; in-game saves cannot be updated."),
+		                             filter);
+		if (!newPath.isEmpty()) {
+			mCoreConfigDeinit(&core->config);
+			core->deinit(core);
+			return loadGame(newPath);
+		}
 	}
 	mCoreAutoloadCheats(core);
 
@@ -180,4 +217,62 @@ CoreController* CoreManager::loadBIOS(int platform, const QString& path) {
 	}
 	emit coreLoaded(cc);
 	return cc;
+}
+
+QString CoreManager::saveFailed(VFile* vf, const QString& title, const QString& summary, const QString& filter) {
+	int result = QMessageBox::critical(nullptr, title,
+		summary + "\n\n" + tr("Would you like to copy the ROM to a different location? If you don't, this will likely lead to data loss (e.g. saves, screenshots, etc.)."),
+		QMessageBox::Ok | QMessageBox::Ignore,QMessageBox::Ok);
+	if (result == QMessageBox::Ignore) {
+		return QString();
+	}
+
+	auto retry = [this]() {
+		int result = QMessageBox::critical(nullptr, tr("Copy failed"), tr("Failed to copy ROM. Do you want to try again?"),
+			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+		return result == QMessageBox::Yes;
+	};
+
+	bool ok = true;
+	while (ok) {
+		QString newPath = GBAApp::app()->getSaveFileName(nullptr, tr("New ROM location"), filter);
+		if (newPath.isEmpty()) {
+			return QString();
+		}
+
+		QFile newFile(newPath);
+		if (!newFile.open(QIODeviceBase::WriteOnly | QIODeviceBase::Truncate)) {
+			if (!retry()) {
+				ok = false;
+			}
+			continue;
+		}
+
+		vf->seek(vf, 0, SEEK_SET);
+		char buffer[4096];
+		while (ok) {
+			ssize_t read = vf->read(vf, buffer, sizeof(buffer));
+			if (read < 0) {
+				ok = false;
+			}
+			if (read <= 0) {
+				break;
+			}
+
+			qint64 written = newFile.write(buffer, read);
+			if (written < read) {
+				newFile.remove();
+				if (!retry()) {
+					ok = false;
+				}
+				break;
+			}
+		}
+
+		if (ok) {
+			return newPath;
+		}
+	}
+
+	return QString();
 }
