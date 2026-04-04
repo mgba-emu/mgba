@@ -227,7 +227,7 @@ QString CoreManager::saveFailed(VFile* vf, const QString& title, const QString& 
 		return QString();
 	}
 
-	auto retry = [this]() {
+	auto retry = []() {
 		int result = QMessageBox::critical(nullptr, tr("Copy failed"), tr("Failed to copy ROM. Do you want to try again?"),
 			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
 		return result == QMessageBox::Yes;
@@ -241,7 +241,7 @@ QString CoreManager::saveFailed(VFile* vf, const QString& title, const QString& 
 		}
 
 		QFile newFile(newPath);
-		if (!newFile.open(QIODeviceBase::WriteOnly | QIODeviceBase::Truncate)) {
+		if (!newFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
 			if (!retry()) {
 				ok = false;
 			}
