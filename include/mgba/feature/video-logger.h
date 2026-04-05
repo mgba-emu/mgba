@@ -27,6 +27,7 @@ enum mVideoLoggerDirtyType {
 	DIRTY_FRAME,
 	DIRTY_RANGE,
 	DIRTY_BUFFER,
+	DIRTY_STAGE_OAM,
 };
 
 enum mVideoLoggerEvent {
@@ -102,6 +103,7 @@ void mVideoLoggerRendererWriteVideoRegister(struct mVideoLogger* logger, uint32_
 void mVideoLoggerRendererWriteVRAM(struct mVideoLogger* logger, uint32_t address);
 void mVideoLoggerRendererWritePalette(struct mVideoLogger* logger, uint32_t address, uint16_t value);
 void mVideoLoggerRendererWriteOAM(struct mVideoLogger* logger, uint32_t address, uint16_t value);
+void mVideoLoggerRendererStageOAM(struct mVideoLogger* logger);
 
 void mVideoLoggerWriteBuffer(struct mVideoLogger* logger, uint32_t bufferId, uint32_t offset, uint32_t length, const void* data);
 

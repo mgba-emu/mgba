@@ -147,6 +147,7 @@ struct GBAVideoGLRenderer {
 
 	int oamMax;
 	bool oamDirty;
+	union GBAOAM oamStaged;
 	struct GBAVideoRendererSprite sprites[128];
 	int16_t objOffsetX;
 	int16_t objOffsetY;

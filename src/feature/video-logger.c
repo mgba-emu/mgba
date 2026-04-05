@@ -211,6 +211,16 @@ void mVideoLoggerRendererWriteOAM(struct mVideoLogger* logger, uint32_t address,
 	logger->writeData(logger, &dirty, sizeof(dirty));
 }
 
+void mVideoLoggerRendererStageOAM(struct mVideoLogger* logger) {
+	struct mVideoLoggerDirtyInfo dirty = {
+		DIRTY_STAGE_OAM,
+		0,
+		0,
+		0xDEADBEEF,
+	};
+	logger->writeData(logger, &dirty, sizeof(dirty));
+}
+
 static void _flushVRAM(struct mVideoLogger* logger) {
 	size_t i;
 	for (i = 0; i < _roundUp(logger->vramSize, 17); ++i) {
@@ -323,6 +333,7 @@ bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block) {
 		case DIRTY_FRAME:
 		case DIRTY_RANGE:
 		case DIRTY_BUFFER:
+		case DIRTY_STAGE_OAM:
 			if (!logger->parsePacket(logger, &item)) {
 				return true;
 			}

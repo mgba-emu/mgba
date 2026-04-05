@@ -23,6 +23,7 @@ static bool GBAVideoGLRendererLoadState(struct GBAVideoRenderer* renderer, const
 static void GBAVideoGLRendererSaveState(struct GBAVideoRenderer* renderer, void** state, size_t* size);
 static void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address);
 static void GBAVideoGLRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
+static void GBAVideoGLRendererSubmitOAM(struct GBAVideoRenderer* renderer);
 static void GBAVideoGLRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
@@ -671,6 +672,7 @@ void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer) {
 	renderer->d.writeVideoRegister = GBAVideoGLRendererWriteVideoRegister;
 	renderer->d.writeVRAM = GBAVideoGLRendererWriteVRAM;
 	renderer->d.writeOAM = GBAVideoGLRendererWriteOAM;
+	renderer->d.stageOAM = GBAVideoGLRendererSubmitOAM;
 	renderer->d.writePalette = GBAVideoGLRendererWritePalette;
 	renderer->d.drawScanline = GBAVideoGLRendererDrawScanline;
 	renderer->d.finishFrame = GBAVideoGLRendererFinishFrame;
@@ -994,6 +996,12 @@ void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t add
 void GBAVideoGLRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
 	UNUSED(oam);
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
+	glRenderer->oamDirty = true;
+}
+
+void GBAVideoGLRendererSubmitOAM(struct GBAVideoRenderer* renderer) {
+	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
+	memcpy(&glRenderer->oamStaged, renderer->oam, sizeof(glRenderer->oamStaged));
 	glRenderer->oamDirty = true;
 }
 
@@ -1432,7 +1440,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 
 	if (glRenderer->oamDirty) {
-		glRenderer->oamMax = GBAVideoRendererCleanOAM(glRenderer->d.oam->obj, glRenderer->sprites, 0);
+		glRenderer->oamMax = GBAVideoRendererCleanOAM(glRenderer->oamStaged.obj, glRenderer->sprites, 0);
 		glRenderer->oamDirty = false;
 	}
 

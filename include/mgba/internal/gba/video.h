@@ -192,6 +192,7 @@ struct GBAVideoRenderer {
 	void (*writeVRAM)(struct GBAVideoRenderer* renderer, uint32_t address);
 	void (*writePalette)(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 	void (*writeOAM)(struct GBAVideoRenderer* renderer, uint32_t oam);
+	void (*stageOAM)(struct GBAVideoRenderer* renderer);
 	void (*drawScanline)(struct GBAVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBAVideoRenderer* renderer);
 
