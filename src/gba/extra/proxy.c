@@ -20,7 +20,7 @@ static uint16_t GBAVideoProxyRendererWriteVideoRegister(struct GBAVideoRenderer*
 static void GBAVideoProxyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address);
 static void GBAVideoProxyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoProxyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
-static void GBAVideoProxyRendererSubmitOAM(struct GBAVideoRenderer* renderer);
+static void GBAVideoProxyRendererStageOAM(struct GBAVideoRenderer* renderer);
 static void GBAVideoProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
 static void GBAVideoProxyRendererFinishFrame(struct GBAVideoRenderer* renderer);
 static void GBAVideoProxyRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels);
@@ -41,7 +41,7 @@ void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct 
 	renderer->d.writeVideoRegister = GBAVideoProxyRendererWriteVideoRegister;
 	renderer->d.writeVRAM = GBAVideoProxyRendererWriteVRAM;
 	renderer->d.writeOAM = GBAVideoProxyRendererWriteOAM;
-	renderer->d.stageOAM = GBAVideoProxyRendererSubmitOAM;
+	renderer->d.stageOAM = GBAVideoProxyRendererStageOAM;
 	renderer->d.writePalette = GBAVideoProxyRendererWritePalette;
 	renderer->d.drawScanline = GBAVideoProxyRendererDrawScanline;
 	renderer->d.finishFrame = GBAVideoProxyRendererFinishFrame;
@@ -363,7 +363,7 @@ void GBAVideoProxyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t o
 	mVideoLoggerRendererWriteOAM(proxyRenderer->logger, oam, proxyRenderer->d.oam->raw[oam]);
 }
 
-void GBAVideoProxyRendererSubmitOAM(struct GBAVideoRenderer* renderer) {
+void GBAVideoProxyRendererStageOAM(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
 	if (!proxyRenderer->logger->block) {
 		proxyRenderer->backend->stageOAM(proxyRenderer->backend);

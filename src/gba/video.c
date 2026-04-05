@@ -28,7 +28,7 @@ static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer*
 static void GBAVideoDummyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address);
 static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoDummyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
-static void GBAVideoDummyRendererSubmitOAM(struct GBAVideoRenderer* renderer);
+static void GBAVideoDummyRendererStageOAM(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
 static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels);
@@ -114,7 +114,7 @@ void GBAVideoDummyRendererCreate(struct GBAVideoRenderer* renderer) {
 		.writeVRAM = GBAVideoDummyRendererWriteVRAM,
 		.writePalette = GBAVideoDummyRendererWritePalette,
 		.writeOAM = GBAVideoDummyRendererWriteOAM,
-		.stageOAM = GBAVideoDummyRendererSubmitOAM,
+		.stageOAM = GBAVideoDummyRendererStageOAM,
 		.drawScanline = GBAVideoDummyRendererDrawScanline,
 		.finishFrame = GBAVideoDummyRendererFinishFrame,
 		.getPixels = GBAVideoDummyRendererGetPixels,
@@ -421,7 +421,7 @@ static void GBAVideoDummyRendererWriteOAM(struct GBAVideoRenderer* renderer, uin
 	// Nothing to do
 }
 
-static void GBAVideoDummyRendererSubmitOAM(struct GBAVideoRenderer* renderer) {
+static void GBAVideoDummyRendererStageOAM(struct GBAVideoRenderer* renderer) {
 	UNUSED(renderer);
 	// Nothing to do
 }

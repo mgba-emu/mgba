@@ -24,7 +24,7 @@ static bool GBAVideoSoftwareRendererLoadState(struct GBAVideoRenderer* renderer,
 static void GBAVideoSoftwareRendererSaveState(struct GBAVideoRenderer* renderer, void** state, size_t* size);
 static void GBAVideoSoftwareRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address);
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
-static void GBAVideoSoftwareRendererSubmitOAM(struct GBAVideoRenderer* renderer);
+static void GBAVideoSoftwareRendererStageOAM(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
@@ -62,7 +62,7 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.writeVideoRegister = GBAVideoSoftwareRendererWriteVideoRegister;
 	renderer->d.writeVRAM = GBAVideoSoftwareRendererWriteVRAM;
 	renderer->d.writeOAM = GBAVideoSoftwareRendererWriteOAM;
-	renderer->d.stageOAM = GBAVideoSoftwareRendererSubmitOAM;
+	renderer->d.stageOAM = GBAVideoSoftwareRendererStageOAM;
 	renderer->d.writePalette = GBAVideoSoftwareRendererWritePalette;
 	renderer->d.drawScanline = GBAVideoSoftwareRendererDrawScanline;
 	renderer->d.finishFrame = GBAVideoSoftwareRendererFinishFrame;
@@ -422,7 +422,7 @@ static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, 
 	memset(softwareRenderer->scanlineDirty, 0xFFFFFFFF, sizeof(softwareRenderer->scanlineDirty));
 }
 
-static void GBAVideoSoftwareRendererSubmitOAM(struct GBAVideoRenderer* renderer) {
+static void GBAVideoSoftwareRendererStageOAM(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	memcpy(&softwareRenderer->oamStaged, renderer->oam, sizeof(softwareRenderer->oamStaged));
 	softwareRenderer->oamDirty = 1;
