@@ -1046,23 +1046,12 @@ static void _stageSpriteLayer(struct GBAVideoSoftwareRenderer* softwareRenderer,
 
 	softwareRenderer->forceTarget1 = false;
 
-	int savedNWindows = softwareRenderer->nWindows;
-	struct Window savedWindows[MAX_WINDOW];
-	memcpy(savedWindows, softwareRenderer->windows, sizeof(savedWindows));
-	struct WindowControl savedCurrentWindow = softwareRenderer->currentWindow;
-	softwareRenderer->nWindows = 1;
-	softwareRenderer->windows[0].endX = GBA_VIDEO_HORIZONTAL_PIXELS;
-	softwareRenderer->windows[0].control.packed = 0xFF;
-
 	int32_t savedCycles = softwareRenderer->spriteCyclesRemaining;
 	softwareRenderer->spriteCyclesRemaining = GBARegisterDISPCNTIsHblankIntervalFree(softwareRenderer->dispcnt) ? OBJ_HBLANK_FREE_LENGTH : OBJ_LENGTH;
 
 	softwareRenderer->spriteLayerMask = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
 
 	softwareRenderer->spriteCyclesRemaining = savedCycles;
-	softwareRenderer->nWindows = savedNWindows;
-	memcpy(softwareRenderer->windows, savedWindows, sizeof(savedWindows));
-	softwareRenderer->currentWindow = savedCurrentWindow;
 }
 
 int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRenderer* renderer, int y) {
