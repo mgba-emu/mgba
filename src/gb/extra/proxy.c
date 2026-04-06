@@ -200,8 +200,6 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 			break;
 		}
 		break;
-	case DIRTY_STAGE_OAM:
-		break; // GB (probably) does not have staged OAM updates
 	case DIRTY_FLUSH:
 		return false;
 	default:
