@@ -138,6 +138,9 @@ struct GBAVideoSoftwareRenderer {
 	int16_t objOffsetX;
 	int16_t objOffsetY;
 
+	uint32_t stagedSpriteLayer[GBA_VIDEO_HORIZONTAL_PIXELS];
+	int stagedSpriteLayerMask;
+
 	uint32_t scanlineDirty[5];
 	uint16_t nextIo[GBA_REG(SOUND1CNT_LO)];
 	struct ScanlineCache {
