@@ -905,6 +905,7 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 
 	glRenderer->oamDirty = true;
+	glRenderer->stagedSpritesLen = 0;
 	glRenderer->paletteDirty = true;
 	glRenderer->vramDirty = 0xFFFFFF;
 	glRenderer->firstAffine = -1;
@@ -1342,6 +1343,12 @@ static bool _needsVramUpload(struct GBAVideoGLRenderer* renderer, int y) {
 void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 
+	if (y == VIDEO_VERTICAL_TOTAL_PIXELS - 1) {
+		glRenderer->stagedSpritesLen = GBAVideoRendererCleanOAM(renderer->oam->obj, glRenderer->stagedSprites, 0);
+		glRenderer->oamDirty = false;
+		return;
+	}
+
 	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
 		if (glRenderer->firstAffine < 0) {
 			glRenderer->firstAffine = y;
@@ -1350,27 +1357,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		glRenderer->firstAffine = -1;
 	}
 
-	if (_needsVramUpload(glRenderer, y) || glRenderer->oamDirty || glRenderer->regsDirty) {
-		if (glRenderer->firstY >= 0) {
-			_drawScanlines(glRenderer, y - 1);
-			glRenderer->firstY = y;
-			glBindVertexArray(0);
-		}
-	}
-	if (glRenderer->firstY < 0) {
-		glRenderer->firstY = y;
-	}
-	glRenderer->lastY = y;
-
 	int i;
-	for (i = 0; i < 0x30; ++i) {
-		if (!(glRenderer->regsDirty & (1ULL << i))) {
-			continue;
-		}
-		_cleanRegister(glRenderer, i << 1, glRenderer->shadowRegs[i]);
-	}
-	glRenderer->regsDirty = 0;
-
 	glRenderer->winNHistory[0][y * 4 + 0] = glRenderer->winN[0].h.start + glRenderer->winN[0].offsetX;
 	glRenderer->winNHistory[0][y * 4 + 1] = glRenderer->winN[0].h.end + glRenderer->winN[0].offsetX;
 	glRenderer->winNHistory[0][y * 4 + 2] = glRenderer->winN[0].v.start + glRenderer->winN[0].offsetY;
@@ -1396,6 +1383,38 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	glRenderer->bg[3].scanlineAffine[y * 4 + 1] = glRenderer->bg[3].affine.dy;
 	glRenderer->bg[3].scanlineAffine[y * 4 + 2] = glRenderer->bg[3].affine.sx;
 	glRenderer->bg[3].scanlineAffine[y * 4 + 3] = glRenderer->bg[3].affine.sy;
+
+	if (glRenderer->stagedSpritesLen > 0) {
+		if (glRenderer->firstY >= 0) {
+			_drawScanlines(glRenderer, y - 1);
+			glBindVertexArray(0);
+		}
+		memcpy(glRenderer->sprites, glRenderer->stagedSprites, glRenderer->stagedSpritesLen * sizeof(glRenderer->sprites[0]));
+		glRenderer->oamMax = glRenderer->stagedSpritesLen;
+		glRenderer->stagedSpritesLen = 0;
+		glRenderer->firstY = y;
+	}
+
+	if (_needsVramUpload(glRenderer, y) || glRenderer->regsDirty) {
+		if (glRenderer->firstY >= 0 && glRenderer->firstY < y) {
+			_drawScanlines(glRenderer, y - 1);
+			glRenderer->firstY = y;
+			glBindVertexArray(0);
+		}
+	}
+
+	if (glRenderer->firstY < 0) {
+		glRenderer->firstY = y;
+	}
+	glRenderer->lastY = y;
+
+	for (i = 0; i < 0x30; ++i) {
+		if (!(glRenderer->regsDirty & (1ULL << i))) {
+			continue;
+		}
+		_cleanRegister(glRenderer, i << 1, glRenderer->shadowRegs[i]);
+	}
+	glRenderer->regsDirty = 0;
 
 	int oldPalette = glRenderer->nextPalette;
 	glRenderer->nextPalette = y + 1;
@@ -1429,11 +1448,6 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 			}
 		}
 		glRenderer->vramDirty = 0;
-	}
-
-	if (glRenderer->oamDirty) {
-		glRenderer->oamMax = GBAVideoRendererCleanOAM(glRenderer->d.oam->obj, glRenderer->sprites, 0);
-		glRenderer->oamDirty = false;
 	}
 
 	if (y == 0) {
@@ -1472,6 +1486,11 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 			glRenderer->bg[3].affine.sx += glRenderer->bg[3].affine.dmx;
 			glRenderer->bg[3].affine.sy += glRenderer->bg[3].affine.dmy;
 		}
+	}
+
+	if (glRenderer->oamDirty) {
+		glRenderer->stagedSpritesLen = GBAVideoRendererCleanOAM(renderer->oam->obj, glRenderer->stagedSprites, 0);
+		glRenderer->oamDirty = false;
 	}
 }
 
