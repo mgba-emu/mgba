@@ -151,9 +151,6 @@ struct GBAVideoGLRenderer {
 	int16_t objOffsetX;
 	int16_t objOffsetY;
 
-	struct GBAVideoRendererSprite stagedSprites[128];
-	size_t stagedSpritesLen;
-
 	GLuint fbo[GBA_GL_FBO_MAX];
 	GLuint layers[GBA_GL_TEX_MAX];
 	GLuint vbo;

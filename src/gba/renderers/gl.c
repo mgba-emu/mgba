@@ -905,7 +905,6 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 
 	glRenderer->oamDirty = true;
-	glRenderer->stagedSpritesLen = 0;
 	glRenderer->paletteDirty = true;
 	glRenderer->vramDirty = 0xFFFFFF;
 	glRenderer->firstAffine = -1;
@@ -1344,7 +1343,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 
 	if (y == VIDEO_VERTICAL_TOTAL_PIXELS - 1) {
-		glRenderer->stagedSpritesLen = GBAVideoRendererCleanOAM(renderer->oam->obj, glRenderer->stagedSprites, 0);
+		glRenderer->oamMax = GBAVideoRendererCleanOAM(renderer->oam->obj, glRenderer->sprites, 0);
 		glRenderer->oamDirty = false;
 		return;
 	}
@@ -1383,17 +1382,6 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	glRenderer->bg[3].scanlineAffine[y * 4 + 1] = glRenderer->bg[3].affine.dy;
 	glRenderer->bg[3].scanlineAffine[y * 4 + 2] = glRenderer->bg[3].affine.sx;
 	glRenderer->bg[3].scanlineAffine[y * 4 + 3] = glRenderer->bg[3].affine.sy;
-
-	if (glRenderer->stagedSpritesLen > 0) {
-		if (glRenderer->firstY >= 0) {
-			_drawScanlines(glRenderer, y - 1);
-			glBindVertexArray(0);
-		}
-		memcpy(glRenderer->sprites, glRenderer->stagedSprites, glRenderer->stagedSpritesLen * sizeof(glRenderer->sprites[0]));
-		glRenderer->oamMax = glRenderer->stagedSpritesLen;
-		glRenderer->stagedSpritesLen = 0;
-		glRenderer->firstY = y;
-	}
 
 	if (_needsVramUpload(glRenderer, y) || glRenderer->regsDirty) {
 		if (glRenderer->firstY >= 0 && glRenderer->firstY < y) {
@@ -1489,7 +1477,12 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 
 	if (glRenderer->oamDirty) {
-		glRenderer->stagedSpritesLen = GBAVideoRendererCleanOAM(renderer->oam->obj, glRenderer->stagedSprites, 0);
+		if (glRenderer->firstY >= 0) {
+			_drawScanlines(glRenderer, y);
+			glRenderer->firstY = y + 1;
+			glBindVertexArray(0);
+		}
+		glRenderer->oamMax = GBAVideoRendererCleanOAM(renderer->oam->obj, glRenderer->sprites, 0);
 		glRenderer->oamDirty = false;
 	}
 }
