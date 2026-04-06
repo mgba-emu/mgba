@@ -76,25 +76,25 @@
 #define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
 	LOAD_16(tileData, (yBase + ((xBase + charBase) & maskLo)) & 0x7FFE, vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
-	current = renderer->stagedSpriteLayer[outX]; \
+	current = renderer->spriteLayer[outX]; \
 	if ((current & FLAG_ORDER_MASK) > flags) { \
 		if (tileData) { \
-			renderer->stagedSpriteLayer[outX] = palette[tileData] | flags; \
+			renderer->spriteLayer[outX] = palette[tileData] | flags; \
 		} else if (current != FLAG_UNWRITTEN) { \
-			renderer->stagedSpriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
+			renderer->spriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
 		} \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_NORMAL_OBJWIN(localX) \
 	LOAD_16(tileData, (yBase + ((xBase + charBase) & maskLo)) & 0x7FFE, vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
-	current = renderer->stagedSpriteLayer[outX]; \
+	current = renderer->spriteLayer[outX]; \
 	if ((current & FLAG_ORDER_MASK) > flags) { \
 		if (tileData) { \
 			unsigned color = (renderer->row[outX] & FLAG_OBJWIN) ? objwinPalette[tileData] : palette[tileData]; \
-			renderer->stagedSpriteLayer[outX] = color | flags; \
+			renderer->spriteLayer[outX] = color | flags; \
 		} else if (current != FLAG_UNWRITTEN) { \
-			renderer->stagedSpriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
+			renderer->spriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
 		} \
 	}
 
@@ -104,9 +104,9 @@
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
 	} else { \
-		current = renderer->stagedSpriteLayer[outX]; \
+		current = renderer->spriteLayer[outX]; \
 		if (current != FLAG_UNWRITTEN && (current & FLAG_ORDER_MASK) > flags) { \
-			renderer->stagedSpriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
+			renderer->spriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
 		} \
 	}
 
@@ -116,25 +116,25 @@
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
 	LOAD_16(tileData, (yBase + ((xBase + charBase) & maskLo)) & 0x7FFE, vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
-	current = renderer->stagedSpriteLayer[outX]; \
+	current = renderer->spriteLayer[outX]; \
 	if ((current & FLAG_ORDER_MASK) > flags) { \
 		if (tileData) { \
-			renderer->stagedSpriteLayer[outX] = palette[tileData] | flags; \
+			renderer->spriteLayer[outX] = palette[tileData] | flags; \
 		} else if (current != FLAG_UNWRITTEN) { \
-			renderer->stagedSpriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
+			renderer->spriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
 		} \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL_OBJWIN(localX) \
 	LOAD_16(tileData, (yBase + ((xBase + charBase) & maskLo)) & 0x7FFE, vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
-	current = renderer->stagedSpriteLayer[outX]; \
+	current = renderer->spriteLayer[outX]; \
 	if ((current & FLAG_ORDER_MASK) > flags) { \
 		if (tileData) { \
 			unsigned color = (renderer->row[outX] & FLAG_OBJWIN) ? objwinPalette[tileData] : palette[tileData]; \
-			renderer->stagedSpriteLayer[outX] = color | flags; \
+			renderer->spriteLayer[outX] = color | flags; \
 		} else if (current != FLAG_UNWRITTEN) { \
-			renderer->stagedSpriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
+			renderer->spriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
 		} \
 	}
 
@@ -144,9 +144,9 @@
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
 	} else { \
-		current = renderer->stagedSpriteLayer[outX]; \
+		current = renderer->spriteLayer[outX]; \
 		if (current != FLAG_UNWRITTEN && (current & FLAG_ORDER_MASK) > flags) { \
-			renderer->stagedSpriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
+			renderer->spriteLayer[outX] = (current & ~(FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)) | (flags & (FLAG_ORDER_MASK | FLAG_REBLEND | FLAG_TARGET_1)); \
 		} \
 	}
 

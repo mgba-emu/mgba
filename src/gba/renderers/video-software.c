@@ -137,10 +137,7 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->oamDirty = 1;
 	softwareRenderer->oamMax = 0;
 
-	softwareRenderer->stagedSpriteLayerMask = 0;
-	for (i = 0; i < GBA_VIDEO_HORIZONTAL_PIXELS; ++i) {
-		softwareRenderer->stagedSpriteLayer[i] = FLAG_UNWRITTEN;
-	}
+	softwareRenderer->spriteLayerMask = 0;
 
 	softwareRenderer->mosaic = 0;
 	softwareRenderer->stereo = false;
@@ -638,8 +635,6 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 
 	GBAVideoSoftwareRendererPreprocessBuffer(softwareRenderer);
-	memcpy(softwareRenderer->spriteLayer, softwareRenderer->stagedSpriteLayer, GBA_VIDEO_HORIZONTAL_PIXELS * sizeof(uint32_t));
-	int spriteLayers = softwareRenderer->stagedSpriteLayerMask;
 
 	int w;
 	unsigned priority;
@@ -650,7 +645,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		softwareRenderer->currentWindow = softwareRenderer->windows[w].control;
 		GBAVideoSoftwareRendererPrepareWindow(softwareRenderer);
 		for (priority = 0; priority < 4; ++priority) {
-			if (spriteLayers & (1 << priority)) {
+			if (softwareRenderer->spriteLayerMask & (1 << priority)) {
 				GBAVideoSoftwareRendererPostprocessSprite(softwareRenderer, priority);
 			}
 			if (TEST_LAYER_ENABLED(0) && GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) < 2) {
@@ -914,14 +909,6 @@ void GBAVideoSoftwareRendererStepWindow(struct GBAVideoSoftwareRenderer* softwar
 }
 
 void GBAVideoSoftwareRendererPreprocessBuffer(struct GBAVideoSoftwareRenderer* softwareRenderer) {
-	int x;
-	for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; x += 4) {
-		softwareRenderer->spriteLayer[x] = FLAG_UNWRITTEN;
-		softwareRenderer->spriteLayer[x + 1] = FLAG_UNWRITTEN;
-		softwareRenderer->spriteLayer[x + 2] = FLAG_UNWRITTEN;
-		softwareRenderer->spriteLayer[x + 3] = FLAG_UNWRITTEN;
-	}
-
 	softwareRenderer->windows[0].endX = GBA_VIDEO_HORIZONTAL_PIXELS;
 	softwareRenderer->nWindows = 1;
 	if (GBARegisterDISPCNTIsWin0Enable(softwareRenderer->dispcnt) || GBARegisterDISPCNTIsWin1Enable(softwareRenderer->dispcnt) || GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt)) {
@@ -952,7 +939,7 @@ void GBAVideoSoftwareRendererPreprocessBuffer(struct GBAVideoSoftwareRenderer* s
 	softwareRenderer->forceTarget1 = false;
 
 	int w;
-	x = 0;
+	int x = 0;
 	for (w = 0; w < softwareRenderer->nWindows; ++w) {
 		// TOOD: handle objwin on backdrop
 		uint32_t backdrop = FLAG_UNWRITTEN | FLAG_PRIORITY | FLAG_IS_BACKGROUND;
@@ -1041,12 +1028,12 @@ void GBAVideoSoftwareRendererPostprocessBuffer(struct GBAVideoSoftwareRenderer* 
 static void _stageSpriteLayer(struct GBAVideoSoftwareRenderer* softwareRenderer, int y) {
 	int x;
 	for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; x += 4) {
-		softwareRenderer->stagedSpriteLayer[x + 0] = FLAG_UNWRITTEN;
-		softwareRenderer->stagedSpriteLayer[x + 1] = FLAG_UNWRITTEN;
-		softwareRenderer->stagedSpriteLayer[x + 2] = FLAG_UNWRITTEN;
-		softwareRenderer->stagedSpriteLayer[x + 3] = FLAG_UNWRITTEN;
+		softwareRenderer->spriteLayer[x + 0] = FLAG_UNWRITTEN;
+		softwareRenderer->spriteLayer[x + 1] = FLAG_UNWRITTEN;
+		softwareRenderer->spriteLayer[x + 2] = FLAG_UNWRITTEN;
+		softwareRenderer->spriteLayer[x + 3] = FLAG_UNWRITTEN;
 	}
-	softwareRenderer->stagedSpriteLayerMask = 0;
+	softwareRenderer->spriteLayerMask = 0;
 
 	if (!GBARegisterDISPCNTIsObjEnable(softwareRenderer->dispcnt) || softwareRenderer->d.disableOBJ) {
 		return;
@@ -1070,7 +1057,7 @@ static void _stageSpriteLayer(struct GBAVideoSoftwareRenderer* softwareRenderer,
 	int32_t savedCycles = softwareRenderer->spriteCyclesRemaining;
 	softwareRenderer->spriteCyclesRemaining = GBARegisterDISPCNTIsHblankIntervalFree(softwareRenderer->dispcnt) ? OBJ_HBLANK_FREE_LENGTH : OBJ_LENGTH;
 
-	softwareRenderer->stagedSpriteLayerMask = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
+	softwareRenderer->spriteLayerMask = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
 
 	softwareRenderer->spriteCyclesRemaining = savedCycles;
 	softwareRenderer->nWindows = savedNWindows;

@@ -92,6 +92,7 @@ struct GBAVideoSoftwareRenderer {
 	uint32_t row[GBA_VIDEO_HORIZONTAL_PIXELS];
 	uint32_t spriteLayer[GBA_VIDEO_HORIZONTAL_PIXELS];
 	int32_t spriteCyclesRemaining;
+	int spriteLayerMask;
 
 	// BLDCNT
 	unsigned target1Obj;
@@ -137,9 +138,6 @@ struct GBAVideoSoftwareRenderer {
 	struct GBAVideoRendererSprite sprites[128];
 	int16_t objOffsetX;
 	int16_t objOffsetY;
-
-	uint32_t stagedSpriteLayer[GBA_VIDEO_HORIZONTAL_PIXELS];
-	int stagedSpriteLayerMask;
 
 	uint32_t scanlineDirty[5];
 	uint16_t nextIo[GBA_REG(SOUND1CNT_LO)];
