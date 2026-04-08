@@ -5,7 +5,7 @@ mGBA ist ein Emulator für Game Boy Advance-Spiele. Das Ziel von mGBA ist, schne
 
 Aktuelle Neuigkeiten und Downloads findest Du auf [mgba.io](https://mgba.io).
 
-[![Build-Status](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
+[![Build-Status](https://buildbot.mgba.io/badges/build-win32.svg)](https://buildbot.mgba.io)
 [![Status der Übersetzungen](https://hosted.weblate.org/widgets/mgba/-/svg-badge.svg)](https://hosted.weblate.org/engage/mgba)
 
 Features
@@ -22,6 +22,7 @@ Features
 - Unterstützung für den Lichtsensor in Boktai-Spielen
 - Unterstützung für Game Boy Printer und Game Boy Camera.
 - Eingebaute BIOS-Implementierung mit der Möglichkeit, externe BIOS-Dateien zu laden.
+- Scripting-Unterstützung über Lua.
 - Turbo/Vorlauf-Unterstützung durch drücken der Tab-Taste.
 - Rücklauf-Unterstützung durch drücken der Akzent-Taste.
 - Frameskip von bis zu 10 Bildern.
@@ -33,7 +34,7 @@ Features
 - Frei wählbare Tastenbelegungen für Tastaturen und Controller.
 - Unterstützung für ZIP- und 7z-Archive.
 - Unterstützung für Patches im IPS-, UPS- und BPS-Format.
-- Spiele-Debugging über ein Kommandozeilen-Interface und IDA Pro-kompatible GDB-Unterstützung.
+- Spiele-Debugging über ein Kommandozeilen-Interface und GDB-Unterstützung, kompatibel mit Ghidra und IDA Pro.
 - Einstellbare Rücklauf-Funktion.
 - Unterstützung für das Laden und Exportieren von GameShark- und Action Replay-Abbildern.
 - Verfügbare Cores für RetroArch/Libretro und OpenEmu.
@@ -49,22 +50,31 @@ Die folgenden Mapper werden vollständig unterstützt:
 - MBC2
 - MBC3
 - MBC3+RTC (MBC3+Echtzeituhr)
+- MBC30
 - MBC5
 - MBC5+Rumble (MBC5+Rüttel-Modul)
 - MBC7
+- M161
 - Wisdom Tree (nicht lizenziert)
+- NT "old type" 1 und 2 (nicht lizenzierter Multicart)
+- NT "new type" (nicht lizenziert, ähnlich MBC5)
 - Pokémon Jade/Diamond (nicht lizenziert)
-- BBD (nicht lizenziert, ählich MBC5)
-- Hitek (nicht lizenziert, ähnlich MBC5)
+- Sachen MMC1 (nicht lizenziert)
 
 Die folgenden Mapper werden teilweise unterstützt:
 
 - MBC6 (fehlende Unterstützung für Schreibzugriffe auf den Flash-Speicher)
 - MMM01
 - Pocket Cam
-- TAMA5 (fehlende RTC-Unterstützung)
+- TAMA5 (unvollständige RTC-Unterstützung)
 - HuC-1 (fehlende Infrarot-Unterstützung)
-- HuC-3 (fehlende RTC- und Infrarot-Unterstützung)
+- HuC-3 (fehlende Infrarot-Unterstützung)
+- Sachen MMC2 (fehlende alternative Verkabelungsunterstützung)
+- BBD (fehlende Logo-Umschaltung)
+- Hitek (fehlende Logo-Umschaltung)
+- GGB-81 (fehlende Logo-Umschaltung)
+- Li Cheng (fehlende Logo-Umschaltung)
+- Sintax (fehlende Logo-Umschaltung)
 
 ### Geplante Features
 
@@ -72,7 +82,6 @@ Die folgenden Mapper werden teilweise unterstützt:
 - Unterstützung für Link-Kabel über Dolphin/JOY-Bus.
 - MP2k-Audio-Abmischung für höhere Audio-Qualität als echte Hardware.
 - Unterstützung für Tool-Assisted Speedruns.
-- Lua-Unterstützung für Scripting.
 - Eine umfangreiche Debugging-Suite.
 - Unterstützung für Drahtlosadapter.
 
@@ -122,7 +131,7 @@ Der empfohlene Weg, um mGBA für die meisten Plattformen zu kompilieren, ist die
 
 Um ein Docker-Image zum Bau von mGBA zu verwenden, führe einfach folgenden Befehl in dem Verzeichnis aus, in welches Du den mGBA-Quellcode ausgecheckt hast:
 
-	docker run --rm -t -v $PWD:/home/mgba/src mgba/windows:w32
+	docker run --rm -it -v ${PWD}:/home/mgba/src mgba/windows:w32
 
 Dieser Befehl erzeugt ein Verzeichnis `build-win32` mit den erzeugten Programmdateien. Ersetze `mgba/windows:32` durch ein Docker-Image für eine andere Plattform, wodurch dann das entsprechende Verzeichnis erzeugt wird. Die folgenden Docker-Images sind im Docker Hub verfügbar:
 
@@ -151,7 +160,7 @@ Damit wird mGBA gebaut und in `/usr/bin` und `/usr/lib` installiert. Installiert
 
 Wenn Du macOS verwendest, sind die einzelnen Schritte etwas anders. Angenommen, dass Du den Homebrew-Paketmanager verwendest, werden folgende Schritte zum installieren der Abhängigkeiten und anschließenden bauen von mGBA empfohlen:
 
-	brew install cmake ffmpeg libzip qt5 sdl2 libedit pkg-config
+	brew install cmake ffmpeg libzip qt5 sdl2 libedit lua pkg-config
 	mkdir build
 	cd build
 	cmake -DCMAKE_PREFIX_PATH=`brew --prefix qt5` ..
@@ -165,7 +174,7 @@ Bitte beachte, dass Du unter macOS nicht `make install` verwenden solltest, da d
 
 Um mGBA auf Windows zu kompilieren, wird MSYS2 empfohlen. Befolge die Installationsschritte auf der [MSYS2-Website](https://msys2.github.io). Stelle sicher, dass Du die 32-Bit-Version ("MSYS2 MinGW 32-bit") (oder die 64-Bit-Version "MSYS2 MinGW 64-bit", wenn Du mGBA für x86_64 kompilieren willst) verwendest und führe folgendes Kommando (einschließlich der Klammern) aus, um alle benötigten Abhängigkeiten zu installieren. Bitte beachte, dass dafür über 1100MiB an Paketen heruntergeladen werden, was eine Weile dauern kann:
 
-	pacman -Sy --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkgconf,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,lua,pkgconf,qt5,SDL2,ntldd-git}
 
 Lade den aktuellen mGBA-Quellcode mithilfe des folgenden Kommandos herunter:
 
@@ -184,7 +193,7 @@ Bitte beachte, dass mGBA für Windows aufgrund der Vielzahl an benötigten DLLs 
 
 mGBA mit Visual Studio zu bauen erfordert ein ähnlich kompliziertes Setup. Zuerst musst Du [vcpkg](https://github.com/Microsoft/vcpkg) installieren. Nachdem vcpkg installiert ist, musst Du noch folgende zusätzlichen Pakete installieren:
 
-	vcpkg install ffmpeg[vpx,x264] libepoxy libpng libzip sdl2 sqlite3
+	vcpkg install ffmpeg[vpx,x264] libepoxy libpng libzip lua sdl2 sqlite3
 
 Bitte beachte, dass diese Installation keine hardwarebeschleunigtes Video-Encoding auf Nvidia-Hardware unterstützen wird. Wenn Du darauf Wert legst, musst Du zuerst CUDA installieren und anschließend den vorherigen Befehl um `ffmpeg[vpx,x264,nvcodec]` ergänzen.
 
@@ -222,6 +231,8 @@ mGBA hat keine "harten" Abhängigkeiten. Dennoch werden die folgenden optionalen
 - libzip oder zlib: Um ROMs aus ZIP-Dateien zu laden.
 - SQLite3: Für Spiele-Datenbanken.
 - libelf: Für das Laden von ELF-Dateien.
+- Lua: Für Scripting.
+- json-c: Für die Scripting-`storage`-API.
 
 SQLite3, libpng und zlib werden mit dem Emulator mitgeliefert, sodass sie nicht zuerst kompiliert werden müssen.
 
@@ -242,11 +253,11 @@ Fußnoten
 Copyright
 ---------
 
-Copyright für mGBA © 2013 – 2021 Jeffrey Pfau. mGBA wird unter der [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/) veröffentlicht. Eine Kopie der Lizenz ist in der mitgelieferten Datei LICENSE verfügbar.
+Copyright für mGBA © 2013 – 2026 Jeffrey Pfau. mGBA wird unter der [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/) veröffentlicht. Eine Kopie der Lizenz ist in der mitgelieferten Datei LICENSE verfügbar.
 
 mGBA beinhaltet die folgenden Bibliotheken von Drittanbietern:
 
-- [inih](https://github.com/benhoyt/inih), Copyright © 2009 - 2020 Ben Hoyt, verwendet unter einer BSD 3-clause-Lizenz.
+- [inih](https://github.com/benhoyt/inih), Copyright © 2009 – 2020 Ben Hoyt, verwendet unter einer BSD 3-clause-Lizenz.
 - [LZMA SDK](http://www.7-zip.org/sdk.html), Public Domain.
 - [MurmurHash3](https://github.com/aappleby/smhasher), Implementierung von Austin Appleby, Public Domain.
 - [getopt fot MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio/), Public Domain.
