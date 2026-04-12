@@ -89,7 +89,7 @@ CoreController* CoreManager::loadGame(const QString& path) {
 	if (info.canonicalFilePath().startsWith(tmpdir.canonicalPath())) {
 		bool bad = false;
 		if (m_config) {
-			mCoreOptions opts;
+			mCoreOptions opts{};
 			mCoreConfigMap(m_config, &opts);
 			bad = bad || !opts.savegamePath;
 			bad = bad || !opts.savestatePath;
