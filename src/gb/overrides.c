@@ -756,7 +756,7 @@ static const struct GBColorPreset _colorPresets[] = {
 bool GBOverrideColorFind(struct GBCartridgeOverride* override, enum GBColorLookup order) {
 	int i;
 	if (order & GB_COLORS_SGB) {
-		for (i = 0; _gbcOverrides[i].headerCrc32; ++i) {
+		for (i = 0; _sgbOverrides[i].headerCrc32; ++i) {
 			if (override->headerCrc32 == _sgbOverrides[i].headerCrc32) {
 				memcpy(override->gbColors, _sgbOverrides[i].gbColors, sizeof(override->gbColors));
 				return true;

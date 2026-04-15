@@ -49,6 +49,7 @@ Other fixes:
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
  - Core: Don't leave initial empty state in rewind queue
  - Debugger: Fix writing to specific segment in command-line debugger
+ - GB Overrides: Fix SGB color overrides bounds check
  - GB Video: Fix video log replaying freezing when video is disabled
  - GBA: Fix getting game info for multiboot ROMs
  - GBA Core: Flush pipeline if CPSR is directly written
