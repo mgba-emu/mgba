@@ -98,7 +98,10 @@ void ForwarderController::gotForwarderKit(QNetworkReply* reply) {
 	}
 
 	QFile fkZip(ConfigController::cacheDir() + "/forwarder-kit.zip");
-	fkZip.open(QIODevice::WriteOnly | QIODevice::Truncate);
+	if (!fkZip.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+		emit buildFailed();
+		return;
+	}
 	QByteArray arr;
 	do {
 		arr = reply->read(0x800);

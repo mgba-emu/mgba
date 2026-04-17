@@ -7,6 +7,7 @@
 
 #include "ConfigController.h"
 #include "GBAApp.h"
+#include "LogController.h"
 
 #include <QFile>
 #include <QMimeData>
@@ -107,7 +108,10 @@ void BattleChipModel::setFlavor(int flavor) {
 	m_flavor = flavor;
 
 	QFile file(QString(":/exe/exe%1/chip-names.txt").arg(flavor));
-	file.open(QIODevice::ReadOnly | QIODevice::Text);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		LOG(QT, WARN) << tr("Failed to open chip names list");
+		return;
+	}
 	int id = 0;
 	while (true) {
 		QByteArray line = file.readLine();

@@ -77,9 +77,15 @@ void SaveConverter::convert() {
 		return;
 	}
 	QFile out(m_ui.outputFile->text());
-	out.open(QIODevice::WriteOnly | QIODevice::Truncate);
-	out.write(converted);
-	out.close();
+	if (out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+		out.write(converted);
+		out.close();
+	} else {
+		QMessageBox* failure = new QMessageBox(QMessageBox::Warning, tr("Conversion failed"), tr("Failed to open output file."),
+		                                       QMessageBox::Ok, this, Qt::Sheet);
+		failure->setAttribute(Qt::WA_DeleteOnClose);
+		failure->show();
+	}
 }
 
 void SaveConverter::refreshInputTypes() {
