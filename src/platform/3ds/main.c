@@ -88,7 +88,7 @@ static enum {
 static mColor* outputBuffer = NULL;
 static mColor* screenshotBuffer = NULL;
 static struct mAVStream stream;
-static int16_t* audioLeft = 0;
+static int16_t* audioLeft = NULL;
 static size_t audioPos = 0;
 static double fpsRatio;
 static C3D_Tex outputTexture[2];
@@ -887,7 +887,7 @@ int main(int argc, char* argv[]) {
 	cfguExit();
 
 	if (!_initGpu()) {
-		outputTexture[0].data = 0;
+		outputTexture[0].data = NULL;
 		_cleanup();
 		return 1;
 	}
@@ -1045,7 +1045,7 @@ int main(int argc, char* argv[]) {
 		.nConfigExtra = 5,
 #endif
 		.setup = _setup,
-		.teardown = 0,
+		.teardown = NULL,
 		.gameLoaded = _gameLoaded,
 		.gameUnloaded = _gameUnloaded,
 		.prepareForFrame = _prepareForFrame,
