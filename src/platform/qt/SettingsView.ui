@@ -1386,6 +1386,43 @@
          </layout>
         </widget>
        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QGroupBox" name="everdriveGroup">
+          <property name="title">
+           <string>Everdrive</string>
+          </property>
+          <layout class="QFormLayout" name="formLayout_20">
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="everdriveSdEnable">
+             <property name="text">
+              <string>Enable Everdrive SD API</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="labelEverdriveSdImage">
+             <property name="text">
+              <string>SD image:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayoutEverdriveSdImage">
+             <item>
+              <widget class="QLineEdit" name="everdriveSdImage"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="everdriveSdImageBrowse">
+               <property name="text">
+                <string>Browse</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
       </layout>
      </widget>
      <widget class="QWidget" name="bios">
