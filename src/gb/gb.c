@@ -1208,7 +1208,7 @@ void GBFrameEnded(struct GB* gb) {
 	struct mRumble* rumble = gb->memory.rumble;
 	if (rumble && rumble->integrate) {
 		gb->memory.lastRumble = mTimingCurrentTime(&gb->timing);
-		rumble->integrate(rumble, GB_VIDEO_TOTAL_LENGTH);
+		rumble->integrate(rumble, GB_VIDEO_TOTAL_LENGTH << 1);
 	}
 
 	// TODO: Move to common code
