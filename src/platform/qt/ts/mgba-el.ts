@@ -6,27 +6,27 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="427"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Όνομα</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Τοποθεσία</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
         <source>Platform</source>
-        <translation type="unfinished"></translation>
+        <translation>Πλατφόρμα</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Μέγεθος</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
         <source>CRC32</source>
-        <translation type="unfinished"></translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -34,22 +34,22 @@
     <message>
         <location filename="../utils.cpp" line="109"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM για Game Boy Advance (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="135"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM για Game Boy (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="140"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Όλες οι ROM (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="142"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχεία καταγραφής βίντεο %1 (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -57,33 +57,34 @@
     <message>
         <location filename="../AboutScreen.ui" line="14"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>Πληροφορίες</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;Ιστότοπος&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Φόρουμ/Υποστήριξη&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Δωρεά&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Πηγαίος κώδικας&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
         <source>Branch: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revision: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Κλάδος: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Αναθεώρηση: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
         <source>{projectName} would like to thank the following patrons from Patreon:</source>
-        <translation type="unfinished"></translation>
+        <translation>Το {projectName} θα ήθελε να ευχαριστήσει τους παρακάτω υποστηρικτές από το Patreon:</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
         <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation type="unfinished"></translation>
+        <translation>© 2013 – {year} Jeffrey Pfau, διατίθεται υπό την έκδοση 2.0 της άδειας Mozilla Public License
+Το Game Boy Advance αποτελεί κατοχυρωμένο εμπορικό σήμα της Nintendo Co., Ltd.</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation type="unfinished"></translation>
+        <translation>Το {projectName} είναι ένας εξομοιωτής ανοικτού κώδικα για το Game Boy Advance</translation>
     </message>
 </context>
 <context>
@@ -91,47 +92,52 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>Διατίθεται ενημέρωση</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Διατίθεται ενημέρωση στην έκδοση %1.
+</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="38"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Θέλετε να κάνετε λήψη και εγκατάσταση τώρα; Θα χρειαστεί να επανεκκινήσετε τον εξομοιωτή όταν ολοκληρωθεί η λήψη.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Οι αυτόματες ενημερώσεις δεν διατίθενται σε αυτήν την πλατφόρμα. Εάν επιθυμείτε να κάνετε ενημέρωση, θα πρέπει να το κάνετε χειροκίνητα.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="45"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Τρέχουσα έκδοση: %1
+Νέα έκδοση: %2
+Μέγεθος λήψης: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>Λήψη ενημέρωσης...</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="79"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>Η λήψη απέτυχε. Κάντε χειροκίνητη ενημέρωση.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>Η λήψη ολοκληρώθηκε. Επιλέξτε OK για επανεκκίνηση του %1 και εγκατάσταση της ενημέρωσης.</translation>
     </message>
 </context>
 <context>
@@ -139,22 +145,22 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="90"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>Σταθερό</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="93"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>Ανάπτυξη</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>Άγνωστο</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="239"/>
         <source>(None)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Καμία)</translation>
     </message>
 </context>
 <context>
@@ -162,12 +168,12 @@ Download size: %3</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation type="unfinished"></translation>
+        <translation>Άνοιγμα σε συμπιεσμένο αρχείο...</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόρτωση...</translation>
     </message>
 </context>
 <context>
@@ -175,39 +181,39 @@ Download size: %3</source>
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation type="unfinished"></translation>
+        <translation>Πλακίδιο #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
-        <translation type="unfinished"></translation>
+        <translation>Παλέτα #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="89"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Διεύθυνση</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="138"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>Κόκκινο</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="145"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>Πράσινο</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="152"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Μπλε</translation>
     </message>
     <message>
         <location filename="../AssetTile.cpp" line="143"/>
         <location filename="../AssetTile.cpp" line="144"/>
         <location filename="../AssetTile.cpp" line="145"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0 (%1)</translation>
     </message>
 </context>
 <context>
@@ -220,12 +226,12 @@ Download size: %3</source>
     <message>
         <location filename="../AudioDevice.cpp" line="56"/>
         <source>Audio device is missing its core</source>
-        <translation type="unfinished"></translation>
+        <translation>Απουσιάζει ο πυρήνας της συσκευής ήχου</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="84"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Εγγραφή δεδομένων σε συσκευή ήχου μόνο για ανάγνωση</translation>
     </message>
 </context>
 <context>
@@ -233,12 +239,12 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="56"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεν είναι δυνατή η έναρξη επεξεργαστή ήχου χωρίς είσοδο</translation>
     </message>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="81"/>
         <source>Audio outputting to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Η έξοδος ήχου γίνεται στο %1</translation>
     </message>
 </context>
 <context>
@@ -246,7 +252,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεν είναι δυνατή η έναρξη επεξεργαστή ήχου χωρίς είσοδο</translation>
     </message>
 </context>
 <context>
@@ -254,7 +260,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="31"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεν ήταν δυνατή η φόρτωση των ρυθμίσεων του script αυτόματης εκτέλεσης: άγνωστη μορφή πληροφοριών script %1</translation>
     </message>
 </context>
 <context>
@@ -262,37 +268,37 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="14"/>
         <source>Autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Script αυτόματης εκτέλεσης</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>Προσθήκη</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Αφαίρεση</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="53"/>
         <source>Move up</source>
-        <translation type="unfinished"></translation>
+        <translation>Μετακίνηση πάνω</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="63"/>
         <source>Move down</source>
-        <translation type="unfinished"></translation>
+        <translation>Μετακίνηση κάτω</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="73"/>
         <source>Run scripts when starting a game</source>
-        <translation type="unfinished"></translation>
+        <translation>Εκτέλεση script κατά την εκκίνηση ενός παιχνιδιού</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="28"/>
         <source>Select a script</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή script</translation>
     </message>
 </context>
 <context>
@@ -300,88 +306,88 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.ui" line="14"/>
         <source>BattleChip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip Gate</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="67"/>
         <source>Chip name</source>
-        <translation type="unfinished"></translation>
+        <translation>Όνομα chip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
         <source>Insert</source>
-        <translation type="unfinished"></translation>
+        <translation>Εισαγωγή</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποθήκευση</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="94"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόρτωση</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="114"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>Προσθήκη</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="121"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Αφαίρεση</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="138"/>
         <source>Gate type</source>
-        <translation type="unfinished"></translation>
+        <translation>Τύπος Gate</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="180"/>
         <source>Inserted</source>
-        <translation type="unfinished"></translation>
+        <translation>Εισήχθη</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Αναγνωριστικό chip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
         <source>Update Chip data</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενημέρωση δεδομένων chip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
         <source>Show advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>Εμφάνιση σύνθετων επιλογών</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="115"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>Απουσία δεδομένων BattleChip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="116"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>Απουσιάζουν δεδομένα BattleChip. Τα BattleChip Gate θα εξακολουθούν να λειτουργούν, αλλά ορισμένα γραφικά θα απουσιάζουν. Θέλετε να κάνετε λήψη των δεδομένων τώρα;</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="182"/>
         <location filename="../BattleChipView.cpp" line="201"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή αρχείου deck</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="213"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>Μη έγκυρο deck</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="214"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>Το επιλεγμένο deck δεν είναι συμβατό με αυτό το Chip Gate</translation>
     </message>
 </context>
 <context>
@@ -389,12 +395,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsModel.cpp" line="53"/>
         <source>(untitled)</source>
-        <translation type="unfinished"></translation>
+        <translation>(χωρίς τίτλο)</translation>
     </message>
     <message>
         <location filename="../CheatsModel.cpp" line="211"/>
         <source>Failed to open cheats file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποτυχία ανοίγματος αρχείου cheat: %1</translation>
     </message>
 </context>
 <context>
@@ -402,59 +408,59 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="14"/>
         <source>Cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>Cheat</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished"></translation>
+        <translation>Προσθήκη νέου κωδικού</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Αφαίρεση</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="93"/>
         <source>Add Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Προσθήκη γραμμών</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="100"/>
         <source>Code type</source>
-        <translation type="unfinished"></translation>
+        <translation>Τύπος κωδικού</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποθήκευση</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="46"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόρτωση</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="86"/>
         <source>Enter codes here...</source>
-        <translation type="unfinished"></translation>
+        <translation>Εισαγάγετε τους κωδικούς εδώ...</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="49"/>
         <location filename="../CheatsView.cpp" line="57"/>
         <source>Autodetect (recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτόματος εντοπισμός (προτείνεται)</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="87"/>
         <location filename="../CheatsView.cpp" line="94"/>
         <source>Select cheats file</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή αρχείου cheat</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="186"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεν ήταν δυνατή η προσθήκη ορισμένων cheat. Βεβαιωθείτε ότι έχουν σωστή μορφή ή/και δοκιμάστε άλλους τύπους cheat.</translation>
     </message>
 </context>
 <context>
@@ -462,7 +468,7 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="104"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Επανεκκίνηση r%1-%2 %3</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="552"/>
@@ -473,22 +479,22 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="608"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>Επανεκκίνηση παιχνιδιού;</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="609"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation type="unfinished"></translation>
+        <translation>Τα περισσότερα παιχνίδια απαιτούν επανεκκίνηση για τη φόρτωση νέων αποθηκευμένων δεδομένων. Θέλετε να κάνετε επανεκκίνηση τώρα;</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="827"/>
         <source>Failed to open save file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποτυχία ανοίγματος αρχείου αποθηκευμένων δεδομένων: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="885"/>
         <source>Failed to open game file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποτυχία ανοίγματος αρχείου παιχνιδιού: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="915"/>
@@ -511,7 +517,7 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="52"/>
         <source>Failed to open game file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποτυχία ανοίγματος αρχείου παιχνιδιού: %1</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="77"/>
@@ -521,7 +527,7 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="95"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεν ήταν δυνατή η φόρτωση του παιχνιδιού. Είστε σίγουροι ότι είναι στη σωστή μορφή;</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="122"/>
@@ -534,7 +540,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsole.ui" line="14"/>
         <source>Debugger</source>
-        <translation type="unfinished"></translation>
+        <translation>Εντοπισμός σφαλμάτων</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="20"/>
@@ -544,7 +550,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsole.ui" line="27"/>
         <source>Break</source>
-        <translation type="unfinished"></translation>
+        <translation>Παύση</translation>
     </message>
 </context>
 <context>
@@ -552,7 +558,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="183"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεν ήταν δυνατό το άνοιγμα του ιστορικού CLI για εγγραφή</translation>
     </message>
 </context>
 <context>
@@ -568,47 +574,47 @@ Download size: %3</source>
     <message>
         <location filename="../DolphinConnector.ui" line="14"/>
         <source>Connect to Dolphin</source>
-        <translation type="unfinished"></translation>
+        <translation>Σύνδεση στο Dolphin</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="23"/>
         <source>Local computer</source>
-        <translation type="unfinished"></translation>
+        <translation>Τοπικός υπολογιστής</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
         <source>IP address</source>
-        <translation type="unfinished"></translation>
+        <translation>Διεύθυνση IP</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Σύνδεση</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="68"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποσύνδεση</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="78"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Κλείσιμο</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="90"/>
         <source>Reset on connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Επανεκκίνηση κατά τη σύνδεση</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
         <source>Couldn&apos;t Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Αδυναμία σύνδεσης</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Could not connect to Dolphin.</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεν ήταν δυνατή η σύνδεση στο Dolphin.</translation>
     </message>
 </context>
 <context>
@@ -616,12 +622,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="83"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="85"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
 </context>
 <context>
@@ -629,12 +635,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="29"/>
         <source>Icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Εικονίδιο</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="30"/>
         <source>Banner</source>
-        <translation type="unfinished"></translation>
+        <translation>Μπάνερ</translation>
     </message>
 </context>
 <context>
@@ -642,17 +648,17 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="25"/>
         <source>Bubble</source>
-        <translation type="unfinished"></translation>
+        <translation>Φούσκα</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Background</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόντο</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
         <source>Startup</source>
-        <translation type="unfinished"></translation>
+        <translation>Εκκίνηση</translation>
     </message>
 </context>
 <context>
@@ -660,149 +666,149 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="14"/>
         <source>Create forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Δημιουργία διαβιβαστή</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="20"/>
         <source>Files</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχεία</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="26"/>
         <source>ROM file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο ROM:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="36"/>
         <location filename="../ForwarderView.ui" line="53"/>
         <location filename="../ForwarderView.ui" line="112"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>Περιήγηση</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="43"/>
         <source>Output filename:</source>
-        <translation type="unfinished"></translation>
+        <translation>Όνομα αρχείου εξόδου:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="60"/>
         <source>Forwarder base:</source>
-        <translation type="unfinished"></translation>
+        <translation>Βάση διαβιβαστή:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="74"/>
         <source>Latest stable version</source>
-        <translation type="unfinished"></translation>
+        <translation>Τελευταία σταθερή έκδοση</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="79"/>
         <source>Latest development build</source>
-        <translation type="unfinished"></translation>
+        <translation>Τελευταία δομή ανάπτυξης</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="84"/>
         <source>Specific file</source>
-        <translation type="unfinished"></translation>
+        <translation>Συγκεκριμένο αρχείο</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="95"/>
         <source>Base file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο βάσης:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="135"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>Σύστημα</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="141"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="151"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="174"/>
         <source>Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>Παρουσίαση</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="182"/>
         <source>Title:</source>
-        <translation type="unfinished"></translation>
+        <translation>Τίτλος:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="195"/>
         <source>Images:</source>
-        <translation type="unfinished"></translation>
+        <translation>Εικόνες:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="215"/>
         <source>Use default image</source>
-        <translation type="unfinished"></translation>
+        <translation>Χρήση προεπιλεγμένης εικόνας</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="328"/>
         <source>Preferred size:</source>
-        <translation type="unfinished"></translation>
+        <translation>Προτιμώμενο μέγεθος:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="395"/>
         <source>Select image file</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή αρχείου εικόνας</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="22"/>
         <source>Select ROM file</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή αρχείου ROM</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="23"/>
         <source>Select output filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή ονόματος αρχείου εξόδου</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="24"/>
         <source>Select base file</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή αρχείου βάσης</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="36"/>
         <source>Build finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Η δόμηση ολοκληρώθηκε</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="37"/>
         <source>Forwarder finished building</source>
-        <translation type="unfinished"></translation>
+        <translation>Η δόμηση του διαβιβαστή ολοκληρώθηκε</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="44"/>
         <source>Build failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποτυχία δόμησης</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
         <source>Failed to build forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Η δόμηση του διαβιβαστή απέτυχε</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="176"/>
         <source>%1 installable package (*.%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>Εγκαταστάσιμο πακέτο %1 (*.%2)</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Select an image</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή εικόνας</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχεία εικόνας (*.png *.jpg *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -810,17 +816,17 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.ui" line="14"/>
         <source>Inspect frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιθεώρηση καρέ</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="41"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Μεγέθυνση</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="50"/>
         <source>Freeze frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Πάγωμα καρέ</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="84"/>
@@ -835,22 +841,22 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.ui" line="145"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Εξαγωγή</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="152"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Επαναφορά</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="591"/>
         <source>Export frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Εξαγωγή καρέ</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="592"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="622"/>
@@ -860,22 +866,22 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.cpp" line="624"/>
         <source>Background</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόντο</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="627"/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Παράθυρο</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="630"/>
         <source>Objwin</source>
-        <translation type="unfinished"></translation>
+        <translation>Objwin</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="635"/>
         <source>Sprite</source>
-        <translation type="unfinished"></translation>
+        <translation>Μπλοκ εικονοστοιχείων</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="638"/>
@@ -885,12 +891,12 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.cpp" line="641"/>
         <source>Frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Καρέ</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="647"/>
         <source>%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -906,22 +912,22 @@ Download size: %3</source>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="69"/>
         <source>Clear Button</source>
-        <translation type="unfinished"></translation>
+        <translation>Εκκαθάριση κουμπιού</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="81"/>
         <source>Clear Analog</source>
-        <translation type="unfinished"></translation>
+        <translation>Εκκαθάριση αναλογικού κουμπιού</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="92"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>Ανανέωση</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="102"/>
         <source>Set all</source>
-        <translation type="unfinished"></translation>
+        <translation>Ορισμός όλων</translation>
     </message>
 </context>
 <context>
@@ -929,17 +935,17 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="31"/>
         <source>Server settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Ρυθμίσεις διακομιστή</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="37"/>
         <source>Local port</source>
-        <translation type="unfinished"></translation>
+        <translation>Τοπική θύρα</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="39"/>
         <source>Bind address</source>
-        <translation type="unfinished"></translation>
+        <translation>Σύνδεση διεύθυνσης</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="52"/>
@@ -949,42 +955,42 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="63"/>
         <source>Standard GDB</source>
-        <translation type="unfinished"></translation>
+        <translation>Τυπικό GDB</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="68"/>
         <source>Internal change detection</source>
-        <translation type="unfinished"></translation>
+        <translation>Εντοπισμός εσωτερικής αλλαγής</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="72"/>
         <source>Break on all writes</source>
-        <translation type="unfinished"></translation>
+        <translation>Παύση σε όλες τις εγγραφές</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
         <source>Break</source>
-        <translation type="unfinished"></translation>
+        <translation>Παύση</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="124"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Διακοπή</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="137"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Έναρξη</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="145"/>
         <source>Crash</source>
-        <translation type="unfinished"></translation>
+        <translation>Κατάρρευση</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="145"/>
         <source>Could not start GDB server</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεν ήταν δυνατή η έναρξη του διακομιστή GDB</translation>
     </message>
 </context>
 <context>
@@ -992,12 +998,12 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.ui" line="14"/>
         <source>Record GIF/WebP/APNG</source>
-        <translation type="unfinished"></translation>
+        <translation>Καταγραφή GIF/WebP/APNG</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="30"/>
         <source>Loop</source>
-        <translation type="unfinished"></translation>
+        <translation>Βρόχος</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="51"/>
@@ -1007,47 +1013,47 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.ui" line="67"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Διακοπή</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="93"/>
         <source>Select File</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή αρχείου</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="112"/>
         <source>APNG</source>
-        <translation type="unfinished"></translation>
+        <translation>APNG</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="122"/>
         <source>GIF</source>
-        <translation type="unfinished"></translation>
+        <translation>GIF</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="135"/>
         <source>WebP</source>
-        <translation type="unfinished"></translation>
+        <translation>WebP</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="145"/>
         <source>Frameskip</source>
-        <translation type="unfinished"></translation>
+        <translation>Παράλειψη καρέ</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="63"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποτυχία ανοίγματος αρχείου εξόδου: %1</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="90"/>
         <source>Select output file</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή αρχείου εξόδου</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="90"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
-        <translation type="unfinished"></translation>
+        <translation>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</translation>
     </message>
 </context>
 <context>
@@ -1056,77 +1062,77 @@ Download size: %3</source>
         <location filename="../GameBoy.cpp" line="62"/>
         <location filename="../GameBoy.cpp" line="81"/>
         <source>Autodetect</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτόματος εντοπισμός</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="63"/>
         <source>Game Boy (DMG)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy (DMG)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="64"/>
         <source>Game Boy Pocket (MGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Pocket (MGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="65"/>
         <source>Super Game Boy (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="66"/>
         <source>Super Game Boy 2 (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy 2 (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="67"/>
         <source>Game Boy Color (CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Color (CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="68"/>
         <source>Game Boy Advance (AGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance (AGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="69"/>
         <source>Super Game Boy Color (SGB + CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy Color (SGB + CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="82"/>
         <source>ROM Only</source>
-        <translation type="unfinished"></translation>
+        <translation>Μόνο ROM</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
         <source>%1 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
         <source>%1 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + Δόνηση</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>%1 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (Κλίση)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
         <source>%1 (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (παλαιό 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="99"/>
         <source>%1 (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (παλαιό 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="100"/>
         <source>%1 (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (νέο)</translation>
     </message>
 </context>
 <context>
@@ -1134,34 +1140,34 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.ui" line="14"/>
         <source>I/O Viewer</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή I/O</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="26"/>
         <source>0x0000</source>
-        <translation type="unfinished"></translation>
+        <translation>0x0000</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="367"/>
         <location filename="../IOViewer.cpp" line="870"/>
         <location filename="../IOViewer.cpp" line="883"/>
         <source>B</source>
-        <translation type="unfinished"></translation>
+        <translation>B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="39"/>
         <source>Background mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Λειτουργία παρασκηνίου</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="40"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation type="unfinished"></translation>
+        <translation>Λειτουργία 0: 4 επίπεδα πλακιδίων</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="41"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation type="unfinished"></translation>
+        <translation>Λειτουργία 1: 2 επίπεδα πλακιδίων + 1 περιστρεφόμενο/κλιμακωτό επίπεδο πλακιδίων</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="42"/>
@@ -1186,17 +1192,17 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="49"/>
         <source>CGB Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Λειτουργία CGB</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="50"/>
         <source>Frame select</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή καρέ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="51"/>
         <source>Unlocked HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>Ξεκλειδωμένο HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="52"/>
@@ -1206,92 +1212,92 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="53"/>
         <source>Force blank screen</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιβολή κενής οθόνης</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="54"/>
         <source>Enable background 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση φόντου 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="55"/>
         <source>Enable background 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση φόντου 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="56"/>
         <source>Enable background 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση φόντου 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="57"/>
         <source>Enable background 3</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση φόντου 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="58"/>
         <source>Enable OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="59"/>
         <source>Enable Window 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση παραθύρου 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="60"/>
         <source>Enable Window 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση παραθύρου 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="61"/>
         <source>Enable OBJ Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση παραθύρου OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="65"/>
         <source>Swap green components</source>
-        <translation type="unfinished"></translation>
+        <translation>Εναλλαγή πράσινων στοιχείων</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="69"/>
         <source>Currently in VBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>Επί του παρόντος στο VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="70"/>
         <source>Currently in HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>Επί του παρόντος στο HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="71"/>
         <source>Currently in VCounter</source>
-        <translation type="unfinished"></translation>
+        <translation>Επί του παρόντος στο VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="72"/>
         <source>Enable VBlank IRQ generation</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση δημιουργίας IRQ VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="73"/>
         <source>Enable HBlank IRQ generation</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση δημιουργίας IRQ ΗBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="74"/>
         <source>Enable VCounter IRQ generation</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση δημιουργίας IRQ VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="75"/>
         <source>VCounter scanline</source>
-        <translation type="unfinished"></translation>
+        <translation>Γραμμή σάρωσης VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="79"/>
         <source>Current scanline</source>
-        <translation type="unfinished"></translation>
+        <translation>Τρέχουσα γραμμή σάρωσης</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="83"/>
@@ -1299,7 +1305,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="101"/>
         <location filename="../IOViewer.cpp" line="111"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>Προτεραιότητα</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="84"/>
@@ -1307,7 +1313,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="102"/>
         <location filename="../IOViewer.cpp" line="112"/>
         <source>Tile data base (* 16kB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Βάση δεδομένων πλακιδίων (* 16kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="85"/>
@@ -1315,7 +1321,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="103"/>
         <location filename="../IOViewer.cpp" line="113"/>
         <source>Enable mosaic</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση μωσαϊκού</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="86"/>
@@ -1323,7 +1329,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="104"/>
         <location filename="../IOViewer.cpp" line="114"/>
         <source>Enable 256-color</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση 256 χρωμάτων</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="87"/>
@@ -1331,7 +1337,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="105"/>
         <location filename="../IOViewer.cpp" line="115"/>
         <source>Tile map base (* 2kB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Βάση χάρτη πλακιδίων (* 2kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="88"/>
@@ -1339,7 +1345,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="107"/>
         <location filename="../IOViewer.cpp" line="117"/>
         <source>Background dimensions</source>
-        <translation type="unfinished"></translation>
+        <translation>Διαστάσεις φόντου</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="106"/>
@@ -1355,7 +1361,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1364"/>
         <location filename="../IOViewer.cpp" line="1405"/>
         <source>Horizontal offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Οριζόντια μετατόπιση</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="125"/>
@@ -1365,7 +1371,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1360"/>
         <location filename="../IOViewer.cpp" line="1401"/>
         <source>Vertical offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Κάθετη μετατόπιση</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="153"/>
@@ -1381,7 +1387,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="211"/>
         <location filename="../IOViewer.cpp" line="220"/>
         <source>Fractional part</source>
-        <translation type="unfinished"></translation>
+        <translation>Κλασματικό μέρος</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="154"/>
@@ -1393,7 +1399,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="202"/>
         <location filename="../IOViewer.cpp" line="207"/>
         <source>Integer part</source>
-        <translation type="unfinished"></translation>
+        <translation>Ακέραιο μέρος</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="174"/>
@@ -1401,7 +1407,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="212"/>
         <location filename="../IOViewer.cpp" line="221"/>
         <source>Integer part (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>Ακέραιο μέρος (χαμηλό)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="178"/>
@@ -1409,31 +1415,31 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="216"/>
         <location filename="../IOViewer.cpp" line="225"/>
         <source>Integer part (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>Ακέραιο μέρος (υψηλό)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="229"/>
         <location filename="../IOViewer.cpp" line="234"/>
         <source>End x</source>
-        <translation type="unfinished"></translation>
+        <translation>Τελικό x</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="230"/>
         <location filename="../IOViewer.cpp" line="235"/>
         <source>Start x</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχικό x</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="239"/>
         <location filename="../IOViewer.cpp" line="244"/>
         <source>End y</source>
-        <translation type="unfinished"></translation>
+        <translation>Τελικό y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="240"/>
         <location filename="../IOViewer.cpp" line="245"/>
         <source>Start y</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχικό y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="249"/>
@@ -1741,14 +1747,14 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1135"/>
         <location filename="../IOViewer.cpp" line="1184"/>
         <source>Initial volume</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχική ένταση</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="342"/>
         <location filename="../IOViewer.cpp" line="360"/>
         <location filename="../IOViewer.cpp" line="388"/>
         <source>Sound frequency</source>
-        <translation type="unfinished"></translation>
+        <translation>Συχνότητα ήχου</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="343"/>
@@ -1772,7 +1778,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1172"/>
         <location filename="../IOViewer.cpp" line="1198"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Επαναφορά</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="368"/>
@@ -1794,34 +1800,34 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="375"/>
         <location filename="../IOViewer.cpp" line="1157"/>
         <source>Volume</source>
-        <translation type="unfinished"></translation>
+        <translation>Ένταση ήχου</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="376"/>
         <location filename="../IOViewer.cpp" line="1158"/>
         <source>0%</source>
-        <translation type="unfinished"></translation>
+        <translation>0%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="377"/>
         <location filename="../IOViewer.cpp" line="434"/>
         <location filename="../IOViewer.cpp" line="1159"/>
         <source>100%</source>
-        <translation type="unfinished"></translation>
+        <translation>100%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="378"/>
         <location filename="../IOViewer.cpp" line="433"/>
         <location filename="../IOViewer.cpp" line="1160"/>
         <source>50%</source>
-        <translation type="unfinished"></translation>
+        <translation>50%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="379"/>
         <location filename="../IOViewer.cpp" line="432"/>
         <location filename="../IOViewer.cpp" line="1161"/>
         <source>25%</source>
-        <translation type="unfinished"></translation>
+        <translation>25%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="380"/>
@@ -1829,7 +1835,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="382"/>
         <location filename="../IOViewer.cpp" line="383"/>
         <source>75%</source>
-        <translation type="unfinished"></translation>
+        <translation>75%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="405"/>
@@ -1847,13 +1853,13 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="407"/>
         <location filename="../IOViewer.cpp" line="1190"/>
         <source>15</source>
-        <translation type="unfinished"></translation>
+        <translation>15</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="408"/>
         <location filename="../IOViewer.cpp" line="1191"/>
         <source>7</source>
-        <translation type="unfinished"></translation>
+        <translation>7</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="410"/>
@@ -1953,7 +1959,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="442"/>
         <location filename="../IOViewer.cpp" line="449"/>
         <source>0</source>
-        <translation type="unfinished"></translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="443"/>
@@ -1966,12 +1972,12 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1002"/>
         <location filename="../IOViewer.cpp" line="1012"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="445"/>
         <source>Channel A reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Επαναφορά καναλιού A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="446"/>
@@ -1991,37 +1997,37 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="452"/>
         <source>Channel B reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Επαναφορά καναλιού B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="456"/>
         <location filename="../IOViewer.cpp" line="1220"/>
         <source>Active channel 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργό κανάλι 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="457"/>
         <location filename="../IOViewer.cpp" line="1221"/>
         <source>Active channel 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργό κανάλι 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="458"/>
         <location filename="../IOViewer.cpp" line="1222"/>
         <source>Active channel 3</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργό κανάλι 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="459"/>
         <location filename="../IOViewer.cpp" line="1223"/>
         <source>Active channel 4</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργό κανάλι 4</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="460"/>
         <location filename="../IOViewer.cpp" line="1224"/>
         <source>Enable audio</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση ήχου</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="466"/>
@@ -2031,7 +2037,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="467"/>
         <source>Resolution</source>
-        <translation type="unfinished"></translation>
+        <translation>Ανάλυση</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="477"/>
@@ -2107,7 +2113,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1321"/>
         <location filename="../IOViewer.cpp" line="1322"/>
         <source>Sample</source>
-        <translation type="unfinished"></translation>
+        <translation>Δείγμα</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="561"/>
@@ -2138,14 +2144,14 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1139"/>
         <location filename="../IOViewer.cpp" line="1166"/>
         <source>Sound frequency (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>Συχνότητα ήχου (χαμηλή)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1120"/>
         <location filename="../IOViewer.cpp" line="1143"/>
         <location filename="../IOViewer.cpp" line="1170"/>
         <source>Sound frequency (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>Συχνότητα ήχου (υψηλή)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1424"/>
@@ -2185,7 +2191,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="667"/>
         <location filename="../IOViewer.cpp" line="712"/>
         <source>Word count</source>
-        <translation type="unfinished"></translation>
+        <translation>Πλήθος λέξεων</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="581"/>
@@ -2253,7 +2259,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="683"/>
         <location filename="../IOViewer.cpp" line="729"/>
         <source>Repeat</source>
-        <translation type="unfinished"></translation>
+        <translation>Επανάληψη</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="594"/>
@@ -2261,7 +2267,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="684"/>
         <location filename="../IOViewer.cpp" line="730"/>
         <source>32-bit</source>
-        <translation type="unfinished"></translation>
+        <translation>32-bit</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="595"/>
@@ -2290,7 +2296,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1091"/>
         <location filename="../IOViewer.cpp" line="1552"/>
         <source>VBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="598"/>
@@ -2301,7 +2307,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="962"/>
         <location filename="../IOViewer.cpp" line="1443"/>
         <source>HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="601"/>
@@ -2314,7 +2320,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="832"/>
         <location filename="../IOViewer.cpp" line="892"/>
         <source>IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="602"/>
@@ -2329,24 +2335,24 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1450"/>
         <location filename="../IOViewer.cpp" line="1454"/>
         <source>Enable</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="644"/>
         <location filename="../IOViewer.cpp" line="689"/>
         <location filename="../IOViewer.cpp" line="735"/>
         <source>Audio FIFO</source>
-        <translation type="unfinished"></translation>
+        <translation>FIFO ήχου</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="726"/>
         <source>Video Capture</source>
-        <translation type="unfinished"></translation>
+        <translation>Καταγραφή βίντεο</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="728"/>
         <source>DRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>DRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="774"/>
@@ -2358,7 +2364,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1059"/>
         <location filename="../IOViewer.cpp" line="1063"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Τιμή</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="778"/>
@@ -2366,7 +2372,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="809"/>
         <location filename="../IOViewer.cpp" line="825"/>
         <source>Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Κλίμακα</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="780"/>
@@ -2375,7 +2381,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="827"/>
         <location filename="../IOViewer.cpp" line="1070"/>
         <source>1/64</source>
-        <translation type="unfinished"></translation>
+        <translation>1/64</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="781"/>
@@ -2384,7 +2390,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="828"/>
         <location filename="../IOViewer.cpp" line="1071"/>
         <source>1/256</source>
-        <translation type="unfinished"></translation>
+        <translation>1/256</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="782"/>
@@ -2393,7 +2399,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="829"/>
         <location filename="../IOViewer.cpp" line="1068"/>
         <source>1/1024</source>
-        <translation type="unfinished"></translation>
+        <translation>1/1024</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="799"/>
@@ -2406,86 +2412,86 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="869"/>
         <location filename="../IOViewer.cpp" line="882"/>
         <source>A</source>
-        <translation type="unfinished"></translation>
+        <translation>A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="871"/>
         <location filename="../IOViewer.cpp" line="884"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Select</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="872"/>
         <location filename="../IOViewer.cpp" line="885"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Start</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="873"/>
         <location filename="../IOViewer.cpp" line="886"/>
         <source>Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεξί</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="874"/>
         <location filename="../IOViewer.cpp" line="887"/>
         <source>Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Αριστερό</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="875"/>
         <location filename="../IOViewer.cpp" line="888"/>
         <source>Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Πάνω</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="876"/>
         <location filename="../IOViewer.cpp" line="889"/>
         <source>Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Κάτω</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="877"/>
         <location filename="../IOViewer.cpp" line="890"/>
         <source>R</source>
-        <translation type="unfinished"></translation>
+        <translation>R</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="878"/>
         <location filename="../IOViewer.cpp" line="891"/>
         <source>L</source>
-        <translation type="unfinished"></translation>
+        <translation>L</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="893"/>
         <source>Condition</source>
-        <translation type="unfinished"></translation>
+        <translation>Συνθήκη</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="897"/>
         <source>SC</source>
-        <translation type="unfinished"></translation>
+        <translation>SC</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="898"/>
         <source>SD</source>
-        <translation type="unfinished"></translation>
+        <translation>SD</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="899"/>
         <source>SI</source>
-        <translation type="unfinished"></translation>
+        <translation>SI</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="900"/>
         <source>SO</source>
-        <translation type="unfinished"></translation>
+        <translation>SO</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="946"/>
         <location filename="../IOViewer.cpp" line="963"/>
         <source>VCounter</source>
-        <translation type="unfinished"></translation>
+        <translation>VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="947"/>
@@ -2515,31 +2521,31 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="951"/>
         <location filename="../IOViewer.cpp" line="968"/>
         <source>SIO</source>
-        <translation type="unfinished"></translation>
+        <translation>SIO</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="952"/>
         <location filename="../IOViewer.cpp" line="969"/>
         <source>DMA 0</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="953"/>
         <location filename="../IOViewer.cpp" line="970"/>
         <source>DMA 1</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="954"/>
         <location filename="../IOViewer.cpp" line="971"/>
         <source>DMA 2</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="955"/>
         <location filename="../IOViewer.cpp" line="972"/>
         <source>DMA 3</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="956"/>
@@ -2565,7 +2571,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1001"/>
         <location filename="../IOViewer.cpp" line="1005"/>
         <source>4</source>
-        <translation type="unfinished"></translation>
+        <translation>4</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="980"/>
@@ -2573,7 +2579,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="996"/>
         <location filename="../IOViewer.cpp" line="1006"/>
         <source>3</source>
-        <translation type="unfinished"></translation>
+        <translation>3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="981"/>
@@ -2582,7 +2588,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="997"/>
         <location filename="../IOViewer.cpp" line="1007"/>
         <source>2</source>
-        <translation type="unfinished"></translation>
+        <translation>2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="982"/>
@@ -2591,7 +2597,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1008"/>
         <location filename="../IOViewer.cpp" line="1011"/>
         <source>8</source>
-        <translation type="unfinished"></translation>
+        <translation>8</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="984"/>
@@ -2626,28 +2632,28 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1014"/>
         <source>PHI terminal</source>
-        <translation type="unfinished"></translation>
+        <translation>Τερματικό PHI</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1015"/>
         <location filename="../IOViewer.cpp" line="1451"/>
         <source>Disable</source>
-        <translation type="unfinished"></translation>
+        <translation>Απενεργοποίηση</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1016"/>
         <source>4.19MHz</source>
-        <translation type="unfinished"></translation>
+        <translation>4.19MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1017"/>
         <source>8.38MHz</source>
-        <translation type="unfinished"></translation>
+        <translation>8.38MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1018"/>
         <source>16.78MHz</source>
-        <translation type="unfinished"></translation>
+        <translation>16.78MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1020"/>
@@ -2692,7 +2698,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1047"/>
         <source>Internal clock</source>
-        <translation type="unfinished"></translation>
+        <translation>Εσωτερικό ρολόι</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1048"/>
@@ -2712,7 +2718,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/16</source>
-        <translation type="unfinished"></translation>
+        <translation>1/16</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1092"/>
@@ -2782,13 +2788,13 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1330"/>
         <location filename="../IOViewer.cpp" line="1339"/>
         <source>0x9800 – 0x9BFF</source>
-        <translation type="unfinished"></translation>
+        <translation>0x9800 – 0x9BFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1331"/>
         <location filename="../IOViewer.cpp" line="1340"/>
         <source>0x9C00 – 0x9FFF</source>
-        <translation type="unfinished"></translation>
+        <translation>0x9C00 – 0x9FFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1333"/>
@@ -2818,22 +2824,22 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1342"/>
         <source>Enable LCD</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση LCD</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1346"/>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Λειτουργία</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1347"/>
         <source>0: HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>0: HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1348"/>
         <source>1: VBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>1: VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1349"/>
@@ -2843,12 +2849,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1350"/>
         <source>3: HDraw</source>
-        <translation type="unfinished"></translation>
+        <translation>3: HDraw</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1352"/>
         <source>In LYC</source>
-        <translation type="unfinished"></translation>
+        <translation>Σε LYC</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1353"/>
@@ -2970,13 +2976,13 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1498"/>
         <location filename="../IOViewer.cpp" line="1510"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>Κόκκινο</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1501"/>
         <location filename="../IOViewer.cpp" line="1513"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Μπλε</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1517"/>
@@ -2986,7 +2992,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1518"/>
         <source>OAM order</source>
-        <translation type="unfinished"></translation>
+        <translation>Σειρά OAM</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1519"/>
@@ -3019,7 +3025,7 @@ Download size: %3</source>
         <location filename="../KeyEditor.cpp" line="45"/>
         <location filename="../KeyEditor.cpp" line="206"/>
         <source>---</source>
-        <translation type="unfinished"></translation>
+        <translation>---</translation>
     </message>
 </context>
 <context>
@@ -3046,52 +3052,52 @@ Download size: %3</source>
     <message>
         <location filename="../LoadSaveState.ui" line="50"/>
         <source>5</source>
-        <translation type="unfinished"></translation>
+        <translation>5</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="94"/>
         <source>6</source>
-        <translation type="unfinished"></translation>
+        <translation>6</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="116"/>
         <source>8</source>
-        <translation type="unfinished"></translation>
+        <translation>8</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="138"/>
         <source>4</source>
-        <translation type="unfinished"></translation>
+        <translation>4</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="160"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="182"/>
         <source>3</source>
-        <translation type="unfinished"></translation>
+        <translation>3</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="204"/>
         <source>7</source>
-        <translation type="unfinished"></translation>
+        <translation>7</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="226"/>
         <source>9</source>
-        <translation type="unfinished"></translation>
+        <translation>9</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="248"/>
         <source>2</source>
-        <translation type="unfinished"></translation>
+        <translation>2</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="261"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Ακύρωση</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="75"/>
@@ -3125,7 +3131,7 @@ Download size: %3</source>
         <location filename="../LogConfigModel.cpp" line="90"/>
         <location filename="../LogConfigModel.cpp" line="111"/>
         <source>Default</source>
-        <translation type="unfinished"></translation>
+        <translation>Προεπιλογή</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="92"/>
@@ -3135,17 +3141,17 @@ Download size: %3</source>
     <message>
         <location filename="../LogConfigModel.cpp" line="94"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Σφάλμα</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="96"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Προειδοποίηση</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="98"/>
         <source>Info</source>
-        <translation type="unfinished"></translation>
+        <translation>Πληροφορίες</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="100"/>
@@ -3155,12 +3161,12 @@ Download size: %3</source>
     <message>
         <location filename="../LogConfigModel.cpp" line="102"/>
         <source>Stub</source>
-        <translation type="unfinished"></translation>
+        <translation>Stub</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="104"/>
         <source>Game Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Σφάλμα παιχνιδιού</translation>
     </message>
 </context>
 <context>
@@ -3168,12 +3174,12 @@ Download size: %3</source>
     <message>
         <location filename="../LogController.cpp" line="96"/>
         <source>[%1] %2: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>[%1] %2: %3</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="107"/>
         <source>An error occurred</source>
-        <translation type="unfinished"></translation>
+        <translation>Προέκυψε σφάλμα</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="179"/>
@@ -3188,17 +3194,17 @@ Download size: %3</source>
     <message>
         <location filename="../LogController.cpp" line="183"/>
         <source>INFO</source>
-        <translation type="unfinished"></translation>
+        <translation>ΠΛΗΡΟΦΟΡΙΕΣ</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="185"/>
         <source>WARN</source>
-        <translation type="unfinished"></translation>
+        <translation>ΠΡΟΕΙΔΟΠΟΙΗΣΗ</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="187"/>
         <source>ERROR</source>
-        <translation type="unfinished"></translation>
+        <translation>ΣΦΑΛΜΑ</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="189"/>
@@ -3208,7 +3214,7 @@ Download size: %3</source>
     <message>
         <location filename="../LogController.cpp" line="191"/>
         <source>GAME ERROR</source>
-        <translation type="unfinished"></translation>
+        <translation>ΣΦΑΛΜΑ ΠΑΙΧΝΙΔΙΟΥ</translation>
     </message>
 </context>
 <context>
@@ -3216,7 +3222,7 @@ Download size: %3</source>
     <message>
         <location filename="../LogView.ui" line="14"/>
         <source>Logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχεία καταγραφής</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="22"/>
@@ -3236,17 +3242,17 @@ Download size: %3</source>
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation type="unfinished"></translation>
+        <translation>Πληροφορίες</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Προειδοποίηση</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="68"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Σφάλμα</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="78"/>
@@ -3256,17 +3262,17 @@ Download size: %3</source>
     <message>
         <location filename="../LogView.ui" line="95"/>
         <source>Game Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Σφάλμα παιχνιδιού</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="108"/>
         <source>Advanced settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Σύνθετες ρυθμίσεις</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="128"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Εκκαθάριση</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="137"/>
@@ -3284,12 +3290,12 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.ui" line="43"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Μεγέθυνση</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="124"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Εξαγωγή</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="139"/>
@@ -3299,7 +3305,7 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="48"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>Προτεραιότητα</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="49"/>
@@ -3316,7 +3322,7 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="51"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Μέγεθος</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="52"/>
@@ -3327,7 +3333,7 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="53"/>
         <source>Xform</source>
-        <translation type="unfinished"></translation>
+        <translation>Xform</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="108"/>
@@ -3374,7 +3380,7 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="283"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -3401,12 +3407,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="71"/>
         <source>Code executed</source>
-        <translation type="unfinished"></translation>
+        <translation>Ο κωδικός εκτελέστηκε</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="73"/>
         <source>Code aborted</source>
-        <translation type="unfinished"></translation>
+        <translation>Ο κωδικός απορρίφθηκε</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="75"/>
@@ -3501,7 +3507,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>Κωδικός ARM</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
@@ -3544,7 +3550,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="23"/>
         <source>Log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο καταγραφής</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="32"/>
@@ -3564,12 +3570,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="56"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόρτωση</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
         <source>Unload</source>
-        <translation type="unfinished"></translation>
+        <translation>Εκφόρτωση</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="76"/>
@@ -3600,7 +3606,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="96"/>
         <source>Memory access logs (*.mal)</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχεία προσπέλασης μνήμης (*.mal)</translation>
     </message>
 </context>
 <context>
@@ -3652,12 +3658,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryModel.cpp" line="55"/>
         <source>Paste</source>
-        <translation type="unfinished"></translation>
+        <translation>Επικόλληση</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="60"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόρτωση</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="118"/>
@@ -3705,23 +3711,23 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="51"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Διεύθυνση</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="56"/>
         <source>Current Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Τρέχουσα τιμή</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="61"/>
         <location filename="../MemorySearch.ui" line="81"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Τύπος</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="71"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Τιμή</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="88"/>
@@ -3827,12 +3833,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="336"/>
         <source>New Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Νέα αναζήτηση</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="343"/>
         <source>Search Within</source>
-        <translation type="unfinished"></translation>
+        <translation>Αναζήτηση εντός</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="350"/>
@@ -3842,27 +3848,27 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="357"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>Ανανέωση</translation>
     </message>
     <message>
         <location filename="../MemorySearch.cpp" line="224"/>
         <source> (%0/%1×)</source>
-        <translation type="unfinished"></translation>
+        <translation> (%0/%1×)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.cpp" line="226"/>
         <source> (⅟%0×)</source>
-        <translation type="unfinished"></translation>
+        <translation> (⅟%0×)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.cpp" line="229"/>
         <source> (%0×)</source>
-        <translation type="unfinished"></translation>
+        <translation> (%0×)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.cpp" line="233"/>
         <source>%1 byte%2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 byte%2</translation>
     </message>
 </context>
 <context>
@@ -3870,7 +3876,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="14"/>
         <source>Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Μνήμη</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="192"/>
@@ -3880,27 +3886,27 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="205"/>
         <source>Load TBL</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόρτωση TBL</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="233"/>
         <source>Copy Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Αντιγραφή επιλογής</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="247"/>
         <source>Paste</source>
-        <translation type="unfinished"></translation>
+        <translation>Επικόλληση</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="240"/>
         <source>Save Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποθήκευση επιλογής</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="37"/>
         <source>Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Διεύθυνση:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="106"/>
@@ -3910,17 +3916,17 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="120"/>
         <source>1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>1 Byte</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="125"/>
         <source>2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>2 Bytes</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="130"/>
         <source>4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>4 Bytes</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="152"/>
@@ -3935,12 +3941,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="254"/>
         <source>Save Range</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποθήκευση εύρους</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="267"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόρτωση</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="282"/>
@@ -4004,32 +4010,32 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.ui" line="72"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Διεύθυνση</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="94"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Αντιγραφή</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="122"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Μεγέθυνση</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="137"/>
         <source>Geometry</source>
-        <translation type="unfinished"></translation>
+        <translation>Γεωμετρία</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="145"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Θέση</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="224"/>
         <source>Dimensions</source>
-        <translation type="unfinished"></translation>
+        <translation>Διαστάσεις</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="316"/>
@@ -4039,7 +4045,7 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.ui" line="389"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Εξαγωγή</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="402"/>
@@ -4060,7 +4066,7 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.ui" line="444"/>
         <source>Palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Παλέτα</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="481"/>
@@ -4072,7 +4078,7 @@ Download size: %3</source>
         <location filename="../ObjView.ui" line="561"/>
         <location filename="../ObjView.ui" line="632"/>
         <source>Return, Ctrl+R</source>
-        <translation type="unfinished"></translation>
+        <translation>Return, Ctrl+R</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="522"/>
@@ -4094,7 +4100,7 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.ui" line="572"/>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Λειτουργία</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="592"/>
@@ -4115,7 +4121,7 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.ui" line="677"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>Προτεραιότητα</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="715"/>
@@ -4126,7 +4132,7 @@ Download size: %3</source>
         <location filename="../ObjView.cpp" line="160"/>
         <location filename="../ObjView.cpp" line="249"/>
         <source>0x%0</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="182"/>
@@ -4138,7 +4144,7 @@ Download size: %3</source>
         <location filename="../ObjView.cpp" line="259"/>
         <location filename="../ObjView.cpp" line="260"/>
         <source>---</source>
-        <translation type="unfinished"></translation>
+        <translation>---</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="193"/>
@@ -4148,18 +4154,18 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.cpp" line="196"/>
         <source>OBJWIN</source>
-        <translation type="unfinished"></translation>
+        <translation>OBJWIN</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="199"/>
         <source>Invalid</source>
-        <translation type="unfinished"></translation>
+        <translation>Μη έγκυρο</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="256"/>
         <location filename="../ObjView.cpp" line="261"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translation>Μ/Δ</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="287"/>
@@ -4169,7 +4175,7 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.cpp" line="288"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -4182,7 +4188,7 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="30"/>
         <source>Game Boy Advance</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="42"/>
@@ -4190,17 +4196,17 @@ Download size: %3</source>
         <location filename="../OverrideView.ui" line="241"/>
         <location filename="../OverrideView.ui" line="257"/>
         <source>Autodetect</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτόματος εντοπισμός</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="55"/>
         <source>Realtime clock</source>
-        <translation type="unfinished"></translation>
+        <translation>Ρολόι πραγματικού χρόνου</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="65"/>
         <source>Gyroscope</source>
-        <translation type="unfinished"></translation>
+        <translation>Γυροσκόπιο</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="75"/>
@@ -4210,7 +4216,7 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="85"/>
         <source>Light sensor</source>
-        <translation type="unfinished"></translation>
+        <translation>Αισθητήρας φωτός</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="95"/>
@@ -4230,27 +4236,27 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="131"/>
         <source>SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="136"/>
         <source>Flash 512kb</source>
-        <translation type="unfinished"></translation>
+        <translation>Flash 512kb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="141"/>
         <source>Flash 1Mb</source>
-        <translation type="unfinished"></translation>
+        <translation>Flash 1Mb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="146"/>
         <source>EEPROM 8kB</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 8kB</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="151"/>
         <source>EEPROM 512 bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 512 bytes</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="156"/>
@@ -4275,12 +4281,12 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="227"/>
         <source>Game Boy</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="233"/>
         <source>Game Boy model</source>
-        <translation type="unfinished"></translation>
+        <translation>Μοντέλο Game Boy</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="249"/>
@@ -4290,7 +4296,7 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="265"/>
         <source>Background Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>Χρώματα φόντου</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="352"/>
@@ -4305,12 +4311,12 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="529"/>
         <source>Palette preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Προεπιλογή παλέτας</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="67"/>
         <source>Official MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>Επίσημα MBC</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="71"/>
@@ -4328,17 +4334,17 @@ Download size: %3</source>
     <message>
         <location filename="../PaletteView.ui" line="14"/>
         <source>Palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Παλέτα</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="44"/>
         <source>Background</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόντο</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="94"/>
         <source>Objects</source>
-        <translation type="unfinished"></translation>
+        <translation>Αντικείμενα</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="153"/>
@@ -4348,27 +4354,27 @@ Download size: %3</source>
     <message>
         <location filename="../PaletteView.ui" line="184"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>Κόκκινο</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="191"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>Πράσινο</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="198"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Μπλε</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="253"/>
         <source>16-bit value</source>
-        <translation type="unfinished"></translation>
+        <translation>Τιμή 16-bit</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="260"/>
         <source>Hex code</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεκαεξαδικός κωδικός</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="267"/>
@@ -4388,12 +4394,12 @@ Download size: %3</source>
     <message>
         <location filename="../PaletteView.cpp" line="118"/>
         <source>#%0</source>
-        <translation type="unfinished"></translation>
+        <translation>#%0</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="119"/>
         <source>0x%0</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="120"/>
@@ -4401,17 +4407,17 @@ Download size: %3</source>
         <location filename="../PaletteView.cpp" line="122"/>
         <location filename="../PaletteView.cpp" line="123"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0 (%1)</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="135"/>
         <source>Export palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Εξαγωγή παλέτας</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="136"/>
         <source>Windows PAL (*.pal);;Adobe Color Table (*.act)</source>
-        <translation type="unfinished"></translation>
+        <translation>Windows PAL (*.pal);;Adobe Color Table (*.act)</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="142"/>
@@ -4439,12 +4445,12 @@ Download size: %3</source>
     <message>
         <location filename="../PlacementControl.ui" line="72"/>
         <source>X</source>
-        <translation type="unfinished"></translation>
+        <translation>X</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="79"/>
         <source>Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Y</translation>
     </message>
 </context>
 <context>
@@ -4467,12 +4473,12 @@ Download size: %3</source>
     <message>
         <location filename="../PrinterView.ui" line="180"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Μεγέθυνση</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="223"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Αντιγραφή</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
@@ -4482,7 +4488,7 @@ Download size: %3</source>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -4495,12 +4501,12 @@ Download size: %3</source>
         <location filename="../ROMInfo.cpp" line="88"/>
         <location filename="../ROMInfo.cpp" line="101"/>
         <source>(unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(άγνωστο)</translation>
     </message>
     <message>
         <location filename="../ROMInfo.cpp" line="56"/>
         <source> bytes</source>
-        <translation type="unfinished"></translation>
+        <translation> bytes</translation>
     </message>
     <message>
         <location filename="../ROMInfo.cpp" line="91"/>
@@ -4510,27 +4516,27 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="14"/>
         <source>ROM Info</source>
-        <translation type="unfinished"></translation>
+        <translation>Πληροφορίες ROM</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>Πληροφορίες αρχείου</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
         <source>Game name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Όνομα παιχνιδιού:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="100"/>
         <source>SHA-1</source>
-        <translation type="unfinished"></translation>
+        <translation>SHA-1</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
@@ -4540,12 +4546,12 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="140"/>
         <source>Internal name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Εσωτερικό όνομα:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="157"/>
         <source>Game ID:</source>
-        <translation type="unfinished"></translation>
+        <translation>Αναγνωριστικό παιχνιδιού:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="174"/>
@@ -4555,17 +4561,17 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="191"/>
         <source>Revision:</source>
-        <translation type="unfinished"></translation>
+        <translation>Αναθεώρηση:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="49"/>
         <source>File size:</source>
-        <translation type="unfinished"></translation>
+        <translation>Μέγεθος αρχείου:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="66"/>
         <source>CRC32:</source>
-        <translation type="unfinished"></translation>
+        <translation>CRC32:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
@@ -4583,32 +4589,32 @@ Download size: %3</source>
     <message>
         <location filename="../ReportView.cpp" line="419"/>
         <source>ZIP archive (*.zip)</source>
-        <translation type="unfinished"></translation>
+        <translation>Συμπιεσμένο αρχείο ZIP (*.zip)</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="14"/>
         <source>Generate Bug Report</source>
-        <translation type="unfinished"></translation>
+        <translation>Δημιουργία αναφοράς σφάλματος</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="67"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Για να υποβάλετε μια αναφορά σφάλματος, δημιουργήστε πρώτα ένα αρχείο αναφοράς προς επισύναψη στην αναφορά σφάλματος που πρόκειται να υποβάλετε. Προτείνεται να συμπεριλάβετε τα αρχεία αποθηκευμένων δεδομένων, καθώς αυτά συμβάλλουν συχνά στον εντοπισμό σφαλμάτων. Αυτή η ενέργεια θα συλλέξει ορισμένες πληροφορίες σχετικά με την έκδοση του {projectName} που χρησιμοποιείτε, τη διαμόρφωσή σας, τον υπολογιστή σας και το παιχνίδι που είναι ανοικτό επί του παρόντος (αν υπάρχει). Μόλις ολοκληρωθεί αυτή η συλλογή, μπορείτε να ελέγξετε όλες τις συλλεγμένες πληροφορίες παρακάτω και να τις αποθηκεύσετε σε αρχείο zip. Θα γίνει αυτόματα προσπάθεια για διαγραφή οποιουδήποτε προσωπικού δεδομένου, όπως του ονόματος χρήστη σας, εφόσον υπάρχει στις συλλεγμένες διαδρομές, αλλά μπορείτε για παν ενδεχόμενο να επεξεργαστείτε τις πληροφορίες. Αφού κάνετε συλλογή και αποθήκευση, κάντε κλικ στο παρακάτω κουμπί ή μεταβείτε στο &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; για να υποβάλετε μια αναφορά σφάλματος στο GitHub. Φροντίστε να επισυνάψετε την αναφορά που δημιουργήσατε!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="85"/>
         <source>Generate report</source>
-        <translation type="unfinished"></translation>
+        <translation>Δημιουργία αναφοράς</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="99"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποθήκευση</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="113"/>
         <source>Open issue list in browser</source>
-        <translation type="unfinished"></translation>
+        <translation>Άνοιγμα λίστας ζητημάτων στο πρόγραμμα περιήγησης</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="134"/>
@@ -4646,7 +4652,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="73"/>
         <source>Conversion failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Η μετατροπή απέτυχε</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="73"/>
@@ -4691,18 +4697,18 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.ui" line="20"/>
         <source>Input file</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο εισόδου</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="29"/>
         <location filename="../SaveConverter.ui" line="55"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>Περιήγηση</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="46"/>
         <source>Output file</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο εξόδου</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="454"/>
@@ -4722,32 +4728,32 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="472"/>
         <source>SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="476"/>
         <source>%1 flash</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 flash</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="480"/>
         <source>%1 EEPROM</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 EEPROM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="486"/>
         <source> + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation> + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="495"/>
         <source>%1 SRAM + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 SRAM + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="497"/>
         <source>%1 SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="502"/>
@@ -4772,17 +4778,17 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="513"/>
         <source>MBC6 SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6 SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="517"/>
         <source>TAMA5</source>
-        <translation type="unfinished"></translation>
+        <translation>TAMA5</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="529"/>
         <source>%1 (%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="533"/>
@@ -4810,7 +4816,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="281"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Όλα τα αρχεία (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4831,12 +4837,12 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="71"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>Εκτέλεση</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="92"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="96"/>
@@ -4861,12 +4867,12 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="128"/>
         <source>&amp;Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Επανεκκίνηση</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="133"/>
         <source>0</source>
-        <translation type="unfinished"></translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="138"/>
@@ -4889,22 +4895,22 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="20"/>
         <source>Sensors</source>
-        <translation type="unfinished"></translation>
+        <translation>Αισθητήρες</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="31"/>
         <source>Realtime clock</source>
-        <translation type="unfinished"></translation>
+        <translation>Ρολόι πραγματικού χρόνου</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="50"/>
         <source>Fixed time</source>
-        <translation type="unfinished"></translation>
+        <translation>Καθορισμένη ώρα</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="37"/>
         <source>System time</source>
-        <translation type="unfinished"></translation>
+        <translation>Ώρα συστήματος</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="96"/>
@@ -4914,7 +4920,7 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="60"/>
         <source>Now</source>
-        <translation type="unfinished"></translation>
+        <translation>Τώρα</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="67"/>
@@ -4929,22 +4935,22 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="126"/>
         <source>MM/dd/yy hh:mm:ss AP</source>
-        <translation type="unfinished"></translation>
+        <translation>dd/MM/yyyy HH:mm:ss</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="136"/>
         <source>Light sensor</source>
-        <translation type="unfinished"></translation>
+        <translation>Αισθητήρας φωτός</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="142"/>
         <source>Brightness</source>
-        <translation type="unfinished"></translation>
+        <translation>Φωτεινότητα</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="179"/>
         <source>Tilt sensor</source>
-        <translation type="unfinished"></translation>
+        <translation>Αισθητήρας κλίσης</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="187"/>
@@ -4961,12 +4967,12 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="268"/>
         <source>Gyroscope</source>
-        <translation type="unfinished"></translation>
+        <translation>Γυροσκόπιο</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="296"/>
         <source>Sensitivity</source>
-        <translation type="unfinished"></translation>
+        <translation>Ευαισθησία</translation>
     </message>
 </context>
 <context>
@@ -4975,28 +4981,28 @@ Download size: %3</source>
         <location filename="../SettingsView.cpp" line="157"/>
         <location filename="../SettingsView.cpp" line="232"/>
         <source>Qt Multimedia</source>
-        <translation type="unfinished"></translation>
+        <translation>Πολυμέσα Qt</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="164"/>
         <source>SDL</source>
-        <translation type="unfinished"></translation>
+        <translation>SDL</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="172"/>
         <source>Software (Qt)</source>
-        <translation type="unfinished"></translation>
+        <translation>Λογισμικό (Qt)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1315"/>
         <location filename="../SettingsView.cpp" line="178"/>
         <source>OpenGL</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenGL</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="185"/>
         <source>OpenGL (force version 1.x)</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenGL (επιβολή έκδοσης 1.x)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="218"/>
@@ -5011,17 +5017,17 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="334"/>
         <source>Keyboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Πληκτρολόγιο</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="346"/>
         <source>Controllers</source>
-        <translation type="unfinished"></translation>
+        <translation>Χειριστήρια</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="411"/>
         <source>Shortcuts</source>
-        <translation type="unfinished"></translation>
+        <translation>Συντομεύσεις</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="414"/>
@@ -5036,121 +5042,123 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.cpp" line="445"/>
         <location filename="../SettingsView.cpp" line="447"/>
         <source>Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Shader</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="468"/>
         <source>Select BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="475"/>
         <source>Select directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή καταλόγου</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="483"/>
         <source>Select image</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή εικόνας</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="483"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο εικόνας (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="877"/>
         <source>(%1×%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>(%1×%2)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="895"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>Ποτέ</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="900"/>
         <source>Just now</source>
-        <translation type="unfinished"></translation>
+        <translation>Μόλις τώρα</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="904"/>
         <source>Less than an hour ago</source>
-        <translation type="unfinished"></translation>
+        <translation>Πριν από λιγότερο από μία ώρα</translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="909"/>
         <source>%n hour(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>πριν από %n ώρα</numerusform>
+            <numerusform>πριν από %n ώρες</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="913"/>
         <source>%n day(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>πριν από %n ημέρα</numerusform>
+            <numerusform>πριν από %n ημέρες</numerusform>
         </translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="20"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Ρυθμίσεις</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="45"/>
         <source>Audio/Video</source>
-        <translation type="unfinished"></translation>
+        <translation>Ήχος/Βίντεο</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="50"/>
         <source>Gameplay</source>
-        <translation type="unfinished"></translation>
+        <translation>Εκτέλεση παιχνιδιών</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
         <source>Interface</source>
-        <translation type="unfinished"></translation>
+        <translation>Περιβάλλον χρήστη</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενημέρωση</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
         <source>Emulation</source>
-        <translation type="unfinished"></translation>
+        <translation>Εξομοίωση</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="70"/>
         <source>Enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>Βελτιώσεις</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="75"/>
         <source>BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="80"/>
         <source>Paths</source>
-        <translation type="unfinished"></translation>
+        <translation>Διαδρομές</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="85"/>
         <source>Logging</source>
-        <translation type="unfinished"></translation>
+        <translation>Καταγραφή</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="90"/>
         <source>Game Boy</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="111"/>
         <source>Audio driver:</source>
-        <translation type="unfinished"></translation>
+        <translation>Οδηγός ήχου:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="128"/>
@@ -5161,78 +5169,78 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.ui" line="140"/>
         <location filename="../SettingsView.ui" line="162"/>
         <source>1536</source>
-        <translation type="unfinished"></translation>
+        <translation>1536</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="147"/>
         <source>512</source>
-        <translation type="unfinished"></translation>
+        <translation>512</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="152"/>
         <source>768</source>
-        <translation type="unfinished"></translation>
+        <translation>768</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="157"/>
         <source>1024</source>
-        <translation type="unfinished"></translation>
+        <translation>1024</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="167"/>
         <source>2048</source>
-        <translation type="unfinished"></translation>
+        <translation>2048</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="172"/>
         <source>3072</source>
-        <translation type="unfinished"></translation>
+        <translation>3072</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="177"/>
         <source>4096</source>
-        <translation type="unfinished"></translation>
+        <translation>4096</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="185"/>
         <source>samples</source>
-        <translation type="unfinished"></translation>
+        <translation>δείγματα</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="194"/>
         <source>Sample rate:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ρυθμός δειγματοληψίας:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="206"/>
         <location filename="../SettingsView.ui" line="223"/>
         <source>44100</source>
-        <translation type="unfinished"></translation>
+        <translation>44100</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="213"/>
         <source>22050</source>
-        <translation type="unfinished"></translation>
+        <translation>22050</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="218"/>
         <source>32000</source>
-        <translation type="unfinished"></translation>
+        <translation>32000</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="228"/>
         <source>48000</source>
-        <translation type="unfinished"></translation>
+        <translation>48000</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="236"/>
         <source>Hz</source>
-        <translation type="unfinished"></translation>
+        <translation>Hz</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="245"/>
         <source>Volume:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ένταση ήχου:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="276"/>
@@ -5240,7 +5248,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.ui" line="811"/>
         <location filename="../SettingsView.ui" line="836"/>
         <source>Mute</source>
-        <translation type="unfinished"></translation>
+        <translation>Σίγαση</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="285"/>
@@ -5255,80 +5263,80 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="332"/>
         <source>All windows</source>
-        <translation type="unfinished"></translation>
+        <translation>Σε όλα τα παράθυρα</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="345"/>
         <source>Player 1 window only</source>
-        <translation type="unfinished"></translation>
+        <translation>Μόνο στο παράθυρο του παίκτη 1</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="355"/>
         <source>Currently active player window</source>
-        <translation type="unfinished"></translation>
+        <translation>Στο παράθυρο του ενεργού παίκτη</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="388"/>
         <source>Display driver:</source>
-        <translation type="unfinished"></translation>
+        <translation>Οδηγός απεικόνισης:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="405"/>
         <source>Frameskip:</source>
-        <translation type="unfinished"></translation>
+        <translation>Παράλειψη καρέ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="414"/>
         <source>Skip every</source>
-        <translation type="unfinished"></translation>
+        <translation>Παράλειψη κάθε</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="424"/>
         <location filename="../SettingsView.ui" line="1199"/>
         <source>frames</source>
-        <translation type="unfinished"></translation>
+        <translation>καρέ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="475"/>
         <source>FPS target:</source>
-        <translation type="unfinished"></translation>
+        <translation>Στόχος FPS:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="500"/>
         <source>frames per second</source>
-        <translation type="unfinished"></translation>
+        <translation>καρέ ανά δευτερόλεπτο</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="516"/>
         <source>Sync:</source>
-        <translation type="unfinished"></translation>
+        <translation>Συγχρονισμός:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="382"/>
         <location filename="../SettingsView.ui" line="525"/>
         <source>Video</source>
-        <translation type="unfinished"></translation>
+        <translation>Βίντεο</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="105"/>
         <location filename="../SettingsView.ui" line="532"/>
         <source>Audio</source>
-        <translation type="unfinished"></translation>
+        <translation>Ήχος</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="433"/>
         <source>Lock aspect ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>Κλείδωμα λόγου διαστάσεων</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="440"/>
         <source>Force integer scaling</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιβολή ακέραιας κλιμάκωσης</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="454"/>
         <source>Bilinear filtering</source>
-        <translation type="unfinished"></translation>
+        <translation>Διγραμμικό φιλτράρισμα</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="757"/>
@@ -5339,7 +5347,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.ui" line="804"/>
         <location filename="../SettingsView.ui" line="829"/>
         <source>Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>Παύση</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="795"/>
@@ -5374,42 +5382,42 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="959"/>
         <source>Current channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Τρέχον κανάλι:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="973"/>
         <source>Current version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Τρέχουσα έκδοση:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="997"/>
         <source>Update channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Κανάλι ενημερώσεων:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1007"/>
         <source>Available version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Διαθέσιμη έκδοση:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1014"/>
         <source>(Unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Άγνωστο)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1024"/>
         <source>Last checked:</source>
-        <translation type="unfinished"></translation>
+        <translation>Τελευταίος έλεγχος:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1045"/>
         <source>Automatically check on start</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτόματος έλεγχος κατά την εκκίνηση</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1052"/>
         <source>Check now</source>
-        <translation type="unfinished"></translation>
+        <translation>Έλεγχος τώρα</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2174"/>
@@ -5439,7 +5447,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="2206"/>
         <source>Driver:</source>
-        <translation type="unfinished"></translation>
+        <translation>Οδηγός:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2223"/>
@@ -5454,27 +5462,27 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="447"/>
         <source>Interframe blending</source>
-        <translation type="unfinished"></translation>
+        <translation>Παρεμβολή μεταξύ διαδοχικών καρέ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="709"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Γλώσσα</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="726"/>
         <source>Library:</source>
-        <translation type="unfinished"></translation>
+        <translation>Βιβλιοθήκη:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="734"/>
         <source>List view</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή λίστας</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="739"/>
         <source>Tree view</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή δέντρου</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="747"/>
@@ -5539,7 +5547,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="911"/>
         <source>Show emulation info on reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Εμφάνιση πληροφοριών εξομοίωσης κατά την επανεκκίνηση</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="948"/>
@@ -5626,54 +5634,54 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="1815"/>
         <source>Models</source>
-        <translation type="unfinished"></translation>
+        <translation>Μοντέλα</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1821"/>
         <source>GB only:</source>
-        <translation type="unfinished"></translation>
+        <translation>Μόνο GB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1831"/>
         <source>SGB compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>Συμβατό με SGB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1841"/>
         <source>GBC only:</source>
-        <translation type="unfinished"></translation>
+        <translation>Μόνο GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1851"/>
         <source>GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>Συμβατό με GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1861"/>
         <source>SGB and GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>Συμβατό με SGB και GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1881"/>
         <source>Game Boy palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Παλέτα Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1887"/>
         <source>Preset:</source>
-        <translation type="unfinished"></translation>
+        <translation>Προεπιλογή:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="623"/>
         <location filename="../SettingsView.ui" line="667"/>
         <source>Screenshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Στιγμιότυπο οθόνης</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="643"/>
         <location filename="../SettingsView.ui" line="684"/>
         <source>Cheat codes</source>
-        <translation type="unfinished"></translation>
+        <translation>Κωδικοί cheat</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1281"/>
@@ -5708,12 +5716,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="1367"/>
         <source>(240×160)</source>
-        <translation type="unfinished"></translation>
+        <translation>(240×160)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1396"/>
         <source>GB BIOS file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο BIOS για GB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="932"/>
@@ -5737,7 +5745,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="1518"/>
         <source>Skip BIOS intro</source>
-        <translation type="unfinished"></translation>
+        <translation>Παράλειψη εισαγωγής BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1480"/>
@@ -5786,7 +5794,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="1724"/>
         <source>Cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>Cheat</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1781"/>
@@ -5829,43 +5837,43 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.cpp" line="77"/>
         <source>No shader active</source>
-        <translation type="unfinished"></translation>
+        <translation>Κανένα ενεργό shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="91"/>
         <location filename="../ShaderSelector.cpp" line="94"/>
         <source>Load shader</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόρτωση shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="93"/>
         <source>mGBA Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Shader του mGBA</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="124"/>
         <source>Error loading shader</source>
-        <translation type="unfinished"></translation>
+        <translation>Σφάλμα φόρτωσης shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="124"/>
         <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεν ήταν δυνατή η επιτυχής φόρτωση του shader «%1».</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="146"/>
         <source>No shader loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεν έχει φορτωθεί shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="154"/>
         <source>by %1</source>
-        <translation type="unfinished"></translation>
+        <translation>από %1</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="165"/>
         <source>Preprocessing</source>
-        <translation type="unfinished"></translation>
+        <translation>Προεπεξεργασία</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="172"/>
@@ -5875,37 +5883,37 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.ui" line="14"/>
         <source>Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="28"/>
         <source>Active Shader:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργό shader:</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="35"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Όνομα</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="45"/>
         <source>Author</source>
-        <translation type="unfinished"></translation>
+        <translation>Δημιουργός</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="62"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>Περιγραφή</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="88"/>
         <source>Unload Shader</source>
-        <translation type="unfinished"></translation>
+        <translation>Εκφόρτωση shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="95"/>
         <source>Load New Shader</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόρτωση νέου shader</translation>
     </message>
 </context>
 <context>
@@ -5913,17 +5921,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShortcutModel.cpp" line="67"/>
         <source>Action</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενέργεια</translation>
     </message>
     <message>
         <location filename="../ShortcutModel.cpp" line="69"/>
         <source>Keyboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Πληκτρολόγιο</translation>
     </message>
     <message>
         <location filename="../ShortcutModel.cpp" line="71"/>
         <source>Gamepad</source>
-        <translation type="unfinished"></translation>
+        <translation>Χειριστήριο</translation>
     </message>
 </context>
 <context>
@@ -5931,12 +5939,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShortcutView.ui" line="14"/>
         <source>Edit Shortcuts</source>
-        <translation type="unfinished"></translation>
+        <translation>Επεξεργασία συντομεύσεων</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="32"/>
         <source>Keyboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Πληκτρολόγιο</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="42"/>
@@ -5946,7 +5954,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShortcutView.ui" line="49"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Εκκαθάριση</translation>
     </message>
 </context>
 <context>
@@ -5960,7 +5968,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../TileView.cpp" line="227"/>
         <location filename="../TileView.cpp" line="239"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
         <location filename="../TileView.cpp" line="238"/>
@@ -5985,17 +5993,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../TileView.ui" line="40"/>
         <source>256 colors</source>
-        <translation type="unfinished"></translation>
+        <translation>256 χρώματα</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="33"/>
         <source>Palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Παλέτα</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="73"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Μεγέθυνση</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="96"/>
@@ -6030,12 +6038,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../TileView.ui" line="163"/>
         <source>Copy Selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Αντιγραφή επιλεγμένων</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="177"/>
         <source>Copy All</source>
-        <translation type="unfinished"></translation>
+        <translation>Αντιγραφή όλων</translation>
     </message>
 </context>
 <context>
@@ -6053,12 +6061,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.cpp" line="262"/>
         <source>Select output file</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή αρχείου εξόδου</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="20"/>
         <source>Record Video</source>
-        <translation type="unfinished"></translation>
+        <translation>Καταγραφή βίντεο</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="40"/>
@@ -6073,12 +6081,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.ui" line="69"/>
         <source>Select File</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή αρχείου</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="101"/>
         <source>Presets</source>
-        <translation type="unfinished"></translation>
+        <translation>Προεπιλογές</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="109"/>
@@ -6088,17 +6096,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.ui" line="119"/>
         <source>&amp;YouTube</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;YouTube</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="129"/>
         <source>WebM</source>
-        <translation type="unfinished"></translation>
+        <translation>WebM</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="139"/>
         <source>MP4</source>
-        <translation type="unfinished"></translation>
+        <translation>MP4</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="146"/>
@@ -6108,22 +6116,22 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.ui" line="167"/>
         <source>4K</source>
-        <translation type="unfinished"></translation>
+        <translation>4K</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="174"/>
         <source>&amp;1080p</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;1080p</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="184"/>
         <source>&amp;720p</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;720p</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="194"/>
         <source>&amp;480p</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;480p</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="207"/>
@@ -6133,7 +6141,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.ui" line="240"/>
         <source>Format</source>
-        <translation type="unfinished"></translation>
+        <translation>Μορφή</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="375"/>
@@ -6143,27 +6151,27 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.ui" line="420"/>
         <source>ABR</source>
-        <translation type="unfinished"></translation>
+        <translation>ABR</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="465"/>
         <source>VBR</source>
-        <translation type="unfinished"></translation>
+        <translation>VBR</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="478"/>
         <source>CRF</source>
-        <translation type="unfinished"></translation>
+        <translation>CRF</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="494"/>
         <source>Dimensions</source>
-        <translation type="unfinished"></translation>
+        <translation>Διαστάσεις</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="560"/>
         <source>Lock aspect ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>Κλείδωμα λόγου διαστάσεων</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="575"/>
@@ -6183,12 +6191,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../Window.cpp" line="372"/>
         <location filename="../Window.cpp" line="399"/>
         <source>Select ROM</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή ROM</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="390"/>
         <source>Select folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή φακέλου</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="534"/>
@@ -6204,7 +6212,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="446"/>
         <source>Patches (*.ips *.ups *.bps)</source>
-        <translation type="unfinished"></translation>
+        <translation>Patch (*.ips *.ups *.bps)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="457"/>
@@ -6219,12 +6227,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="527"/>
         <source>Select image</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή εικόνας</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="527"/>
         <source>Image file (*.png *.gif *.jpg *.jpeg);;All files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο εικόνας (*.png *.gif *.jpg *.jpeg);;Όλα τα αρχεία (*)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="541"/>
@@ -6239,29 +6247,31 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="580"/>
         <source>Video logs (*.mvl)</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχεία καταγραφής βίντεο (*.mvl)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1036"/>
         <source>Crash</source>
-        <translation type="unfinished"></translation>
+        <translation>Κατάρρευση</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1037"/>
         <source>The game has crashed with the following error:
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Το παιχνίδι κατέρρευσε με το εξής σφάλμα:
+
+%1</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1044"/>
         <source>Couldn&apos;t Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Αδυναμία εκκίνησης</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1045"/>
         <source>Could not start game.</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεν ήταν δυνατή η εκκίνηση του παιχνιδιού.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1059"/>
@@ -6291,7 +6301,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1193"/>
         <source>Restart needed</source>
-        <translation type="unfinished"></translation>
+        <translation>Απαιτείται επανεκκίνηση</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1194"/>
@@ -6301,32 +6311,32 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1245"/>
         <source> -  Player %1 of %2</source>
-        <translation type="unfinished"></translation>
+        <translation> -  Παίκτης %1 από %2</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1256"/>
         <source>%1 - %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1258"/>
         <source>%1 - %2 - %3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2 - %3</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1260"/>
         <source>%1 - %2 (%3 fps) - %4</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2 (%3 fps) - %4</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1324"/>
         <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Αρχείο</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1326"/>
         <source>Load &amp;ROM...</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόρτωση &amp;ROM...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1329"/>
@@ -6336,7 +6346,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1330"/>
         <source>Add folder to library...</source>
-        <translation type="unfinished"></translation>
+        <translation>Προσθήκη φακέλου στη βιβλιοθήκη...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="407"/>
@@ -6362,17 +6372,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="465"/>
         <source>Select e-Reader card images</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλογή εικόνων καρτών e-Reader</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="465"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο εικόνας (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="466"/>
         <source>Conversion finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Η μετατροπή ολοκληρώθηκε</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="507"/>
@@ -6402,7 +6412,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1467"/>
         <source>Replace ROM...</source>
-        <translation type="unfinished"></translation>
+        <translation>Αντικατάσταση ROM...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1377"/>
@@ -6417,12 +6427,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1381"/>
         <source>ROM &amp;info...</source>
-        <translation type="unfinished"></translation>
+        <translation>Πλ&amp;ηροφορίες ROM...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1383"/>
         <source>Recent</source>
-        <translation type="unfinished"></translation>
+        <translation>Πρόσφατα</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1783"/>
@@ -6432,12 +6442,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1386"/>
         <source>&amp;Load state</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Φόρτωση κατάστασης</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1391"/>
         <source>Load state file...</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόρτωση αρχείου κατάστασης...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1396"/>
@@ -6452,12 +6462,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1406"/>
         <source>Quick load</source>
-        <translation type="unfinished"></translation>
+        <translation>Γρήγορη φόρτωση</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1407"/>
         <source>Quick save</source>
-        <translation type="unfinished"></translation>
+        <translation>Γρήγορη αποθήκευση</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1409"/>
@@ -6483,7 +6493,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../Window.cpp" line="1432"/>
         <location filename="../Window.cpp" line="1437"/>
         <source>State &amp;%1</source>
-        <translation type="unfinished"></translation>
+        <translation>Κατάσταση &amp;%1</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1563"/>
@@ -6508,7 +6518,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1205"/>
         <source>Reset needed</source>
-        <translation type="unfinished"></translation>
+        <translation>Απαιτείται επανεκκίνηση</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1206"/>
@@ -6533,7 +6543,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1356"/>
         <source>Automatically determine</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτόματος προσδιορισμός</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1360"/>
@@ -6553,32 +6563,32 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1453"/>
         <source>Report bug...</source>
-        <translation type="unfinished"></translation>
+        <translation>Αναφορά σφάλματος...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1459"/>
         <source>About...</source>
-        <translation type="unfinished"></translation>
+        <translation>Πληροφορίες...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1460"/>
         <source>E&amp;xit</source>
-        <translation type="unfinished"></translation>
+        <translation>Έ&amp;ξοδος</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1462"/>
         <source>&amp;Emulation</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Εξομοίωση</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1463"/>
         <source>&amp;Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Επανε&amp;κκίνηση</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1464"/>
         <source>Sh&amp;utdown</source>
-        <translation type="unfinished"></translation>
+        <translation>Τε&amp;ρματισμός</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1468"/>
@@ -6588,7 +6598,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1471"/>
         <source>&amp;Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Παύση</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1480"/>
@@ -6618,7 +6628,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1503"/>
         <source>%0x</source>
-        <translation type="unfinished"></translation>
+        <translation>%0x</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1507"/>
@@ -6673,7 +6683,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1557"/>
         <source>Brightness %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Φωτεινότητα %1</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1565"/>
@@ -6688,17 +6698,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1578"/>
         <source>Audio/&amp;Video</source>
-        <translation type="unfinished"></translation>
+        <translation>Ήχος/&amp;Βίντεο</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1579"/>
         <source>Frame size</source>
-        <translation type="unfinished"></translation>
+        <translation>Μέγεθος καρέ</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1581"/>
         <source>%1×</source>
-        <translation type="unfinished"></translation>
+        <translation>%1×</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1622"/>
@@ -6708,267 +6718,267 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1625"/>
         <source>&amp;Lock frame size</source>
-        <translation type="unfinished"></translation>
+        <translation>Κ&amp;λείδωμα μεγέθους καρέ</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1638"/>
         <source>Lock aspect ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>Κλείδωμα λόγου διαστάσεων</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1650"/>
         <source>Force integer scaling</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιβολή ακέραιας κλιμάκωσης</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1662"/>
         <source>Interframe blending</source>
-        <translation type="unfinished"></translation>
+        <translation>Παρεμβολή μεταξύ διαδοχικών καρέ</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1671"/>
         <source>Bilinear filtering</source>
-        <translation type="unfinished"></translation>
+        <translation>Διγραμμικό φιλτράρισμα</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1679"/>
         <source>Frame&amp;skip</source>
-        <translation type="unfinished"></translation>
+        <translation>Παράλει&amp;ψη καρέ</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1692"/>
         <source>Mute</source>
-        <translation type="unfinished"></translation>
+        <translation>Σίγαση</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1699"/>
         <source>FPS target</source>
-        <translation type="unfinished"></translation>
+        <translation>Στόχος FPS</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1707"/>
         <source>Native (59.7275)</source>
-        <translation type="unfinished"></translation>
+        <translation>Εγγενής (59.7275)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1722"/>
         <source>Take &amp;screenshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Λήψη &amp;στιγμιότυπου</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1724"/>
         <source>F12</source>
-        <translation type="unfinished"></translation>
+        <translation>F12</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1728"/>
         <source>Record A/V...</source>
-        <translation type="unfinished"></translation>
+        <translation>Καταγραφή ήχου/βίντεο...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1729"/>
         <source>Record GIF/WebP/APNG...</source>
-        <translation type="unfinished"></translation>
+        <translation>Καταγραφή GIF/WebP/APNG...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1733"/>
         <source>Video layers</source>
-        <translation type="unfinished"></translation>
+        <translation>Επίπεδα βίντεο</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1734"/>
         <source>Audio channels</source>
-        <translation type="unfinished"></translation>
+        <translation>Κανάλια ήχου</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1736"/>
         <source>Adjust layer placement...</source>
-        <translation type="unfinished"></translation>
+        <translation>Προσαρμογή τοποθέτησης επιπέδων...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1740"/>
         <source>Hide &amp;menu</source>
-        <translation type="unfinished"></translation>
+        <translation>Απόκρυψη &amp;μενού</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1745"/>
         <source>&amp;Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Ερ&amp;γαλεία</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1746"/>
         <source>View &amp;logs...</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή αρχείων κατα&amp;γραφής...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1748"/>
         <source>Game &amp;overrides...</source>
-        <translation type="unfinished"></translation>
+        <translation>Παρακάμ&amp;ψεις παιχνιδιού...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1761"/>
         <source>Game Pak sensors...</source>
-        <translation type="unfinished"></translation>
+        <translation>Αισθητήρες Game Pak...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1774"/>
         <source>&amp;Cheats...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Cheat...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1779"/>
         <source>Create forwarder...</source>
-        <translation type="unfinished"></translation>
+        <translation>Δημιουργία διαβιβαστή...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1782"/>
         <source>Settings...</source>
-        <translation type="unfinished"></translation>
+        <translation>Ρυθμίσεις...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1787"/>
         <source>Open debugger console...</source>
-        <translation type="unfinished"></translation>
+        <translation>Άνοιγμα κονσόλας αποσφαλμάτωσης...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1789"/>
         <source>Start &amp;GDB server...</source>
-        <translation type="unfinished"></translation>
+        <translation>Εκκίνηση διακομιστή &amp;GDB...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1776"/>
         <source>Scripting...</source>
-        <translation type="unfinished"></translation>
+        <translation>Σύνταξη script...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1797"/>
         <source>Game state views</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολές κατάστασης παιχνιδιού</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1798"/>
         <source>View &amp;palette...</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή &amp;παλέτας...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1799"/>
         <source>View &amp;sprites...</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή &amp;μπλοκ εικονοστοιχείων...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1800"/>
         <source>View &amp;tiles...</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή π&amp;λακιδίων...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1801"/>
         <source>View &amp;map...</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή &amp;χάρτη...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1802"/>
         <source>&amp;Frame inspector...</source>
-        <translation type="unfinished"></translation>
+        <translation>Επι&amp;θεώρηση καρέ...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1803"/>
         <source>View memory...</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή μνήμης...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1804"/>
         <source>Search memory...</source>
-        <translation type="unfinished"></translation>
+        <translation>Αναζήτηση μνήμης...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1805"/>
         <source>View &amp;I/O registers...</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή καταχωρητών &amp;I/O...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1808"/>
         <source>Log memory &amp;accesses...</source>
-        <translation type="unfinished"></translation>
+        <translation>Καταγραφή π&amp;ροσπελάσεων μνήμης...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1822"/>
         <source>Record debug video log...</source>
-        <translation type="unfinished"></translation>
+        <translation>Καταγραφή βίντεο αποσφαλμάτωσης...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1823"/>
         <source>Stop debug video log</source>
-        <translation type="unfinished"></translation>
+        <translation>Διακοπή βίντεο αποσφαλμάτωσης</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1827"/>
         <source>Exit fullscreen</source>
-        <translation type="unfinished"></translation>
+        <translation>Έξοδος από πλήρη οθόνη</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1829"/>
         <source>GameShark Button (held)</source>
-        <translation type="unfinished"></translation>
+        <translation>Κουμπί GameShark (πατημένο)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1835"/>
         <source>Autofire</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτοπυροδότηση</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1836"/>
         <source>Autofire A</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτοπυροδότηση A</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1841"/>
         <source>Autofire B</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτοπυροδότηση B</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1846"/>
         <source>Autofire L</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτοπυροδότηση L</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1851"/>
         <source>Autofire R</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτοπυροδότηση R</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1856"/>
         <source>Autofire Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτοπυροδότηση Start</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1861"/>
         <source>Autofire Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτοπυροδότηση Select</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1866"/>
         <source>Autofire Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτοπυροδότηση πάνω</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1871"/>
         <source>Autofire Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτοπυροδότηση δεξιού</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1876"/>
         <source>Autofire Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτοπυροδότηση κάτω</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1881"/>
         <source>Autofire Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Αυτοπυροδότηση αριστερού</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="2086"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Εκκαθάριση</translation>
     </message>
 </context>
 <context>
@@ -6976,32 +6986,32 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../utils.cpp" line="26"/>
         <source>%1 byte</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 byte</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="29"/>
         <source>%1 kiB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 kiB</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="33"/>
         <source>%1 MiB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 MiB</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="183"/>
         <source>Super (L)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super (Α)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="185"/>
         <source>Super (R)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super (Δ)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="187"/>
         <source>Menu</source>
-        <translation type="unfinished"></translation>
+        <translation>Μενού</translation>
     </message>
 </context>
 <context>
@@ -7009,22 +7019,22 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../utils.cpp" line="174"/>
         <source>Shift</source>
-        <translation type="unfinished"></translation>
+        <translation>Shift</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="176"/>
         <source>Control</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="178"/>
         <source>Alt</source>
-        <translation type="unfinished"></translation>
+        <translation>Alt</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="180"/>
         <source>Meta</source>
-        <translation type="unfinished"></translation>
+        <translation>Meta</translation>
     </message>
 </context>
 </TS>
