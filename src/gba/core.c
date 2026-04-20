@@ -1683,6 +1683,7 @@ struct mCore* GBACoreCreate(void) {
 	core->frameCounter = _GBACoreFrameCounter;
 	core->frameCycles = _GBACoreFrameCycles;
 	core->frequency = _GBACoreFrequency;
+	core->timingFrequency = _GBACoreFrequency;
 	core->getGameInfo = _GBACoreGetGameInfo;
 	core->setPeripheral = _GBACoreSetPeripheral;
 	core->getPeripheral = _GBACoreGetPeripheral;

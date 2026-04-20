@@ -116,6 +116,7 @@ struct mCore {
 	uint32_t (*frameCounter)(const struct mCore*);
 	int32_t (*frameCycles)(const struct mCore*);
 	int32_t (*frequency)(const struct mCore*);
+	int32_t (*timingFrequency)(const struct mCore*);
 
 	void (*getGameInfo)(const struct mCore*, struct mGameInfo* info);
 

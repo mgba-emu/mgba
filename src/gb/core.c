@@ -826,6 +826,15 @@ static int32_t _GBCoreFrequency(const struct mCore* core) {
 	}
 }
 
+static int32_t _GBCoreTimingFrequency(const struct mCore* core) {
+	const struct GB* gb = core->board;
+	if (gb->model == GB_MODEL_SGB) {
+		return SGB_SM83_FREQUENCY * 2;
+	} else {
+		return CGB_SM83_FREQUENCY;
+	}
+}
+
 static void _GBCoreGetGameInfo(const struct mCore* core, struct mGameInfo* info) {
 	GBGetGameInfo(core->board, info);
 }
@@ -1388,6 +1397,7 @@ struct mCore* GBCoreCreate(void) {
 	core->frameCounter = _GBCoreFrameCounter;
 	core->frameCycles = _GBCoreFrameCycles;
 	core->frequency = _GBCoreFrequency;
+	core->timingFrequency = _GBCoreTimingFrequency;
 	core->getGameInfo = _GBCoreGetGameInfo;
 	core->setPeripheral = _GBCoreSetPeripheral;
 	core->getPeripheral = _GBCoreGetPeripheral;
