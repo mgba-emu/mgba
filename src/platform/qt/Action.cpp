@@ -95,6 +95,9 @@ void Action::setActive(bool a) {
 		return;
 	}
 	m_active = a;
+	if (!m_enabled) {
+		return;
+	}
 	emit activated(a);
 }
 

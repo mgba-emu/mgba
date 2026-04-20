@@ -983,6 +983,7 @@ void Window::gameStopped() {
 	}
 	for (auto& action : m_gameActions) {
 		action->setEnabled(false);
+		action->setActive(false);
 	}
 	setWindowFilePath(QString());
 
