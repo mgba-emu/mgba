@@ -125,6 +125,14 @@ void ActionMapper::rebuildMenu(const QString& menu, QMenu* qmenu, QWidget* conte
 		}
 		context->addAction(qaction);
 	}
+	connect(this, &ActionMapper::menuCleared, qmenu, [qmenu, menu](const QString& name) {
+		if (name != menu) {
+			return;
+		}
+		for (QAction* action : qmenu->actions()) {
+			qmenu->removeAction(action);
+		}
+	});
 }
 
 void ActionMapper::addSeparator(const QString& menu) {
