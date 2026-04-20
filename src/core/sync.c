@@ -5,7 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/core/sync.h>
 
+#include <mgba/core/config.h>
 #include <mgba-util/audio-buffer.h>
+
+static const float _defaultFPSTarget = 60.f;
 
 static void _changeVideoSync(struct mCoreSync* sync, bool wait) {
 	// Make sure the video thread can process events while the GBA thread is paused
@@ -15,6 +18,17 @@ static void _changeVideoSync(struct mCoreSync* sync, bool wait) {
 		ConditionWake(&sync->videoFrameAvailableCond);
 	}
 	MutexUnlock(&sync->videoFrameMutex);
+}
+
+void mCoreSyncLoadCoreOpts(struct mCoreSync* sync, const struct mCoreOptions* opts) {
+	sync->audioWait = opts->audioSync;
+	sync->videoFrameWait = opts->videoSync;
+	if (opts->fpsTarget) {
+		sync->fpsTarget = opts->fpsTarget;
+	} else {
+		sync->fpsTarget = _defaultFPSTarget;
+	}
+	sync->audioHighWater = 512;
 }
 
 void mCoreSyncPostFrame(struct mCoreSync* sync) {

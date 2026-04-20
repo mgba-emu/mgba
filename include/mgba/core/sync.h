@@ -27,6 +27,9 @@ struct mCoreSync {
 	float fpsTarget;
 };
 
+struct mCoreOptions;
+void mCoreSyncLoadCoreOpts(struct mCoreSync* sync, const struct mCoreOptions* opts);
+
 void mCoreSyncPostFrame(struct mCoreSync* sync);
 void mCoreSyncForceFrame(struct mCoreSync* sync);
 bool mCoreSyncWaitFrameStart(struct mCoreSync* sync);
