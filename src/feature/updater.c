@@ -173,7 +173,7 @@ void mUpdateRegister(struct mCoreConfig* config, const char* arg0, const char* u
 	char* last = NULL;
 #ifdef _WIN32
 	char* running;
-	for (running = filename; running = strpbrk(&running[1], "/\\");) {
+	for (running = filename; (running = strpbrk(&running[1], "/\\"));) {
 		running[0] = '\\';
 		last = running;
 	}
