@@ -7,6 +7,8 @@
 #include "MemoryView.h"
 
 #include "CoreController.h"
+#include "CorePointer.h"
+#include "CorePointerSource.h"
 #include "MemoryAccessLogView.h"
 #include "MemoryDump.h"
 
@@ -105,16 +107,16 @@ QValidator::State IntValidator::validate(QString& input, int&) const {
 	return QValidator::Acceptable;
 }
 
-MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* parent)
+MemoryView::MemoryView(CorePointerSource* controller, QWidget* parent)
 	: QWidget(parent)
-	, m_controller(controller)
+	, CoreConsumer(controller)
 #ifdef ENABLE_DEBUGGERS
-	, m_malModel(controller->memoryAccessLogController(), controller->platform())
+	, m_malModel(m_controller->memoryAccessLogController(), m_controller->platform())
 #endif
 {
 	m_ui.setupUi(this);
 
-	m_ui.hexfield->setController(controller);
+	m_ui.hexfield->setCoreSource(controller);
 
 	m_ui.sintVal->setValidator(&m_sintValidator);
 	m_ui.uintVal->setValidator(&m_uintValidator);
@@ -147,10 +149,10 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 	connect(m_ui.hexfield, &MemoryModel::selectionChanged, this, &MemoryView::updateSelection);
 	connect(m_ui.saveRange, &QAbstractButton::clicked, this, &MemoryView::saveRange);
 
-	connect(controller.get(), &CoreController::frameAvailable, this, &MemoryView::update);
-	connect(controller.get(), &CoreController::paused, this, &MemoryView::update);
-	connect(controller.get(), &CoreController::stateLoaded, this, &MemoryView::update);
-	connect(controller.get(), &CoreController::rewound, this, &MemoryView::update);
+	connect(m_controller.get(), &CoreController::frameAvailable, this, &MemoryView::update);
+	connect(m_controller.get(), &CoreController::paused, this, &MemoryView::update);
+	connect(m_controller.get(), &CoreController::stateLoaded, this, &MemoryView::update);
+	connect(m_controller.get(), &CoreController::rewound, this, &MemoryView::update);
 
 	connect(m_ui.copy, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::copy);
 	connect(m_ui.save, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::save);

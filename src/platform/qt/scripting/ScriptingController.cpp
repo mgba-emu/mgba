@@ -73,15 +73,11 @@ ScriptingController::~ScriptingController() {
 	mScriptGamepadDeinit(&m_gamepad);
 }
 
-void ScriptingController::setController(std::shared_ptr<CoreController> controller) {
-	if (controller == m_controller) {
-		return;
-	}
+void ScriptingController::onCoreDetached(std::shared_ptr<CoreController>) {
 	clearController();
-	if (!controller) {
-		return;
-	}
-	m_controller = std::move(controller);
+}
+
+void ScriptingController::onCoreAttached(std::shared_ptr<CoreController>) {
 	CoreController::Interrupter interrupter(m_controller);
 	m_controller->thread()->scriptContext = &m_scriptContext;
 	if (m_controller->hasStarted()) {
