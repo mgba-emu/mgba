@@ -20,7 +20,7 @@ extern MGBA_EXPORT const uint32_t GBASavestateVersion;
 mLOG_DECLARE_CATEGORY(GBA_STATE);
 
 /* Savestate format:
- * 0x00000 - 0x00003: Version Magic (0x01000007)
+ * 0x00000 - 0x00003: Version Magic (0x0100000B)
  * 0x00004 - 0x00007: BIOS checksum (e.g. 0xBAAE187F for official BIOS)
  * 0x00008 - 0x0000B: ROM CRC32
  * 0x0000C - 0x0000F: Master cycles
@@ -261,7 +261,11 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x003D4 - 0x003D7: Latched DMA 1 value
  * 0x003D8 - 0x003DB: Latched DMA 2 value
  * 0x003DC - 0x003DF: Latched DMA 3 value
- * 0x003E0 - 0x003FF: Reserved (leave zero)
+ * 0x003E0 - 0x003E1: Latched DMA 0 count
+ * 0x003E2 - 0x003E3: Latched DMA 1 count
+ * 0x003E4 - 0x003E5: Latched DMA 2 count
+ * 0x003E6 - 0x003E7: Latched DMA 3 count
+ * 0x003E8 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -477,8 +481,9 @@ struct GBASerializedState {
 
 	uint32_t bus;
 	uint32_t dmaLatch[3];
+	uint16_t dmaCountLatch[4];
 
-	uint32_t reserved[8];
+	uint32_t reserved[6];
 
 	uint16_t io[GBA_SIZE_IO >> 1];
 	uint16_t pram[GBA_SIZE_PALETTE_RAM >> 1];

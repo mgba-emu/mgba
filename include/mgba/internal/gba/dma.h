@@ -61,7 +61,6 @@ void GBADMAReset(struct GBA* gba);
 
 uint32_t GBADMAWriteSAD(struct GBA* gba, int dma, uint32_t address);
 uint32_t GBADMAWriteDAD(struct GBA* gba, int dma, uint32_t address);
-void GBADMAWriteCNT_LO(struct GBA* gba, int dma, uint16_t count);
 uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control);
 
 struct GBADMA;

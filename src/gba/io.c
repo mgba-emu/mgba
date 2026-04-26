@@ -250,9 +250,9 @@ static const int _isWSpecialRegister[GBA_REG(INTERNAL_MAX)] = {
 	/* 09 */ 1, 1, 1, 1, 1, 1, 1, 1,
 	/* 0A */ 1, 1, 1, 1, 0, 0, 0, 0,
 	/*    DMA */
-	/* 0B */ 0, 0, 0, 0, 0, 1, 0, 0,
-	/* 0C */ 0, 0, 0, 1, 0, 0, 0, 0,
-	/* 0D */ 0, 1, 0, 0, 0, 0, 0, 1,
+	/* 0B */ 0, 0, 0, 0, 1, 1, 0, 0,
+	/* 0C */ 0, 0, 1, 1, 0, 0, 0, 0,
+	/* 0D */ 1, 1, 0, 0, 0, 0, 1, 1,
 	/* 0E */ 0, 0, 0, 0, 0, 0, 0, 0,
 	/* 0F */ 0, 0, 0, 0, 0, 0, 0, 0,
 	/*    Timers */
@@ -425,25 +425,24 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		break;
 
 	case GBA_REG_DMA0CNT_LO:
-		GBADMAWriteCNT_LO(gba, 0, value & 0x3FFF);
+		value &= 0x3FFF;
 		break;
 	case GBA_REG_DMA0CNT_HI:
 		value = GBADMAWriteCNT_HI(gba, 0, value);
 		break;
 	case GBA_REG_DMA1CNT_LO:
-		GBADMAWriteCNT_LO(gba, 1, value & 0x3FFF);
+		value &= 0x3FFF;
 		break;
 	case GBA_REG_DMA1CNT_HI:
 		value = GBADMAWriteCNT_HI(gba, 1, value);
 		break;
 	case GBA_REG_DMA2CNT_LO:
-		GBADMAWriteCNT_LO(gba, 2, value & 0x3FFF);
+		value &= 0x3FFF;
 		break;
 	case GBA_REG_DMA2CNT_HI:
 		value = GBADMAWriteCNT_HI(gba, 2, value);
 		break;
 	case GBA_REG_DMA3CNT_LO:
-		GBADMAWriteCNT_LO(gba, 3, value);
 		break;
 	case GBA_REG_DMA3CNT_HI:
 		value = GBADMAWriteCNT_HI(gba, 3, value);

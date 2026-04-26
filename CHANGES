@@ -35,6 +35,7 @@ Emulation fixes:
  - GBA: Add baseline CP0 (Wii U VC) and CP1 (DCC) implementations
  - GBA DMA: DMA addresses should be masked to "wrap" around the address space
  - GBA DMA: Fix invalid DMA latching behavior (fixes mgba.io/i/2105)
+ - GBA DMA: Fix DMA count latching behavior (fixes mgba.io/i/3619)
  - GBA Serialize: Fix some minor save state edge cases
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
  - GBA Video: Improve emulation of window start/end conditions (fixes mgba.io/i/1945)

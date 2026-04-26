@@ -78,11 +78,6 @@ uint32_t GBADMAWriteDAD(struct GBA* gba, int dma, uint32_t address) {
 	return memory->dma[dma].dest;
 }
 
-void GBADMAWriteCNT_LO(struct GBA* gba, int dma, uint16_t count) {
-	struct GBAMemory* memory = &gba->memory;
-	memory->dma[dma].count = count ? count : (dma == 3 ? 0x10000 : 0x4000);
-}
-
 uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control) {
 	struct GBAMemory* memory = &gba->memory;
 	struct GBADMA* currentDma = &memory->dma[dma];
@@ -109,6 +104,10 @@ uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control) {
 	if (!wasEnabled && GBADMARegisterIsEnable(currentDma->reg)) {
 		currentDma->nextSource = currentDma->source;
 		currentDma->nextDest = currentDma->dest;
+		currentDma->count = memory->io[(GBA_REG_DMA0CNT_LO + dma * (GBA_REG_DMA1CNT_LO - GBA_REG_DMA0CNT_LO)) >> 1];
+		if (!currentDma->count) {
+			currentDma->count = dma == 3 ? 0x10000 : 0x4000;
+		}
 
 		if (currentDma->nextSource & (width - 1)) {
 			mLOG(GBA_DMA, GAME_ERROR, "Misaligned DMA source address: 0x%08X", currentDma->nextSource);
@@ -387,6 +386,7 @@ void GBADMASerialize(const struct GBA* gba, struct GBASerializedState* state) {
 		STORE_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);
 		STORE_32(gba->memory.dma[i].nextCount, 0, &state->dma[i].nextCount);
 		STORE_32(gba->memory.dma[i].when, 0, &state->dma[i].when);
+		STORE_16(gba->memory.dma[i].count, 0, &state->dmaCountLatch[i]);
 	}
 
 	STORE_32(gba->memory.dma[0].latch, 0, &state->dmaTransferRegister);
@@ -397,6 +397,9 @@ void GBADMASerialize(const struct GBA* gba, struct GBASerializedState* state) {
 }
 
 void GBADMADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
+	uint32_t version;
+	LOAD_32(version, 0, &state->versionMagic);
+
 	int i;
 	for (i = 0; i < 4; ++i) {
 		LOAD_16(gba->memory.dma[i].reg, (GBA_REG_DMA0CNT_HI + i * 12), state->io);
@@ -404,6 +407,21 @@ void GBADMADeserialize(struct GBA* gba, const struct GBASerializedState* state) 
 		LOAD_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);
 		LOAD_32(gba->memory.dma[i].nextCount, 0, &state->dma[i].nextCount);
 		LOAD_32(gba->memory.dma[i].when, 0, &state->dma[i].when);
+		if (version >= GBASavestateMagic + 0xB) {
+			LOAD_16(gba->memory.dma[i].count, 0, &state->dmaCountLatch[i]);
+		} else {
+			gba->memory.dma[i].count = gba->memory.io[(GBA_REG_DMA0CNT_LO + i * (GBA_REG_DMA1CNT_LO - GBA_REG_DMA0CNT_LO)) >> 1];
+		}
+		if (i == 3) {
+			if (!gba->memory.dma[i].count) {
+				gba->memory.dma[i].count = 0x10000;
+			}
+		} else {
+			gba->memory.dma[i].count &= 0x3FFF;
+			if (!gba->memory.dma[i].count) {
+				gba->memory.dma[i].count = 0x4000;
+			}
+		}
 
 		uint32_t width = 2 << GBADMARegisterGetWidth(gba->memory.dma[i].reg);
 		if (gba->memory.dma[i].source >= GBA_BASE_ROM0 && gba->memory.dma[i].source < GBA_BASE_SRAM) {
@@ -413,8 +431,6 @@ void GBADMADeserialize(struct GBA* gba, const struct GBASerializedState* state) 
 		}
 		gba->memory.dma[i].destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(gba->memory.dma[i].reg)] * width;
 	}
-	uint32_t version;
-	LOAD_32(version, 0, &state->versionMagic);
 	LOAD_32(gba->memory.dma[0].latch, 0, &state->dmaTransferRegister);
 	if (version >= GBASavestateMagic + 0xA) {
 		LOAD_32(gba->memory.dma[1].latch, 0, &state->dmaLatch[0]);
