@@ -149,6 +149,17 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	connect(m_ui.bgImageBrowse, &QAbstractButton::pressed, [this] () {
 		selectImage(m_ui.bgImage);
 	});
+	connect(m_ui.everdriveSdImageBrowse, &QAbstractButton::pressed, [this] () {
+		if (const QString path = GBAApp::app()->getOpenFileName(this, tr("Select SD image")); !path.isNull()) {
+			m_ui.everdriveSdImage->setText(makePortablePath(path));
+		}
+	});
+	connect(m_ui.everdriveSdEnable, &QAbstractButton::toggled, [this](const bool enabled) {
+		m_ui.everdriveSdImage->setEnabled(enabled);
+		m_ui.everdriveSdImageBrowse->setEnabled(enabled);
+	});
+	m_ui.everdriveSdImage->setEnabled(m_ui.everdriveSdEnable->isChecked());
+	m_ui.everdriveSdImageBrowse->setEnabled(m_ui.everdriveSdEnable->isChecked());
 	connect(m_ui.clearCache, &QAbstractButton::pressed, this, &SettingsView::libraryCleared);
 
 	// TODO: Move to reloadConfig()
@@ -540,6 +551,8 @@ void SettingsView::updateConfig() {
 	saveSetting("dynamicTitle", m_ui.dynamicTitle);
 	saveSetting("videoScale", m_ui.videoScale);
 	saveSetting("gba.forceGbp", m_ui.forceGbp);
+	saveSetting("everdrive.sd.enable", m_ui.everdriveSdEnable);
+	saveSetting("everdrive.sd.image", m_ui.everdriveSdImage);
 	saveSetting("vbaBugCompat", m_ui.vbaBugCompat);
 	saveSetting("updateAutoCheck", m_ui.updateAutoCheck);
 	saveSetting("showFilenameInLibrary", m_ui.showFilenameInLibrary);
@@ -762,6 +775,8 @@ void SettingsView::reloadConfig() {
 	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
 	loadSetting("dynamicTitle", m_ui.dynamicTitle, true);
 	loadSetting("gba.forceGbp", m_ui.forceGbp);
+	loadSetting("everdrive.sd.enable", m_ui.everdriveSdEnable);
+	loadSetting("everdrive.sd.image", m_ui.everdriveSdImage);
 	loadSetting("vbaBugCompat", m_ui.vbaBugCompat, true);
 	loadSetting("updateAutoCheck", m_ui.updateAutoCheck);
 	loadSetting("showFilenameInLibrary", m_ui.showFilenameInLibrary);
