@@ -425,24 +425,20 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		break;
 
 	case GBA_REG_DMA0CNT_LO:
-		value &= 0x3FFF;
+	case GBA_REG_DMA1CNT_LO:
+	case GBA_REG_DMA2CNT_LO:
+	case GBA_REG_DMA3CNT_LO:
+		// Handled inside of DMA routines
 		break;
+
 	case GBA_REG_DMA0CNT_HI:
 		value = GBADMAWriteCNT_HI(gba, 0, value);
-		break;
-	case GBA_REG_DMA1CNT_LO:
-		value &= 0x3FFF;
 		break;
 	case GBA_REG_DMA1CNT_HI:
 		value = GBADMAWriteCNT_HI(gba, 1, value);
 		break;
-	case GBA_REG_DMA2CNT_LO:
-		value &= 0x3FFF;
-		break;
 	case GBA_REG_DMA2CNT_HI:
 		value = GBADMAWriteCNT_HI(gba, 2, value);
-		break;
-	case GBA_REG_DMA3CNT_LO:
 		break;
 	case GBA_REG_DMA3CNT_HI:
 		value = GBADMAWriteCNT_HI(gba, 3, value);

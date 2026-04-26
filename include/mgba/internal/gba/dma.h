@@ -64,7 +64,6 @@ uint32_t GBADMAWriteDAD(struct GBA* gba, int dma, uint32_t address);
 uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control);
 
 struct GBADMA;
-void GBADMASchedule(struct GBA* gba, int number, struct GBADMA* info);
 void GBADMARunHblank(struct GBA* gba, int32_t cycles);
 void GBADMARunVblank(struct GBA* gba, int32_t cycles);
 void GBADMARunDisplayStart(struct GBA* gba, int32_t cycles);
