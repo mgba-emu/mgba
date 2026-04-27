@@ -78,6 +78,31 @@ static struct mScriptValue* mScriptExpandBitmask(uint64_t mask) {
 mSCRIPT_BIND_FUNCTION(mScriptMakeBitmask_Binding, U64, mScriptMakeBitmask, 1, LIST, bits);
 mSCRIPT_BIND_FUNCTION(mScriptExpandBitmask_Binding, WLIST, mScriptExpandBitmask, 1, U64, mask);
 
+static uint16_t mScriptPackColor(uint8_t red, uint8_t green, uint8_t blue) {
+	return (uint16_t) (((blue & 31) << 10) | ((green & 31) << 5) | (red & 31));
+}
+
+static struct mScriptValue* mScriptUnpackColor(uint16_t color) {
+	struct mScriptValue* tbl = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+
+	char* keys[3] = {"red", "green", "blue"};
+
+	for (size_t i = 0; i < 3; ++i) {
+		uint16_t part = (color >> 5*i) & 31;
+		struct mScriptValue* ikey = mScriptValueCreateFromUInt(i + 1);
+		struct mScriptValue* skey = mScriptStringCreateFromASCII(keys[i]);
+		struct mScriptValue* val = mScriptValueCreateFromUInt(part);
+
+		mScriptTableInsert(tbl, ikey, val);
+		mScriptTableInsert(tbl, skey, val);
+	}
+
+	return tbl;
+}
+
+mSCRIPT_BIND_FUNCTION(mScriptPackColor_Binding, U16, mScriptPackColor, 3, U8, red, U8, green, U8, blue);
+mSCRIPT_BIND_FUNCTION(mScriptUnpackColor_Binding, WTABLE, mScriptUnpackColor, 1, U16, color);
+
 mSCRIPT_DEFINE_STRUCT(mScriptCallbackManager)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
 		"A global singleton object `callbacks` used for managing callbacks. The following callbacks are defined:\n\n"
@@ -272,6 +297,8 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 	mScriptContextExportNamespace(context, "util", (struct mScriptKVPair[]) {
 		mSCRIPT_KV_PAIR(makeBitmask, &mScriptMakeBitmask_Binding),
 		mSCRIPT_KV_PAIR(expandBitmask, &mScriptExpandBitmask_Binding),
+		mSCRIPT_KV_PAIR(packColor, &mScriptPackColor_Binding),
+		mSCRIPT_KV_PAIR(unpackColor, &mScriptUnpackColor_Binding),
 		mSCRIPT_KV_PAIR(newRectangle, &mRectangleNew_Binding),
 		mSCRIPT_KV_PAIR(newSize, &mSizeNew_Binding),
 		mSCRIPT_KV_SENTINEL
@@ -279,6 +306,8 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 	mScriptContextSetDocstring(context, "util", "Basic utility library");
 	mScriptContextSetDocstring(context, "util.makeBitmask", "Compile a list of bit indices into a bitmask");
 	mScriptContextSetDocstring(context, "util.expandBitmask", "Expand a bitmask into a list of bit indices");
+	mScriptContextSetDocstring(context, "util.packColor", "Pack three RGB channels (0-31) into a 16-bit value.");
+	mScriptContextSetDocstring(context, "util.unpackColor", "Split a color in a 16-bit value into a table of red, blue and green channels (indexed by name or integer) from 0 to 31.");
 	mScriptContextSetDocstring(context, "util.newRectangle", "Create a new mRectangle");
 	mScriptContextSetDocstring(context, "util.newSize", "Create a new mSize");
 
