@@ -3102,12 +3102,12 @@ Download size: %3</source>
     <message>
         <location filename="../LoadSaveState.cpp" line="75"/>
         <source>Load State</source>
-        <translation type="unfinished"></translation>
+        <translation>Φόρτωση κατάστασης</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="75"/>
         <source>Save State</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποθήκευση κατάστασης</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="184"/>
@@ -3184,7 +3184,7 @@ Download size: %3</source>
     <message>
         <location filename="../LogController.cpp" line="179"/>
         <source>DEBUG</source>
-        <translation type="unfinished"></translation>
+        <translation>ΕΝΤΟΠΙΣΜΟΣ ΣΦΑΛΜΑΤΩΝ</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="181"/>
@@ -3232,7 +3232,7 @@ Download size: %3</source>
     <message>
         <location filename="../LogView.ui" line="28"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Εντοπισμός σφαλμάτων</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="38"/>
@@ -3277,7 +3277,7 @@ Download size: %3</source>
     <message>
         <location filename="../LogView.ui" line="137"/>
         <source>Max Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Μέγιστες γραμμές</translation>
     </message>
 </context>
 <context>
