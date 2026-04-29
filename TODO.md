@@ -164,6 +164,7 @@
 - [x] 已完成 OnePlus7 真机即时存档验证：Slot 1 可保存 `.ss` 与缩略图，随后 Load 恢复画面且 crash buffer 为空。
 - [x] 已新增 Android native 输入诊断：`NativeStats` 导出 current/seen GBA key mask，OnePlus7 虚拟 A/B/方向输入已确认进入 native。
 - [x] 已完成 OnePlus7 真机旋转/后台恢复验证：横竖屏均渲染非黑帧，HOME 后从 Recents 恢复 EmulatorActivity 且 crash buffer 为空。
+- [x] 已完成 OnePlus7 真机 archive 回归：single ZIP 自动启动、multi ZIP 弹出 ROM 选择并启动、single 7z 自动启动，均渲染非黑帧且 crash buffer 为空。
 - [x] 首帧真机截图验证已在 OnePlus7 上执行；模拟器因性能过慢已停用。
 
 ## 1. 产品目标和范围
@@ -1121,9 +1122,9 @@ object NativeBridge {
 - [ ] 需要 tilt 的游戏。
 - [ ] 使用 patch 的 ROM。
 - [ ] 使用 cheat 的 ROM。
-- [ ] ZIP 单 ROM。
-- [ ] ZIP 多 ROM。
-- [ ] 7z 单 ROM。
+- [x] ZIP 单 ROM。
+- [x] ZIP 多 ROM。
+- [x] 7z 单 ROM。
 - [ ] 大 ROM。
 - [ ] 非法文件/损坏 ROM。
 
