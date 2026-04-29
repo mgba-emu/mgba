@@ -3136,9 +3136,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                         val slot = name.substringAfter("slot-").substringBefore(".png").toIntOrNull()
                         if (slot != null && slot in 1..9) {
                             stateThumbnailFile(slot, forWrite = true)?.let { target ->
-                                target.parentFile?.mkdirs()
-                                extractZipEntryToFile(zip, target)
-                                result.stateThumbnailsImported += 1
+                                if (importStateThumbnailZipEntry(zip, target)) {
+                                    result.stateThumbnailsImported += 1
+                                }
                             }
                         }
                     }
@@ -3199,6 +3199,17 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             zip.copyTo(output)
         }
         return file
+    }
+
+    private fun importStateThumbnailZipEntry(zip: ZipInputStream, target: File): Boolean {
+        return replaceFileAtomically(target) { temp ->
+            temp.outputStream().use { output ->
+                zip.copyTo(output)
+            }
+            if (!isDecodableImageFile(temp)) {
+                error("Invalid state thumbnail")
+            }
+        }
     }
 
     private fun biosSlotForPackageEntry(name: String): BiosSlot? {
@@ -3274,11 +3285,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun recordStateThumbnail(sourcePath: String, slot: Int): Boolean {
         val target = stateThumbnailFile(slot, forWrite = true) ?: return false
         return runCatching {
-            target.parentFile?.mkdirs()
-            File(sourcePath).copyTo(target, overwrite = true)
-            File(sourcePath).delete()
-            true
+            replaceFileAtomically(target) { temp ->
+                File(sourcePath).copyTo(temp, overwrite = true)
+                if (!isDecodableImageFile(temp)) {
+                    error("Invalid state thumbnail")
+                }
+            }
         }.getOrDefault(false)
+            .also { File(sourcePath).delete() }
     }
 
     private fun deleteStateThumbnail(slot: Int) {
@@ -3301,6 +3315,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun stateThumbnailFileForGame(gameId: String, slot: Int): File {
         return File(File(filesDir, "state-thumbnails"), "${sha1(gameId)}-slot-$slot.png")
+    }
+
+    private fun isDecodableImageFile(file: File): Boolean {
+        val bounds = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        BitmapFactory.decodeFile(file.absolutePath, bounds)
+        return bounds.outWidth > 0 && bounds.outHeight > 0
     }
 
     private fun artifactGameId(): String? {
