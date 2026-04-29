@@ -68,6 +68,10 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun stepFrame(): Boolean {
+        return handle.isValid && NativeBridge.nativeStepFrame(handle.value)
+    }
+
     fun setFastForward(enabled: Boolean) {
         if (handle.isValid) {
             NativeBridge.nativeSetFastForward(handle.value, enabled)

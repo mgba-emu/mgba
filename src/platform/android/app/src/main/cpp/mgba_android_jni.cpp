@@ -142,6 +142,14 @@ Java_io_mgba_android_bridge_NativeBridge_nativeReset(JNIEnv*, jclass, jlong hand
 	}
 }
 
+extern "C" JNIEXPORT jboolean JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeStepFrame(JNIEnv*, jclass, jlong handle) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		return runner->stepFrame() ? JNI_TRUE : JNI_FALSE;
+	}
+	return JNI_FALSE;
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeSetFastForward(JNIEnv*, jclass, jlong handle, jboolean enabled) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
@@ -174,7 +182,7 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeGetStats(JNIEnv* env, jclass, jlong handle) {
 	AndroidCoreRunner* runner = FromHandle(handle);
 	if (!runner) {
-		return env->NewStringUTF("{\"frames\":0,\"videoWidth\":0,\"videoHeight\":0,\"running\":false,\"paused\":true,\"fastForward\":false,\"scaleMode\":0}");
+		return env->NewStringUTF("{\"frames\":0,\"videoWidth\":0,\"videoHeight\":0,\"running\":false,\"paused\":true,\"fastForward\":false,\"frameSkip\":0,\"scaleMode\":0}");
 	}
 	std::string result = runner->statsJson();
 	return env->NewStringUTF(result.c_str());

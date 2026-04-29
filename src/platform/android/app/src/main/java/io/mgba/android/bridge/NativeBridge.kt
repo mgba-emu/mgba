@@ -50,6 +50,9 @@ object NativeBridge {
     external fun nativeReset(handle: Long)
 
     @JvmStatic
+    external fun nativeStepFrame(handle: Long): Boolean
+
+    @JvmStatic
     external fun nativeSetFastForward(handle: Long, enabled: Boolean)
 
     @JvmStatic

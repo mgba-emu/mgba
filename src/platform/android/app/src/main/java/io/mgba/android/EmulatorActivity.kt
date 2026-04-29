@@ -445,6 +445,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     Toast.makeText(context, "Reset", Toast.LENGTH_SHORT).show()
                 }
             })
+            runRow.addView(Button(context).apply {
+                text = "Step"
+                setOnClickListener {
+                    stepFrame()
+                }
+            })
             fastButton = Button(context).apply {
                 setOnClickListener {
                     fastForward = !fastForward
@@ -682,6 +688,19 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         tiltButton?.text = if (tiltEnabled) "Tilt*" else "Tilt"
         solarButton?.text = if (useLightSensor) "Solar*" else "Solar"
         statsButton?.text = if (showStats) "Stats*" else "Stats"
+    }
+
+    private fun stepFrame() {
+        if (!userPaused) {
+            userPaused = true
+            recordPlayTime()
+            stopRumblePolling()
+            controller?.pause()
+            updateSensorRegistration()
+        }
+        val ok = controller?.stepFrame() == true
+        updateRunButtons()
+        Toast.makeText(this, if (ok) "Stepped" else "Step failed", Toast.LENGTH_SHORT).show()
     }
 
     private fun updateSensorRegistration() {

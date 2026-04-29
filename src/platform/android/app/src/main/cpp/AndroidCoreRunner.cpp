@@ -691,6 +691,18 @@ void AndroidCoreRunner::reset() {
 	}
 }
 
+bool AndroidCoreRunner::stepFrame() {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (!m_core) {
+		return false;
+	}
+	m_core->runFrame(m_core);
+	m_audioOutput.clear();
+	renderFrameLocked();
+	++m_frameCounter;
+	return true;
+}
+
 void AndroidCoreRunner::setFastForward(bool enabled) {
 	m_fastForward = enabled;
 }

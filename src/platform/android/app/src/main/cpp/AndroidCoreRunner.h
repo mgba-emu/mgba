@@ -58,6 +58,7 @@ public:
 	bool exportStateSlotFd(int slot, int fd);
 	bool importStateSlotFd(int slot, int fd);
 	void reset();
+	bool stepFrame();
 	void setFastForward(bool enabled);
 	void setFrameSkip(int frames);
 	void setAudioEnabled(bool enabled);
