@@ -193,6 +193,7 @@
 - [x] 已将 Android GL texture upload 切换到 RGB565，并在 native stats/overlay/诊断中展示上传像素格式。
 - [x] 已收紧 Android 游戏内工具条：常用运行/存档动作保留在顶部，低频设置和数据操作收进双列 More 面板，减少首屏按钮挤压。
 - [x] 已增强 Android instrumented native smoke：覆盖 run-loop frame pacing stats、GB 视频尺寸和 RGB565 上传格式。
+- [x] 已用 `~/game` 三个真实 ZIP ROM 完成模拟器画面 smoke：GBA/GBC 均可进入游戏画面，无 fatal log，颜色/方向/stride 目视正常。
 
 ## 1. 产品目标和范围
 
@@ -565,7 +566,7 @@ object NativeBridge {
 - [x] 旋转屏幕后画面比例正确。
 - [x] GBA 240x160、GB 160x144 均显示正确。
 - [ ] 帧率接近目标帧率，正常设备无明显 frame pacing 抖动。
-- [ ] 画面无错色、无上下颠倒、无 stride 错位。
+- [x] 画面无错色、无上下颠倒、无 stride 错位。
 
 ## 6. 音频计划
 
