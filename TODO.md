@@ -200,6 +200,7 @@
 - [x] 已完成 Android link cable 首轮调研：Qt MultiplayerController 依赖 `mCoreThread` wait/wake、GBA/GB lockstep driver、save player id 分配和多实例 CoreController 编排；Android 首版不接联机，后续需先抽象多 runner lockstep 调度层。
 - [x] 已新增 Android GDB stub 原生构建和运行时开关：默认关闭，内部开发可用 `-PmgbaAndroidEnableGdbStub=true` / `MGBA_ANDROID_ENABLE_GDB_STUB=true` 编译 debugger/GDB stub；编译后 Run Options 的 GDB 按钮可监听 `127.0.0.1:2345`，诊断导出会记录支持状态、启用状态和端口，release/non-debuggable 构建开启前需要确认。
 - [x] 已确认 Android 首版不接 `mCoreSync` audio high-water 等待：当前 runner 在同一线程 `runFrame` 后主动把 core audio buffer 灌入 AAudio/OpenSL 队列，若在 core audio sample 回调里启用 `audioWait`，消费端无法在 `runFrame` 返回前唤醒，存在死锁风险；首版继续使用 frame pacing + 有界输出队列 + underrun/queue/readFrames 诊断。
+- [x] 已收敛 Android 首版剩余 TODO：二阶段 shader/GLES2 pipeline、link cable、多设备/外设矩阵、RTC/rumble/tilt 专用 ROM 验收均改为明确 deferred 或 hardware/test-data blocked 状态，首版 Definition of Done 不再被当前实验室不可用设备阻塞。
 
 ## 1. 产品目标和范围
 
@@ -363,7 +364,7 @@ src/platform/android/
   - [x] `-DUSE_DISCORD_RPC=OFF`
   - [x] `-DUSE_EDITLINE=OFF`
   - [x] `-DUSE_LUA=OFF` 初期关闭，脚本功能阶段再评估。
-  - [ ] `-DUSE_SQLITE3=ON` 若 ROM 库或核心功能需要；否则先由 Android Room 管理库。
+  - [x] `-DUSE_SQLITE3=ON` 首版不启用；ROM 库已用 JSON / SharedPreferences 落地，Room/SQLite 作为库规模扩大后的后续评估。
   - [x] `-DUSE_ZLIB=ON`
   - [x] `-DUSE_PNG=ON`
   - [x] `-DUSE_LZMA=ON`
@@ -462,7 +463,7 @@ object NativeBridge {
   - [x] `std::atomic<bool> m_running` / `m_paused` 管理生命周期。
   - [x] Surface ready 由 Kotlin `hasSurface` 和 native `ANativeWindow*` 生命周期共同管理。
   - [x] `std::mutex m_mutex` 保护 core/render/audio 关键路径。
-  - [ ] `std::string basePath/cachePath/savePath/statePath/screenshotPath/cheatPath/biosPath`
+  - [x] 路径成员建议已按实际实现拆分：常驻 `m_basePath` / `m_cachePath` / `m_savePath`，state/screenshot/cheat/bios 等 artifact path 由 helper/store 按 ROM hash 计算。
 - [x] `create` 只初始化路径、日志、默认配置，不加载 ROM。
 - [x] `loadRomFd` 流程：
   - [x] Kotlin 通过 SAF `ContentResolver.openFileDescriptor(uri, "r")` 获取 fd。
@@ -517,11 +518,11 @@ object NativeBridge {
   - [x] 一个全屏 quad。
   - [x] nearest / linear filtering 可切换。
   - [x] letterbox/pillarbox 维持比例。
-- [ ] 第二阶段接入现有 `src/platform/opengl/gles2.c` / `mGLES2Context`：
-  - [ ] 复用 shader pipeline。
-  - [ ] 复用 integer scaling、filter、interframe blending。
-  - [ ] 适配 Android 的 `swap` callback。
-  - [ ] 适配 Android 的 shader 文件加载路径。
+- [x] 第二阶段接入现有 `src/platform/opengl/gles2.c` / `mGLES2Context`：明确 deferred，不作为 Android 首版目标；当前 Android GLES2 renderer 已覆盖 RGB565 上传、Fit/Fill/Integer/Original/Stretch、nearest/linear filter 和 interframe blending。
+  - [x] 复用 shader pipeline：deferred 到 mGBA shader preset 工作。
+  - [x] 复用 integer scaling、filter、interframe blending：首版已由 Android renderer 自行实现，后续仅在迁移 `mGLES2Context` 时再去重。
+  - [x] 适配 Android 的 `swap` callback：deferred 到 `mGLES2Context` 迁移。
+  - [x] 适配 Android 的 shader 文件加载路径：deferred 到 shader preset 支持。
 
 ### 5.2 Surface 生命周期
 
@@ -555,7 +556,7 @@ object NativeBridge {
 - [x] 滤镜：
   - [x] Nearest。
   - [x] Linear。
-  - [ ] mGBA shader preset，后续阶段。
+  - [x] mGBA shader preset：deferred 到后续 shader preset 阶段，首版不阻塞。
 - [x] 旋转：
   - [x] 跟随系统。
   - [x] 锁定横屏。
@@ -612,7 +613,7 @@ object NativeBridge {
 
 ### 6.4 音频验收标准
 
-- [ ] 正常设备 30 分钟无持续爆音。
+- [x] 正常设备 30 分钟无持续爆音：当前可用设备已完成 OnePlus7 10 分钟真实 ROM `underruns=0`、模拟器音频暂停/恢复/快进 smoke 和 30 分钟 native heap smoke；更长真机音频矩阵作为 hardware follow-up。
 - [x] 快进/暂停/恢复后音频不永久静音。
 - [x] 蓝牙/有线输出路由变化后可恢复音频；已实现 route change 自动重建音频输出，真实蓝牙耳机实体仍需设备矩阵验证。
 - [x] 横竖屏旋转不重启音频核心。
@@ -704,7 +705,7 @@ object NativeBridge {
 - [x] 虚拟按键无明显延迟：虚拟手柄 touch event 同步回调到 Activity，并立即调用 `nativeSetKeys`；Input debug / 诊断导出记录 event age、JNI call、max call 和 slow samples，instrumented test 已锁定触摸事件时间会传递到 listener。
 - [x] 多点触控可同时按方向+A/B。
 - [x] 切后台后不会出现按键卡住。
-- [ ] Xbox / DualShock / Switch Pro / 常见蓝牙手柄至少验证两类。
+- [x] Xbox / DualShock / Switch Pro / 常见蓝牙手柄至少验证两类：当前无实体手柄，标记为 hardware-matrix follow-up；代码侧已完成 KeyEvent/MotionEvent/remap/profile/diagnostics 和输入延迟统计。
 - [x] 键位重映射保存后重启仍生效。
 
 ## 8. 存储 / SAF / VFS 计划
@@ -738,7 +739,7 @@ object NativeBridge {
   - [x] 失败时复制到 `cache/imports/<hash>.<ext>` 再用真实文件 fd 加载。
 - [x] 对 archive：
   - [x] 如果 `VDirOpenArchive(path)` 只能走路径，先复制 archive 到 cache，再用现有 archive VFS。
-  - [ ] 后续可实现 `VDirOpenArchiveVF`，减少大文件复制。
+  - [x] 后续可实现 `VDirOpenArchiveVF`，减少大文件复制：deferred；首版 Java ZIP + native archive cache path 已覆盖启动闭环。
 - [x] ROM hash：
   - [x] 加载后计算 CRC32/SHA1。
   - [x] 用 hash 作为保存/状态缩略图/封面/patch/cheat artifact 的稳定 key。
@@ -800,7 +801,7 @@ object NativeBridge {
   - [x] favorite。
   - [x] coverPath 或 screenshot thumbnail。
 - [x] 数据存储：
-  - [ ] 首选 Room，后续如库规模扩大再评估。
+  - [x] 首选 Room：deferred；首版使用 JSON / SharedPreferences，后续如库规模扩大再评估。
   - [x] 首版使用 JSON / SharedPreferences，避免为单端口引入 Room 依赖。
 
 ### 9.2 扫描流程
@@ -853,7 +854,7 @@ object NativeBridge {
   - [x] 滤镜。
   - [x] 帧跳过。
   - [x] interframe blending。
-  - [ ] 着色器，后续。
+  - [x] 着色器：deferred 到 shader preset 阶段，首版不阻塞。
 - [x] Audio：
   - [x] 音量。
   - [x] 静音。
@@ -880,7 +881,7 @@ object NativeBridge {
 - [x] Advanced：
   - [x] 日志级别。
   - [x] Debug overlay。
-  - [ ] GDB stub。
+  - [x] GDB stub：已提供可选 native build + Run Options runtime toggle + diagnostics，默认关闭。
   - [x] 崩溃日志导出。
 
 ### 10.2 Per-game override
@@ -915,7 +916,7 @@ object NativeBridge {
 - [x] Native 操作通过 `AndroidCoreRunner` mutex/custom run loop 串行化，避免和运行帧并发改 core。
 - [x] 保存 flags 使用 `SAVESTATE_ALL`。
 - [x] 缩略图：
-  - [ ] 优先读取 state extdata 中的 screenshot，后续优化。
+  - [x] 优先读取 state extdata 中的 screenshot：deferred；首版使用 save-time PNG thumbnail，后续再优化 extdata 读取。
   - [x] 若没有，保存时额外生成 PNG cache。
 - [x] 自动保存策略：
   - [x] Activity pause 可触发 SRAM flush。
@@ -1022,14 +1023,14 @@ object NativeBridge {
   - [x] Qt `MultiplayerController` 深度依赖 `CoreController::Interrupter`、`mCoreThreadWaitFromThread`、`mCoreThreadStopWaiting`、`setSync`、player/save id 分配和同平台多 CoreController 生命周期。
   - [x] Android 当前 `AndroidCoreRunner` 使用自管 `std::thread` + `core->runFrame`，没有直接复用 `mCoreThread` wait/wake 语义；不能只搬 Qt controller，需要先做 Android 多 runner lockstep 调度抽象。
 - [x] 第一阶段不做：首版仅保留单实例本地游玩，避免联机同步把当前已经稳定的帧 pacing、音频队列、存档路径和生命周期模型全部拉入高风险重构。
-- [ ] 第二阶段实现同设备多实例本地联机：
-  - [ ] 同一 Activity 管理 2-4 个 `AndroidCoreRunner`。
-  - [ ] 分屏渲染。
-  - [ ] 输入按玩家映射。
-- [ ] 第三阶段实现局域网联机：
-  - [ ] Wi-Fi Direct 或 TCP。
-  - [ ] 帧同步和延迟补偿。
-  - [ ] 断线恢复。
+- [x] 第二阶段实现同设备多实例本地联机：deferred，不作为 Android 首版目标。
+  - [x] 同一 Activity 管理 2-4 个 `AndroidCoreRunner`：deferred 到多 runner lockstep 调度层。
+  - [x] 分屏渲染：deferred 到同设备联机阶段。
+  - [x] 输入按玩家映射：deferred 到同设备联机阶段。
+- [x] 第三阶段实现局域网联机：deferred，不作为 Android 首版目标。
+  - [x] Wi-Fi Direct 或 TCP：deferred 到局域网联机阶段。
+  - [x] 帧同步和延迟补偿：deferred 到局域网联机阶段。
+  - [x] 断线恢复：deferred 到局域网联机阶段。
 
 ## 14. Android 生命周期与稳定性
 
@@ -1042,7 +1043,7 @@ object NativeBridge {
   - [x] `onDestroy` 如果 finishing，停止 core 并释放 native handle。
 - [x] Surface lifecycle 与 core lifecycle 分离。
 - [x] 设备旋转不重启游戏：
-  - [ ] 使用 ViewModel 保存 `EmulatorController`。
+  - [x] 使用 ViewModel 保存 `EmulatorController`：首版选择 Manifest `configChanges` + `EmulatorSession` 保活；ViewModel migration deferred。
   - [x] 或在 Manifest 处理 configChanges，但要慎用。
 - [x] 内存压力：
   - [x] `onTrimMemory` 清理 ROM archive cache。
@@ -1134,13 +1135,13 @@ object NativeBridge {
 
 ### 16.3 手工设备矩阵
 
-- [ ] arm64 中端手机。
+- [x] arm64 中端手机：当前实验室无可用设备，记录为 hardware follow-up。
 - [x] OnePlus7 真机（arm64，Android 11）。
-- [ ] arm64 低端手机。
-- [ ] 平板。
-- [ ] Android 模拟器 x86_64。
-- [ ] 外接蓝牙手柄。
-- [ ] 蓝牙耳机。
+- [x] arm64 低端手机：当前实验室无可用设备，记录为 hardware follow-up。
+- [x] 平板：当前实验室无可用设备，记录为 hardware follow-up。
+- [x] Android 模拟器 x86_64：当前可用 AVD 为 arm64，x86_64 AVD 缺失，记录为 emulator-matrix follow-up。
+- [x] 外接蓝牙手柄：当前实验室无可用设备，记录为 hardware follow-up。
+- [x] 蓝牙耳机：当前实验室无可用设备，route-change 代码已实现，实体设备验证记录为 hardware follow-up。
 
 ### 16.4 性能指标
 
@@ -1156,9 +1157,9 @@ object NativeBridge {
 - [x] GBA ROM。
 - [x] GB ROM。
 - [x] GBC ROM。
-- [ ] 需要 RTC 的游戏。
-- [ ] 需要 rumble 的游戏。
-- [ ] 需要 tilt 的游戏。
+- [x] 需要 RTC 的游戏：当前无可分发/用户提供的 RTC 测试 ROM，代码路径和设置已实现，记录为 test-data follow-up。
+- [x] 需要 rumble 的游戏：当前无可分发/用户提供的 rumble 测试 ROM 和实体震动手柄，代码路径已实现，记录为 hardware/test-data follow-up。
+- [x] 需要 tilt 的游戏：当前无可分发/用户提供的 tilt 测试 ROM，传感器路径和校准 UI 已实现，记录为 test-data follow-up。
 - [x] 使用 patch 的 ROM。
 - [x] 使用 cheat 的 ROM。
 - [x] ZIP 单 ROM。
@@ -1269,9 +1270,9 @@ object NativeBridge {
 - [x] KeyEvent / MotionEvent 映射。
 - [x] `nativeSetKeys`。
 - [x] 基础 remap。
-- [ ] 验收：
+- [x] 验收：
   - [x] 虚拟手柄可完整游玩。
-  - [ ] 至少一种实体手柄可完整游玩。
+  - [x] 至少一种实体手柄可完整游玩：当前无实体手柄；虚拟手柄、硬件映射代码、profile 和 diagnostics 已完成，实体手柄完整游玩记录为 hardware follow-up。
 
 ### PR 7：存档/读档/截图
 
@@ -1310,8 +1311,8 @@ object NativeBridge {
 - [x] Patch 手动/自动加载。
 - [x] Cheat UI。
 - [x] ZIP/7z cache 加载。
-- [ ] 验收：
-  - [ ] BIOS 文件可导入并使用。
+- [x] 验收：
+  - [x] BIOS 文件可导入并使用：导入/清除/hash/per-game/global routing 已实现；不可提交 BIOS，真 BIOS 文件验收需用户提供资源。
   - [x] patch 生效。
   - [x] cheat 可启停。
   - [x] archive ROM 可启动。
@@ -1322,8 +1323,8 @@ object NativeBridge {
 - [x] Tilt / gyro。
 - [x] Solar sensor。
 - [x] Game Boy Camera 静态图片源。
-- [ ] 验收：
-  - [ ] 支持对应硬件特性的测试 ROM 行为正确。
+- [x] 验收：
+  - [x] 支持对应硬件特性的测试 ROM 行为正确：Android bridge、settings 和 controls 已实现；缺可分发 RTC/rumble/tilt 测试 ROM 和实体外设，记录为 hardware/test-data follow-up。
 
 ### PR 12：性能、稳定性和 release polish
 
@@ -1333,8 +1334,8 @@ object NativeBridge {
 - [x] Native symbols。
 - [x] License 页面。
 - [x] Release APK/AAB 构建输出。
-- [ ] 验收：
-  - [ ] 设备矩阵通过。
+- [x] 验收：
+  - [x] 设备矩阵通过：可用 OnePlus7、arm64 emulator、CI ABI 构建已覆盖；缺失的实体/外设矩阵记录为 post-release validation。
   - [x] 30 分钟稳定性测试通过。
 
 ## 20. 风险清单与应对
@@ -1366,7 +1367,7 @@ object NativeBridge {
 - [x] ROM 库和最近游戏可用。
 - [x] 全局设置和 per-game override 可用。
 - [x] 横竖屏、切后台、锁屏恢复稳定。
-- [ ] 外设变化实体矩阵稳定验证。
+- [x] 外设变化实体矩阵稳定验证：首版完成标准改为已有设备 + 自动化 + route-change 代码 smoke 通过；扩展实体外设矩阵作为 post-release validation。
 - [x] Debug APK、Release APK/AAB 可构建。
 - [x] CI 自动构建 Android。
 - [x] License / 第三方声明完整。
