@@ -182,6 +182,7 @@
 - [x] 已完成 Android 模拟器锁屏/解锁恢复验证：`Medium_Phone` arm64 AVD 跑 `~/game/[gba]木叶战记.zip`，解锁后仍聚焦 EmulatorActivity 且画面继续渲染。
 - [x] 已增强 Android native audio 诊断：stats/DIAG 导出 started/paused/enabled、queued buffers/frames、read frames 和 last read frames，模拟器真实 ROM smoke 已确认字段递增。
 - [x] 已完成 Android 模拟器音频暂停/恢复/快进 smoke：暂停期间 native frames 和 audio queue 计数保持不变，恢复并 FAST 往返后 queue/read frames 继续递增。
+- [x] 已确认 Android 输入释放策略：`onPause` / `onDestroy` / `surfaceDestroyed` 调用 `clearInput()`，虚拟和硬件 key mask 会清零，后台恢复后 DIAG 显示 current input 为 `(none)`。
 
 ## 1. 产品目标和范围
 
@@ -684,8 +685,8 @@ object NativeBridge {
 ### 7.5 输入验收标准
 
 - [ ] 虚拟按键无明显延迟。
-- [ ] 多点触控可同时按方向+A/B。
-- [ ] 切后台后不会出现按键卡住。
+- [x] 多点触控可同时按方向+A/B。
+- [x] 切后台后不会出现按键卡住。
 - [ ] Xbox / DualShock / Switch Pro / 常见蓝牙手柄至少验证两类。
 - [x] 键位重映射保存后重启仍生效。
 
