@@ -507,6 +507,54 @@ bool AndroidCoreRunner::deleteStateSlot(int slot) {
 	return unlink(path.c_str()) == 0 || errno == ENOENT;
 }
 
+bool AndroidCoreRunner::exportStateSlotFd(int slot, int fd) {
+	if (fd < 0) {
+		return false;
+	}
+
+	std::lock_guard<std::mutex> lock(m_mutex);
+	const std::string path = statePathForSlot(slot);
+	if (path.empty()) {
+		return false;
+	}
+
+	std::ifstream input(path, std::ios::binary);
+	if (!input) {
+		return false;
+	}
+	int ownedFd = dup(fd);
+	if (ownedFd < 0) {
+		return false;
+	}
+
+	char buffer[8192];
+	bool ok = true;
+	while (input) {
+		input.read(buffer, sizeof(buffer));
+		const std::streamsize count = input.gcount();
+		if (count <= 0) {
+			break;
+		}
+		const char* cursor = buffer;
+		std::streamsize remaining = count;
+		while (remaining > 0) {
+			const ssize_t written = write(ownedFd, cursor, static_cast<size_t>(remaining));
+			if (written <= 0) {
+				ok = false;
+				remaining = 0;
+				break;
+			}
+			cursor += written;
+			remaining -= written;
+		}
+		if (!ok) {
+			break;
+		}
+	}
+	close(ownedFd);
+	return ok;
+}
+
 void AndroidCoreRunner::reset() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (m_core) {

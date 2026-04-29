@@ -59,6 +59,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var showStats = false
     private var lastStatsFrames = 0L
     private var lastStatsAtMs = 0L
+    private var pendingExportStateSlot = 1
     private var scaleMode = 0
     private var hasSurface = false
     private val statsHandler = Handler(Looper.getMainLooper())
@@ -175,6 +176,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         when (requestCode) {
             REQUEST_IMPORT_SAVE -> importBatterySave(uri)
             REQUEST_IMPORT_CHEATS -> importCheats(uri)
+            REQUEST_EXPORT_STATE -> exportStateSlot(uri, pendingExportStateSlot)
         }
     }
 
@@ -420,6 +422,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 }
             })
             stateRow.addView(Button(context).apply {
+                text = "StateOut"
+                setOnClickListener {
+                    openStateExportPicker()
+                }
+            })
+            stateRow.addView(Button(context).apply {
                 text = "Backup"
                 setOnClickListener {
                     val path = controller?.exportBatterySave()
@@ -530,6 +538,30 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             .show()
     }
 
+    private fun openStateExportPicker() {
+        if (controller?.hasStateSlot(stateSlot) != true) {
+            Toast.makeText(this, "No state in slot", Toast.LENGTH_SHORT).show()
+            return
+        }
+        pendingExportStateSlot = stateSlot
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/octet-stream"
+            putExtra(Intent.EXTRA_TITLE, "mgba-slot-$stateSlot.ss")
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_EXPORT_STATE)
+    }
+
+    private fun exportStateSlot(uri: Uri, slot: Int) {
+        val ok = runCatching {
+            contentResolver.openFileDescriptor(uri, "w")?.use { descriptor ->
+                controller?.exportStateSlotFd(slot, descriptor.fd) == true
+            } == true
+        }.getOrDefault(false)
+        Toast.makeText(this, if (ok) "State exported" else "State export failed", Toast.LENGTH_SHORT).show()
+    }
+
     private fun saveStateNow() {
         val ok = controller?.saveStateSlot(stateSlot) == true
         Toast.makeText(this, if (ok) "State saved" else "Save failed", Toast.LENGTH_SHORT).show()
@@ -614,6 +646,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     companion object {
         private const val REQUEST_IMPORT_SAVE = 2001
         private const val REQUEST_IMPORT_CHEATS = 2002
+        private const val REQUEST_EXPORT_STATE = 2003
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int")
     }
 }

@@ -36,6 +36,7 @@ public:
 	bool loadStateSlot(int slot);
 	bool hasStateSlot(int slot);
 	bool deleteStateSlot(int slot);
+	bool exportStateSlotFd(int slot, int fd);
 	void reset();
 	void setFastForward(bool enabled);
 	void setAudioEnabled(bool enabled);
