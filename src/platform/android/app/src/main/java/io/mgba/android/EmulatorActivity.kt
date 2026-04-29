@@ -84,6 +84,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var muteButton: Button? = null
     private var scaleButton: Button? = null
     private var padButton: Button? = null
+    private var padSettingsButton: Button? = null
     private var deadzoneButton: Button? = null
     private var tiltButton: Button? = null
     private var solarButton: Button? = null
@@ -94,6 +95,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var frameSkip = 0
     private var muted = false
     private var showVirtualGamepad = true
+    private var virtualGamepadSizePercent = 100
+    private var virtualGamepadOpacityPercent = 100
     private var deadzonePercent = AndroidInputMapper.DefaultAxisThresholdPercent
     private var tiltEnabled = false
     private var lastRawTiltX = 0f
@@ -147,6 +150,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         frameSkip = perGameOverrides.frameSkip(currentGameId, 0)
         muted = perGameOverrides.muted(currentGameId, preferences.muted)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
+        virtualGamepadSizePercent = perGameOverrides.virtualGamepadSizePercent(
+            currentGameId,
+            preferences.virtualGamepadSizePercent,
+        )
+        virtualGamepadOpacityPercent = perGameOverrides.virtualGamepadOpacityPercent(
+            currentGameId,
+            preferences.virtualGamepadOpacityPercent,
+        )
         deadzonePercent = perGameOverrides.deadzonePercent(
             currentGameId,
             AndroidInputMapper.DefaultAxisThresholdPercent,
@@ -180,6 +191,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
         gamepadView = VirtualGamepadView(this).apply {
             visibility = if (showVirtualGamepad) View.VISIBLE else View.GONE
+            setStyle(virtualGamepadSizePercent, virtualGamepadOpacityPercent)
             setOnKeysChangedListener { keys ->
                 virtualKeys = keys
                 syncKeys()
@@ -411,6 +423,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
+    private fun saveGamepadStylePreference() {
+        if (!perGameOverrides.setVirtualGamepadSizePercent(currentGameId, virtualGamepadSizePercent)) {
+            preferences.virtualGamepadSizePercent = virtualGamepadSizePercent
+        }
+        if (!perGameOverrides.setVirtualGamepadOpacityPercent(currentGameId, virtualGamepadOpacityPercent)) {
+            preferences.virtualGamepadOpacityPercent = virtualGamepadOpacityPercent
+        }
+    }
+
     private fun saveFrameSkipPreference() {
         perGameOverrides.setFrameSkip(currentGameId, frameSkip)
     }
@@ -525,6 +546,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(padButton)
+            padSettingsButton = Button(context).apply {
+                setOnClickListener {
+                    showGamepadSettingsDialog()
+                }
+            }
+            runRow.addView(padSettingsButton)
             deadzoneButton = Button(context).apply {
                 setOnClickListener {
                     val index = DEADZONE_LEVELS.indexOf(deadzonePercent).takeIf { it >= 0 } ?: 2
@@ -723,6 +750,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         muteButton?.text = if (muted) "Sound" else "Mute"
         scaleButton?.text = SCALE_LABELS[scaleMode]
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
+        padSettingsButton?.text = "PadCfg"
         deadzoneButton?.text = "DZ$deadzonePercent"
         tiltButton?.text = if (tiltEnabled) "Tilt*" else "Tilt"
         solarButton?.text = if (useLightSensor) "Solar*" else "Solar"
@@ -841,6 +869,64 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun luxToSolarLevel(lux: Float): Int {
         val normalized = (lux / MAX_SOLAR_LUX).coerceIn(0f, 1f)
         return (normalized * 255f).toInt().coerceIn(0, 255)
+    }
+
+    private fun showGamepadSettingsDialog() {
+        val sizeLabel = TextView(this).apply {
+            setTextColor(getColor(R.color.mgba_text_primary))
+        }
+        val opacityLabel = TextView(this).apply {
+            setTextColor(getColor(R.color.mgba_text_primary))
+        }
+        val sizeSeek = SeekBar(this).apply {
+            max = GAMEPAD_SIZE_MAX - GAMEPAD_SIZE_MIN
+            progress = virtualGamepadSizePercent - GAMEPAD_SIZE_MIN
+        }
+        val opacitySeek = SeekBar(this).apply {
+            max = GAMEPAD_OPACITY_MAX - GAMEPAD_OPACITY_MIN
+            progress = virtualGamepadOpacityPercent - GAMEPAD_OPACITY_MIN
+        }
+        fun updateLabels() {
+            sizeLabel.text = "Size: $virtualGamepadSizePercent%"
+            opacityLabel.text = "Opacity: $virtualGamepadOpacityPercent%"
+        }
+        val listener = object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                if (seekBar === sizeSeek) {
+                    virtualGamepadSizePercent = GAMEPAD_SIZE_MIN + progress
+                } else if (seekBar === opacitySeek) {
+                    virtualGamepadOpacityPercent = GAMEPAD_OPACITY_MIN + progress
+                }
+                applyGamepadStyle()
+                saveGamepadStylePreference()
+                updateLabels()
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) = Unit
+
+            override fun onStopTrackingTouch(seekBar: SeekBar) = Unit
+        }
+        sizeSeek.setOnSeekBarChangeListener(listener)
+        opacitySeek.setOnSeekBarChangeListener(listener)
+        updateLabels()
+
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(8), dp(16), dp(4))
+            addView(sizeLabel)
+            addView(sizeSeek)
+            addView(opacityLabel)
+            addView(opacitySeek)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Virtual gamepad")
+            .setView(content)
+            .setPositiveButton("Close", null)
+            .show()
+    }
+
+    private fun applyGamepadStyle() {
+        gamepadView?.setStyle(virtualGamepadSizePercent, virtualGamepadOpacityPercent)
     }
 
     private fun showInputMappingDialog() {
@@ -1397,6 +1483,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val RUMBLE_PULSE_MS = 45L
         private const val MAX_GYRO_RADIANS = 8f
         private const val MAX_SOLAR_LUX = 10000f
+        private const val GAMEPAD_SIZE_MIN = 60
+        private const val GAMEPAD_SIZE_MAX = 140
+        private const val GAMEPAD_OPACITY_MIN = 35
+        private const val GAMEPAD_OPACITY_MAX = 100
         private val DEADZONE_LEVELS = arrayOf(25, 35, 45, 55, 65)
         private val FRAME_SKIP_LABELS = arrayOf("Skip0", "Skip1", "Skip2", "Skip3")
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int")

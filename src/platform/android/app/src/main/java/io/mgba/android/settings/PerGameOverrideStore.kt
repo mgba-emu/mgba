@@ -25,6 +25,14 @@ class PerGameOverrideStore(context: Context) {
         return intOverride(gameId, KEY_DEADZONE_PERCENT, fallback).coerceIn(10, 90)
     }
 
+    fun virtualGamepadSizePercent(gameId: String?, fallback: Int): Int {
+        return intOverride(gameId, KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT, fallback).coerceIn(60, 140)
+    }
+
+    fun virtualGamepadOpacityPercent(gameId: String?, fallback: Int): Int {
+        return intOverride(gameId, KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT, fallback).coerceIn(35, 100)
+    }
+
     fun setScaleMode(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_SCALE_MODE, value.coerceIn(0, 2))
     }
@@ -43,6 +51,14 @@ class PerGameOverrideStore(context: Context) {
 
     fun setDeadzonePercent(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_DEADZONE_PERCENT, value.coerceIn(10, 90))
+    }
+
+    fun setVirtualGamepadSizePercent(gameId: String?, value: Int): Boolean {
+        return putIntOverride(gameId, KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT, value.coerceIn(60, 140))
+    }
+
+    fun setVirtualGamepadOpacityPercent(gameId: String?, value: Int): Boolean {
+        return putIntOverride(gameId, KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT, value.coerceIn(35, 100))
     }
 
     private fun intOverride(gameId: String?, name: String, fallback: Int): Int {
@@ -80,5 +96,7 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_FRAME_SKIP = "frameSkip"
         const val KEY_DEADZONE_PERCENT = "deadzonePercent"
+        const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
+        const val KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT = "virtualGamepadOpacityPercent"
     }
 }

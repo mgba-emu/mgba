@@ -23,9 +23,23 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, value).apply()
         }
 
+    var virtualGamepadSizePercent: Int
+        get() = preferences.getInt(KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT, 100).coerceIn(60, 140)
+        set(value) {
+            preferences.edit().putInt(KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT, value.coerceIn(60, 140)).apply()
+        }
+
+    var virtualGamepadOpacityPercent: Int
+        get() = preferences.getInt(KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT, 100).coerceIn(35, 100)
+        set(value) {
+            preferences.edit().putInt(KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT, value.coerceIn(35, 100)).apply()
+        }
+
     private companion object {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_MUTED = "muted"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
+        const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
+        const val KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT = "virtualGamepadOpacityPercent"
     }
 }

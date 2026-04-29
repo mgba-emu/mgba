@@ -95,6 +95,7 @@
 - [x] 已新增 per-game joystick deadzone 25/35/45/55/65% 档位，并用于实体摇杆方向映射。
 - [x] 已将 Android trigger axes（LTRIGGER/RTRIGGER/BRAKE/GAS）映射到 GBA L/R。
 - [x] 已新增实体输入 debug 面板，显示最后输入设备、按键码、轴值、映射结果和 deadzone。
+- [x] 已新增虚拟手柄大小/透明度设置，并按全局或 per-game override 持久化。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -537,16 +538,16 @@ object NativeBridge {
 
 ### 7.2 虚拟手柄
 
-- [ ] 新建 `VirtualGamepadView`。
-- [ ] 支持多点触控。
+- [x] 新建 `VirtualGamepadView`。
+- [x] 支持多点触控。
 - [ ] 默认布局：
-  - [ ] 左侧 D-pad。
-  - [ ] 右侧 A/B。
-  - [ ] 上方或肩部 L/R。
-  - [ ] 中部 Start/Select/Menu。
+  - [x] 左侧 D-pad。
+  - [x] 右侧 A/B。
+  - [x] 上方或肩部 L/R。
+  - [x] 中部 Start/Select/Menu。
 - [ ] 设置项：
-  - [ ] 透明度。
-  - [ ] 大小。
+  - [x] 透明度。
+  - [x] 大小。
   - [ ] 间距。
   - [ ] 左右手模式。
   - [ ] 横屏布局。

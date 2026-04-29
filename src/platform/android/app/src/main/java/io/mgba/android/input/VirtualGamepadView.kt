@@ -37,6 +37,8 @@ class VirtualGamepadView(context: Context) : View(context) {
     }
     private var pressedKeys = 0
     private var onKeysChanged: ((Int) -> Unit)? = null
+    private var sizePercent = 100
+    private var opacityPercent = 100
 
     init {
         isFocusable = true
@@ -50,6 +52,18 @@ class VirtualGamepadView(context: Context) : View(context) {
 
     fun clearKeys() {
         updateKeys(0)
+    }
+
+    fun setStyle(sizePercent: Int, opacityPercent: Int) {
+        val newSizePercent = sizePercent.coerceIn(60, 140)
+        val newOpacityPercent = opacityPercent.coerceIn(35, 100)
+        if (this.sizePercent == newSizePercent && this.opacityPercent == newOpacityPercent) {
+            return
+        }
+        this.sizePercent = newSizePercent
+        this.opacityPercent = newOpacityPercent
+        rebuildRegions(width, height)
+        invalidate()
     }
 
     override fun onSizeChanged(width: Int, height: Int, oldWidth: Int, oldHeight: Int) {
@@ -98,12 +112,15 @@ class VirtualGamepadView(context: Context) : View(context) {
 
         for (region in regions) {
             val active = pressedKeys and region.mask != 0
+            val opacity = opacityPercent / 100f
             fillPaint.style = Paint.Style.FILL
             fillPaint.color = if (active) {
-                Color.argb(210, 88, 180, 255)
+                Color.argb((210 * opacity).toInt().coerceIn(45, 255), 88, 180, 255)
             } else {
-                Color.argb(92, 255, 255, 255)
+                Color.argb((92 * opacity).toInt().coerceIn(24, 255), 255, 255, 255)
             }
+            strokePaint.color = Color.argb((170 * opacity).toInt().coerceIn(40, 255), 255, 255, 255)
+            textPaint.color = Color.argb((255 * opacity).toInt().coerceIn(90, 255), 255, 255, 255)
             drawRegion(canvas, region, fillPaint)
             drawRegion(canvas, region, strokePaint)
 
@@ -120,9 +137,10 @@ class VirtualGamepadView(context: Context) : View(context) {
         }
 
         val base = min(width, height).toFloat()
-        val button = base.times(0.108f).coerceIn(dp(44f), dp(76f))
+        val scale = sizePercent / 100f
+        val button = base.times(0.108f).times(scale).coerceIn(dp(36f), dp(104f))
         val smallButton = button * 0.86f
-        val padding = dp(24f)
+        val padding = dp(24f) * scale
         val controlsY = height - padding - button * 1.65f
         val dpadX = padding + button * 1.75f
         val faceX = width - padding - button * 1.65f
