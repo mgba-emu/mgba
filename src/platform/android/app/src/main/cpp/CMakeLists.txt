@@ -47,6 +47,7 @@ set(USE_LZMA ON CACHE BOOL "" FORCE)
 add_subdirectory("${MGBA_ROOT}" "${CMAKE_BINARY_DIR}/mgba-core")
 
 add_library(mgba-android SHARED
+    AndroidAudioOutput.cpp
     AndroidCoreRunner.cpp
     JniUtils.cpp
     mgba_android_jni.cpp
@@ -73,4 +74,5 @@ target_link_libraries(mgba-android
         log
         EGL
         GLESv2
+        OpenSLES
 )

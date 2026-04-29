@@ -32,8 +32,9 @@
 - [x] 已实现 native run loop，加载 ROM 后可连续 `runFrame` 并上传 frame buffer 到 GLES2 texture。
 - [x] 已实现触屏虚拟手柄视图，并把 A/B/L/R/Start/Select/D-pad 映射为 mGBA core key bitmask。
 - [x] 已实现 JNI `nativeSetKeys` 到 `core->setKeys` 的输入链路。
+- [x] 已实现 OpenSL ES 音频输出器，从 mGBA audio buffer 拉取样本并重采样到 Android 48 kHz stereo PCM。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
-- [ ] 音频、实体手柄、键盘映射等运行时功能仍待后续阶段实现。
+- [ ] 实体手柄、键盘映射等运行时功能仍待后续阶段实现。
 
 ## 1. 产品目标和范围
 

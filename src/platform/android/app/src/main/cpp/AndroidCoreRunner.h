@@ -1,6 +1,8 @@
 #ifndef MGBA_ANDROID_CORE_RUNNER_H
 #define MGBA_ANDROID_CORE_RUNNER_H
 
+#include "AndroidAudioOutput.h"
+
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <android/native_window.h>
@@ -48,6 +50,7 @@ private:
 	unsigned m_videoHeight = 0;
 	unsigned m_videoStride = 256;
 	unsigned m_textureHeight = 224;
+	AndroidAudioOutput m_audioOutput;
 
 	std::mutex m_mutex;
 	std::thread m_thread;

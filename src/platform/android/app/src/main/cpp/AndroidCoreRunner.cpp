@@ -211,6 +211,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	m_videoStride = stride;
 	m_textureHeight = textureHeight;
 	m_core->currentVideoSize(m_core, &m_videoWidth, &m_videoHeight);
+	m_audioOutput.clear();
 
 	struct mGameInfo info;
 	std::memset(&info, 0, sizeof(info));
@@ -246,28 +247,34 @@ void AndroidCoreRunner::setKeys(uint32_t keys) {
 void AndroidCoreRunner::start() {
 	if (m_running.exchange(true)) {
 		m_paused = false;
+		m_audioOutput.resume();
 		return;
 	}
 	m_paused = false;
+	m_audioOutput.start();
 	m_thread = std::thread(&AndroidCoreRunner::runLoop, this);
 }
 
 void AndroidCoreRunner::pause() {
 	m_paused = true;
+	m_audioOutput.pause();
 }
 
 void AndroidCoreRunner::resume() {
 	m_paused = false;
+	m_audioOutput.resume();
 }
 
 void AndroidCoreRunner::stop() {
 	if (!m_running.exchange(false)) {
+		m_audioOutput.stop();
 		return;
 	}
 	if (m_thread.joinable()) {
 		m_thread.join();
 	}
 	m_paused = true;
+	m_audioOutput.stop();
 }
 
 bool AndroidCoreRunner::initEglLocked() {
@@ -450,6 +457,7 @@ void AndroidCoreRunner::runLoop() {
 			std::lock_guard<std::mutex> lock(m_mutex);
 			if (m_core) {
 				m_core->runFrame(m_core);
+				m_audioOutput.enqueueFromCore(m_core);
 				renderFrameLocked();
 			}
 		}
