@@ -876,7 +876,7 @@ object NativeBridge {
   - [x] `<romName>.ups`
   - [x] `<romName>.bps`
   - [x] `<romHash>.<ext>`
-- [ ] 加载 ROM 后调用 `mCoreAutoloadPatch(core)`。
+- [x] 加载 ROM 后调用 `mCoreAutoloadPatch(core)`。
 - [x] 手动 patch 则直接 `core->loadPatch(core, vf)`。
 
 ### 12.3 Archive

@@ -139,6 +139,29 @@ std::string DefaultBiosPath(const std::string& basePath) {
 	return basePath + "/bios/default.bios";
 }
 
+std::string RomBaseName(const std::string& displayName) {
+	size_t nameStart = displayName.find_last_of("/\\");
+	nameStart = nameStart == std::string::npos ? 0 : nameStart + 1;
+	size_t nameEnd = displayName.find_last_of('.');
+	if (nameEnd == std::string::npos || nameEnd < nameStart) {
+		nameEnd = displayName.size();
+	}
+	return displayName.substr(nameStart, nameEnd - nameStart);
+}
+
+void SetCoreBaseName(mCore* core, const std::string& displayName) {
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
+	if (!core) {
+		return;
+	}
+	const std::string baseName = RomBaseName(displayName);
+	std::snprintf(core->dirs.baseName, sizeof(core->dirs.baseName), "%s", baseName.c_str());
+#else
+	(void) core;
+	(void) displayName;
+#endif
+}
+
 bool IsRegularFile(const std::string& path) {
 	struct stat info = {};
 	return stat(path.c_str(), &info) == 0 && S_ISREG(info.st_mode);
@@ -348,10 +371,13 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	}
 
 	const std::string biosPath = DefaultBiosPath(m_basePath);
+	const std::string patchPath = m_basePath + "/patches";
+	EnsureDirectory(patchPath);
 
 	struct mCoreOptions options = {};
 	options.bios = IsRegularFile(biosPath) ? const_cast<char*>(biosPath.c_str()) : nullptr;
 	options.useBios = options.bios != nullptr;
+	options.patchPath = const_cast<char*>(patchPath.c_str());
 	options.rewindEnable = m_rewindEnabled.load();
 	options.rewindBufferCapacity = m_rewindBufferCapacity.load();
 	options.rewindBufferInterval = m_rewindBufferInterval.load();
@@ -387,6 +413,10 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 		core->deinit(core);
 		return LoadResult(false, "Could not load ROM", "", "", displayName);
 	}
+	SetCoreBaseName(core, displayName);
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
+	mCoreAutoloadPatch(core);
+#endif
 	LoadDefaultPatch(core, m_basePath);
 
 	const std::string savePath = SavePathForCore(core, m_basePath);

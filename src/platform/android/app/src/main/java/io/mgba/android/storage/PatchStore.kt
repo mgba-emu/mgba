@@ -67,15 +67,8 @@ class PatchStore(context: Context) {
         if (!directory.isDirectory) {
             return null
         }
-        val romName = displayName
-            .substringAfterLast('/')
-            .substringBeforeLast('.', displayName.substringAfterLast('/'))
-            .takeIf { it.isNotBlank() }
         val normalizedCrc = crc32.trim().lowercase().takeIf { it.isNotBlank() }
         val names = buildList {
-            romName?.let { base ->
-                PATCH_EXTENSIONS.forEach { extension -> add("$base.$extension") }
-            }
             normalizedCrc?.let { hash ->
                 PATCH_EXTENSIONS.forEach { extension -> add("$hash.$extension") }
             }
