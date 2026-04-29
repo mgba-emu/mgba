@@ -2531,6 +2531,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             .put("uri", currentGameId.orEmpty())
             .put("stableId", currentStableGameId.orEmpty())
             .put("crc32", game?.crc32.orEmpty())
+            .put("sha1", game?.sha1.orEmpty())
         zipText(zip, "metadata.json", metadata.toString(2))
         zipText(zip, "per-game-overrides.json", perGameOverrides.exportGameJson(currentOverrideGameId).toString(2))
         zipText(zip, "input-mappings.json", inputMappingStore.exportGameJson(currentOverrideGameId).toString(2))
@@ -2644,11 +2645,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun metadataMatchesCurrentGame(metadata: JSONObject): Boolean {
         val exportedStableId = metadata.optString("stableId")
         val exportedCrc32 = metadata.optString("crc32")
-        if (exportedStableId.isBlank() && exportedCrc32.isBlank()) {
+        val exportedSha1 = metadata.optString("sha1")
+        if (exportedStableId.isBlank() && exportedCrc32.isBlank() && exportedSha1.isBlank()) {
             return true
         }
+        val currentGame = EmulatorSession.currentGame()
         return exportedStableId == currentStableGameId ||
-            exportedCrc32.equals(EmulatorSession.currentGame()?.crc32.orEmpty(), ignoreCase = true)
+            exportedSha1.equals(currentGame?.sha1.orEmpty(), ignoreCase = true) ||
+            exportedCrc32.equals(currentGame?.crc32.orEmpty(), ignoreCase = true)
     }
 
     private fun importGameDataPackageConfirmed(uri: Uri) {

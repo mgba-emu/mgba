@@ -33,6 +33,7 @@ import io.mgba.android.bridge.NativeLoadResult
 import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.library.LibraryRom
+import io.mgba.android.library.RomIdentity
 import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.library.RomScanner
 import io.mgba.android.library.RecentGameStore
@@ -540,7 +541,7 @@ class MainActivity : Activity() {
             openNativeArchiveRomUri(uri, name, shouldStoreRecent)
             return
         }
-        launchRomFd(uri, name, shouldStoreRecent) {
+        launchRomFd(uri, name, shouldStoreRecent, romSha1 = { sha1(uri) }) {
             contentResolver.openFileDescriptor(uri, "r")
         }
     }
@@ -577,6 +578,8 @@ class MainActivity : Activity() {
             shouldStoreRecent,
             recentDisplayName = archiveName,
             allowImportFallback = false,
+            preferStoredSha1 = false,
+            romSha1 = { sha1(extracted) },
         ) {
             ParcelFileDescriptor.open(extracted, ParcelFileDescriptor.MODE_READ_ONLY)
         }
@@ -634,6 +637,8 @@ class MainActivity : Activity() {
                     shouldStoreRecent,
                     recentDisplayName = archiveName,
                     allowImportFallback = false,
+                    preferStoredSha1 = false,
+                    romSha1 = { sha1(extracted) },
                 ) {
                     ParcelFileDescriptor.open(extracted, ParcelFileDescriptor.MODE_READ_ONLY)
                 }
@@ -647,12 +652,19 @@ class MainActivity : Activity() {
         shouldStoreRecent: Boolean,
         recentDisplayName: String = name,
         allowImportFallback: Boolean = true,
+        preferStoredSha1: Boolean = true,
+        romSha1: (() -> String)? = null,
         openDescriptor: () -> ParcelFileDescriptor?,
     ) {
         val gameId = uri.toString()
-        val launchGameId = stableGameIdForLibraryUri(uri, gameId)
+        val knownHashes = knownRomHashesFor(uri, preferStoredSha1)
+        var computedSha1 = knownHashes.sha1.ifBlank { romSha1?.invoke().orEmpty() }
+        var launchGameId = stableGameIdFor(gameId, knownHashes.crc32, computedSha1)
+        val launchCrcGameId = crc32GameIdFor(gameId, knownHashes.crc32)
         perGameOverrides.migrateGameId(launchGameId, gameId)
+        perGameOverrides.migrateGameId(launchGameId, launchCrcGameId)
         biosStore.migrateGameId(launchGameId, gameId)
+        biosStore.migrateGameId(launchGameId, launchCrcGameId)
         var patchApplied: Boolean? = null
         var cheatsApplied: Boolean? = null
         var autoStateLoaded = false
@@ -689,11 +701,14 @@ class MainActivity : Activity() {
             )
             return emulator.loadRomFd(descriptor.fd, name).also { loadResult ->
                 if (loadResult.ok) {
-                    val stableGameId = stableGameIdFor(gameId, loadResult.crc32)
+                    val stableGameId = stableGameIdFor(gameId, loadResult.crc32, computedSha1)
+                    val crcGameId = crc32GameIdFor(gameId, loadResult.crc32)
                     perGameOverrides.migrateGameId(stableGameId, gameId)
+                    perGameOverrides.migrateGameId(stableGameId, crcGameId)
                     biosStore.migrateGameId(stableGameId, gameId)
-                    patchApplied = applyStoredPatch(emulator, gameId, stableGameId, name, loadResult.crc32)
-                    cheatsApplied = applyStoredCheats(emulator, gameId, stableGameId)
+                    biosStore.migrateGameId(stableGameId, crcGameId)
+                    patchApplied = applyStoredPatch(emulator, gameId, stableGameId, crcGameId, name, loadResult.crc32)
+                    cheatsApplied = applyStoredCheats(emulator, gameId, stableGameId, crcGameId)
                     autoStateLoaded = preferences.autoStateOnExit && emulator.loadAutoState()
                 }
             }
@@ -707,6 +722,14 @@ class MainActivity : Activity() {
         if (allowImportFallback && result?.ok != true) {
             val cached = runCatching { cacheImportFile(uri, name) }.getOrNull()
             if (cached != null) {
+                if (computedSha1.isBlank()) {
+                    computedSha1 = sha1(cached)
+                    launchGameId = stableGameIdFor(gameId, knownHashes.crc32, computedSha1)
+                    perGameOverrides.migrateGameId(launchGameId, gameId)
+                    perGameOverrides.migrateGameId(launchGameId, launchCrcGameId)
+                    biosStore.migrateGameId(launchGameId, gameId)
+                    biosStore.migrateGameId(launchGameId, launchCrcGameId)
+                }
                 usedImportFallback = true
                 patchApplied = null
                 cheatsApplied = null
@@ -744,10 +767,10 @@ class MainActivity : Activity() {
             },
         )
         if (result?.ok == true) {
-            val stableGameId = stableGameIdFor(gameId, result.crc32)
-            EmulatorSession.setCurrentGame(gameId, name, stableGameId, result.crc32)
+            val stableGameId = stableGameIdFor(gameId, result.crc32, computedSha1)
+            EmulatorSession.setCurrentGame(gameId, name, stableGameId, result.crc32, computedSha1)
             if (shouldStoreRecent) {
-                recentStore.add(uri, recentDisplayName, stableGameId, result.crc32)
+                recentStore.add(uri, recentDisplayName, stableGameId, result.crc32, computedSha1)
                 renderRecentGames()
             }
             libraryStore.markPlayed(uri)
@@ -760,10 +783,11 @@ class MainActivity : Activity() {
         emulator: EmulatorController,
         gameId: String,
         stableGameId: String,
+        crcGameId: String,
         displayName: String,
         crc32: String,
     ): Boolean? {
-        val file = artifactGameIds(gameId, stableGameId)
+        val file = artifactGameIds(gameId, stableGameId, crcGameId)
             .asSequence()
             .mapNotNull { patchStore.fileForGame(it) }
             .firstOrNull()
@@ -776,8 +800,13 @@ class MainActivity : Activity() {
         }.getOrDefault(false)
     }
 
-    private fun applyStoredCheats(emulator: EmulatorController, gameId: String, stableGameId: String): Boolean? {
-        val file = artifactGameIds(gameId, stableGameId)
+    private fun applyStoredCheats(
+        emulator: EmulatorController,
+        gameId: String,
+        stableGameId: String,
+        crcGameId: String,
+    ): Boolean? {
+        val file = artifactGameIds(gameId, stableGameId, crcGameId)
             .asSequence()
             .mapNotNull { cheatStore.fileForGame(it) }
             .firstOrNull()
@@ -789,26 +818,36 @@ class MainActivity : Activity() {
         }.getOrDefault(false)
     }
 
-    private fun stableGameIdFor(gameId: String, crc32: String): String {
-        val normalizedCrc = crc32.trim().lowercase(java.util.Locale.US)
-        return if (normalizedCrc.isBlank()) gameId else "crc32:$normalizedCrc"
+    private fun stableGameIdFor(gameId: String, crc32: String, sha1: String): String {
+        return RomIdentity.stableGameId(gameId, crc32, sha1)
     }
 
-    private fun stableGameIdForLibraryUri(uri: Uri, gameId: String): String {
+    private fun crc32GameIdFor(gameId: String, crc32: String): String {
+        return RomIdentity.crc32GameId(gameId, crc32)
+    }
+
+    private fun knownRomHashesFor(uri: Uri, preferStoredSha1: Boolean): RomHashes {
         val libraryEntry = libraryStore.list().firstOrNull { it.uri == uri }
-        if (libraryEntry?.crc32?.isNotBlank() == true) {
-            return stableGameIdFor(gameId, libraryEntry.crc32)
-        }
         val recentEntry = recentStore.list().firstOrNull { it.uri == uri }
-        if (recentEntry?.stableId?.isNotBlank() == true) {
-            return recentEntry.stableId
-        }
-        val crc32 = recentEntry?.crc32.orEmpty()
-        return stableGameIdFor(gameId, crc32)
+        val recentStableId = recentEntry?.stableId.orEmpty()
+        val recentCrc32 = recentEntry?.crc32?.ifBlank {
+            recentStableId.substringAfter("crc32:", missingDelimiterValue = "").takeIf { it != recentStableId }.orEmpty()
+        }.orEmpty()
+        val recentSha1 = recentEntry?.sha1?.ifBlank {
+            recentStableId.substringAfter("sha1:", missingDelimiterValue = "").takeIf { it != recentStableId }.orEmpty()
+        }.orEmpty()
+        return RomHashes(
+            crc32 = libraryEntry?.crc32?.ifBlank { recentCrc32 } ?: recentCrc32,
+            sha1 = if (preferStoredSha1) {
+                libraryEntry?.sha1?.ifBlank { recentSha1 } ?: recentSha1
+            } else {
+                ""
+            },
+        )
     }
 
-    private fun artifactGameIds(gameId: String, stableGameId: String): List<String> {
-        return listOf(stableGameId, gameId).filter { it.isNotBlank() }.distinct()
+    private fun artifactGameIds(vararg gameIds: String?): List<String> {
+        return gameIds.toList().filterNot { it.isNullOrBlank() }.map { it.orEmpty() }.distinct()
     }
 
     private fun zipRomEntries(uri: Uri): List<String> {
@@ -1742,6 +1781,40 @@ class MainActivity : Activity() {
         return bytes.joinToString("") { "%02x".format(it.toInt() and 0xff) }
     }
 
+    private fun sha1(file: File): String {
+        return runCatching {
+            val digest = MessageDigest.getInstance("SHA-1")
+            file.inputStream().use { input ->
+                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                while (true) {
+                    val read = input.read(buffer)
+                    if (read <= 0) {
+                        break
+                    }
+                    digest.update(buffer, 0, read)
+                }
+            }
+            digest.digest().joinToString("") { "%02x".format(it.toInt() and 0xff) }
+        }.getOrDefault("")
+    }
+
+    private fun sha1(uri: Uri): String {
+        return runCatching {
+            val digest = MessageDigest.getInstance("SHA-1")
+            contentResolver.openInputStream(uri)?.use { input ->
+                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                while (true) {
+                    val read = input.read(buffer)
+                    if (read <= 0) {
+                        break
+                    }
+                    digest.update(buffer, 0, read)
+                }
+            } ?: return@runCatching ""
+            digest.digest().joinToString("") { "%02x".format(it.toInt() and 0xff) }
+        }.getOrDefault("")
+    }
+
     private fun showAboutDialog() {
         val message = listOf(
             "Native core: ${NativeBridge.versionLabel()}",
@@ -2119,6 +2192,11 @@ private enum class LibraryMode(val label: String) {
 private data class StorageStats(
     val count: Int,
     val bytes: Long,
+)
+
+private data class RomHashes(
+    val crc32: String = "",
+    val sha1: String = "",
 )
 
 private fun LibraryRom.hardwareLabel(): String {

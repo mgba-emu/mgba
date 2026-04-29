@@ -11,6 +11,7 @@ data class RecentGame(
     val lastOpened: Long,
     val stableId: String = "",
     val crc32: String = "",
+    val sha1: String = "",
 )
 
 class RecentGameStore(context: Context) {
@@ -31,16 +32,17 @@ class RecentGameStore(context: Context) {
                         lastOpened = item.optLong("lastOpened", 0L),
                         stableId = item.optString("stableId"),
                         crc32 = item.optString("crc32"),
+                        sha1 = item.optString("sha1"),
                     ),
                 )
             }
         }.sortedByDescending { it.lastOpened }
     }
 
-    fun add(uri: Uri, displayName: String, stableId: String = "", crc32: String = "") {
+    fun add(uri: Uri, displayName: String, stableId: String = "", crc32: String = "", sha1: String = "") {
         val existing = list().filterNot { it.uri == uri }
         val updated = listOf(
-            RecentGame(uri, displayName, System.currentTimeMillis(), stableId, crc32),
+            RecentGame(uri, displayName, System.currentTimeMillis(), stableId, crc32, sha1),
         ) + existing
         write(updated)
     }
@@ -80,6 +82,7 @@ class RecentGameStore(context: Context) {
             .put("lastOpened", item.lastOpened)
             .put("stableId", item.stableId)
             .put("crc32", item.crc32)
+            .put("sha1", item.sha1)
     }
 
     private fun jsonToRecent(item: JSONObject?): RecentGame? {
@@ -93,6 +96,7 @@ class RecentGameStore(context: Context) {
             lastOpened = item.optLong("lastOpened", 0L),
             stableId = item.optString("stableId"),
             crc32 = item.optString("crc32"),
+            sha1 = item.optString("sha1"),
         )
     }
 

@@ -7,6 +7,7 @@ data class CurrentGame(
     val displayName: String,
     val stableId: String,
     val crc32: String,
+    val sha1: String,
 )
 
 object EmulatorSession {
@@ -17,8 +18,8 @@ object EmulatorSession {
         return controller ?: EmulatorController(context).also { controller = it }
     }
 
-    fun setCurrentGame(uri: String, displayName: String, stableId: String = uri, crc32: String = "") {
-        currentGame = CurrentGame(uri, displayName, stableId, crc32)
+    fun setCurrentGame(uri: String, displayName: String, stableId: String = uri, crc32: String = "", sha1: String = "") {
+        currentGame = CurrentGame(uri, displayName, stableId, crc32, sha1)
     }
 
     fun currentGame(): CurrentGame? {

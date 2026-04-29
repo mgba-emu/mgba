@@ -155,6 +155,7 @@
 - [x] 已新增 Android 可重复手工验收清单，覆盖构建、设备矩阵、ROM、输入、存档、截图、传感器和诊断。
 - [x] 已新增 Android native bridge JSON 单测，锁定 `NativeLoadResult` 和 `NativeStats` 解析/coerce 行为。
 - [x] 已新增 Game Boy Camera Android 捕获入口：可调用系统相机 App 并持久化为当前游戏 camera image source。
+- [x] 已补齐 Android ROM 启动 SHA-1：普通 ROM 和解包后的 archive entry 会写入会话、最近列表和游戏数据包 metadata，stable id 优先 SHA-1 并兼容 CRC32 旧数据。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -694,8 +695,8 @@ object NativeBridge {
 - [x] 对 archive：
   - [x] 如果 `VDirOpenArchive(path)` 只能走路径，先复制 archive 到 cache，再用现有 archive VFS。
   - [ ] 后续可实现 `VDirOpenArchiveVF`，减少大文件复制。
-- [ ] ROM hash：
-  - [ ] 加载后计算 CRC32/SHA1。
+- [x] ROM hash：
+  - [x] 加载后计算 CRC32/SHA1。
   - [x] 用 hash 作为保存/状态缩略图/封面/patch/cheat artifact 的稳定 key。
   - [x] 将 per-game 配置 key 从 SAF URI 迁移到 ROM hash，并保留旧 URI migration。
 
