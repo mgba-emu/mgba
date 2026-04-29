@@ -986,8 +986,20 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         AlertDialog.Builder(this)
             .setTitle("Virtual gamepad")
             .setView(content)
+            .setNeutralButton("Reset") { _, _ -> resetGamepadStyle() }
             .setPositiveButton("Close", null)
             .show()
+    }
+
+    private fun resetGamepadStyle() {
+        virtualGamepadSizePercent = DEFAULT_GAMEPAD_SIZE_PERCENT
+        virtualGamepadOpacityPercent = DEFAULT_GAMEPAD_OPACITY_PERCENT
+        virtualGamepadSpacingPercent = DEFAULT_GAMEPAD_SPACING_PERCENT
+        virtualGamepadHapticsEnabled = true
+        virtualGamepadLeftHanded = false
+        applyGamepadStyle()
+        saveGamepadStylePreference()
+        Toast.makeText(this, "Virtual gamepad reset", Toast.LENGTH_SHORT).show()
     }
 
     private fun applyGamepadStyle() {
@@ -1554,6 +1566,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val RUMBLE_PULSE_MS = 45L
         private const val MAX_GYRO_RADIANS = 8f
         private const val MAX_SOLAR_LUX = 10000f
+        private const val DEFAULT_GAMEPAD_SIZE_PERCENT = 100
+        private const val DEFAULT_GAMEPAD_OPACITY_PERCENT = 100
+        private const val DEFAULT_GAMEPAD_SPACING_PERCENT = 100
         private const val GAMEPAD_SIZE_MIN = 60
         private const val GAMEPAD_SIZE_MAX = 140
         private const val GAMEPAD_OPACITY_MIN = 35
