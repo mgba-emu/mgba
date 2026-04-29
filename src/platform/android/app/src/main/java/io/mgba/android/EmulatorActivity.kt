@@ -1,6 +1,7 @@
 package io.mgba.android
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -288,8 +289,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             stateRow.addView(Button(context).apply {
                 text = "Save"
                 setOnClickListener {
-                    val ok = controller?.saveStateSlot(stateSlot) == true
-                    Toast.makeText(context, if (ok) "State saved" else "Save failed", Toast.LENGTH_SHORT).show()
+                    saveStateWithConfirmation()
                 }
             })
             stateRow.addView(Button(context).apply {
@@ -338,6 +338,24 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         pauseButton?.text = if (userPaused) "Resume" else "Pause"
         fastButton?.text = if (fastForward) "1x" else "Fast"
         scaleButton?.text = SCALE_LABELS[scaleMode]
+    }
+
+    private fun saveStateWithConfirmation() {
+        if (controller?.hasStateSlot(stateSlot) != true) {
+            saveStateNow()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Overwrite state?")
+            .setMessage("Slot $stateSlot already has a save state.")
+            .setPositiveButton("Overwrite") { _, _ -> saveStateNow() }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun saveStateNow() {
+        val ok = controller?.saveStateSlot(stateSlot) == true
+        Toast.makeText(this, if (ok) "State saved" else "Save failed", Toast.LENGTH_SHORT).show()
     }
 
     private fun shareScreenshot(path: String) {

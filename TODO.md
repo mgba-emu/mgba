@@ -48,12 +48,13 @@
 - [x] 已实现 SAF 电池存档导入，直接恢复到当前 core savedata 并写回当前游戏存档。
 - [x] 已实现 SAF cheat 文件导入，native 侧调用 `mCheatParseFile` 解析并应用到当前 core。
 - [x] 已实现渲染缩放模式切换：Fit、Fill、Integer。
+- [x] 已实现即时存档槽位覆盖确认。
 - [x] 已实现 emulator 画面沉浸全屏与游玩时保持屏幕常亮。
 - [x] 已实现虚拟按键按下时的系统 haptic feedback。
 - [x] 已提交 Gradle wrapper，Android 工程可直接使用 `./gradlew :app:assembleDebug` 构建。
 - [x] 已新增 GitHub Actions Android debug APK 构建 workflow。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
-- [ ] ROM 库封面/搜索/增量扫描、即时存档缩略图、覆盖确认、可配置重映射和传感器输入仍待后续阶段实现。
+- [ ] ROM 库封面/搜索/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
 ## 1. 产品目标和范围
 

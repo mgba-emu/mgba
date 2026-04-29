@@ -419,6 +419,16 @@ bool AndroidCoreRunner::loadStateSlot(int slot) {
 	return ok;
 }
 
+bool AndroidCoreRunner::hasStateSlot(int slot) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	const std::string path = statePathForSlot(slot);
+	if (path.empty()) {
+		return false;
+	}
+	struct stat info = {};
+	return stat(path.c_str(), &info) == 0 && S_ISREG(info.st_mode);
+}
+
 void AndroidCoreRunner::reset() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (m_core) {

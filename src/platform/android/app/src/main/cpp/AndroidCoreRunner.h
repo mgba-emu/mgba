@@ -31,6 +31,7 @@ public:
 	void setKeys(uint32_t keys);
 	bool saveStateSlot(int slot);
 	bool loadStateSlot(int slot);
+	bool hasStateSlot(int slot);
 	void reset();
 	void setFastForward(bool enabled);
 	void setScaleMode(int mode);
