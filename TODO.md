@@ -181,6 +181,7 @@
 - [x] 已修复 Android launcher 回前台恢复：HOME 后从 launcher 入口返回会将活动中的 EmulatorActivity 拉回前台，避免停在 MainActivity。
 - [x] 已完成 Android 模拟器锁屏/解锁恢复验证：`Medium_Phone` arm64 AVD 跑 `~/game/[gba]木叶战记.zip`，解锁后仍聚焦 EmulatorActivity 且画面继续渲染。
 - [x] 已增强 Android native audio 诊断：stats/DIAG 导出 started/paused/enabled、queued buffers/frames、read frames 和 last read frames，模拟器真实 ROM smoke 已确认字段递增。
+- [x] 已完成 Android 模拟器音频暂停/恢复/快进 smoke：暂停期间 native frames 和 audio queue 计数保持不变，恢复并 FAST 往返后 queue/read frames 继续递增。
 
 ## 1. 产品目标和范围
 
@@ -594,7 +595,7 @@ object NativeBridge {
 ### 6.4 音频验收标准
 
 - [ ] 正常设备 30 分钟无持续爆音。
-- [ ] 快进/暂停/恢复后音频不永久静音。
+- [x] 快进/暂停/恢复后音频不永久静音。
 - [x] 蓝牙/有线输出路由变化后可恢复音频；已实现 route change 自动重建音频输出，真实蓝牙耳机实体仍需设备矩阵验证。
 - [x] 横竖屏旋转不重启音频核心。
 - [x] underrun 计数可在 debug overlay 查看。
