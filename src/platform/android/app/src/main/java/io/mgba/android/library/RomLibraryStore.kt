@@ -98,20 +98,23 @@ class RomLibraryStore(context: Context) {
         preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
     }
 
-    fun remove(uri: Uri) {
+    fun remove(uri: Uri): LibraryRom? {
+        val items = list()
+        val removed = items.firstOrNull { it.uri == uri }
         val array = JSONArray()
-        list().filterNot { it.uri == uri }.forEach { item ->
+        items.filterNot { it.uri == uri }.forEach { item ->
             array.put(toJson(item))
         }
         preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
+        return removed
     }
 
-    fun removeSourceFolder(sourceTreeUri: Uri): Int {
+    fun removeSourceFolder(sourceTreeUri: Uri): List<LibraryRom> {
         val source = sourceTreeUri.toString()
         val items = list()
         val remainingSources = sourceFolders().filterNot { it.toString() == source }
         val remainingItems = items.filterNot { belongsToSource(it, source) }
-        val removedCount = items.size - remainingItems.size
+        val removedItems = items - remainingItems.toSet()
         val sourceArray = JSONArray()
         remainingSources.forEach { folder -> sourceArray.put(folder.toString()) }
         val itemArray = JSONArray()
@@ -120,23 +123,23 @@ class RomLibraryStore(context: Context) {
             .putString(KEY_SOURCES, sourceArray.toString())
             .putString(KEY_ITEMS, itemArray.toString())
             .apply()
-        return removedCount
+        return removedItems
     }
 
-    fun clearSourceFolders(): Int {
+    fun clearSourceFolders(): List<LibraryRom> {
         val sources = sourceFolders()
         val items = list()
         val remainingItems = items.filter { item ->
             sources.none { source -> belongsToSource(item, source.toString()) }
         }
-        val removedCount = items.size - remainingItems.size
+        val removedItems = items - remainingItems.toSet()
         val itemArray = JSONArray()
         remainingItems.forEach { item -> itemArray.put(toJson(item)) }
         preferences.edit()
             .putString(KEY_SOURCES, JSONArray().toString())
             .putString(KEY_ITEMS, itemArray.toString())
             .apply()
-        return removedCount
+        return removedItems
     }
 
     fun setCoverPath(uri: Uri, coverPath: String) {

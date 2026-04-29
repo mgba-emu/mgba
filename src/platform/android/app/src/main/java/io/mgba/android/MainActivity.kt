@@ -1341,10 +1341,7 @@ class MainActivity : Activity() {
     }
 
     private fun clearCover(rom: LibraryRom) {
-        val path = rom.coverPath
-        if (path.isNotBlank()) {
-            File(path).delete()
-        }
+        deleteCoverPath(rom.coverPath)
         libraryStore.setCoverPath(rom.uri, "")
         coverThumbnailCache.evictAll()
         renderLibrary()
@@ -1450,7 +1447,10 @@ class MainActivity : Activity() {
             .setTitle("Remove from library?")
             .setMessage(rom.displayName)
             .setPositiveButton("Remove") { _, _ ->
-                libraryStore.remove(rom.uri)
+                libraryStore.remove(rom.uri)?.let { removed ->
+                    deleteCoverPath(removed.coverPath)
+                    coverThumbnailCache.evictAll()
+                }
                 renderLibrary()
                 nativeStatus.text = "${getString(R.string.native_version_label)}: Removed from library"
             }
@@ -1580,11 +1580,12 @@ class MainActivity : Activity() {
             .setMessage(source.toString())
             .setPositiveButton("Remove") { _, _ ->
                 val removed = libraryStore.removeSourceFolder(source)
+                deleteCoverPaths(removed)
                 releaseLibraryFolder(source)
                 renderLibrary()
                 updateRescanFoldersButton()
                 updateLibraryFoldersButton()
-                nativeStatus.text = "${getString(R.string.native_version_label)}: Folder removed ($removed ROMs)"
+                nativeStatus.text = "${getString(R.string.native_version_label)}: Folder removed (${removed.size} ROMs)"
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -1596,11 +1597,12 @@ class MainActivity : Activity() {
             .setMessage("Remove all scanned folders and their indexed ROMs.")
             .setPositiveButton("Clear") { _, _ ->
                 val removed = libraryStore.clearSourceFolders()
+                deleteCoverPaths(removed)
                 sources.forEach(::releaseLibraryFolder)
                 renderLibrary()
                 updateRescanFoldersButton()
                 updateLibraryFoldersButton()
-                nativeStatus.text = "${getString(R.string.native_version_label)}: Folders cleared ($removed ROMs)"
+                nativeStatus.text = "${getString(R.string.native_version_label)}: Folders cleared (${removed.size} ROMs)"
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -1609,6 +1611,22 @@ class MainActivity : Activity() {
     private fun releaseLibraryFolder(source: Uri) {
         runCatching {
             contentResolver.releasePersistableUriPermission(source, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+    }
+
+    private fun deleteCoverPaths(roms: List<LibraryRom>) {
+        roms.map { it.coverPath }.distinct().forEach(::deleteCoverPath)
+        coverThumbnailCache.evictAll()
+    }
+
+    private fun deleteCoverPath(path: String) {
+        if (path.isBlank()) {
+            return
+        }
+        val coversDir = File(filesDir, "covers").canonicalFile
+        val file = runCatching { File(path).canonicalFile }.getOrNull() ?: return
+        if (file.parentFile == coversDir) {
+            file.delete()
         }
     }
 
