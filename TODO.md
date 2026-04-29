@@ -156,6 +156,7 @@
 - [x] 已新增 Android native bridge JSON 单测，锁定 `NativeLoadResult` 和 `NativeStats` 解析/coerce 行为。
 - [x] 已新增 Game Boy Camera Android 捕获入口：可调用系统相机 App 并持久化为当前游戏 camera image source。
 - [x] 已补齐 Android ROM 启动 SHA-1：普通 ROM 和解包后的 archive entry 会写入会话、最近列表和游戏数据包 metadata，stable id 优先 SHA-1 并兼容 CRC32 旧数据。
+- [x] 已完成 Android 最终本地构建验收：`assembleDebug`、`testDebugUnitTest`、`assembleRelease`、`bundleRelease` 和 native warnings-as-errors 均通过。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -336,7 +337,7 @@ src/platform/android/
 
 ### 3.3 构建命令
 
-- [ ] Debug 构建命令：
+- [x] Debug 构建命令：
 
 ```bash
 cd src/platform/android
@@ -355,11 +356,12 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell am start -n io.mgba.android/.MainActivity
 ```
 
-- [ ] Release 验证：
+- [x] Release 验证：
 
 ```bash
 cd src/platform/android
-./gradlew :app:assembleRelease
+./gradlew :app:assembleRelease :app:bundleRelease
+./gradlew :app:externalNativeBuildDebug -PmgbaAndroidWarningsAsErrors=true
 ```
 
 ## 4. JNI / Native API 设计
