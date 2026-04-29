@@ -7,9 +7,15 @@ import io.mgba.android.bridge.NativeBridge
 import io.mgba.android.bridge.NativeLoadResult
 import java.security.MessageDigest
 
-class RomScanner(private val context: Context) {
+class RomScanner(
+    private val context: Context,
+    private val onProgress: ((Int, String) -> Unit)? = null,
+) {
+    private var scannedCount = 0
+
     fun scan(treeUri: Uri): List<LibraryRom> {
         throwIfInterrupted()
+        scannedCount = 0
         val rootId = DocumentsContract.getTreeDocumentId(treeUri)
         return scanDocument(treeUri, rootId, depth = 0)
     }
@@ -45,7 +51,7 @@ class RomScanner(private val context: Context) {
                     val documentUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childId)
                     val probe = probeRom(documentUri, name)
                     val sha1 = sha1(documentUri)
-                    results += LibraryRom(
+                    val rom = LibraryRom(
                         uri = documentUri,
                         displayName = name,
                         title = probe?.title.orEmpty(),
@@ -59,6 +65,9 @@ class RomScanner(private val context: Context) {
                         fileSize = size,
                         sourceTreeUri = treeUri,
                     )
+                    results += rom
+                    scannedCount += 1
+                    onProgress?.invoke(scannedCount, rom.displayName)
                 }
             }
         }

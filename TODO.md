@@ -151,6 +151,7 @@
 - [x] 已新增 Android 最近打开管理：首页可清空 Recent 列表。
 - [x] 已新增 Android CI 合规检查：禁止在 App 源码中捆绑 ROM、save、savestate 或 BIOS 文件。
 - [x] 已新增 Android Storage 管理摘要：展示 saves/states/screenshots/covers/logs/cache 占用并可清日志或 cache。
+- [x] 已增强 Android ROM 扫描进度：首页扫描/重扫时显示已发现数量和当前 ROM 名称。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -1006,7 +1007,7 @@ object NativeBridge {
 - [ ] 顶部操作：搜索、添加、设置。
 - [x] 最近游戏横向区或列表排序。
 - [ ] 空状态。
-- [ ] 扫描进度。
+- [x] 扫描进度。
 
 ### 15.2 EmulatorActivity / EmulatorScreen
 

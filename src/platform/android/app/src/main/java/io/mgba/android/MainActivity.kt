@@ -1482,7 +1482,15 @@ class MainActivity : Activity() {
         scanButton.text = "Cancel Scan"
         nativeStatus.text = "${getString(R.string.native_version_label)}: Scanning folder"
         val thread = Thread {
-            val result = runCatching { RomScanner(this).scan(uri) }
+            val result = runCatching {
+                RomScanner(this) { count, name ->
+                    runOnUiThread {
+                        if (generation == scanGeneration) {
+                            nativeStatus.text = "${getString(R.string.native_version_label)}: Scanning $count - $name"
+                        }
+                    }
+                }.scan(uri)
+            }
             runOnUiThread {
                 if (generation != scanGeneration) {
                     return@runOnUiThread
@@ -1524,7 +1532,15 @@ class MainActivity : Activity() {
                 if (Thread.currentThread().isInterrupted) {
                     return@forEach
                 }
-                runCatching { RomScanner(this).scan(source) }
+                runCatching {
+                    RomScanner(this) { count, name ->
+                        runOnUiThread {
+                            if (generation == scanGeneration) {
+                                nativeStatus.text = "${getString(R.string.native_version_label)}: Rescanning ${total + count} - $name"
+                            }
+                        }
+                    }.scan(source)
+                }
                     .onSuccess { roms ->
                         total += roms.size
                         libraryStore.mergeScan(source, roms)
