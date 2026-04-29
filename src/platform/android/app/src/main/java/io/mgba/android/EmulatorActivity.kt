@@ -40,6 +40,7 @@ import io.mgba.android.input.AndroidInputMapper
 import io.mgba.android.input.GbaButtons
 import io.mgba.android.input.VirtualGamepadView
 import io.mgba.android.library.RomLibraryStore
+import io.mgba.android.settings.AudioBufferModes
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.InputMappingStore
 import io.mgba.android.settings.PerGameOverrideStore
@@ -84,6 +85,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var frameSkipButton: Button? = null
     private var muteButton: Button? = null
     private var volumeButton: Button? = null
+    private var audioBufferButton: Button? = null
     private var scaleButton: Button? = null
     private var filterButton: Button? = null
     private var orientationButton: Button? = null
@@ -100,6 +102,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var frameSkip = 0
     private var muted = false
     private var volumePercent = 100
+    private var audioBufferMode = 1
     private var showVirtualGamepad = true
     private var virtualGamepadSizePercent = 100
     private var virtualGamepadOpacityPercent = 100
@@ -165,6 +168,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         frameSkip = perGameOverrides.frameSkip(currentGameId, 0)
         muted = perGameOverrides.muted(currentGameId, preferences.muted)
         volumePercent = perGameOverrides.volumePercent(currentGameId, preferences.volumePercent)
+        audioBufferMode = perGameOverrides.audioBufferMode(currentGameId, preferences.audioBufferMode)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
         virtualGamepadSizePercent = perGameOverrides.virtualGamepadSizePercent(
             currentGameId,
@@ -204,6 +208,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         controller?.setFrameSkip(frameSkip)
         controller?.setAudioEnabled(!muted)
         controller?.setVolumePercent(volumePercent)
+        controller?.setAudioBufferSamples(AudioBufferModes.samplesFor(audioBufferMode))
 
         val root = FrameLayout(this).apply {
             setBackgroundColor(getColor(R.color.mgba_background))
@@ -484,6 +489,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
+    private fun saveAudioBufferPreference() {
+        if (!perGameOverrides.setAudioBufferMode(currentGameId, audioBufferMode)) {
+            preferences.audioBufferMode = audioBufferMode
+        }
+    }
+
     private fun saveGamepadPreference() {
         if (!perGameOverrides.setShowVirtualGamepad(currentGameId, showVirtualGamepad)) {
             preferences.showVirtualGamepad = showVirtualGamepad
@@ -611,6 +622,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(volumeButton)
+            audioBufferButton = Button(context).apply {
+                setOnClickListener {
+                    audioBufferMode = (audioBufferMode + 1) % AudioBufferModes.labels.size
+                    controller?.setAudioBufferSamples(AudioBufferModes.samplesFor(audioBufferMode))
+                    saveAudioBufferPreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(audioBufferButton)
             scaleButton = Button(context).apply {
                 setOnClickListener {
                     scaleMode = (scaleMode + 1) % SCALE_LABELS.size
@@ -863,6 +883,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         frameSkipButton?.text = FRAME_SKIP_LABELS[frameSkip]
         muteButton?.text = if (muted) "Sound" else "Mute"
         volumeButton?.text = "Vol$volumePercent"
+        audioBufferButton?.text = AudioBufferModes.labelFor(audioBufferMode)
         scaleButton?.text = SCALE_LABELS[scaleMode]
         filterButton?.text = FILTER_LABELS[filterMode]
         orientationButton?.text = ORIENTATION_LABELS[orientationMode]
@@ -1394,7 +1415,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         lastStatsAtMs = now
         statsOverlay?.text = String.format(
             Locale.US,
-            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nAudio %s  Vol %d%%\nScale %s  Filter %s  BIOS %s",
+            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nAudio %s  Vol %d%%  Buf %d\nScale %s  Filter %s  BIOS %s",
             fps,
             stats.frames,
             stats.videoWidth,
@@ -1404,6 +1425,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             frameSkip,
             if (muted) "muted" else "on",
             stats.volumePercent,
+            stats.audioBufferSamples,
             SCALE_LABELS.getOrElse(stats.scaleMode) { SCALE_LABELS[0] },
             FILTER_LABELS.getOrElse(stats.filterMode) { FILTER_LABELS[0] },
             if (stats.skipBios) "skip" else "boot",

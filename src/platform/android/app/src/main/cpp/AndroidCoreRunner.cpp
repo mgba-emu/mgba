@@ -424,7 +424,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	options.rewindEnable = true;
 	options.rewindBufferCapacity = 600;
 	options.rewindBufferInterval = 1;
-	options.audioBuffers = 1024;
+	options.audioBuffers = m_audioBufferSamples.load();
 	options.skipBios = m_skipBios.load();
 	options.videoSync = false;
 	options.audioSync = true;
@@ -728,6 +728,16 @@ void AndroidCoreRunner::setVolumePercent(int percent) {
 	m_audioOutput.setVolumePercent(clamped);
 }
 
+void AndroidCoreRunner::setAudioBufferSamples(int samples) {
+	const int clamped = std::clamp(samples, 512, 4096);
+	m_audioBufferSamples = clamped;
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (m_core && m_core->setAudioBufferSize) {
+		m_core->setAudioBufferSize(m_core, static_cast<size_t>(clamped));
+		m_audioOutput.clear();
+	}
+}
+
 void AndroidCoreRunner::setScaleMode(int mode) {
 	if (mode < 0 || mode > 4) {
 		mode = 0;
@@ -761,6 +771,7 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"fastForward\":" << (m_fastForward.load() ? "true" : "false")
 	    << ",\"frameSkip\":" << m_frameSkip.load()
 	    << ",\"volumePercent\":" << m_volumePercent.load()
+	    << ",\"audioBufferSamples\":" << m_audioBufferSamples.load()
 	    << ",\"scaleMode\":" << m_scaleMode.load()
 	    << ",\"filterMode\":" << m_filterMode.load()
 	    << ",\"skipBios\":" << (m_skipBios.load() ? "true" : "false")

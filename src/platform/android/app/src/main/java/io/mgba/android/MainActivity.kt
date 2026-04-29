@@ -29,6 +29,7 @@ import io.mgba.android.library.LibraryRom
 import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.library.RomScanner
 import io.mgba.android.library.RecentGameStore
+import io.mgba.android.settings.AudioBufferModes
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.storage.BiosStore
@@ -49,6 +50,7 @@ class MainActivity : Activity() {
     private lateinit var scanButton: Button
     private lateinit var biosButton: Button
     private lateinit var skipBiosButton: Button
+    private lateinit var audioBufferButton: Button
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
@@ -142,6 +144,14 @@ class MainActivity : Activity() {
         }
         updateSkipBiosButton()
 
+        audioBufferButton = Button(this).apply {
+            setOnClickListener {
+                preferences.audioBufferMode = (preferences.audioBufferMode + 1) % AudioBufferModes.labels.size
+                updateAudioBufferButton()
+            }
+        }
+        updateAudioBufferButton()
+
         patchButton = Button(this).apply {
             text = patchStore.displayName?.let { "Patch: $it" } ?: "Import Patch"
             setOnClickListener {
@@ -211,6 +221,7 @@ class MainActivity : Activity() {
         root.addView(scanButton)
         root.addView(biosButton)
         root.addView(skipBiosButton)
+        root.addView(audioBufferButton)
         root.addView(patchButton)
         root.addView(aboutButton)
         root.addView(logButton)
@@ -331,6 +342,11 @@ class MainActivity : Activity() {
             openDescriptor()?.use { descriptor ->
                 val emulator = EmulatorSession.controller(this)
                 emulator.setSkipBios(perGameOverrides.skipBios(gameId, preferences.skipBios))
+                emulator.setAudioBufferSamples(
+                    AudioBufferModes.samplesFor(
+                        perGameOverrides.audioBufferMode(gameId, preferences.audioBufferMode),
+                    ),
+                )
                 emulator.loadRomFd(descriptor.fd, name)
             }
         }.getOrNull()
@@ -437,6 +453,10 @@ class MainActivity : Activity() {
 
     private fun updateSkipBiosButton() {
         skipBiosButton.text = if (preferences.skipBios) "Skip BIOS: On" else "Skip BIOS: Off"
+    }
+
+    private fun updateAudioBufferButton() {
+        audioBufferButton.text = "Audio Buffer: ${AudioBufferModes.nameFor(preferences.audioBufferMode)}"
     }
 
     private fun renderLibrary() {

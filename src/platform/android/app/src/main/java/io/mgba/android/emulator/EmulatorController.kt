@@ -96,6 +96,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setAudioBufferSamples(samples: Int) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetAudioBufferSamples(handle.value, samples.coerceIn(512, 4096))
+        }
+    }
+
     fun setScaleMode(mode: Int) {
         if (handle.isValid) {
             NativeBridge.nativeSetScaleMode(handle.value, mode)

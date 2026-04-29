@@ -179,6 +179,13 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetVolumePercent(JNIEnv*, jclass,
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetAudioBufferSamples(JNIEnv*, jclass, jlong handle, jint samples) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setAudioBufferSamples(samples);
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeSetScaleMode(JNIEnv*, jclass, jlong handle, jint mode) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
 		runner->setScaleMode(mode);
@@ -203,7 +210,7 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeGetStats(JNIEnv* env, jclass, jlong handle) {
 	AndroidCoreRunner* runner = FromHandle(handle);
 	if (!runner) {
-		return env->NewStringUTF("{\"frames\":0,\"videoWidth\":0,\"videoHeight\":0,\"running\":false,\"paused\":true,\"fastForward\":false,\"frameSkip\":0,\"volumePercent\":100,\"scaleMode\":0,\"filterMode\":0,\"skipBios\":false}");
+		return env->NewStringUTF("{\"frames\":0,\"videoWidth\":0,\"videoHeight\":0,\"running\":false,\"paused\":true,\"fastForward\":false,\"frameSkip\":0,\"volumePercent\":100,\"audioBufferSamples\":1024,\"scaleMode\":0,\"filterMode\":0,\"skipBios\":false}");
 	}
 	std::string result = runner->statsJson();
 	return env->NewStringUTF(result.c_str());

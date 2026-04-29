@@ -65,6 +65,9 @@ object NativeBridge {
     external fun nativeSetVolumePercent(handle: Long, percent: Int)
 
     @JvmStatic
+    external fun nativeSetAudioBufferSamples(handle: Long, samples: Int)
+
+    @JvmStatic
     external fun nativeSetScaleMode(handle: Long, mode: Int)
 
     @JvmStatic
