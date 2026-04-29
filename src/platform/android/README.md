@@ -38,6 +38,12 @@ CI treats Android platform native warnings as errors with:
 
 This strict mode applies to the Android JNI/native wrapper target. It can also be enabled with `MGBA_ANDROID_WARNINGS_AS_ERRORS=true`.
 
+## Android lint
+
+Debug lint runs in CI and during release validation. Non-blocking first-release
+warnings are documented in `app/lint.xml` so the report stays focused on issues
+that require action before shipping.
+
 ## Optional GDB stub build
 
 The Android native build keeps mGBA debugger and GDB stub support disabled by default so ordinary debug and release APKs do not expose a listening debug server or carry the extra debugger surface. For internal development builds, compile the native core with debugger support by passing:

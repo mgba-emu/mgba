@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- The first Android release ships an English-only native UI with many compact,
+         dynamic emulator controls. Keep localization out of the release gate until
+         the UI text stabilizes. -->
+    <issue id="SetTextI18n" severity="ignore" />
+
+    <!-- Tool and test dependency update checks are reviewed manually during
+         Android toolchain refreshes; they should not make release lint noisy. -->
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+
+    <!-- The default ABI set includes x86_64, and release builders may intentionally
+         override the ABI list for device-specific APKs. -->
+    <issue id="ChromeOsAbiSupport" severity="ignore" />
+</lint>
