@@ -518,6 +518,7 @@ class MainActivity : Activity() {
             REQUEST_IMPORT_COVER -> importCover(uri)
             REQUEST_EXPORT_SETTINGS -> exportSettings(uri)
             REQUEST_IMPORT_SETTINGS -> importSettings(uri)
+            REQUEST_EXPORT_LOGS -> exportLogsToUri(uri)
         }
     }
 
@@ -1813,11 +1814,39 @@ class MainActivity : Activity() {
     }
 
     private fun exportLogs() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            openLogExportPicker()
+            return
+        }
         nativeStatus.text = "${getString(R.string.native_version_label)}: Exporting logs"
         Thread {
             val uri = LogExporter.exportRecent(this)
             runOnUiThread {
-                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (uri != null) "Logs exported" else "Log export unavailable"}"
+                if (uri == null) {
+                    openLogExportPicker()
+                } else {
+                    nativeStatus.text = "${getString(R.string.native_version_label)}: Logs exported"
+                }
+            }
+        }.start()
+    }
+
+    private fun openLogExportPicker() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TITLE, LogExporter.recentLogFileName())
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_EXPORT_LOGS)
+    }
+
+    private fun exportLogsToUri(uri: Uri) {
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Exporting logs"
+        Thread {
+            val ok = LogExporter.writeRecent(this, uri)
+            runOnUiThread {
+                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "Logs exported" else "Log export failed"}"
             }
         }.start()
     }
@@ -1948,6 +1977,7 @@ class MainActivity : Activity() {
         private const val REQUEST_IMPORT_COVER = 1005
         private const val REQUEST_EXPORT_SETTINGS = 1006
         private const val REQUEST_IMPORT_SETTINGS = 1007
+        private const val REQUEST_EXPORT_LOGS = 1008
         private const val MAX_LIBRARY_ITEMS = 24
         private const val LIBRARY_GRID_COLUMNS = 2
         private const val KEY_LIBRARY_VIEW_MODE = "libraryViewMode"

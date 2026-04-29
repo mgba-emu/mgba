@@ -11,15 +11,18 @@ import java.util.Date
 import java.util.Locale
 
 object LogExporter {
+    fun recentLogFileName(): String {
+        return "mgba-log-${timestamp()}.txt"
+    }
+
     fun exportRecent(context: Context): Uri? {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             return null
         }
 
-        val timestamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
         val resolver = context.contentResolver
         val values = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, "mgba-log-$timestamp.txt")
+            put(MediaStore.MediaColumns.DISPLAY_NAME, recentLogFileName())
             put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
             put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_DOCUMENTS}/mGBA")
             put(MediaStore.MediaColumns.IS_PENDING, 1)
@@ -38,6 +41,19 @@ object LogExporter {
             resolver.delete(uri, null, null)
             null
         }
+    }
+
+    fun writeRecent(context: Context, uri: Uri): Boolean {
+        return runCatching {
+            context.contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
+                writer.write(collectLogs(context))
+            } ?: return@runCatching false
+            true
+        }.getOrDefault(false)
+    }
+
+    private fun timestamp(): String {
+        return SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
     }
 
     private fun collectLogs(context: Context): String {

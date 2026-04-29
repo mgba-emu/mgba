@@ -345,6 +345,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             REQUEST_IMPORT_PATCH -> importPatch(uri)
             REQUEST_IMPORT_CAMERA_IMAGE -> importCameraImage(uri)
             REQUEST_IMPORT_GAME_BIOS -> importGameBios(uri)
+            REQUEST_EXPORT_DIAGNOSTICS -> exportDiagnosticsToUri(uri)
         }
     }
 
@@ -2243,12 +2244,43 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun exportRuntimeDiagnostics() {
         AppLogStore.append(this, runtimeDiagnosticsText())
-        val uri = LogExporter.exportRecent(this)
-        Toast.makeText(
-            this,
-            if (uri != null) "Diagnostics exported" else "Diagnostics export unavailable",
-            Toast.LENGTH_SHORT,
-        ).show()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            openDiagnosticsExportPicker()
+            return
+        }
+        Thread {
+            val uri = LogExporter.exportRecent(this)
+            runOnUiThread {
+                if (uri == null) {
+                    openDiagnosticsExportPicker()
+                } else {
+                    Toast.makeText(this, "Diagnostics exported", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
+    private fun openDiagnosticsExportPicker() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TITLE, LogExporter.recentLogFileName())
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_EXPORT_DIAGNOSTICS)
+    }
+
+    private fun exportDiagnosticsToUri(uri: Uri) {
+        Thread {
+            val ok = LogExporter.writeRecent(this, uri)
+            runOnUiThread {
+                Toast.makeText(
+                    this,
+                    if (ok) "Diagnostics exported" else "Diagnostics export failed",
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
+        }.start()
     }
 
     private fun runtimeDiagnosticsText(): String {
@@ -3190,6 +3222,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val REQUEST_EXPORT_GAME_DATA = 2009
         private const val REQUEST_IMPORT_GAME_DATA = 2010
         private const val REQUEST_IMPORT_GAME_BIOS = 2011
+        private const val REQUEST_EXPORT_DIAGNOSTICS = 2012
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L
