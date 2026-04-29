@@ -151,6 +151,7 @@
 - [x] 已优化 Android 虚拟手柄和运行工具条布局：竖屏肩键避让方向/AB 区，横屏肩键避让顶部工具条，工具条按钮改为紧凑单行样式，并用真实 ZIP ROM 截图确认按键不重叠。
 - [x] 已优化 Android 首页顶部操作：新增 Search / Add / Settings 操作条，并把全局/库管理设置折叠进 Settings 区域，减少首页按钮堆叠。
 - [x] 已补齐 Android ROM item More 菜单：支持启动、游戏设置摘要/重置、存档摘要/删除、作弊摘要/手动新增/清除、封面和删除记录。
+- [x] 已将 Android ROM 启动长耗时路径移出 UI 线程：ZIP entry 扫描/解压、SHA1/cache fallback、stored patch/cheat 应用和 native load 均在后台执行，UI 线程只负责选择、状态和跳转。
 - [x] 已新增 Android 最近打开管理：首页可清空 Recent 列表。
 - [x] 已新增 Android CI 合规检查：禁止在 App 源码中捆绑 ROM、save、savestate 或 BIOS 文件。
 - [x] 已新增 Android Storage 管理摘要：展示 saves/states/screenshots/covers/logs/cache 占用并可清日志或 cache。
@@ -430,7 +431,7 @@ object NativeBridge {
 - [ ] 所有 native 方法必须：
   - [x] 校验 handle 是否为 0。
   - [ ] 捕获 native 异常/错误并返回可展示错误码。
-  - [ ] 不在 UI 线程执行长时间 I/O。
+  - [x] 不在 UI 线程执行长时间 I/O。
   - [x] 不把 Java 层传入的 fd 直接长期占用，必须 `dup(fd)` 后交给 `VFileFromFD`。
 
 ### 4.2 Native CoreRunner

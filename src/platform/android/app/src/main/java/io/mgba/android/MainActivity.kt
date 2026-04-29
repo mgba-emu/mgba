@@ -720,42 +720,52 @@ class MainActivity : Activity() {
     }
 
     private fun openZipRomUri(uri: Uri, name: String, shouldStoreRecent: Boolean) {
-        val entries = runCatching { zipRomEntries(uri) }.getOrDefault(emptyList())
-        when (entries.size) {
-            0 -> {
-                openNativeArchiveRomUri(uri, name, shouldStoreRecent)
-            }
-            1 -> launchZipRomEntry(uri, name, entries.first(), shouldStoreRecent)
-            else -> {
-                val labels = entries.map { it.substringAfterLast('/') }.toTypedArray()
-                AlertDialog.Builder(this)
-                    .setTitle("Select ROM")
-                    .setItems(labels) { _, which ->
-                        launchZipRomEntry(uri, name, entries[which], shouldStoreRecent)
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Reading ZIP"
+        Thread {
+            val entries = runCatching { zipRomEntries(uri) }.getOrDefault(emptyList())
+            runOnUiThread {
+                when (entries.size) {
+                    0 -> {
+                        openNativeArchiveRomUri(uri, name, shouldStoreRecent)
                     }
-                    .setNegativeButton("Cancel", null)
-                    .show()
+                    1 -> launchZipRomEntry(uri, name, entries.first(), shouldStoreRecent)
+                    else -> {
+                        val labels = entries.map { it.substringAfterLast('/') }.toTypedArray()
+                        AlertDialog.Builder(this)
+                            .setTitle("Select ROM")
+                            .setItems(labels) { _, which ->
+                                launchZipRomEntry(uri, name, entries[which], shouldStoreRecent)
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
+                    }
+                }
             }
-        }
+        }.start()
     }
 
     private fun launchZipRomEntry(uri: Uri, archiveName: String, entryName: String, shouldStoreRecent: Boolean) {
-        val extracted = runCatching { extractZipRomEntry(uri, entryName) }.getOrNull()
-        if (extracted == null) {
-            nativeStatus.text = "${getString(R.string.native_version_label)}: ZIP extract failed"
-            return
-        }
-        launchRomFd(
-            uri,
-            entryName.substringAfterLast('/').ifBlank { archiveName },
-            shouldStoreRecent,
-            recentDisplayName = archiveName,
-            allowImportFallback = false,
-            preferStoredSha1 = false,
-            romSha1 = { sha1(extracted) },
-        ) {
-            ParcelFileDescriptor.open(extracted, ParcelFileDescriptor.MODE_READ_ONLY)
-        }
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Extracting ZIP"
+        Thread {
+            val extracted = runCatching { extractZipRomEntry(uri, entryName) }.getOrNull()
+            runOnUiThread {
+                if (extracted == null) {
+                    nativeStatus.text = "${getString(R.string.native_version_label)}: ZIP extract failed"
+                    return@runOnUiThread
+                }
+                launchRomFd(
+                    uri,
+                    entryName.substringAfterLast('/').ifBlank { archiveName },
+                    shouldStoreRecent,
+                    recentDisplayName = archiveName,
+                    allowImportFallback = false,
+                    preferStoredSha1 = false,
+                    romSha1 = { sha1(extracted) },
+                ) {
+                    ParcelFileDescriptor.open(extracted, ParcelFileDescriptor.MODE_READ_ONLY)
+                }
+            }
+        }.start()
     }
 
     private fun openNativeArchiveRomUri(uri: Uri, name: String, shouldStoreRecent: Boolean) {
@@ -830,136 +840,142 @@ class MainActivity : Activity() {
         openDescriptor: () -> ParcelFileDescriptor?,
     ) {
         val launchStartedAtMs = SystemClock.elapsedRealtime()
-        val gameId = uri.toString()
-        val knownHashes = knownRomHashesFor(uri, preferStoredSha1)
-        var computedSha1 = knownHashes.sha1.ifBlank { romSha1?.invoke().orEmpty() }
-        var launchGameId = stableGameIdFor(gameId, knownHashes.crc32, computedSha1)
-        val launchCrcGameId = crc32GameIdFor(gameId, knownHashes.crc32)
-        perGameOverrides.migrateGameId(launchGameId, gameId)
-        perGameOverrides.migrateGameId(launchGameId, launchCrcGameId)
-        biosStore.migrateGameId(launchGameId, gameId)
-        biosStore.migrateGameId(launchGameId, launchCrcGameId)
-        var patchApplied: Boolean? = null
-        var cheatsApplied: Boolean? = null
-        var autoStateLoaded = false
-        var usedImportFallback = false
-        fun loadDescriptor(descriptor: ParcelFileDescriptor): NativeLoadResult {
-            val emulator = EmulatorSession.controller(this)
-            emulator.setBiosOverridePaths(
-                biosStore.pathForGame(launchGameId, BiosSlot.Default),
-                biosStore.pathForGame(launchGameId, BiosSlot.Gba),
-                biosStore.pathForGame(launchGameId, BiosSlot.Gb),
-                biosStore.pathForGame(launchGameId, BiosSlot.Gbc),
-            )
-            emulator.setSkipBios(perGameOverrides.skipBios(launchGameId, preferences.skipBios))
-            emulator.setAudioBufferSamples(
-                AudioBufferModes.samplesFor(
-                    perGameOverrides.audioBufferMode(launchGameId, preferences.audioBufferMode),
-                ),
-            )
-            emulator.setLowPassRangePercent(
-                AudioLowPassModes.rangeFor(
-                    perGameOverrides.audioLowPassMode(launchGameId, preferences.audioLowPassMode),
-                ),
-            )
-            emulator.setFrameSkip(perGameOverrides.frameSkip(launchGameId, preferences.frameSkip))
-            emulator.setInterframeBlending(
-                perGameOverrides.interframeBlending(launchGameId, preferences.interframeBlending),
-            )
-            emulator.setLogLevelMode(preferences.logLevelMode)
-            emulator.setRtcMode(preferences.rtcMode, rtcValueForMode(preferences.rtcMode))
-            emulator.setRewindConfig(
-                perGameOverrides.rewindEnabled(launchGameId, preferences.rewindEnabled),
-                perGameOverrides.rewindBufferCapacity(launchGameId, preferences.rewindBufferCapacity),
-                perGameOverrides.rewindBufferInterval(launchGameId, preferences.rewindBufferInterval),
-            )
-            return emulator.loadRomFd(descriptor.fd, name).also { loadResult ->
-                if (loadResult.ok) {
-                    val stableGameId = stableGameIdFor(gameId, loadResult.crc32, computedSha1)
-                    val crcGameId = crc32GameIdFor(gameId, loadResult.crc32)
-                    perGameOverrides.migrateGameId(stableGameId, gameId)
-                    perGameOverrides.migrateGameId(stableGameId, crcGameId)
-                    biosStore.migrateGameId(stableGameId, gameId)
-                    biosStore.migrateGameId(stableGameId, crcGameId)
-                    patchApplied = applyStoredPatch(emulator, gameId, stableGameId, crcGameId, name, loadResult.crc32)
-                    cheatsApplied = applyStoredCheats(emulator, gameId, stableGameId, crcGameId)
-                    autoStateLoaded = preferences.autoStateOnExit && emulator.loadAutoState()
-                }
-            }
-        }
-
-        var result = runCatching {
-            openDescriptor()?.use { descriptor ->
-                loadDescriptor(descriptor)
-            }
-        }.getOrNull()
-        if (allowImportFallback && result?.ok != true) {
-            val cached = runCatching { cacheImportFile(uri, name) }.getOrNull()
-            if (cached != null) {
-                if (computedSha1.isBlank()) {
-                    computedSha1 = sha1(cached)
-                    launchGameId = stableGameIdFor(gameId, knownHashes.crc32, computedSha1)
-                    perGameOverrides.migrateGameId(launchGameId, gameId)
-                    perGameOverrides.migrateGameId(launchGameId, launchCrcGameId)
-                    biosStore.migrateGameId(launchGameId, gameId)
-                    biosStore.migrateGameId(launchGameId, launchCrcGameId)
-                }
-                usedImportFallback = true
-                patchApplied = null
-                cheatsApplied = null
-                result = runCatching {
-                    ParcelFileDescriptor.open(cached, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
-                        loadDescriptor(descriptor)
+        val statusLabel = getString(R.string.native_version_label)
+        nativeStatus.text = "$statusLabel: Opening $name"
+        Thread {
+            val gameId = uri.toString()
+            val knownHashes = knownRomHashesFor(uri, preferStoredSha1)
+            var computedSha1 = knownHashes.sha1.ifBlank { romSha1?.invoke().orEmpty() }
+            var launchGameId = stableGameIdFor(gameId, knownHashes.crc32, computedSha1)
+            val launchCrcGameId = crc32GameIdFor(gameId, knownHashes.crc32)
+            perGameOverrides.migrateGameId(launchGameId, gameId)
+            perGameOverrides.migrateGameId(launchGameId, launchCrcGameId)
+            biosStore.migrateGameId(launchGameId, gameId)
+            biosStore.migrateGameId(launchGameId, launchCrcGameId)
+            var patchApplied: Boolean? = null
+            var cheatsApplied: Boolean? = null
+            var autoStateLoaded = false
+            var usedImportFallback = false
+            fun loadDescriptor(descriptor: ParcelFileDescriptor): NativeLoadResult {
+                val emulator = EmulatorSession.controller(this)
+                emulator.setBiosOverridePaths(
+                    biosStore.pathForGame(launchGameId, BiosSlot.Default),
+                    biosStore.pathForGame(launchGameId, BiosSlot.Gba),
+                    biosStore.pathForGame(launchGameId, BiosSlot.Gb),
+                    biosStore.pathForGame(launchGameId, BiosSlot.Gbc),
+                )
+                emulator.setSkipBios(perGameOverrides.skipBios(launchGameId, preferences.skipBios))
+                emulator.setAudioBufferSamples(
+                    AudioBufferModes.samplesFor(
+                        perGameOverrides.audioBufferMode(launchGameId, preferences.audioBufferMode),
+                    ),
+                )
+                emulator.setLowPassRangePercent(
+                    AudioLowPassModes.rangeFor(
+                        perGameOverrides.audioLowPassMode(launchGameId, preferences.audioLowPassMode),
+                    ),
+                )
+                emulator.setFrameSkip(perGameOverrides.frameSkip(launchGameId, preferences.frameSkip))
+                emulator.setInterframeBlending(
+                    perGameOverrides.interframeBlending(launchGameId, preferences.interframeBlending),
+                )
+                emulator.setLogLevelMode(preferences.logLevelMode)
+                emulator.setRtcMode(preferences.rtcMode, rtcValueForMode(preferences.rtcMode))
+                emulator.setRewindConfig(
+                    perGameOverrides.rewindEnabled(launchGameId, preferences.rewindEnabled),
+                    perGameOverrides.rewindBufferCapacity(launchGameId, preferences.rewindBufferCapacity),
+                    perGameOverrides.rewindBufferInterval(launchGameId, preferences.rewindBufferInterval),
+                )
+                return emulator.loadRomFd(descriptor.fd, name).also { loadResult ->
+                    if (loadResult.ok) {
+                        val stableGameId = stableGameIdFor(gameId, loadResult.crc32, computedSha1)
+                        val crcGameId = crc32GameIdFor(gameId, loadResult.crc32)
+                        perGameOverrides.migrateGameId(stableGameId, gameId)
+                        perGameOverrides.migrateGameId(stableGameId, crcGameId)
+                        biosStore.migrateGameId(stableGameId, gameId)
+                        biosStore.migrateGameId(stableGameId, crcGameId)
+                        patchApplied = applyStoredPatch(emulator, gameId, stableGameId, crcGameId, name, loadResult.crc32)
+                        cheatsApplied = applyStoredCheats(emulator, gameId, stableGameId, crcGameId)
+                        autoStateLoaded = preferences.autoStateOnExit && emulator.loadAutoState()
                     }
-                }.getOrNull()
+                }
             }
-        }
-        nativeStatus.text = if (result?.ok == true) {
-            val patchStatus = when (patchApplied) {
-                true -> " + patch"
-                false -> " + patch failed"
-                null -> ""
+
+            var result = runCatching {
+                openDescriptor()?.use { descriptor ->
+                    loadDescriptor(descriptor)
+                }
+            }.getOrNull()
+            if (allowImportFallback && result?.ok != true) {
+                val cached = runCatching { cacheImportFile(uri, name) }.getOrNull()
+                if (cached != null) {
+                    if (computedSha1.isBlank()) {
+                        computedSha1 = sha1(cached)
+                        launchGameId = stableGameIdFor(gameId, knownHashes.crc32, computedSha1)
+                        perGameOverrides.migrateGameId(launchGameId, gameId)
+                        perGameOverrides.migrateGameId(launchGameId, launchCrcGameId)
+                        biosStore.migrateGameId(launchGameId, gameId)
+                        biosStore.migrateGameId(launchGameId, launchCrcGameId)
+                    }
+                    usedImportFallback = true
+                    patchApplied = null
+                    cheatsApplied = null
+                    result = runCatching {
+                        ParcelFileDescriptor.open(cached, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                            loadDescriptor(descriptor)
+                        }
+                    }.getOrNull()
+                }
             }
-            val cheatStatus = when (cheatsApplied) {
-                true -> " + cheats"
-                false -> " + cheats failed"
-                null -> ""
+            val statusText = if (result?.ok == true) {
+                val patchStatus = when (patchApplied) {
+                    true -> " + patch"
+                    false -> " + patch failed"
+                    null -> ""
+                }
+                val cheatStatus = when (cheatsApplied) {
+                    true -> " + cheats"
+                    false -> " + cheats failed"
+                    null -> ""
+                }
+                val autoStateStatus = if (autoStateLoaded) " + auto-state" else ""
+                val hardware = if (result.system.equals("CGB", ignoreCase = true)) "GBC" else result.platform
+                val fallbackStatus = if (usedImportFallback) " + cache" else ""
+                "$statusLabel: $hardware ${result.title}$patchStatus$cheatStatus$autoStateStatus$fallbackStatus"
+            } else {
+                "$statusLabel: ${result?.message ?: "Unable to open ROM"}"
             }
-            val autoStateStatus = if (autoStateLoaded) " + auto-state" else ""
-            val hardware = if (result.system.equals("CGB", ignoreCase = true)) "GBC" else result.platform
-            val fallbackStatus = if (usedImportFallback) " + cache" else ""
-            "${getString(R.string.native_version_label)}: $hardware ${result.title}$patchStatus$cheatStatus$autoStateStatus$fallbackStatus"
-        } else {
-            "${getString(R.string.native_version_label)}: ${result?.message ?: "Unable to open ROM"}"
-        }
-        AppLogStore.append(
-            this,
-            if (result?.ok == true) {
-                val loadedAtMs = SystemClock.elapsedRealtime()
+            val loadedAtMs = SystemClock.elapsedRealtime()
+            val logMessage = if (result?.ok == true) {
                 "Loaded ROM $name (${result.platform}/${result.system.ifBlank { "unknown" }}, cacheFallback=$usedImportFallback, patch=${artifactStatus(patchApplied)}, cheats=${artifactStatus(cheatsApplied)}, autoState=$autoStateLoaded, loadMs=${loadedAtMs - launchStartedAtMs})"
             } else {
                 "Failed to load ROM $name: ${result?.message ?: "Unable to open ROM"}"
-            },
-        )
-        if (result?.ok == true) {
-            val stableGameId = stableGameIdFor(gameId, result.crc32, computedSha1)
-            EmulatorSession.setCurrentGame(
-                gameId,
-                name,
-                stableGameId,
-                result.crc32,
-                computedSha1,
-                launchStartedAtMs,
-                SystemClock.elapsedRealtime(),
-            )
-            if (shouldStoreRecent) {
-                recentStore.add(uri, recentDisplayName, stableGameId, result.crc32, computedSha1)
-                renderRecentGames()
             }
-            libraryStore.markPlayed(uri)
-            renderLibrary()
-            startEmulatorActivity()
-        }
+            AppLogStore.append(this, logMessage)
+            val loadedResult = result
+            runOnUiThread {
+                nativeStatus.text = statusText
+                if (loadedResult?.ok == true) {
+                    val stableGameId = stableGameIdFor(gameId, loadedResult.crc32, computedSha1)
+                    EmulatorSession.setCurrentGame(
+                        gameId,
+                        name,
+                        stableGameId,
+                        loadedResult.crc32,
+                        computedSha1,
+                        launchStartedAtMs,
+                        loadedAtMs,
+                    )
+                    if (shouldStoreRecent) {
+                        recentStore.add(uri, recentDisplayName, stableGameId, loadedResult.crc32, computedSha1)
+                        renderRecentGames()
+                    }
+                    libraryStore.markPlayed(uri)
+                    renderLibrary()
+                    startEmulatorActivity()
+                }
+            }
+        }.start()
     }
 
     private fun startEmulatorActivity() {
