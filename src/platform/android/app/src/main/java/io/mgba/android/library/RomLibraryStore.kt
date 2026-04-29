@@ -17,6 +17,7 @@ data class LibraryRom(
     val playTimeSeconds: Long = 0L,
     val favorite: Boolean = false,
     val coverPath: String = "",
+    val sourceTreeUri: Uri? = null,
 )
 
 class RomLibraryStore(context: Context) {
@@ -42,6 +43,7 @@ class RomLibraryStore(context: Context) {
                         playTimeSeconds = item.optLong("playTimeSeconds", 0L),
                         favorite = item.optBoolean("favorite", false),
                         coverPath = item.optString("coverPath"),
+                        sourceTreeUri = item.optString("sourceTreeUri").takeIf { it.isNotBlank() }?.let(Uri::parse),
                     ),
                 )
             }
@@ -53,21 +55,26 @@ class RomLibraryStore(context: Context) {
         val array = JSONArray()
         items.distinctBy { it.uri }.sortedWith(librarySort).forEach { item ->
             val previous = existing[item.uri]
-            val merged = item.copy(
-                title = item.title.ifBlank { previous?.title.orEmpty() },
-                platform = item.platform.ifBlank { previous?.platform.orEmpty() },
-                crc32 = item.crc32.ifBlank { previous?.crc32.orEmpty() },
-                sha1 = item.sha1.ifBlank { previous?.sha1.orEmpty() },
-                fileSize = if (item.fileSize > 0L) item.fileSize else previous?.fileSize ?: 0L,
-                lastPlayedAt = previous?.lastPlayedAt ?: item.lastPlayedAt,
-                playTimeSeconds = previous?.playTimeSeconds ?: item.playTimeSeconds,
-                favorite = previous?.favorite ?: item.favorite,
-                coverPath = item.coverPath.ifBlank { previous?.coverPath.orEmpty() },
-            )
-            array.put(
-                toJson(merged),
-            )
+            array.put(toJson(merge(item, previous)))
         }
+        preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
+    }
+
+    fun mergeScan(sourceTreeUri: Uri, items: List<LibraryRom>) {
+        val source = sourceTreeUri.toString()
+        val existing = list()
+        val existingByUri = existing.associateBy { it.uri }
+        val scanned = items.distinctBy { it.uri }.map { item ->
+            item.copy(sourceTreeUri = sourceTreeUri)
+        }
+        val scannedUris = scanned.map { it.uri }.toSet()
+        val preserved = existing.filter { item ->
+            item.uri !in scannedUris && !belongsToSource(item, source)
+        }
+        val array = JSONArray()
+        (preserved + scanned.map { item -> merge(item, existingByUri[item.uri]) })
+            .sortedWith(librarySort)
+            .forEach { item -> array.put(toJson(item)) }
         preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
     }
 
@@ -135,6 +142,30 @@ class RomLibraryStore(context: Context) {
             .put("playTimeSeconds", item.playTimeSeconds)
             .put("favorite", item.favorite)
             .put("coverPath", item.coverPath)
+            .put("sourceTreeUri", item.sourceTreeUri?.toString().orEmpty())
+    }
+
+    private fun merge(item: LibraryRom, previous: LibraryRom?): LibraryRom {
+        return item.copy(
+            title = item.title.ifBlank { previous?.title.orEmpty() },
+            platform = item.platform.ifBlank { previous?.platform.orEmpty() },
+            crc32 = item.crc32.ifBlank { previous?.crc32.orEmpty() },
+            sha1 = item.sha1.ifBlank { previous?.sha1.orEmpty() },
+            fileSize = if (item.fileSize > 0L) item.fileSize else previous?.fileSize ?: 0L,
+            lastPlayedAt = previous?.lastPlayedAt ?: item.lastPlayedAt,
+            playTimeSeconds = previous?.playTimeSeconds ?: item.playTimeSeconds,
+            favorite = previous?.favorite ?: item.favorite,
+            coverPath = item.coverPath.ifBlank { previous?.coverPath.orEmpty() },
+            sourceTreeUri = item.sourceTreeUri ?: previous?.sourceTreeUri,
+        )
+    }
+
+    private fun belongsToSource(item: LibraryRom, sourceTreeUri: String): Boolean {
+        val storedSource = item.sourceTreeUri?.toString()
+        if (storedSource != null) {
+            return storedSource == sourceTreeUri
+        }
+        return item.uri.toString().startsWith("$sourceTreeUri/document/")
     }
 
     private companion object {

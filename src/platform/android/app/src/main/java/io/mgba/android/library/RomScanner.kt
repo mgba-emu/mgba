@@ -53,6 +53,7 @@ class RomScanner(private val context: Context) {
                         crc32 = probe?.crc32.orEmpty(),
                         sha1 = sha1,
                         fileSize = size,
+                        sourceTreeUri = treeUri,
                     )
                 }
             }
@@ -84,7 +85,7 @@ class RomScanner(private val context: Context) {
                     digest.update(buffer, 0, read)
                 }
             } ?: return@runCatching ""
-            digest.digest().joinToString(separator = "") { byte -> "%02x".format(byte) }
+            digest.digest().joinToString(separator = "") { byte -> "%02x".format(byte.toInt() and 0xff) }
         }.getOrDefault("")
     }
 

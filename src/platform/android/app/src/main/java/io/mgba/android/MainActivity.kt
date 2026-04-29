@@ -443,7 +443,7 @@ class MainActivity : Activity() {
                 scanButton.text = "Scan Folder"
                 result
                     .onSuccess { roms ->
-                        libraryStore.replace(roms)
+                        libraryStore.mergeScan(uri, roms)
                         renderLibrary()
                         nativeStatus.text = "${getString(R.string.native_version_label)}: ${roms.size} ROMs indexed"
                     }
