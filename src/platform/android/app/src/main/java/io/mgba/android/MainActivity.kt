@@ -672,6 +672,24 @@ class MainActivity : Activity() {
         libraryFilterButton.visibility = if (allRoms.isEmpty()) View.GONE else View.VISIBLE
         libraryFilterButton.text = "Filter: ${libraryMode.label}"
         if (allRoms.isEmpty()) {
+            libraryContainer.addView(TextView(this).apply {
+                text = "No ROMs yet"
+                textSize = 14f
+                setTextColor(getColor(R.color.mgba_text_secondary))
+                setPadding(0, 0, 0, dp(8))
+            })
+            libraryContainer.addView(Button(this).apply {
+                text = "Open ROM"
+                setOnClickListener {
+                    openRomPicker()
+                }
+            })
+            libraryContainer.addView(Button(this).apply {
+                text = "Add Folder"
+                setOnClickListener {
+                    openFolderPicker()
+                }
+            })
             return
         }
 
