@@ -788,7 +788,7 @@ class MainActivity : Activity() {
         AppLogStore.append(
             this,
             if (result?.ok == true) {
-                "Loaded ROM $name (${result.platform}/${result.system.ifBlank { "unknown" }}, cacheFallback=$usedImportFallback)"
+                "Loaded ROM $name (${result.platform}/${result.system.ifBlank { "unknown" }}, cacheFallback=$usedImportFallback, patch=${artifactStatus(patchApplied)}, cheats=${artifactStatus(cheatsApplied)}, autoState=$autoStateLoaded)"
             } else {
                 "Failed to load ROM $name: ${result?.message ?: "Unable to open ROM"}"
             },
@@ -875,6 +875,14 @@ class MainActivity : Activity() {
 
     private fun artifactGameIds(vararg gameIds: String?): List<String> {
         return gameIds.toList().filterNot { it.isNullOrBlank() }.map { it.orEmpty() }.distinct()
+    }
+
+    private fun artifactStatus(applied: Boolean?): String {
+        return when (applied) {
+            true -> "applied"
+            false -> "failed"
+            null -> "none"
+        }
     }
 
     private fun zipRomEntries(uri: Uri): List<String> {

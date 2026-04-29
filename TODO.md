@@ -167,6 +167,7 @@
 - [x] 已完成 OnePlus7 真机 archive 回归：single ZIP 自动启动、multi ZIP 弹出 ROM 选择并启动、single 7z 自动启动，均渲染非黑帧且 crash buffer 为空。
 - [x] 已完成 OnePlus7 真机非法 ROM 回归：ACTION_VIEW 假 `.gba` 留在 MainActivity 并显示不支持 ROM，crash buffer 为空。
 - [x] 已完成 OnePlus7 真机大 ROM 回归：8MB/64Mb mooneye GB 测试 ROM 启动并显示 `Test OK`，crash buffer 为空。
+- [x] 已完成 OnePlus7 真机 patch/cheat 回归：per-game IPS 与 `.cheats` 文件自动导入，`app.log` 记录 `patch=applied, cheats=applied`，渲染正常且 crash buffer 为空。
 - [x] 首帧真机截图验证已在 OnePlus7 上执行；模拟器因性能过慢已停用。
 
 ## 1. 产品目标和范围
@@ -1122,8 +1123,8 @@ object NativeBridge {
 - [ ] 需要 RTC 的游戏。
 - [ ] 需要 rumble 的游戏。
 - [ ] 需要 tilt 的游戏。
-- [ ] 使用 patch 的 ROM。
-- [ ] 使用 cheat 的 ROM。
+- [x] 使用 patch 的 ROM。
+- [x] 使用 cheat 的 ROM。
 - [x] ZIP 单 ROM。
 - [x] ZIP 多 ROM。
 - [x] 7z 单 ROM。
