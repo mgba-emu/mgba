@@ -446,18 +446,18 @@ object NativeBridge {
 ### 4.2 Native CoreRunner
 
 - [x] 新建 `AndroidCoreRunner`，封装一个正在运行的 mGBA 实例。
-- [ ] 成员建议：
-  - [ ] `struct mCore* core`
-  - [ ] `struct mCoreThread thread`
-  - [ ] `struct mCoreOptions options`
-  - [ ] `struct mStandardLogger logger`
-  - [ ] `AndroidRendererGLES2 renderer`
-  - [ ] `AndroidAudioEngine audio`
-  - [ ] `AndroidInputBridge input`
-  - [ ] `AndroidSensorBridge sensors`
-  - [ ] `std::atomic<bool> running`
-  - [ ] `std::atomic<bool> surfaceReady`
-  - [ ] `std::mutex lifecycleMutex`
+- [x] 成员建议已按 Android 自定义 run loop 落地：
+  - [x] `mCore* m_core`。
+  - [x] 自定义 `std::thread m_thread` 替代 `mCoreThread`，便于 Android Surface/audio lifecycle 串行化。
+  - [x] `mCoreOptions`/runtime options 通过 `m_core->opts` 和 `mCoreConfig` 管理。
+  - [x] Android log bridge 通过 `InstallAndroidLogger()` 接入 mGBA logging。
+  - [x] Renderer 当前内聚在 `AndroidCoreRunner` native EGL/GLES2 路径中。
+  - [x] Audio 当前落地为 `AndroidAudioOutput m_audioOutput`，API 26+ AAudio，fallback OpenSL ES。
+  - [x] Input 通过 Kotlin `nativeSetKeys` + `AndroidCoreRunner::setKeys` 传入 core。
+  - [x] Sensors/peripherals 通过 rumble/rotation/luminance/camera state 接入 core。
+  - [x] `std::atomic<bool> m_running` / `m_paused` 管理生命周期。
+  - [x] Surface ready 由 Kotlin `hasSurface` 和 native `ANativeWindow*` 生命周期共同管理。
+  - [x] `std::mutex m_mutex` 保护 core/render/audio 关键路径。
   - [ ] `std::string basePath/cachePath/savePath/statePath/screenshotPath/cheatPath/biosPath`
 - [x] `create` 只初始化路径、日志、默认配置，不加载 ROM。
 - [x] `loadRomFd` 流程：
@@ -590,7 +590,7 @@ object NativeBridge {
 ### 6.2 音频同步
 
 - [ ] 使用 `mCoreSyncLockAudio` / `mCoreSyncConsumeAudio`，让音频 high water mark 控制核心速度。
-- [ ] 快进时：
+- [x] 快进时：
   - [x] 可选择静音或降低音量。
   - [x] 调整 resampler source rate（Android 首版快进选择静音并丢弃 audio buffer，因此不再重采样快进音频）。
   - [x] 禁用过度等待，避免快进被音频拖住。
