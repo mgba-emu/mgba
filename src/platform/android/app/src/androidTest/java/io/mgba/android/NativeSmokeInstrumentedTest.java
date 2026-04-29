@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 public final class NativeSmokeInstrumentedTest {
     private static final String ROM_ASSET_NAME = "native-smoke-dmg-acid2.gb";
     private static final int SMOKE_STATE_SLOT = 9;
+    private static final long RUN_LOOP_SMOKE_MS = 1200L;
 
     @Test
     public void testNativeCoreLoadsRunsAndRestoresPublicDomainRom() throws Exception {
@@ -52,6 +53,19 @@ public final class NativeSmokeInstrumentedTest {
                 assertEquals("GB", load.getPlatform());
             }
 
+            NativeBridge.nativeStart(handle);
+            Thread.sleep(RUN_LOOP_SMOKE_MS);
+            NativeBridge.nativePause(handle);
+            NativeStats pacingStats = NativeBridge.INSTANCE.stats(handle);
+            assertTrue("Run loop should advance frames", pacingStats.getFrames() > 30L);
+            assertTrue("Frame target should be reported", pacingStats.getFrameTargetUs() > 0L);
+            assertTrue("Frame actual should be reported", pacingStats.getFrameActualUs() > 0L);
+            assertTrue("Frame pacing samples should accumulate", pacingStats.getFramePacingSamples() > 10L);
+            assertTrue(
+                "Frame pacing jitter should stay within one frame",
+                Math.abs(pacingStats.getFrameActualUs() - pacingStats.getFrameTargetUs()) < pacingStats.getFrameTargetUs()
+            );
+
             for (int frame = 0; frame < 300; ++frame) {
                 assertTrue("Frame " + frame + " should run", NativeBridge.nativeStepFrame(handle));
             }
@@ -59,6 +73,10 @@ public final class NativeSmokeInstrumentedTest {
             NativeStats stats = NativeBridge.INSTANCE.stats(handle);
             assertTrue("Frame counter should advance", stats.getFrames() >= 300L);
             assertEquals("GB", stats.getRomPlatform());
+            assertTrue("Video width should be populated", stats.getVideoWidth() > 0);
+            assertTrue("Video height should be populated", stats.getVideoHeight() > 0);
+            assertTrue("Video width should fit the native buffer", stats.getVideoWidth() <= 256);
+            assertTrue("Video height should fit the native buffer", stats.getVideoHeight() <= 224);
             assertEquals("RGB565", stats.getVideoPixelFormat());
 
             assertTrue("State save should succeed", NativeBridge.nativeSaveStateSlot(handle, SMOKE_STATE_SLOT));
@@ -71,6 +89,7 @@ public final class NativeSmokeInstrumentedTest {
             assertTrue("State load should succeed", NativeBridge.nativeLoadStateSlot(handle, SMOKE_STATE_SLOT));
             assertTrue("State cleanup should succeed", NativeBridge.nativeDeleteStateSlot(handle, SMOKE_STATE_SLOT));
         } finally {
+            NativeBridge.nativeStop(handle);
             NativeBridge.nativeDestroy(handle);
         }
     }
