@@ -1241,11 +1241,12 @@ class MainActivity : Activity() {
 
     private fun openRecentGame(game: RecentGame) {
         if (!canOpenStoredRecent(game.uri)) {
-            val removed = recentStore.remove(game.uri)
+            val removed = removeStoredRomReferencesForUri(game.uri)
             renderRecentGames()
+            renderLibrary()
             val message = "Recent item unavailable: ${game.displayName}"
             nativeStatus.text = "${getString(R.string.native_version_label)}: $message"
-            AppLogStore.append(this, "$message (removed=$removed)")
+            AppLogStore.append(this, "$message (recent=${removed.recent}, library=${removed.library})")
             return
         }
         openRomUri(game.uri, game.displayName, shouldStoreRecent = true)
@@ -1643,14 +1644,12 @@ class MainActivity : Activity() {
     }
 
     private fun removeUnavailableLibraryRom(rom: LibraryRom) {
-        libraryStore.remove(rom.uri)?.let { removed ->
-            deleteCoverPath(removed.coverPath)
-            coverThumbnailCache.evictAll()
-        }
+        val removed = removeStoredRomReferencesForUri(rom.uri)
+        renderRecentGames()
         renderLibrary()
         val message = "Library item unavailable: ${rom.displayName}"
         nativeStatus.text = "${getString(R.string.native_version_label)}: $message"
-        AppLogStore.append(this, message)
+        AppLogStore.append(this, "$message (recent=${removed.recent}, library=${removed.library})")
     }
 
     private fun showLibraryRomSettings(rom: LibraryRom) {
@@ -2585,20 +2584,25 @@ class MainActivity : Activity() {
 
     private fun pruneUnavailableStoredRomReferences(): PrunedStoredRomReferences {
         var removedRecent = 0
+        var removedLibrary = 0
         recentStore.list().forEach { game ->
-            if (!canOpenStoredRecent(game.uri) && recentStore.remove(game.uri)) {
-                removedRecent += 1
+            if (!canOpenStoredRecent(game.uri)) {
+                val removed = removeStoredRomReferencesForUri(game.uri)
+                removedRecent += removed.recent
+                removedLibrary += removed.library
             }
         }
 
         var removedSources = 0
-        var removedLibrary = 0
         var removedCover = false
         libraryStore.sourceFolders().forEach { source ->
             if (!canOpenStoredRecent(source)) {
                 val removedItems = libraryStore.removeSourceFolder(source)
                 removedItems.forEach { removed ->
                     deleteCoverPath(removed.coverPath)
+                    if (recentStore.remove(removed.uri)) {
+                        removedRecent += 1
+                    }
                 }
                 removedLibrary += removedItems.size
                 removedSources += 1
@@ -2608,17 +2612,30 @@ class MainActivity : Activity() {
 
         libraryStore.list().forEach { rom ->
             if (!canOpenStoredRecent(rom.uri)) {
-                libraryStore.remove(rom.uri)?.let { removed ->
-                    deleteCoverPath(removed.coverPath)
-                    removedLibrary += 1
-                    removedCover = removedCover || removed.coverPath.isNotBlank()
-                }
+                val removed = removeStoredRomReferencesForUri(rom.uri)
+                removedRecent += removed.recent
+                removedLibrary += removed.library
             }
         }
         if (removedCover) {
             coverThumbnailCache.evictAll()
         }
         return PrunedStoredRomReferences(removedRecent, removedLibrary, removedSources)
+    }
+
+    private fun removeStoredRomReferencesForUri(uri: Uri): PrunedStoredRomReferences {
+        val removedRecent = if (recentStore.remove(uri)) 1 else 0
+        var removedLibrary = 0
+        var removedCover = false
+        libraryStore.remove(uri)?.let { removed ->
+            deleteCoverPath(removed.coverPath)
+            removedLibrary += 1
+            removedCover = removed.coverPath.isNotBlank()
+        }
+        if (removedCover) {
+            coverThumbnailCache.evictAll()
+        }
+        return PrunedStoredRomReferences(recent = removedRecent, library = removedLibrary)
     }
 
     private data class PrunedStoredRomReferences(
