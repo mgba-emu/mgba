@@ -29,7 +29,6 @@ import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.input.AndroidInputMapper
 import io.mgba.android.input.GbaButtons
-import io.mgba.android.input.HardwareKeyProfile
 import io.mgba.android.input.VirtualGamepadView
 import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.settings.EmulatorPreferences
@@ -49,7 +48,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private lateinit var perGameOverrides: PerGameOverrideStore
     private lateinit var inputMappingStore: InputMappingStore
     private var currentGameId: String? = null
-    private var hardwareKeyProfile = HardwareKeyProfile.defaultProfile()
+    private var activeInputDeviceDescriptor: String? = null
+    private var activeInputDeviceName: String? = null
     private var virtualKeys = 0
     private var hardwareButtonKeys = 0
     private var hardwareAxisKeys = 0
@@ -94,7 +94,6 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         perGameOverrides = PerGameOverrideStore(this)
         inputMappingStore = InputMappingStore(this)
         currentGameId = EmulatorSession.currentGame()?.uri
-        hardwareKeyProfile = inputMappingStore.profile(currentGameId)
         scaleMode = perGameOverrides.scaleMode(currentGameId, preferences.scaleMode)
         muted = perGameOverrides.muted(currentGameId, preferences.muted)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
@@ -242,18 +241,22 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (pendingHardwareMappingMask != 0) {
             if (event.action == KeyEvent.ACTION_DOWN) {
-                captureHardwareMappingKey(event.keyCode)
+                captureHardwareMappingKey(event)
             }
             return true
         }
 
-        val mask = AndroidInputMapper.keyMaskForKeyCode(event.keyCode, hardwareKeyProfile)
+        val mask = AndroidInputMapper.keyMaskForKeyCode(
+            event.keyCode,
+            inputMappingStore.profile(currentGameId, event.deviceDescriptor()),
+        )
         if (mask == 0) {
             return super.dispatchKeyEvent(event)
         }
 
         when (event.action) {
             KeyEvent.ACTION_DOWN -> {
+                rememberInputDevice(event)
                 hardwareButtonKeys = hardwareButtonKeys or mask
                 syncKeys()
                 return true
@@ -567,13 +570,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     }
 
     private fun showInputMappingDialog() {
+        val profile = inputMappingStore.profile(currentGameId, activeInputDeviceDescriptor)
         val rows = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(8), dp(4), dp(8), dp(4))
         }
         GbaButtons.All.forEach { button ->
             rows.addView(Button(this).apply {
-                text = "${button.label}: ${formatKeyCode(hardwareKeyProfile.keyCodeForMask(button.mask))}"
+                text = "${button.label}: ${formatKeyCode(profile.keyCodeForMask(button.mask))}"
                 setOnClickListener {
                     beginHardwareKeyCapture(button.mask, button.label)
                 }
@@ -581,7 +585,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         }
         val dialog = AlertDialog.Builder(this)
             .setTitle("Hardware keys")
-            .setMessage(if (currentGameId == null) "Bindings apply globally." else "Bindings apply to this game.")
+            .setMessage(inputMappingScopeLabel())
             .setView(ScrollView(this).apply { addView(rows) })
             .setNeutralButton("Reset") { _, _ -> resetHardwareKeyMappings() }
             .setNegativeButton("Close", null)
@@ -605,7 +609,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         keyCaptureDialog = dialog
         dialog.setOnKeyListener { _, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN) {
-                captureHardwareMappingKey(keyCode)
+                captureHardwareMappingKey(event)
             }
             true
         }
@@ -618,14 +622,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         dialog.show()
     }
 
-    private fun captureHardwareMappingKey(keyCode: Int) {
+    private fun captureHardwareMappingKey(event: KeyEvent) {
+        val keyCode = event.keyCode
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             cancelHardwareMappingCapture()
             return
         }
+        rememberInputDevice(event)
         val mask = pendingHardwareMappingMask
-        if (inputMappingStore.setKeyCode(currentGameId, mask, keyCode)) {
-            hardwareKeyProfile = inputMappingStore.profile(currentGameId)
+        if (inputMappingStore.setKeyCode(currentGameId, activeInputDeviceDescriptor, mask, keyCode)) {
             clearInput()
             Toast.makeText(
                 this,
@@ -647,10 +652,24 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     }
 
     private fun resetHardwareKeyMappings() {
-        inputMappingStore.reset(currentGameId)
-        hardwareKeyProfile = inputMappingStore.profile(currentGameId)
+        inputMappingStore.reset(currentGameId, activeInputDeviceDescriptor)
         clearInput()
         Toast.makeText(this, "Hardware keys reset", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun rememberInputDevice(event: KeyEvent) {
+        val descriptor = event.deviceDescriptor() ?: return
+        activeInputDeviceDescriptor = descriptor
+        activeInputDeviceName = event.device?.name
+    }
+
+    private fun KeyEvent.deviceDescriptor(): String? {
+        return device?.descriptor?.takeIf { it.isNotBlank() }
+    }
+
+    private fun inputMappingScopeLabel(): String {
+        activeInputDeviceName?.let { return "Bindings apply to $it." }
+        return if (currentGameId == null) "Bindings apply globally." else "Bindings apply to this game."
     }
 
     private fun formatKeyCode(keyCode: Int?): String {
