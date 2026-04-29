@@ -148,6 +148,7 @@
 - [x] 已增强 Android 日志导出韧性：`logcat` 不可用时仍导出 App ring buffer。
 - [x] 已增强 Android 电池存档导出：Android 6-9 通过 SAF 创建 `.sav` fallback 导出。
 - [x] 已增强 Android 截图导出：Android 6-9 通过 SAF 创建 PNG fallback 导出。
+- [x] 已新增 Android 最近打开管理：首页可清空 Recent 列表。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -1001,7 +1002,7 @@ object NativeBridge {
 
 - [x] ROM 库首页。
 - [ ] 顶部操作：搜索、添加、设置。
-- [ ] 最近游戏横向区或列表排序。
+- [x] 最近游戏横向区或列表排序。
 - [ ] 空状态。
 - [ ] 扫描进度。
 

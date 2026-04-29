@@ -946,6 +946,14 @@ class MainActivity : Activity() {
             setTextColor(getColor(R.color.mgba_text_secondary))
             setPadding(0, 0, 0, dp(8))
         })
+        recentContainer.addView(Button(this).apply {
+            text = "Clear Recent"
+            setOnClickListener {
+                val cleared = recentStore.clear()
+                renderRecentGames()
+                nativeStatus.text = "${getString(R.string.native_version_label)}: Recent cleared ($cleared)"
+            }
+        })
         recentGames.forEach { game ->
             recentContainer.addView(Button(this).apply {
                 text = game.displayName

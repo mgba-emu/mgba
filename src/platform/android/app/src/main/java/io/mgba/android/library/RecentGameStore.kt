@@ -45,6 +45,12 @@ class RecentGameStore(context: Context) {
         write(updated)
     }
 
+    fun clear(): Int {
+        val count = list().size
+        preferences.edit().putString(KEY_ITEMS, JSONArray().toString()).apply()
+        return count
+    }
+
     fun exportJson(): JSONArray {
         val array = JSONArray()
         list().forEach { item -> array.put(toJson(item)) }
