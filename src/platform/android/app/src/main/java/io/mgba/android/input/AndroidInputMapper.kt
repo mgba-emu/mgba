@@ -4,7 +4,7 @@ import android.view.InputDevice
 import android.view.MotionEvent
 
 object AndroidInputMapper {
-    private const val AxisThreshold = 0.45f
+    const val DefaultAxisThresholdPercent = 45
 
     fun keyMaskForKeyCode(keyCode: Int): Int {
         return keyMaskForKeyCode(keyCode, HardwareKeyProfile.defaultProfile())
@@ -15,6 +15,10 @@ object AndroidInputMapper {
     }
 
     fun motionKeys(event: MotionEvent): Int {
+        return motionKeys(event, DefaultAxisThresholdPercent)
+    }
+
+    fun motionKeys(event: MotionEvent, thresholdPercent: Int): Int {
         val source = event.source
         if ((source and InputDevice.SOURCE_JOYSTICK) != InputDevice.SOURCE_JOYSTICK &&
             (source and InputDevice.SOURCE_GAMEPAD) != InputDevice.SOURCE_GAMEPAD
@@ -23,16 +27,17 @@ object AndroidInputMapper {
         }
 
         var keys = 0
+        val threshold = (thresholdPercent.coerceIn(10, 90) / 100f)
         val x = strongestAxis(event, MotionEvent.AXIS_X, MotionEvent.AXIS_HAT_X)
         val y = strongestAxis(event, MotionEvent.AXIS_Y, MotionEvent.AXIS_HAT_Y)
-        if (x <= -AxisThreshold) {
+        if (x <= -threshold) {
             keys = keys or GbaKeyMask.Left
-        } else if (x >= AxisThreshold) {
+        } else if (x >= threshold) {
             keys = keys or GbaKeyMask.Right
         }
-        if (y <= -AxisThreshold) {
+        if (y <= -threshold) {
             keys = keys or GbaKeyMask.Up
-        } else if (y >= AxisThreshold) {
+        } else if (y >= threshold) {
             keys = keys or GbaKeyMask.Down
         }
         return keys

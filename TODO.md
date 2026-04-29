@@ -92,6 +92,7 @@
 - [x] 已新增 ROM 库手动封面导入/清除，封面复制到 app 私有 `covers/` 并按 ROM 稳定 hash 保存。
 - [x] 已新增 per-game frame skip 0-3 档运行控制，并在 native run loop 中跳过部分渲染帧。
 - [x] 已新增暂停态单帧步进控制，native 可执行一帧并立即刷新画面。
+- [x] 已新增 per-game joystick deadzone 25/35/45/55/65% 档位，并用于实体摇杆方向映射。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -566,7 +567,7 @@ object NativeBridge {
   - [ ] `AXIS_X` / `AXIS_Y` 左摇杆。
   - [ ] `AXIS_HAT_X` / `AXIS_HAT_Y` 十字键。
   - [ ] `AXIS_LTRIGGER` / `AXIS_RTRIGGER` 可映射。
-- [ ] 支持 deadzone。
+- [x] 支持 deadzone。
 - [ ] 支持每个设备独立 profile：
   - [x] 使用 `InputDevice.descriptor` 作为稳定 key。
   - [x] 允许手动绑定。

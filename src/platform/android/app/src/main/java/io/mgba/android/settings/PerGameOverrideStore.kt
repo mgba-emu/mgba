@@ -21,6 +21,10 @@ class PerGameOverrideStore(context: Context) {
         return intOverride(gameId, KEY_FRAME_SKIP, fallback).coerceIn(0, 3)
     }
 
+    fun deadzonePercent(gameId: String?, fallback: Int): Int {
+        return intOverride(gameId, KEY_DEADZONE_PERCENT, fallback).coerceIn(10, 90)
+    }
+
     fun setScaleMode(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_SCALE_MODE, value.coerceIn(0, 2))
     }
@@ -35,6 +39,10 @@ class PerGameOverrideStore(context: Context) {
 
     fun setFrameSkip(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_FRAME_SKIP, value.coerceIn(0, 3))
+    }
+
+    fun setDeadzonePercent(gameId: String?, value: Int): Boolean {
+        return putIntOverride(gameId, KEY_DEADZONE_PERCENT, value.coerceIn(10, 90))
     }
 
     private fun intOverride(gameId: String?, name: String, fallback: Int): Int {
@@ -71,5 +79,6 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_MUTED = "muted"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_FRAME_SKIP = "frameSkip"
+        const val KEY_DEADZONE_PERCENT = "deadzonePercent"
     }
 }

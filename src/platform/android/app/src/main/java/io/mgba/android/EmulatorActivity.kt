@@ -72,6 +72,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var muteButton: Button? = null
     private var scaleButton: Button? = null
     private var padButton: Button? = null
+    private var deadzoneButton: Button? = null
     private var tiltButton: Button? = null
     private var solarButton: Button? = null
     private var statsButton: Button? = null
@@ -81,6 +82,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var frameSkip = 0
     private var muted = false
     private var showVirtualGamepad = true
+    private var deadzonePercent = AndroidInputMapper.DefaultAxisThresholdPercent
     private var tiltEnabled = false
     private var lastRawTiltX = 0f
     private var lastRawTiltY = 0f
@@ -133,6 +135,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         frameSkip = perGameOverrides.frameSkip(currentGameId, 0)
         muted = perGameOverrides.muted(currentGameId, preferences.muted)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
+        deadzonePercent = perGameOverrides.deadzonePercent(
+            currentGameId,
+            AndroidInputMapper.DefaultAxisThresholdPercent,
+        )
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         enterImmersiveMode()
         controller = EmulatorSession.current()
@@ -349,7 +355,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         if (event.actionMasked != MotionEvent.ACTION_MOVE) {
             return super.onGenericMotionEvent(event)
         }
-        val keys = AndroidInputMapper.motionKeys(event)
+        val keys = AndroidInputMapper.motionKeys(event, deadzonePercent)
         if (keys == 0 && hardwareAxisKeys == 0) {
             return super.onGenericMotionEvent(event)
         }
@@ -390,6 +396,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun saveFrameSkipPreference() {
         perGameOverrides.setFrameSkip(currentGameId, frameSkip)
+    }
+
+    private fun saveDeadzonePreference() {
+        perGameOverrides.setDeadzonePercent(currentGameId, deadzonePercent)
     }
 
     private fun startPlayAccounting() {
@@ -498,6 +508,17 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(padButton)
+            deadzoneButton = Button(context).apply {
+                setOnClickListener {
+                    val index = DEADZONE_LEVELS.indexOf(deadzonePercent).takeIf { it >= 0 } ?: 2
+                    deadzonePercent = DEADZONE_LEVELS[(index + 1) % DEADZONE_LEVELS.size]
+                    saveDeadzonePreference()
+                    hardwareAxisKeys = 0
+                    syncKeys()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(deadzoneButton)
             tiltButton = Button(context).apply {
                 setOnClickListener {
                     tiltEnabled = !tiltEnabled
@@ -685,6 +706,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         muteButton?.text = if (muted) "Sound" else "Mute"
         scaleButton?.text = SCALE_LABELS[scaleMode]
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
+        deadzoneButton?.text = "DZ$deadzonePercent"
         tiltButton?.text = if (tiltEnabled) "Tilt*" else "Tilt"
         solarButton?.text = if (useLightSensor) "Solar*" else "Solar"
         statsButton?.text = if (showStats) "Stats*" else "Stats"
@@ -1257,6 +1279,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val RUMBLE_PULSE_MS = 45L
         private const val MAX_GYRO_RADIANS = 8f
         private const val MAX_SOLAR_LUX = 10000f
+        private val DEADZONE_LEVELS = arrayOf(25, 35, 45, 55, 65)
         private val FRAME_SKIP_LABELS = arrayOf("Skip0", "Skip1", "Skip2", "Skip3")
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int")
     }
