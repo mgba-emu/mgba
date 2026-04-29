@@ -26,6 +26,7 @@ public:
 	void resume();
 	void clear();
 	void setEnabled(bool enabled);
+	void setVolumePercent(int percent);
 	void enqueueFromCore(mCore* core);
 
 private:
@@ -40,6 +41,7 @@ private:
 	bool m_paused = true;
 	bool m_enabled = true;
 	bool m_resamplerReady = false;
+	int m_volumePercent = 100;
 
 	SLObjectItf m_engineObject = nullptr;
 	SLEngineItf m_engine = nullptr;

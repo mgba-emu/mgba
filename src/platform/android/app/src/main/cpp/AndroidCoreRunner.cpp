@@ -722,6 +722,12 @@ void AndroidCoreRunner::setAudioEnabled(bool enabled) {
 	m_audioOutput.setEnabled(enabled);
 }
 
+void AndroidCoreRunner::setVolumePercent(int percent) {
+	const int clamped = std::clamp(percent, 0, 100);
+	m_volumePercent = clamped;
+	m_audioOutput.setVolumePercent(clamped);
+}
+
 void AndroidCoreRunner::setScaleMode(int mode) {
 	if (mode < 0 || mode > 4) {
 		mode = 0;
@@ -754,6 +760,7 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"paused\":" << (m_paused.load() ? "true" : "false")
 	    << ",\"fastForward\":" << (m_fastForward.load() ? "true" : "false")
 	    << ",\"frameSkip\":" << m_frameSkip.load()
+	    << ",\"volumePercent\":" << m_volumePercent.load()
 	    << ",\"scaleMode\":" << m_scaleMode.load()
 	    << ",\"filterMode\":" << m_filterMode.load()
 	    << ",\"skipBios\":" << (m_skipBios.load() ? "true" : "false")

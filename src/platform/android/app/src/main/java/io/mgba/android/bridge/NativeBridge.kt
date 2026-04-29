@@ -62,6 +62,9 @@ object NativeBridge {
     external fun nativeSetAudioEnabled(handle: Long, enabled: Boolean)
 
     @JvmStatic
+    external fun nativeSetVolumePercent(handle: Long, percent: Int)
+
+    @JvmStatic
     external fun nativeSetScaleMode(handle: Long, mode: Int)
 
     @JvmStatic

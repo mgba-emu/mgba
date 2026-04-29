@@ -83,6 +83,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var fastButton: Button? = null
     private var frameSkipButton: Button? = null
     private var muteButton: Button? = null
+    private var volumeButton: Button? = null
     private var scaleButton: Button? = null
     private var filterButton: Button? = null
     private var orientationButton: Button? = null
@@ -98,6 +99,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var fastForward = false
     private var frameSkip = 0
     private var muted = false
+    private var volumePercent = 100
     private var showVirtualGamepad = true
     private var virtualGamepadSizePercent = 100
     private var virtualGamepadOpacityPercent = 100
@@ -162,6 +164,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         skipBios = perGameOverrides.skipBios(currentGameId, preferences.skipBios)
         frameSkip = perGameOverrides.frameSkip(currentGameId, 0)
         muted = perGameOverrides.muted(currentGameId, preferences.muted)
+        volumePercent = perGameOverrides.volumePercent(currentGameId, preferences.volumePercent)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
         virtualGamepadSizePercent = perGameOverrides.virtualGamepadSizePercent(
             currentGameId,
@@ -200,6 +203,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         controller?.setSkipBios(skipBios)
         controller?.setFrameSkip(frameSkip)
         controller?.setAudioEnabled(!muted)
+        controller?.setVolumePercent(volumePercent)
 
         val root = FrameLayout(this).apply {
             setBackgroundColor(getColor(R.color.mgba_background))
@@ -474,6 +478,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
+    private fun saveVolumePreference() {
+        if (!perGameOverrides.setVolumePercent(currentGameId, volumePercent)) {
+            preferences.volumePercent = volumePercent
+        }
+    }
+
     private fun saveGamepadPreference() {
         if (!perGameOverrides.setShowVirtualGamepad(currentGameId, showVirtualGamepad)) {
             preferences.showVirtualGamepad = showVirtualGamepad
@@ -591,6 +601,16 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(muteButton)
+            volumeButton = Button(context).apply {
+                setOnClickListener {
+                    val index = VOLUME_LEVELS.indexOf(volumePercent).takeIf { it >= 0 } ?: 0
+                    volumePercent = VOLUME_LEVELS[(index + 1) % VOLUME_LEVELS.size]
+                    controller?.setVolumePercent(volumePercent)
+                    saveVolumePreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(volumeButton)
             scaleButton = Button(context).apply {
                 setOnClickListener {
                     scaleMode = (scaleMode + 1) % SCALE_LABELS.size
@@ -842,6 +862,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         fastButton?.text = if (fastForward) "1x" else "Fast"
         frameSkipButton?.text = FRAME_SKIP_LABELS[frameSkip]
         muteButton?.text = if (muted) "Sound" else "Mute"
+        volumeButton?.text = "Vol$volumePercent"
         scaleButton?.text = SCALE_LABELS[scaleMode]
         filterButton?.text = FILTER_LABELS[filterMode]
         orientationButton?.text = ORIENTATION_LABELS[orientationMode]
@@ -1373,7 +1394,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         lastStatsAtMs = now
         statsOverlay?.text = String.format(
             Locale.US,
-            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nScale %s  Filter %s  BIOS %s",
+            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nAudio %s  Vol %d%%\nScale %s  Filter %s  BIOS %s",
             fps,
             stats.frames,
             stats.videoWidth,
@@ -1381,6 +1402,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             if (stats.running && !stats.paused) "on" else "off",
             if (stats.fastForward) "on" else "off",
             frameSkip,
+            if (muted) "muted" else "on",
+            stats.volumePercent,
             SCALE_LABELS.getOrElse(stats.scaleMode) { SCALE_LABELS[0] },
             FILTER_LABELS.getOrElse(stats.filterMode) { FILTER_LABELS[0] },
             if (stats.skipBios) "skip" else "boot",
@@ -1654,6 +1677,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val GAMEPAD_SPACING_MIN = 70
         private const val GAMEPAD_SPACING_MAX = 140
         private val DEADZONE_LEVELS = arrayOf(25, 35, 45, 55, 65)
+        private val VOLUME_LEVELS = arrayOf(100, 75, 50, 25)
         private val FRAME_SKIP_LABELS = arrayOf("Skip0", "Skip1", "Skip2", "Skip3")
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int", "Orig", "Str")
         private val FILTER_LABELS = arrayOf("Pix", "Smooth")

@@ -114,6 +114,7 @@
 - [x] 已新增 Android ZIP cache 256 MiB 上限清理，解压后自动删除较旧 cache 文件。
 - [x] 已接入 Android `onTrimMemory`，低内存时将 ZIP cache 收缩到 64 MiB。
 - [x] 已新增 Android 画面 Pix/Smooth 过滤切换，JNI 透传到 GLES texture filtering 并按游戏持久化。
+- [x] 已新增 Android 音量控制：工具条 100/75/50/25% 循环、per-game 持久化、JNI/native PCM 输出缩放和 stats overlay 展示。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -517,8 +518,8 @@ object NativeBridge {
 
 ### 6.3 音频设置
 
-- [ ] 音量。
-- [ ] 静音。
+- [x] 音量。
+- [x] 静音。
 - [ ] 低通滤波，参考 libretro 的 `audioLowPass` 实现。
 - [ ] 音频 buffer 大小：低延迟 / 平衡 / 稳定。
 - [ ] 后台音频策略：默认切后台暂停。

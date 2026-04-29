@@ -90,6 +90,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setVolumePercent(percent: Int) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetVolumePercent(handle.value, percent.coerceIn(0, 100))
+        }
+    }
+
     fun setScaleMode(mode: Int) {
         if (handle.isValid) {
             NativeBridge.nativeSetScaleMode(handle.value, mode)

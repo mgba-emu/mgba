@@ -130,6 +130,11 @@ void AndroidAudioOutput::setEnabled(bool enabled) {
 	}
 }
 
+void AndroidAudioOutput::setVolumePercent(int percent) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	m_volumePercent = std::clamp(percent, 0, 100);
+}
+
 void AndroidAudioOutput::enqueueFromCore(mCore* core) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (!m_started || m_paused || !m_enabled || !m_bufferQueue || !core) {
@@ -278,7 +283,15 @@ size_t AndroidAudioOutput::fillBufferLocked(mCore* core, int16_t* output, size_t
 
 	mAudioResamplerSetSource(&m_resampler, source, sampleRate, true);
 	mAudioResamplerProcess(&m_resampler);
-	return mAudioBufferRead(&m_resampledBuffer, output, frames);
+	const size_t readFrames = mAudioBufferRead(&m_resampledBuffer, output, frames);
+	const int volumePercent = m_volumePercent;
+	if (volumePercent < 100) {
+		const size_t samples = readFrames * kChannels;
+		for (size_t i = 0; i < samples; ++i) {
+			output[i] = static_cast<int16_t>((static_cast<int32_t>(output[i]) * volumePercent) / 100);
+		}
+	}
+	return readFrames;
 }
 
 } // namespace mgba::android

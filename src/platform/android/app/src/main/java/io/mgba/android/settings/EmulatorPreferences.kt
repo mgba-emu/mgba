@@ -35,6 +35,12 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putBoolean(KEY_MUTED, value).apply()
         }
 
+    var volumePercent: Int
+        get() = preferences.getInt(KEY_VOLUME_PERCENT, 100).coerceIn(0, 100)
+        set(value) {
+            preferences.edit().putInt(KEY_VOLUME_PERCENT, value.coerceIn(0, 100)).apply()
+        }
+
     var showVirtualGamepad: Boolean
         get() = preferences.getBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, true)
         set(value) {
@@ -77,6 +83,7 @@ class EmulatorPreferences(context: Context) {
         const val KEY_ORIENTATION_MODE = "orientationMode"
         const val KEY_SKIP_BIOS = "skipBios"
         const val KEY_MUTED = "muted"
+        const val KEY_VOLUME_PERCENT = "volumePercent"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
         const val KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT = "virtualGamepadOpacityPercent"
