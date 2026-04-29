@@ -40,8 +40,10 @@ class MainActivity : Activity() {
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
+    private lateinit var libraryFilterButton: Button
     private lateinit var libraryContainer: LinearLayout
     private var libraryFilter = ""
+    private var libraryMode = LibraryMode.All
     private var scanThread: Thread? = null
     @Volatile
     private var scanGeneration = 0
@@ -164,6 +166,13 @@ class MainActivity : Activity() {
                 override fun afterTextChanged(s: Editable?) = Unit
             })
         }
+        libraryFilterButton = Button(this).apply {
+            visibility = View.GONE
+            setOnClickListener {
+                libraryMode = libraryMode.next()
+                renderLibrary()
+            }
+        }
 
         root.addView(title)
         root.addView(subtitle)
@@ -176,6 +185,7 @@ class MainActivity : Activity() {
         root.addView(logButton)
         root.addView(recentContainer)
         root.addView(librarySearch)
+        root.addView(libraryFilterButton)
         root.addView(libraryContainer)
         scroll.addView(root)
         setContentView(scroll)
@@ -274,15 +284,18 @@ class MainActivity : Activity() {
         libraryContainer.removeAllViews()
         val allRoms = libraryStore.list()
         librarySearch.visibility = if (allRoms.isEmpty()) View.GONE else View.VISIBLE
+        libraryFilterButton.visibility = if (allRoms.isEmpty()) View.GONE else View.VISIBLE
+        libraryFilterButton.text = "Filter: ${libraryMode.label}"
         if (allRoms.isEmpty()) {
             return
         }
 
         val query = libraryFilter.trim()
+        val modeRoms = allRoms.filter { libraryMode.matches(it) }
         val roms = if (query.isEmpty()) {
-            allRoms
+            modeRoms
         } else {
-            allRoms.filter {
+            modeRoms.filter {
                 it.displayName.contains(query, ignoreCase = true) ||
                     it.title.contains(query, ignoreCase = true) ||
                     it.platform.contains(query, ignoreCase = true) ||
@@ -292,7 +305,11 @@ class MainActivity : Activity() {
         }
 
         libraryContainer.addView(TextView(this).apply {
-            text = if (query.isEmpty()) "Library (${allRoms.size})" else "Library (${roms.size}/${allRoms.size})"
+            text = if (query.isEmpty() && libraryMode == LibraryMode.All) {
+                "Library (${allRoms.size})"
+            } else {
+                "Library (${roms.size}/${allRoms.size})"
+            }
             textSize = 14f
             setTextColor(getColor(R.color.mgba_text_secondary))
             setPadding(0, 0, 0, dp(8))
@@ -500,5 +517,26 @@ class MainActivity : Activity() {
         private const val REQUEST_IMPORT_PATCH = 1003
         private const val REQUEST_SCAN_FOLDER = 1004
         private const val MAX_LIBRARY_ITEMS = 24
+    }
+}
+
+private enum class LibraryMode(val label: String) {
+    All("All"),
+    Favorites("Favorites"),
+    Gba("GBA"),
+    Gb("GB");
+
+    fun next(): LibraryMode {
+        val modes = entries
+        return modes[(ordinal + 1) % modes.size]
+    }
+
+    fun matches(rom: LibraryRom): Boolean {
+        return when (this) {
+            All -> true
+            Favorites -> rom.favorite
+            Gba -> rom.platform.equals("GBA", ignoreCase = true)
+            Gb -> rom.platform.equals("GB", ignoreCase = true)
+        }
     }
 }

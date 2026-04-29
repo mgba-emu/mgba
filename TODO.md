@@ -75,6 +75,7 @@
 - [x] 已将 native CRC32 透传到 ROM 库模型，并支持按 CRC32 搜索。
 - [x] 已为 ROM 库记录并显示 DocumentsProvider 文件大小。
 - [x] 已为 ROM 库扫描计算 SHA1，并支持按 SHA1 搜索。
+- [x] 已新增 ROM 库筛选按钮，支持 All / Favorites / GBA / GB 并与搜索叠加。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -694,7 +695,8 @@ object NativeBridge {
 - [ ] ROM 列表支持：
   - [x] 最近。
   - [x] 收藏。
-  - [ ] GBA / GB / GBC 筛选。
+  - [x] GBA / GB 筛选。
+  - [ ] GBC 细分筛选。
   - [x] 搜索。
   - [ ] 网格/列表切换。
 - [ ] 每个 ROM item 显示：
