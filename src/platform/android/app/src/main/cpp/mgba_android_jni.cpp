@@ -28,6 +28,8 @@ using mgba::android::JStringToString;
 namespace {
 
 constexpr const char* kLogTag = "mGBAAndroid";
+constexpr const char* kEncodedArchiveEntryPrefix = "__mgba_entry_hex__:";
+constexpr const char* kRomExtensions[] = {".gba", ".agb", ".gb", ".gbc", ".sgb"};
 
 struct AndroidLogger {
 	mLogger logger = {};
@@ -44,7 +46,7 @@ AndroidCoreRunner* FromHandle(jlong handle) {
 std::string JsonEscape(const std::string& value) {
 	std::string escaped;
 	escaped.reserve(value.size());
-	for (char c : value) {
+	for (unsigned char c : value) {
 		switch (c) {
 		case '"':
 			escaped += "\\\"";
@@ -62,7 +64,14 @@ std::string JsonEscape(const std::string& value) {
 			escaped += "\\t";
 			break;
 		default:
-			escaped += c;
+			if (c < 0x20 || c > 0x7E) {
+				constexpr char kDigits[] = "0123456789abcdef";
+				escaped += "\\u00";
+				escaped += kDigits[c >> 4];
+				escaped += kDigits[c & 0x0F];
+			} else {
+				escaped += static_cast<char>(c);
+			}
 			break;
 		}
 	}
@@ -74,14 +83,100 @@ bool IsSupportedRomEntry(const std::string& name) {
 	std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) {
 		return static_cast<char>(std::tolower(c));
 	});
-	constexpr const char* kExtensions[] = {".gba", ".agb", ".gb", ".gbc", ".sgb"};
-	for (const char* extension : kExtensions) {
+	for (const char* extension : kRomExtensions) {
 		if (lower.size() >= std::strlen(extension) &&
 		    lower.compare(lower.size() - std::strlen(extension), std::strlen(extension), extension) == 0) {
 			return true;
 		}
 	}
 	return false;
+}
+
+std::string HexEncode(const std::string& value) {
+	constexpr char kDigits[] = "0123456789abcdef";
+	std::string encoded;
+	encoded.reserve(value.size() * 2);
+	for (unsigned char c : value) {
+		encoded += kDigits[c >> 4];
+		encoded += kDigits[c & 0x0F];
+	}
+	return encoded;
+}
+
+int HexValue(char c) {
+	if (c >= '0' && c <= '9') {
+		return c - '0';
+	}
+	if (c >= 'a' && c <= 'f') {
+		return c - 'a' + 10;
+	}
+	if (c >= 'A' && c <= 'F') {
+		return c - 'A' + 10;
+	}
+	return -1;
+}
+
+std::string HexDecode(const std::string& value) {
+	if (value.size() % 2 != 0) {
+		return {};
+	}
+	std::string decoded;
+	decoded.reserve(value.size() / 2);
+	for (size_t i = 0; i < value.size(); i += 2) {
+		const int high = HexValue(value[i]);
+		const int low = HexValue(value[i + 1]);
+		if (high < 0 || low < 0) {
+			return {};
+		}
+		decoded += static_cast<char>((high << 4) | low);
+	}
+	return decoded;
+}
+
+bool NeedsArchiveEntryEncoding(const std::string& name) {
+	if (name.rfind(kEncodedArchiveEntryPrefix, 0) == 0) {
+		return true;
+	}
+	for (unsigned char c : name) {
+		if (c < 0x20 || c > 0x7E) {
+			return true;
+		}
+	}
+	return false;
+}
+
+std::string EncodeArchiveEntryName(const std::string& name) {
+	if (!NeedsArchiveEntryEncoding(name)) {
+		return name;
+	}
+	return std::string(kEncodedArchiveEntryPrefix) + HexEncode(name);
+}
+
+std::string DecodeArchiveEntryName(const std::string& name) {
+	if (name.rfind(kEncodedArchiveEntryPrefix, 0) != 0) {
+		return name;
+	}
+	const std::string decoded = HexDecode(name.substr(std::strlen(kEncodedArchiveEntryPrefix)));
+	return decoded.empty() ? name : decoded;
+}
+
+std::string ArchiveEntryDisplayName(const std::string& name) {
+	const size_t slash = name.find_last_of("/\\");
+	const std::string baseName = slash == std::string::npos ? name : name.substr(slash + 1);
+	if (!NeedsArchiveEntryEncoding(baseName) && !baseName.empty()) {
+		return baseName;
+	}
+	std::string lower = name;
+	std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) {
+		return static_cast<char>(std::tolower(c));
+	});
+	for (const char* extension : kRomExtensions) {
+		if (lower.size() >= std::strlen(extension) &&
+		    lower.compare(lower.size() - std::strlen(extension), std::strlen(extension), extension) == 0) {
+			return std::string("archive-entry") + extension;
+		}
+	}
+	return "archive-entry.rom";
 }
 
 std::string ListArchiveRomEntriesJson(const std::string& archivePath) {
@@ -106,9 +201,11 @@ std::string ListArchiveRomEntriesJson(const std::string& archivePath) {
 		if (i) {
 			json += ",";
 		}
-		json += "\"";
-		json += JsonEscape(entries[i]);
-		json += "\"";
+		json += "{\"name\":\"";
+		json += JsonEscape(EncodeArchiveEntryName(entries[i]));
+		json += "\",\"displayName\":\"";
+		json += JsonEscape(ArchiveEntryDisplayName(entries[i]));
+		json += "\"}";
 	}
 	json += "]";
 	return json;
@@ -119,7 +216,8 @@ bool ExtractArchiveRomEntry(const std::string& archivePath, const std::string& e
 	if (!archive) {
 		return false;
 	}
-	struct VFile* input = archive->openFile(archive, entryName.c_str(), O_RDONLY);
+	const std::string decodedEntryName = DecodeArchiveEntryName(entryName);
+	struct VFile* input = archive->openFile(archive, decodedEntryName.c_str(), O_RDONLY);
 	if (!input) {
 		archive->close(archive);
 		return false;

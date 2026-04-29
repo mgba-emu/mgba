@@ -169,6 +169,8 @@
 - [x] 已完成 OnePlus7 真机大 ROM 回归：8MB/64Mb mooneye GB 测试 ROM 启动并显示 `Test OK`，crash buffer 为空。
 - [x] 已完成 OnePlus7 真机 patch/cheat 回归：per-game IPS 与 `.cheats` 文件自动导入，`app.log` 记录 `patch=applied, cheats=applied`，渲染正常且 crash buffer 为空。
 - [x] 已新增并通过 OnePlus7 真机 native smoke instrumentation：public-domain GB 测试 ROM 可 probe/load，`nativeStepFrame` 连跑 300 帧，state save/load/delete 成功。
+- [x] 已完成 OnePlus7 真机真实 ROM zip 回归：`~/game/[gba]木叶战记.zip`、`~/game/[GBA]决战三国.zip`、`~/game/[gbc]水浒传.zip` 均通过 ACTION_VIEW 启动并渲染，crash buffer 为空。
+- [x] 已修复 Android ZIP/native archive 编码兼容：Java ZIP 未识别老编码 entry 时 fallback 到 native archive，native entry token 和 ROM header JSON 均避免非法 Modified UTF-8 崩溃。
 - [x] 首帧真机截图验证已在 OnePlus7 上执行；模拟器因性能过慢已停用。
 
 ## 1. 产品目标和范围

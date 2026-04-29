@@ -28,6 +28,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import io.mgba.android.bridge.NativeArchiveEntry
 import io.mgba.android.bridge.NativeBridge
 import io.mgba.android.bridge.NativeLoadResult
 import io.mgba.android.emulator.EmulatorController
@@ -577,7 +578,7 @@ class MainActivity : Activity() {
         val entries = runCatching { zipRomEntries(uri) }.getOrDefault(emptyList())
         when (entries.size) {
             0 -> {
-                nativeStatus.text = "${getString(R.string.native_version_label)}: No supported ROM found in ZIP"
+                openNativeArchiveRomUri(uri, name, shouldStoreRecent)
             }
             1 -> launchZipRomEntry(uri, name, entries.first(), shouldStoreRecent)
             else -> {
@@ -629,7 +630,7 @@ class MainActivity : Activity() {
                         launchNativeArchiveRomEntry(uri, name, archive, entries.first(), shouldStoreRecent)
                     }
                     else -> {
-                        val labels = entries.map { it.substringAfterLast('/') }.toTypedArray()
+                        val labels = entries.map { it.displayName }.toTypedArray()
                         AlertDialog.Builder(this)
                             .setTitle("Select ROM")
                             .setItems(labels) { _, which ->
@@ -647,12 +648,12 @@ class MainActivity : Activity() {
         uri: Uri,
         archiveName: String,
         archive: File,
-        entryName: String,
+        entry: NativeArchiveEntry,
         shouldStoreRecent: Boolean,
     ) {
         nativeStatus.text = "${getString(R.string.native_version_label)}: Extracting archive"
         Thread {
-            val extracted = runCatching { extractNativeArchiveRomEntry(archive, uri, entryName) }.getOrNull()
+            val extracted = runCatching { extractNativeArchiveRomEntry(archive, uri, entry.name) }.getOrNull()
             runOnUiThread {
                 if (extracted == null) {
                     nativeStatus.text = "${getString(R.string.native_version_label)}: Archive extract failed"
@@ -660,7 +661,7 @@ class MainActivity : Activity() {
                 }
                 launchRomFd(
                     uri,
-                    entryName.substringAfterLast('/').ifBlank { archiveName },
+                    entry.displayName.ifBlank { archiveName },
                     shouldStoreRecent,
                     recentDisplayName = archiveName,
                     allowImportFallback = false,

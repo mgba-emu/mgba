@@ -36,7 +36,7 @@ namespace {
 
 std::string JsonEscape(const std::string& value) {
 	std::ostringstream out;
-	for (char c : value) {
+	for (unsigned char c : value) {
 		switch (c) {
 		case '"':
 			out << "\\\"";
@@ -54,7 +54,7 @@ std::string JsonEscape(const std::string& value) {
 			out << "\\t";
 			break;
 		default:
-			if (static_cast<unsigned char>(c) < 0x20) {
+			if (c < 0x20 || c > 0x7E) {
 				out << "\\u00";
 				const char* hex = "0123456789abcdef";
 				out << hex[(c >> 4) & 0xF] << hex[c & 0xF];

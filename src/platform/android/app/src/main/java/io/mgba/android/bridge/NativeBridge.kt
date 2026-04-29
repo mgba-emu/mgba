@@ -2,6 +2,12 @@ package io.mgba.android.bridge
 
 import android.view.Surface
 import org.json.JSONArray
+import org.json.JSONObject
+
+data class NativeArchiveEntry(
+    val name: String,
+    val displayName: String,
+)
 
 object NativeBridge {
     init {
@@ -192,12 +198,27 @@ object NativeBridge {
         )
     }
 
-    fun archiveRomEntries(archivePath: String): List<String> {
+    fun archiveRomEntries(archivePath: String): List<NativeArchiveEntry> {
         return runCatching {
             val array = JSONArray(nativeListArchiveRomEntries(archivePath))
             buildList {
                 for (index in 0 until array.length()) {
-                    array.optString(index).takeIf { it.isNotBlank() }?.let(::add)
+                    when (val item = array.opt(index)) {
+                        is JSONObject -> {
+                            val name = item.optString("name")
+                            val displayName = item.optString("displayName").ifBlank {
+                                name.substringAfterLast('/').ifBlank { name }
+                            }
+                            if (name.isNotBlank()) {
+                                add(NativeArchiveEntry(name, displayName))
+                            }
+                        }
+                        else -> {
+                            array.optString(index).takeIf { it.isNotBlank() }?.let { name ->
+                                add(NativeArchiveEntry(name, name.substringAfterLast('/').ifBlank { name }))
+                            }
+                        }
+                    }
                 }
             }
         }.getOrDefault(emptyList())
