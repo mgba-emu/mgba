@@ -126,6 +126,22 @@ std::string SavePathForCore(const mCore* core, const std::string& basePath) {
 	return name.str();
 }
 
+bool LoadDefaultBios(mCore* core, const std::string& basePath) {
+	if (!core || !core->loadBIOS) {
+		return false;
+	}
+	const std::string biosPath = basePath + "/bios/default.bios";
+	struct VFile* vf = VFileOpen(biosPath.c_str(), O_RDONLY);
+	if (!vf) {
+		return false;
+	}
+	if (!core->loadBIOS(core, vf, 0)) {
+		vf->close(vf);
+		return false;
+	}
+	return true;
+}
+
 void WriteLe16(std::ostream& out, uint16_t value) {
 	const char bytes[] = {
 		static_cast<char>(value & 0xFF),
@@ -282,6 +298,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	mCoreInitConfig(core, "android");
 	mCoreConfigLoadDefaults(&core->config, &options);
 	mCoreLoadConfig(core);
+	LoadDefaultBios(core, m_basePath);
 
 	unsigned width = 0;
 	unsigned height = 0;

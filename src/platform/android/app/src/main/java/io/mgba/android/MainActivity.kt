@@ -14,15 +14,19 @@ import android.widget.TextView
 import io.mgba.android.bridge.NativeBridge
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.library.RecentGameStore
+import io.mgba.android.storage.BiosStore
 
 class MainActivity : Activity() {
     private lateinit var nativeStatus: TextView
     private lateinit var recentStore: RecentGameStore
+    private lateinit var biosStore: BiosStore
+    private lateinit var biosButton: Button
     private lateinit var recentContainer: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         recentStore = RecentGameStore(this)
+        biosStore = BiosStore(this)
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -62,6 +66,13 @@ class MainActivity : Activity() {
             }
         }
 
+        biosButton = Button(this).apply {
+            text = biosStore.displayName?.let { "BIOS: $it" } ?: "Import BIOS"
+            setOnClickListener {
+                openBiosPicker()
+            }
+        }
+
         recentContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(0, dp(24), 0, 0)
@@ -71,6 +82,7 @@ class MainActivity : Activity() {
         root.addView(subtitle)
         root.addView(nativeStatus)
         root.addView(openButton)
+        root.addView(biosButton)
         root.addView(recentContainer)
         setContentView(root)
         renderRecentGames()
@@ -78,16 +90,28 @@ class MainActivity : Activity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != REQUEST_OPEN_ROM || resultCode != RESULT_OK) {
+        if (resultCode != RESULT_OK) {
             return
         }
 
         val uri = data?.data ?: return
-        runCatching {
-            contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        when (requestCode) {
+            REQUEST_OPEN_ROM -> {
+                runCatching {
+                    contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                val name = displayName(uri)
+                openRomUri(uri, name, shouldStoreRecent = true)
+            }
+            REQUEST_IMPORT_BIOS -> {
+                val name = displayName(uri)
+                val ok = biosStore.importDefault(uri, name)
+                if (ok) {
+                    biosButton.text = "BIOS: $name"
+                }
+                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "BIOS imported" else "BIOS import failed"}"
+            }
         }
-        val name = displayName(uri)
-        openRomUri(uri, name, shouldStoreRecent = true)
     }
 
     private fun openRomUri(uri: Uri, name: String, shouldStoreRecent: Boolean) {
@@ -148,6 +172,15 @@ class MainActivity : Activity() {
         startActivityForResult(intent, REQUEST_OPEN_ROM)
     }
 
+    private fun openBiosPicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_IMPORT_BIOS)
+    }
+
     private fun displayName(uri: Uri): String {
         var cursor: Cursor? = null
         return try {
@@ -164,5 +197,6 @@ class MainActivity : Activity() {
 
     companion object {
         private const val REQUEST_OPEN_ROM = 1001
+        private const val REQUEST_IMPORT_BIOS = 1002
     }
 }
