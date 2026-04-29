@@ -129,6 +129,14 @@ Java_io_mgba_android_bridge_NativeBridge_nativeExportBatterySave(JNIEnv* env, jc
 	return env->NewStringUTF("");
 }
 
+extern "C" JNIEXPORT jboolean JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeImportBatterySaveFd(JNIEnv*, jclass, jlong handle, jint fd) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		return runner->importBatterySaveFd(fd) ? JNI_TRUE : JNI_FALSE;
+	}
+	return JNI_FALSE;
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeStart(JNIEnv*, jclass, jlong handle) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {

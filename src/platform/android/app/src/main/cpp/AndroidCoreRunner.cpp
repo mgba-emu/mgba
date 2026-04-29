@@ -488,6 +488,41 @@ std::string AndroidCoreRunner::exportBatterySave() {
 	return out ? path : "";
 }
 
+bool AndroidCoreRunner::importBatterySaveFd(int fd) {
+	if (fd < 0) {
+		return false;
+	}
+
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (!m_core || !m_core->savedataRestore) {
+		return false;
+	}
+
+	int ownedFd = dup(fd);
+	if (ownedFd < 0) {
+		return false;
+	}
+
+	struct VFile* vf = VFileFromFD(ownedFd);
+	if (!vf) {
+		return false;
+	}
+	const ssize_t size = vf->size(vf);
+	if (size <= 0) {
+		vf->close(vf);
+		return false;
+	}
+
+	std::vector<uint8_t> savedata(static_cast<size_t>(size));
+	vf->seek(vf, 0, SEEK_SET);
+	const ssize_t read = vf->read(vf, savedata.data(), savedata.size());
+	vf->close(vf);
+	if (read != size) {
+		return false;
+	}
+	return m_core->savedataRestore(m_core, savedata.data(), savedata.size(), true);
+}
+
 void AndroidCoreRunner::start() {
 	if (m_running.exchange(true)) {
 		m_paused = false;

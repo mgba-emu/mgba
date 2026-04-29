@@ -44,6 +44,9 @@ object NativeBridge {
     external fun nativeExportBatterySave(handle: Long): String
 
     @JvmStatic
+    external fun nativeImportBatterySaveFd(handle: Long, fd: Int): Boolean
+
+    @JvmStatic
     external fun nativeStart(handle: Long)
 
     @JvmStatic
