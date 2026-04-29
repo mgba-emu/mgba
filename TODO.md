@@ -176,6 +176,7 @@
 - [x] 已完成 OnePlus7 真机后台 CPU 验收：HOME 后 app task 进入 paused/background，`/proc/<pid>/stat` 10 秒窗口 tick 增量 0，CPU 约 `0.000%`。
 - [x] 已新增 Android 首帧启动诊断：`Loaded ROM` 记录 native load ms，首次 native frame 记录 load-to-first-frame ms、loaded-to-first-frame ms、frame/video 信息。
 - [x] 已完成 OnePlus7 真机真实 ROM 首帧验收：`木叶战记` 377ms、`决战三国` 254ms、`水浒传` 308ms，均小于 1 秒。
+- [x] 已完成 Android 模拟器 30 分钟 native heap smoke：`Medium_Phone` arm64 AVD 跑 `~/game/[gba]木叶战记.zip`，5/10/15/20/25/30 分钟 Native Heap Alloc 为 64932/65398/65768/66039/66251/66399 KB，预热后无持续线性增长。
 - [x] 已修复 Android ZIP/native archive 编码兼容：Java ZIP 未识别老编码 entry 时 fallback 到 native archive，native entry token 和 ROM header JSON 均避免非法 Modified UTF-8 崩溃。
 - [x] 首帧真机截图验证已在 OnePlus7 上执行；模拟器因性能过慢已停用。
 
@@ -1121,7 +1122,7 @@ object NativeBridge {
 - [x] GB/GBC 常规游戏稳定（OnePlus7 真实 GBC smoke：`水浒传` 7235 native frames，`underruns=0`）。
 - [x] 音频 underrun 每 10 分钟少于 1 次，低端设备允许设置更大 buffer（OnePlus7 真实 GBA 10 分钟长 smoke：`underruns=0`）。
 - [x] ROM 加载到首帧小于 1 秒，archive/cache 情况另计（OnePlus7 真实 ROM zip：`木叶战记` 377ms、`决战三国` 254ms、`水浒传` 308ms）。
-- [ ] 正常游玩 30 分钟 native heap 无持续增长。
+- [x] 正常游玩 30 分钟 native heap 无持续增长（Android 模拟器 arm64 AVD：5 分钟后 Native Heap Alloc 64932 KB，30 分钟 66399 KB，趋势趋平）。
 - [x] App 切后台后 CPU 使用接近 0（OnePlus7 HOME 后 `/proc/<pid>/stat` 10 秒窗口 CPU 约 `0.000%`）。
 
 ### 16.5 回归用例
