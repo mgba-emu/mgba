@@ -135,6 +135,14 @@ void AndroidAudioOutput::setVolumePercent(int percent) {
 	m_volumePercent = std::clamp(percent, 0, 100);
 }
 
+uint64_t AndroidAudioOutput::underrunCount() const {
+	return m_underrunCount.load();
+}
+
+void AndroidAudioOutput::resetUnderrunCount() {
+	m_underrunCount = 0;
+}
+
 void AndroidAudioOutput::enqueueFromCore(mCore* core) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (!m_started || m_paused || !m_enabled || !m_bufferQueue || !core) {
@@ -284,6 +292,9 @@ size_t AndroidAudioOutput::fillBufferLocked(mCore* core, int16_t* output, size_t
 	mAudioResamplerSetSource(&m_resampler, source, sampleRate, true);
 	mAudioResamplerProcess(&m_resampler);
 	const size_t readFrames = mAudioBufferRead(&m_resampledBuffer, output, frames);
+	if (readFrames < frames) {
+		++m_underrunCount;
+	}
 	const int volumePercent = m_volumePercent;
 	if (volumePercent < 100) {
 		const size_t samples = readFrames * kChannels;

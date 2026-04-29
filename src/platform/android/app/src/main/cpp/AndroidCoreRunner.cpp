@@ -472,6 +472,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	m_textureHeight = textureHeight;
 	m_core->currentVideoSize(m_core, &m_videoWidth, &m_videoHeight);
 	m_audioOutput.clear();
+	m_audioOutput.resetUnderrunCount();
 	m_frameCounter = 0;
 	m_rumbleActive = false;
 	m_rumble = {};
@@ -772,6 +773,7 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"frameSkip\":" << m_frameSkip.load()
 	    << ",\"volumePercent\":" << m_volumePercent.load()
 	    << ",\"audioBufferSamples\":" << m_audioBufferSamples.load()
+	    << ",\"audioUnderruns\":" << m_audioOutput.underrunCount()
 	    << ",\"scaleMode\":" << m_scaleMode.load()
 	    << ",\"filterMode\":" << m_filterMode.load()
 	    << ",\"skipBios\":" << (m_skipBios.load() ? "true" : "false")

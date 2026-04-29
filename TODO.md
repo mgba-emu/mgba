@@ -116,6 +116,7 @@
 - [x] 已新增 Android 画面 Pix/Smooth 过滤切换，JNI 透传到 GLES texture filtering 并按游戏持久化。
 - [x] 已新增 Android 音量控制：工具条 100/75/50/25% 循环、per-game 持久化、JNI/native PCM 输出缩放和 stats overlay 展示。
 - [x] 已新增 Android 音频 buffer 模式：Low/Balanced/Stable 三档、全局启动前应用、运行时 per-game 覆盖和 stats overlay 展示。
+- [x] 已新增 Android 音频 underrun 计数，OpenSL 输出补零时累计并在 debug stats overlay 展示。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -503,7 +504,7 @@ object NativeBridge {
   - [ ] `mAudioResamplerSetSource`。
   - [ ] `mAudioResamplerProcess`。
   - [ ] `mAudioBufferRead` 填充 Android 输出 buffer。
-  - [ ] underrun 时补零并计数。
+  - [x] underrun 时补零并计数。
 - [ ] 暂停时停止音频 callback 并清空短 buffer，恢复时重新同步。
 
 ### 6.2 音频同步
@@ -531,7 +532,7 @@ object NativeBridge {
 - [ ] 快进/暂停/恢复后音频不永久静音。
 - [ ] 蓝牙耳机切换后可恢复音频。
 - [ ] 横竖屏旋转不重启音频核心。
-- [ ] underrun 计数可在 debug overlay 查看。
+- [x] underrun 计数可在 debug overlay 查看。
 
 ## 7. 输入计划
 
@@ -983,7 +984,7 @@ object NativeBridge {
 - [ ] Debug overlay：
   - [ ] FPS。
   - [ ] frame time。
-  - [ ] audio underrun。
+  - [x] audio underrun。
   - [ ] ROM platform。
   - [ ] core frame counter。
 

@@ -5,6 +5,7 @@
 #include <SLES/OpenSLES_Android.h>
 
 #include <array>
+#include <atomic>
 #include <cstdint>
 #include <mgba-util/audio-buffer.h>
 #include <mgba-util/audio-resampler.h>
@@ -27,6 +28,8 @@ public:
 	void clear();
 	void setEnabled(bool enabled);
 	void setVolumePercent(int percent);
+	uint64_t underrunCount() const;
+	void resetUnderrunCount();
 	void enqueueFromCore(mCore* core);
 
 private:
@@ -54,6 +57,7 @@ private:
 	struct mAudioResampler m_resampler = {};
 	std::array<std::vector<int16_t>, 4> m_buffers;
 	size_t m_nextBuffer = 0;
+	std::atomic<uint64_t> m_underrunCount{0};
 };
 
 } // namespace mgba::android

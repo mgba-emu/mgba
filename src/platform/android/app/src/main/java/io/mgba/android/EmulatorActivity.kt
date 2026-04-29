@@ -1415,7 +1415,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         lastStatsAtMs = now
         statsOverlay?.text = String.format(
             Locale.US,
-            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nAudio %s  Vol %d%%  Buf %d\nScale %s  Filter %s  BIOS %s",
+            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nAudio %s  Vol %d%%  Buf %d  Und %d\nScale %s  Filter %s  BIOS %s",
             fps,
             stats.frames,
             stats.videoWidth,
@@ -1426,6 +1426,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             if (muted) "muted" else "on",
             stats.volumePercent,
             stats.audioBufferSamples,
+            stats.audioUnderruns,
             SCALE_LABELS.getOrElse(stats.scaleMode) { SCALE_LABELS[0] },
             FILTER_LABELS.getOrElse(stats.filterMode) { FILTER_LABELS[0] },
             if (stats.skipBios) "skip" else "boot",

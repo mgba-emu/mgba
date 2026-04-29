@@ -36,6 +36,7 @@ data class NativeStats(
     val filterMode: Int,
     val volumePercent: Int,
     val audioBufferSamples: Int,
+    val audioUnderruns: Long,
     val skipBios: Boolean,
 ) {
     companion object {
@@ -52,6 +53,7 @@ data class NativeStats(
                 filterMode = json.optInt("filterMode", 0),
                 volumePercent = json.optInt("volumePercent", 100).coerceIn(0, 100),
                 audioBufferSamples = json.optInt("audioBufferSamples", 1024).coerceIn(512, 4096),
+                audioUnderruns = json.optLong("audioUnderruns", 0L),
                 skipBios = json.optBoolean("skipBios", false),
             )
         }
