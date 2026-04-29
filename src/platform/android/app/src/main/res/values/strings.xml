@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">mGBA</string>
+    <string name="app_subtitle">Native Android port scaffold</string>
+    <string name="native_version_label">Native core</string>
+    <string name="open_emulator_placeholder">Open ROM</string>
+    <string name="emulator_placeholder">Rendering surface placeholder</string>
+    <string name="emulator_placeholder_detail">The next implementation step will bind ROM loading and frame rendering to this native surface.</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="mgba_background">#111318</color>
+    <color name="mgba_panel">#1B1F27</color>
+    <color name="mgba_text_primary">#F5F7FA</color>
+    <color name="mgba_text_secondary">#B9C0CC</color>
+    <color name="mgba_accent">#58A6FF</color>
+</resources>
