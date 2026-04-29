@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
+import android.os.SystemClock
 import android.provider.OpenableColumns
 import android.text.Editable
 import android.text.InputType
@@ -684,6 +685,7 @@ class MainActivity : Activity() {
         romSha1: (() -> String)? = null,
         openDescriptor: () -> ParcelFileDescriptor?,
     ) {
+        val launchStartedAtMs = SystemClock.elapsedRealtime()
         val gameId = uri.toString()
         val knownHashes = knownRomHashesFor(uri, preferStoredSha1)
         var computedSha1 = knownHashes.sha1.ifBlank { romSha1?.invoke().orEmpty() }
@@ -789,14 +791,23 @@ class MainActivity : Activity() {
         AppLogStore.append(
             this,
             if (result?.ok == true) {
-                "Loaded ROM $name (${result.platform}/${result.system.ifBlank { "unknown" }}, cacheFallback=$usedImportFallback, patch=${artifactStatus(patchApplied)}, cheats=${artifactStatus(cheatsApplied)}, autoState=$autoStateLoaded)"
+                val loadedAtMs = SystemClock.elapsedRealtime()
+                "Loaded ROM $name (${result.platform}/${result.system.ifBlank { "unknown" }}, cacheFallback=$usedImportFallback, patch=${artifactStatus(patchApplied)}, cheats=${artifactStatus(cheatsApplied)}, autoState=$autoStateLoaded, loadMs=${loadedAtMs - launchStartedAtMs})"
             } else {
                 "Failed to load ROM $name: ${result?.message ?: "Unable to open ROM"}"
             },
         )
         if (result?.ok == true) {
             val stableGameId = stableGameIdFor(gameId, result.crc32, computedSha1)
-            EmulatorSession.setCurrentGame(gameId, name, stableGameId, result.crc32, computedSha1)
+            EmulatorSession.setCurrentGame(
+                gameId,
+                name,
+                stableGameId,
+                result.crc32,
+                computedSha1,
+                launchStartedAtMs,
+                SystemClock.elapsedRealtime(),
+            )
             if (shouldStoreRecent) {
                 recentStore.add(uri, recentDisplayName, stableGameId, result.crc32, computedSha1)
                 renderRecentGames()

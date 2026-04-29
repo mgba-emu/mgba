@@ -176,6 +176,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var useLightSensor = false
     private var cameraImagePath = ""
     private var showStats = false
+    private var firstFrameLogged = false
     private var lastStatsFrames = 0L
     private var lastStatsAtMs = 0L
     private var pendingExportStateSlot = 1
@@ -205,6 +206,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var lastRumbleAtMs = 0L
     private val audioRouteRestartRunnable = Runnable {
         restartAudioAfterRouteChange()
+    }
+    private val firstFrameRunnable = object : Runnable {
+        override fun run() {
+            pollFirstFrameTiming()
+        }
     }
     private val audioRouteCallback = object : AudioDeviceCallback() {
         override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>) {
@@ -327,6 +333,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
         setContentView(root)
         enterImmersiveMode()
+        startFirstFrameTiming()
     }
 
     override fun onResume() {
@@ -390,6 +397,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     override fun onDestroy() {
         clearInput()
         recordPlayTime()
+        statsHandler.removeCallbacks(firstFrameRunnable)
         statsHandler.removeCallbacks(audioRouteRestartRunnable)
         stopRumblePolling()
         unregisterSensors()
@@ -458,6 +466,45 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+
+    private fun startFirstFrameTiming() {
+        val launchStartedAtMs = EmulatorSession.currentGame()?.launchStartedAtMs ?: 0L
+        if (launchStartedAtMs <= 0L) {
+            return
+        }
+        firstFrameLogged = false
+        statsHandler.removeCallbacks(firstFrameRunnable)
+        statsHandler.post(firstFrameRunnable)
+    }
+
+    private fun pollFirstFrameTiming() {
+        if (firstFrameLogged) {
+            return
+        }
+        val game = EmulatorSession.currentGame() ?: return
+        val launchStartedAtMs = game.launchStartedAtMs
+        if (launchStartedAtMs <= 0L) {
+            return
+        }
+        val nowMs = SystemClock.elapsedRealtime()
+        val stats = controller?.stats()
+        if (stats != null && stats.frames > 0L && stats.videoWidth > 0 && stats.videoHeight > 0) {
+            firstFrameLogged = true
+            val loadToFirstFrameMs = nowMs - launchStartedAtMs
+            val loadedToFirstFrameMs = if (game.loadedAtMs > 0L) nowMs - game.loadedAtMs else -1L
+            AppLogStore.append(
+                this,
+                "First frame ${game.displayName}: loadToFirstFrameMs=$loadToFirstFrameMs, loadedToFirstFrameMs=$loadedToFirstFrameMs, nativeFrames=${stats.frames}, video=${stats.videoWidth}x${stats.videoHeight}",
+            )
+            return
+        }
+        if (nowMs - launchStartedAtMs < FIRST_FRAME_TIMEOUT_MS) {
+            statsHandler.postDelayed(firstFrameRunnable, FIRST_FRAME_POLL_MS)
+        } else {
+            firstFrameLogged = true
+            AppLogStore.append(this, "First frame timeout ${game.displayName}: waitedMs=${nowMs - launchStartedAtMs}")
+        }
+    }
 
     private fun registerAudioRouteCallback() {
         if (audioRouteCallbackRegistered) {
@@ -2462,6 +2509,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             appendLine("gameId=$currentGameId")
             appendLine("stableGameId=$currentStableGameId")
             appendLine("overrideGameId=$currentOverrideGameId")
+            EmulatorSession.currentGame()?.let { game ->
+                if (game.launchStartedAtMs > 0L || game.loadedAtMs > 0L) {
+                    appendLine("launchTiming loadStartedAtMs=${game.launchStartedAtMs} loadedAtMs=${game.loadedAtMs}")
+                }
+            }
             appendLine("paused=$userPaused fastForward=$fastForward rewinding=$rewinding")
             appendLine("stateSlot=$stateSlot autoStateOnExit=$autoStateOnExit")
             appendLine("video scale=${SCALE_LABELS.getOrElse(scaleMode) { SCALE_LABELS[0] }} filter=${FILTER_LABELS.getOrElse(filterMode) { FILTER_LABELS[0] }} interframe=$interframeBlending")
@@ -3465,6 +3517,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val REQUEST_EXPORT_SAVE = 2013
         private const val REQUEST_EXPORT_SCREENSHOT = 2014
         private const val REQUEST_CAPTURE_CAMERA_IMAGE = 2015
+        private const val FIRST_FRAME_POLL_MS = 16L
+        private const val FIRST_FRAME_TIMEOUT_MS = 5000L
         private const val AUDIO_ROUTE_RESTART_DELAY_MS = 250L
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
