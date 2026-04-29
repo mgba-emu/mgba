@@ -93,6 +93,26 @@ class PerGameOverrideStore(context: Context) {
         return booleanOverride(gameId, KEY_ALLOW_OPPOSING_DIRECTIONS, fallback)
     }
 
+    fun tiltEnabled(gameId: String?, fallback: Boolean): Boolean {
+        return booleanOverride(gameId, KEY_TILT_ENABLED, fallback)
+    }
+
+    fun tiltOffsetX(gameId: String?, fallback: Float): Float {
+        return floatOverride(gameId, KEY_TILT_OFFSET_X, fallback).coerceIn(-1f, 1f)
+    }
+
+    fun tiltOffsetY(gameId: String?, fallback: Float): Float {
+        return floatOverride(gameId, KEY_TILT_OFFSET_Y, fallback).coerceIn(-1f, 1f)
+    }
+
+    fun solarLevel(gameId: String?, fallback: Int): Int {
+        return intOverride(gameId, KEY_SOLAR_LEVEL, fallback).coerceIn(0, 255)
+    }
+
+    fun useLightSensor(gameId: String?, fallback: Boolean): Boolean {
+        return booleanOverride(gameId, KEY_USE_LIGHT_SENSOR, fallback)
+    }
+
     fun setScaleMode(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_SCALE_MODE, value.coerceIn(0, 4))
     }
@@ -181,6 +201,28 @@ class PerGameOverrideStore(context: Context) {
         return putBooleanOverride(gameId, KEY_ALLOW_OPPOSING_DIRECTIONS, value)
     }
 
+    fun setTiltEnabled(gameId: String?, value: Boolean): Boolean {
+        return putBooleanOverride(gameId, KEY_TILT_ENABLED, value)
+    }
+
+    fun setTiltCalibration(gameId: String?, offsetX: Float, offsetY: Float): Boolean {
+        val keyX = key(gameId, KEY_TILT_OFFSET_X) ?: return false
+        val keyY = key(gameId, KEY_TILT_OFFSET_Y) ?: return false
+        preferences.edit()
+            .putFloat(keyX, offsetX.coerceIn(-1f, 1f))
+            .putFloat(keyY, offsetY.coerceIn(-1f, 1f))
+            .apply()
+        return true
+    }
+
+    fun setSolarLevel(gameId: String?, value: Int): Boolean {
+        return putIntOverride(gameId, KEY_SOLAR_LEVEL, value.coerceIn(0, 255))
+    }
+
+    fun setUseLightSensor(gameId: String?, value: Boolean): Boolean {
+        return putBooleanOverride(gameId, KEY_USE_LIGHT_SENSOR, value)
+    }
+
     private fun intOverride(gameId: String?, name: String, fallback: Int): Int {
         val key = key(gameId, name) ?: return fallback
         return if (preferences.contains(key)) preferences.getInt(key, fallback) else fallback
@@ -189,6 +231,11 @@ class PerGameOverrideStore(context: Context) {
     private fun booleanOverride(gameId: String?, name: String, fallback: Boolean): Boolean {
         val key = key(gameId, name) ?: return fallback
         return if (preferences.contains(key)) preferences.getBoolean(key, fallback) else fallback
+    }
+
+    private fun floatOverride(gameId: String?, name: String, fallback: Float): Float {
+        val key = key(gameId, name) ?: return fallback
+        return if (preferences.contains(key)) preferences.getFloat(key, fallback) else fallback
     }
 
     private fun putIntOverride(gameId: String?, name: String, value: Int): Boolean {
@@ -233,5 +280,10 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED = "virtualGamepadHapticsEnabled"
         const val KEY_VIRTUAL_GAMEPAD_LEFT_HANDED = "virtualGamepadLeftHanded"
         const val KEY_ALLOW_OPPOSING_DIRECTIONS = "allowOpposingDirections"
+        const val KEY_TILT_ENABLED = "tiltEnabled"
+        const val KEY_TILT_OFFSET_X = "tiltOffsetX"
+        const val KEY_TILT_OFFSET_Y = "tiltOffsetY"
+        const val KEY_SOLAR_LEVEL = "solarLevel"
+        const val KEY_USE_LIGHT_SENSOR = "useLightSensor"
     }
 }

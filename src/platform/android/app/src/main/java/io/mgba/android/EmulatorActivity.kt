@@ -232,6 +232,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             currentGameId,
             preferences.allowOpposingDirections,
         )
+        tiltEnabled = perGameOverrides.tiltEnabled(currentGameId, false)
+        tiltOffsetX = perGameOverrides.tiltOffsetX(currentGameId, 0f)
+        tiltOffsetY = perGameOverrides.tiltOffsetY(currentGameId, 0f)
+        solarLevel = perGameOverrides.solarLevel(currentGameId, 255)
+        useLightSensor = perGameOverrides.useLightSensor(currentGameId, false)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         applyOrientationMode()
         enterImmersiveMode()
@@ -612,6 +617,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
+    private fun saveSensorPreference() {
+        perGameOverrides.setTiltEnabled(currentGameId, tiltEnabled)
+        perGameOverrides.setTiltCalibration(currentGameId, tiltOffsetX, tiltOffsetY)
+        perGameOverrides.setSolarLevel(currentGameId, solarLevel)
+        perGameOverrides.setUseLightSensor(currentGameId, useLightSensor)
+    }
+
     private fun startPlayAccounting() {
         if (playAccountingStartedAtMs == 0L) {
             playAccountingStartedAtMs = SystemClock.elapsedRealtime()
@@ -907,6 +919,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             tiltButton = Button(context).apply {
                 setOnClickListener {
                     tiltEnabled = !tiltEnabled
+                    saveSensorPreference()
                     updateSensorRegistration()
                     updateRunButtons()
                     Toast.makeText(context, if (tiltEnabled) "Tilt enabled" else "Tilt disabled", Toast.LENGTH_SHORT).show()
@@ -1199,6 +1212,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         tiltOffsetY = lastRawTiltY
         gyroZ = 0f
         syncRotation()
+        saveSensorPreference()
         Toast.makeText(this, "Tilt calibrated", Toast.LENGTH_SHORT).show()
     }
 
@@ -1231,6 +1245,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                         useLightSensor = false
                         solarLevel = progress
                         controller?.setSolarLevel(solarLevel)
+                        saveSensorPreference()
                         updateLabel()
                         updateSensorRegistration()
                         updateRunButtons()
@@ -1252,6 +1267,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 if (!checked) {
                     controller?.setSolarLevel(solarLevel)
                 }
+                saveSensorPreference()
                 updateSensorRegistration()
                 updateRunButtons()
             }

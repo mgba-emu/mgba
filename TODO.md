@@ -807,7 +807,7 @@ object NativeBridge {
   - [x] 视频滤镜。
   - [x] 虚拟手柄显示。
   - [ ] 输入布局编辑。
-  - [ ] 传感器校准。
+  - [x] 传感器校准。
   - [x] 快进/倒带。
 - [x] 覆盖层写入 `PerGameOverrideStore`。
 - [ ] 加载 ROM 后把 override 映射到 `mCoreConfigSetOverride*` 或 `mCoreOptions`。
