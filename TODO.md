@@ -162,6 +162,7 @@
 - [x] 已补齐 Android ROM 启动 SHA-1：普通 ROM 和解包后的 archive entry 会写入会话、最近列表和游戏数据包 metadata，stable id 优先 SHA-1 并兼容 CRC32 旧数据。
 - [x] 已完成 Android 最终本地构建验收：`assembleDebug`、`testDebugUnitTest`、`assembleRelease`、`bundleRelease` 和 native warnings-as-errors 均通过。
 - [x] 已新增 Android ACTION_VIEW ROM 文件打开入口，支持文件管理器/系统分享面板以 `.gba`、`.gb`、`.gbc`、`.sgb`、`.zip`、`.7z` 启动。
+- [x] 已为 Android Recent URI 存储策略新增单测：只有 `file://` 或具备可持久化读授权的 `content://` ROM 会进入最近打开列表。
 - [x] 已完成 OnePlus7 真机首帧验证：通过 ACTION_VIEW 打开仓库 homebrew GB/GBA 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 已完成 OnePlus7 真机 GBC 验证：通过 ACTION_VIEW 打开仓库 homebrew GBC 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 已修复 Android 竖屏游戏内工具栏溢出：运行/存档两行可横向滚动，Save/Load 等按钮在 OnePlus7 上可访问。

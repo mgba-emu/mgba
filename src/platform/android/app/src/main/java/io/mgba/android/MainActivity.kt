@@ -55,6 +55,7 @@ import io.mgba.android.storage.BiosSlot
 import io.mgba.android.storage.CheatStore
 import io.mgba.android.storage.LogExporter
 import io.mgba.android.storage.PatchStore
+import io.mgba.android.storage.UriPermissionPolicy
 import java.io.File
 import java.security.MessageDigest
 import java.util.Locale
@@ -636,13 +637,11 @@ class MainActivity : Activity() {
     }
 
     private fun persistReadPermissionIfAvailable(uri: Uri, flags: Int): Boolean {
+        if (!UriPermissionPolicy.canStoreRecentAfterOpen(uri.scheme, flags)) {
+            return false
+        }
         if (uri.scheme == "file") {
             return true
-        }
-        val hasReadGrant = flags and Intent.FLAG_GRANT_READ_URI_PERMISSION != 0
-        val hasPersistableGrant = flags and Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION != 0
-        if (!hasReadGrant || !hasPersistableGrant) {
-            return false
         }
         return runCatching {
             contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
