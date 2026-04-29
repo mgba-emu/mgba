@@ -282,7 +282,7 @@ class MainActivity : Activity() {
         }
 
         val clearArchiveCacheButton = Button(this).apply {
-            text = "Clear ZIP Cache"
+            text = "Clear Cache"
             setOnClickListener {
                 clearArchiveCache()
             }
@@ -1174,9 +1174,13 @@ class MainActivity : Activity() {
     }
 
     private fun clearArchiveCache() {
-        val directory = File(cacheDir, "archive-roms")
-        val deleted = directory.listFiles()?.count { it.delete() } ?: 0
-        nativeStatus.text = "${getString(R.string.native_version_label)}: ZIP cache cleared ($deleted files)"
+        val deleted = clearCacheDirectory("archive-roms") + clearCacheDirectory("imports")
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Cache cleared ($deleted files)"
+    }
+
+    private fun clearCacheDirectory(name: String): Int {
+        val directory = File(cacheDir, name)
+        return directory.listFiles()?.count { it.delete() } ?: 0
     }
 
     private fun trimArchiveCache(keep: File? = null, maxBytes: Long = ARCHIVE_CACHE_MAX_BYTES) {

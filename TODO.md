@@ -792,7 +792,7 @@ object NativeBridge {
 - [ ] Storage：
   - [ ] ROM 文件夹。
   - [ ] 导入/导出。
-  - [ ] 清理 cache。
+  - [x] 清理 cache。
 - [ ] Advanced：
   - [ ] 日志级别。
   - [x] Debug overlay。
