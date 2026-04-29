@@ -67,6 +67,7 @@ public:
 	bool saveStateSlot(int slot);
 	bool loadStateSlot(int slot);
 	bool hasStateSlot(int slot);
+	int64_t stateSlotModifiedMs(int slot);
 	bool deleteStateSlot(int slot);
 	bool exportStateSlotFd(int slot, int fd);
 	bool importStateSlotFd(int slot, int fd);

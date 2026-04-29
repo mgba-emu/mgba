@@ -319,6 +319,14 @@ Java_io_mgba_android_bridge_NativeBridge_nativeHasStateSlot(JNIEnv*, jclass, jlo
 	return JNI_FALSE;
 }
 
+extern "C" JNIEXPORT jlong JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeStateSlotModifiedMs(JNIEnv*, jclass, jlong handle, jint slot) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		return static_cast<jlong>(runner->stateSlotModifiedMs(slot));
+	}
+	return 0;
+}
+
 extern "C" JNIEXPORT jboolean JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeDeleteStateSlot(JNIEnv*, jclass, jlong handle, jint slot) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {

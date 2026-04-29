@@ -45,6 +45,9 @@ object NativeBridge {
     external fun nativeHasStateSlot(handle: Long, slot: Int): Boolean
 
     @JvmStatic
+    external fun nativeStateSlotModifiedMs(handle: Long, slot: Int): Long
+
+    @JvmStatic
     external fun nativeDeleteStateSlot(handle: Long, slot: Int): Boolean
 
     @JvmStatic

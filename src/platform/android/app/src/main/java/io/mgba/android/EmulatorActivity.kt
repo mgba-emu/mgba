@@ -21,6 +21,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.provider.OpenableColumns
 import android.text.InputType
+import android.text.format.DateUtils
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.SurfaceHolder
@@ -1020,6 +1021,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             })
             stateRow.addView(Button(context).apply {
+                text = "Slots"
+                setOnClickListener {
+                    showStateSlotsDialog()
+                }
+            })
+            stateRow.addView(Button(context).apply {
                 text = "-"
                 setOnClickListener {
                     stateSlot = if (stateSlot == 1) 9 else stateSlot - 1
@@ -1155,6 +1162,60 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             stateThumbnailView?.setImageBitmap(bitmap)
             stateThumbnailView?.visibility = View.VISIBLE
         }
+    }
+
+    private fun showStateSlotsDialog() {
+        val labels = (1..9).map { slot -> stateSlotLabel(slot) }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Save States")
+            .setItems(labels) { _, which ->
+                stateSlot = which + 1
+                updateSlotButton()
+                showStateSlotActionsDialog(stateSlot)
+            }
+            .setNegativeButton("Close", null)
+            .show()
+    }
+
+    private fun showStateSlotActionsDialog(slot: Int) {
+        val hasState = controller?.hasStateSlot(slot) == true
+        val actions = if (hasState) {
+            arrayOf("Save", "Load", "Delete", "Export", "Import")
+        } else {
+            arrayOf("Save", "Import")
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Slot $slot")
+            .setItems(actions) { _, which ->
+                stateSlot = slot
+                updateSlotButton()
+                when (actions[which]) {
+                    "Save" -> saveStateWithConfirmation()
+                    "Load" -> {
+                        val ok = controller?.loadStateSlot(stateSlot) == true
+                        Toast.makeText(this, if (ok) "State loaded" else "Load failed", Toast.LENGTH_SHORT).show()
+                    }
+                    "Delete" -> deleteStateWithConfirmation()
+                    "Export" -> openStateExportPicker()
+                    "Import" -> importStateWithConfirmation()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun stateSlotLabel(slot: Int): String {
+        val modifiedMs = controller?.stateSlotModifiedMs(slot) ?: 0L
+        if (modifiedMs <= 0L) {
+            return "Slot $slot - Empty"
+        }
+        val modified = DateUtils.formatDateTime(
+            this,
+            modifiedMs,
+            DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME,
+        )
+        val thumbnail = if (stateThumbnailFile(slot)?.isFile == true) " + thumbnail" else ""
+        return "Slot $slot - $modified$thumbnail"
     }
 
     private fun updateRunButtons() {
