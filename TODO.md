@@ -134,6 +134,7 @@
 - [x] 已完善 Android release R8/Proguard：开启 resource shrink，保留 manifest 入口、ContentProvider 和 JNI native 方法。
 - [x] 已新增当前游戏数据包导出：zip 内包含 metadata、battery save、1-9 槽 state、state 缩略图、cheats、patch 和 per-game/input settings。
 - [x] 已新增当前游戏数据包导入：导入前校验 metadata CRC/stable id，不匹配时提示但允许继续覆盖。
+- [x] 已增强当前游戏数据包迁移：包含 Game Boy Camera 静态图，导入后立即刷新当前会话设置、输入映射、cheat 和 patch。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -705,6 +706,9 @@ object NativeBridge {
   - [x] save。
   - [x] states。
   - [x] cheats。
+  - [x] patch。
+  - [x] input mappings。
+  - [x] Game Boy Camera 静态图。
   - [x] per-game settings。
 - [x] 导入时校验 ROM hash，不匹配则提示但允许用户继续。
 

@@ -216,64 +216,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         currentOverrideGameId = currentStableGameId ?: currentGameId
         perGameOverrides.migrateGameId(currentOverrideGameId, currentGameId)
         inputMappingStore.migrateGameId(currentOverrideGameId, currentGameId)
-        scaleMode = perGameOverrides.scaleMode(currentOverrideGameId, preferences.scaleMode)
-        filterMode = perGameOverrides.filterMode(currentOverrideGameId, preferences.filterMode)
-        interframeBlending = perGameOverrides.interframeBlending(currentOverrideGameId, preferences.interframeBlending)
-        orientationMode = perGameOverrides.orientationMode(currentOverrideGameId, preferences.orientationMode)
-        skipBios = perGameOverrides.skipBios(currentOverrideGameId, preferences.skipBios)
-        frameSkip = perGameOverrides.frameSkip(currentOverrideGameId, preferences.frameSkip)
-        muted = perGameOverrides.muted(currentOverrideGameId, preferences.muted)
-        volumePercent = perGameOverrides.volumePercent(currentOverrideGameId, preferences.volumePercent)
-        audioBufferMode = perGameOverrides.audioBufferMode(currentOverrideGameId, preferences.audioBufferMode)
-        audioLowPassMode = perGameOverrides.audioLowPassMode(currentOverrideGameId, preferences.audioLowPassMode)
-        fastForwardMode = perGameOverrides.fastForwardMode(currentOverrideGameId, preferences.fastForwardMode)
-        fastForwardMultiplier = perGameOverrides.fastForwardMultiplier(currentOverrideGameId, preferences.fastForwardMultiplier)
-        rewindEnabled = perGameOverrides.rewindEnabled(currentOverrideGameId, preferences.rewindEnabled)
-        rewindBufferCapacity = perGameOverrides.rewindBufferCapacity(currentOverrideGameId, preferences.rewindBufferCapacity)
-        rewindBufferInterval = perGameOverrides.rewindBufferInterval(currentOverrideGameId, preferences.rewindBufferInterval)
+        loadPerGameOverridesFromStore()
         autoStateOnExit = preferences.autoStateOnExit
-        showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentOverrideGameId, preferences.showVirtualGamepad)
-        virtualGamepadSizePercent = perGameOverrides.virtualGamepadSizePercent(
-            currentOverrideGameId,
-            preferences.virtualGamepadSizePercent,
-        )
-        virtualGamepadOpacityPercent = perGameOverrides.virtualGamepadOpacityPercent(
-            currentOverrideGameId,
-            preferences.virtualGamepadOpacityPercent,
-        )
-        virtualGamepadSpacingPercent = perGameOverrides.virtualGamepadSpacingPercent(
-            currentOverrideGameId,
-            preferences.virtualGamepadSpacingPercent,
-        )
-        virtualGamepadHapticsEnabled = perGameOverrides.virtualGamepadHapticsEnabled(
-            currentOverrideGameId,
-            preferences.virtualGamepadHapticsEnabled,
-        )
-        virtualGamepadLeftHanded = perGameOverrides.virtualGamepadLeftHanded(
-            currentOverrideGameId,
-            preferences.virtualGamepadLeftHanded,
-        )
-        virtualGamepadLayoutOffsets = VirtualGamepadLayoutOffsets.parse(
-            perGameOverrides.virtualGamepadLayout(currentOverrideGameId),
-        )
-        deadzonePercent = perGameOverrides.deadzonePercent(
-            currentOverrideGameId,
-            AndroidInputMapper.DefaultAxisThresholdPercent,
-        )
-        allowOpposingDirections = perGameOverrides.allowOpposingDirections(
-            currentOverrideGameId,
-            preferences.allowOpposingDirections,
-        )
-        rumbleEnabled = perGameOverrides.rumbleEnabled(
-            currentOverrideGameId,
-            preferences.rumbleEnabled,
-        )
-        tiltEnabled = perGameOverrides.tiltEnabled(currentOverrideGameId, false)
-        tiltOffsetX = perGameOverrides.tiltOffsetX(currentOverrideGameId, 0f)
-        tiltOffsetY = perGameOverrides.tiltOffsetY(currentOverrideGameId, 0f)
-        solarLevel = perGameOverrides.solarLevel(currentOverrideGameId, 255)
-        useLightSensor = perGameOverrides.useLightSensor(currentOverrideGameId, false)
-        cameraImagePath = perGameOverrides.cameraImagePath(currentOverrideGameId)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         applyOrientationMode()
         enterImmersiveMode()
@@ -282,18 +226,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             finish()
             return
         }
-        controller?.setScaleMode(scaleMode)
-        controller?.setFilterMode(filterMode)
-        controller?.setInterframeBlending(interframeBlending)
-        controller?.setSkipBios(skipBios)
-        controller?.setFrameSkip(frameSkip)
-        controller?.setAudioEnabled(!muted)
-        controller?.setVolumePercent(volumePercent)
-        controller?.setAudioBufferSamples(AudioBufferModes.samplesFor(audioBufferMode))
-        controller?.setLowPassRangePercent(AudioLowPassModes.rangeFor(audioLowPassMode))
-        controller?.setFastForwardMultiplier(fastForwardMultiplier)
-        controller?.setRewindConfig(rewindEnabled, rewindBufferCapacity, rewindBufferInterval)
-        applyPersistedCameraImage()
+        applyPerGameOverridesToRuntime()
 
         val root = FrameLayout(this).apply {
             setBackgroundColor(getColor(R.color.mgba_background))
@@ -553,6 +486,112 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun syncKeys() {
         val keys = virtualKeys or hardwareButtonKeys or hardwareAxisKeys
         controller?.setKeys(if (allowOpposingDirections) keys else filterOpposingDirections(keys))
+    }
+
+    private fun reloadPerGameOverridesFromStore() {
+        loadPerGameOverridesFromStore()
+        applyPerGameOverridesToRuntime()
+    }
+
+    private fun loadPerGameOverridesFromStore() {
+        scaleMode = perGameOverrides.scaleMode(currentOverrideGameId, preferences.scaleMode)
+        filterMode = perGameOverrides.filterMode(currentOverrideGameId, preferences.filterMode)
+        interframeBlending = perGameOverrides.interframeBlending(currentOverrideGameId, preferences.interframeBlending)
+        orientationMode = perGameOverrides.orientationMode(currentOverrideGameId, preferences.orientationMode)
+        skipBios = perGameOverrides.skipBios(currentOverrideGameId, preferences.skipBios)
+        frameSkip = perGameOverrides.frameSkip(currentOverrideGameId, preferences.frameSkip)
+        muted = perGameOverrides.muted(currentOverrideGameId, preferences.muted)
+        volumePercent = perGameOverrides.volumePercent(currentOverrideGameId, preferences.volumePercent)
+        audioBufferMode = perGameOverrides.audioBufferMode(currentOverrideGameId, preferences.audioBufferMode)
+        audioLowPassMode = perGameOverrides.audioLowPassMode(currentOverrideGameId, preferences.audioLowPassMode)
+        fastForwardMode = perGameOverrides.fastForwardMode(currentOverrideGameId, preferences.fastForwardMode)
+        fastForwardMultiplier = perGameOverrides.fastForwardMultiplier(
+            currentOverrideGameId,
+            preferences.fastForwardMultiplier,
+        )
+        rewindEnabled = perGameOverrides.rewindEnabled(currentOverrideGameId, preferences.rewindEnabled)
+        rewindBufferCapacity = perGameOverrides.rewindBufferCapacity(
+            currentOverrideGameId,
+            preferences.rewindBufferCapacity,
+        )
+        rewindBufferInterval = perGameOverrides.rewindBufferInterval(
+            currentOverrideGameId,
+            preferences.rewindBufferInterval,
+        )
+        showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentOverrideGameId, preferences.showVirtualGamepad)
+        virtualGamepadSizePercent = perGameOverrides.virtualGamepadSizePercent(
+            currentOverrideGameId,
+            preferences.virtualGamepadSizePercent,
+        )
+        virtualGamepadOpacityPercent = perGameOverrides.virtualGamepadOpacityPercent(
+            currentOverrideGameId,
+            preferences.virtualGamepadOpacityPercent,
+        )
+        virtualGamepadSpacingPercent = perGameOverrides.virtualGamepadSpacingPercent(
+            currentOverrideGameId,
+            preferences.virtualGamepadSpacingPercent,
+        )
+        virtualGamepadHapticsEnabled = perGameOverrides.virtualGamepadHapticsEnabled(
+            currentOverrideGameId,
+            preferences.virtualGamepadHapticsEnabled,
+        )
+        virtualGamepadLeftHanded = perGameOverrides.virtualGamepadLeftHanded(
+            currentOverrideGameId,
+            preferences.virtualGamepadLeftHanded,
+        )
+        virtualGamepadLayoutOffsets = VirtualGamepadLayoutOffsets.parse(
+            perGameOverrides.virtualGamepadLayout(currentOverrideGameId),
+        )
+        deadzonePercent = perGameOverrides.deadzonePercent(
+            currentOverrideGameId,
+            AndroidInputMapper.DefaultAxisThresholdPercent,
+        )
+        allowOpposingDirections = perGameOverrides.allowOpposingDirections(
+            currentOverrideGameId,
+            preferences.allowOpposingDirections,
+        )
+        rumbleEnabled = perGameOverrides.rumbleEnabled(currentOverrideGameId, preferences.rumbleEnabled)
+        tiltEnabled = perGameOverrides.tiltEnabled(currentOverrideGameId, false)
+        tiltOffsetX = perGameOverrides.tiltOffsetX(currentOverrideGameId, 0f)
+        tiltOffsetY = perGameOverrides.tiltOffsetY(currentOverrideGameId, 0f)
+        solarLevel = perGameOverrides.solarLevel(currentOverrideGameId, 255)
+        useLightSensor = perGameOverrides.useLightSensor(currentOverrideGameId, false)
+        cameraImagePath = perGameOverrides.cameraImagePath(currentOverrideGameId)
+    }
+
+    private fun applyPerGameOverridesToRuntime() {
+        controller?.setScaleMode(scaleMode)
+        controller?.setFilterMode(filterMode)
+        controller?.setInterframeBlending(interframeBlending)
+        controller?.setSkipBios(skipBios)
+        controller?.setFrameSkip(frameSkip)
+        controller?.setAudioEnabled(!muted)
+        controller?.setVolumePercent(volumePercent)
+        controller?.setAudioBufferSamples(AudioBufferModes.samplesFor(audioBufferMode))
+        controller?.setLowPassRangePercent(AudioLowPassModes.rangeFor(audioLowPassMode))
+        controller?.setFastForwardMultiplier(fastForwardMultiplier)
+        controller?.setRewindConfig(rewindEnabled, rewindBufferCapacity, rewindBufferInterval)
+        controller?.setSolarLevel(solarLevel)
+        if (fastForwardMode == FastForwardModes.ModeHold && fastForward) {
+            setFastForwardActive(false)
+        }
+        if (!rewindEnabled && rewinding) {
+            setRewindingActive(false)
+        }
+
+        applyOrientationMode()
+        applyGamepadStyle()
+        gamepadView?.visibility = if (showVirtualGamepad) View.VISIBLE else View.GONE
+        if (!showVirtualGamepad) {
+            setGamepadLayoutEditing(false)
+            gamepadView?.clearKeys()
+        }
+        hardwareButtonKeys = 0
+        hardwareAxisKeys = 0
+        syncKeys()
+        applyPersistedCameraImage()
+        updateSensorRegistration()
+        updateRunButtons()
     }
 
     private fun saveScaleModePreference() {
@@ -1582,25 +1621,45 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun copyCameraImage(gameId: String, imageUri: Uri): String? {
         return runCatching {
-            val directory = File(filesDir, "camera-images")
-            directory.mkdirs()
-            val target = File(directory, "${sha1(gameId)}.image")
+            val target = cameraImageTarget(gameId)
             contentResolver.openInputStream(imageUri)?.use { input ->
                 target.outputStream().use { output ->
                     input.copyTo(output)
                 }
             } ?: return@runCatching null
-            val bounds = BitmapFactory.Options().apply {
-                inJustDecodeBounds = true
-            }
-            BitmapFactory.decodeFile(target.absolutePath, bounds)
-            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
-                target.delete()
-                null
-            } else {
-                target.absolutePath
-            }
+            validatedCameraImagePath(target)
         }.getOrNull()
+    }
+
+    private fun importCameraImageFile(file: File): Boolean {
+        val overrideGameId = currentOverrideGameId?.takeIf { it.isNotBlank() } ?: return false
+        val storageGameId = artifactGameId()?.takeIf { it.isNotBlank() } ?: return false
+        val targetPath = runCatching {
+            val target = cameraImageTarget(storageGameId)
+            file.copyTo(target, overwrite = true)
+            validatedCameraImagePath(target)
+        }.getOrNull() ?: return false
+        perGameOverrides.setCameraImagePath(overrideGameId, targetPath)
+        return true
+    }
+
+    private fun cameraImageTarget(gameId: String): File {
+        val directory = File(filesDir, "camera-images")
+        directory.mkdirs()
+        return File(directory, "${sha1(gameId)}.image")
+    }
+
+    private fun validatedCameraImagePath(file: File): String? {
+        val bounds = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        BitmapFactory.decodeFile(file.absolutePath, bounds)
+        return if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+            file.delete()
+            null
+        } else {
+            file.absolutePath
+        }
     }
 
     private fun clearCameraImage() {
@@ -2231,6 +2290,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         patchStore.fileForGame(patchGameId())?.let { file ->
             zipFile(zip, "patches/${file.name}", file)
         }
+        cameraImagePath
+            .takeIf { it.isNotBlank() }
+            ?.let { File(it) }
+            ?.let { file -> zipFile(zip, "camera/static.image", file) }
         for (slot in 1..9) {
             if (controller?.hasStateSlot(slot) == true) {
                 exportStateSlotToTemp(slot)?.let { file ->
@@ -2282,7 +2345,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun openGameDataImportPicker() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
-            type = "application/zip"
+            type = "*/*"
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         startActivityForResult(intent, REQUEST_IMPORT_GAME_DATA)
@@ -2332,22 +2395,36 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun importGameDataPackageConfirmed(uri: Uri) {
         val resolver = contentResolver
         Thread {
-            val ok = runCatching {
+            val result = runCatching {
                 resolver.openInputStream(uri)?.use { input ->
                     ZipInputStream(input.buffered()).use { zip ->
                         readGameDataPackageEntries(zip)
                     }
-                } == true
-            }.getOrDefault(false)
+                } ?: GameDataImportResult()
+            }.getOrDefault(GameDataImportResult())
             runOnUiThread {
+                if (result.settingsImported || result.cameraImageImported) {
+                    reloadPerGameOverridesFromStore()
+                }
+                if (result.inputMappingsImported) {
+                    hardwareButtonKeys = 0
+                    hardwareAxisKeys = 0
+                    syncKeys()
+                }
+                val cheatsApplied = result.cheatsImported && applyStoredCheats()
+                val patchApplied = result.patchImported && applyStoredPatch()
                 updateStateThumbnail()
-                Toast.makeText(this, if (ok) "Game data imported" else "Game data import failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    result.toastMessage(cheatsApplied, patchApplied),
+                    Toast.LENGTH_LONG,
+                ).show()
             }
         }.start()
     }
 
-    private fun readGameDataPackageEntries(zip: ZipInputStream): Boolean {
-        var imported = false
+    private fun readGameDataPackageEntries(zip: ZipInputStream): GameDataImportResult {
+        val result = GameDataImportResult()
         val importDirectory = File(cacheDir, "game-data-import")
         importDirectory.mkdirs()
         while (true) {
@@ -2358,27 +2435,29 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             val name = entry.name
             when {
                 name == "per-game-overrides.json" -> {
-                    imported = perGameOverrides.importGameJson(
+                    result.settingsImported = perGameOverrides.importGameJson(
                         currentOverrideGameId,
                         JSONObject(zip.readBytes().toString(Charsets.UTF_8)),
-                    ) || imported
+                    ) || result.settingsImported
                 }
                 name == "input-mappings.json" -> {
-                    imported = inputMappingStore.importGameJson(
+                    result.inputMappingsImported = inputMappingStore.importGameJson(
                         currentOverrideGameId,
                         JSONObject(zip.readBytes().toString(Charsets.UTF_8)),
-                    ) || imported
+                    ) || result.inputMappingsImported
                 }
                 name == "save/battery.sav" -> {
                     val file = extractZipEntryToFile(zip, File(importDirectory, "battery.sav"))
-                    imported = importBatterySaveFile(file) || imported
+                    result.saveImported = importBatterySaveFile(file) || result.saveImported
                     file.delete()
                 }
                 name.startsWith("states/slot-") && name.endsWith(".ss") -> {
                     val slot = name.substringAfter("slot-").substringBefore(".ss").toIntOrNull()
                     val file = extractZipEntryToFile(zip, File(importDirectory, "state-${slot ?: 0}.ss"))
                     if (slot != null && slot in 1..9) {
-                        imported = importStateSlotFile(file, slot) || imported
+                        if (importStateSlotFile(file, slot)) {
+                            result.statesImported += 1
+                        }
                     }
                     file.delete()
                 }
@@ -2388,23 +2467,45 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                         stateThumbnailFile(slot, forWrite = true)?.let { target ->
                             target.parentFile?.mkdirs()
                             extractZipEntryToFile(zip, target)
-                            imported = true
+                            result.stateThumbnailsImported += 1
                         }
                     }
                 }
                 name.startsWith("cheats/") -> {
-                    val file = extractZipEntryToFile(zip, File(importDirectory, name.substringAfterLast('/')))
-                    imported = cheatStore.importForGameFile(cheatGameId(), file, file.name) || imported
-                    file.delete()
+                    val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
+                    if (fileName != null) {
+                        val file = extractZipEntryToFile(zip, File(importDirectory, fileName))
+                        result.cheatsImported = cheatStore.importForGameFile(
+                            artifactGameId(),
+                            file,
+                            file.name,
+                        ) || result.cheatsImported
+                        file.delete()
+                    }
                 }
                 name.startsWith("patches/") -> {
-                    val file = extractZipEntryToFile(zip, File(importDirectory, name.substringAfterLast('/')))
-                    imported = patchStore.importForGameFile(patchGameId(), file, file.name) || imported
-                    file.delete()
+                    val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
+                    if (fileName != null) {
+                        val file = extractZipEntryToFile(zip, File(importDirectory, fileName))
+                        result.patchImported = patchStore.importForGameFile(
+                            artifactGameId(),
+                            file,
+                            file.name,
+                        ) || result.patchImported
+                        file.delete()
+                    }
+                }
+                name.startsWith("camera/") -> {
+                    val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
+                    if (fileName != null) {
+                        val file = extractZipEntryToFile(zip, File(importDirectory, fileName))
+                        result.cameraImageImported = importCameraImageFile(file) || result.cameraImageImported
+                        file.delete()
+                    }
                 }
             }
         }
-        return imported
+        return result
     }
 
     private fun extractZipEntryToFile(zip: ZipInputStream, file: File): File {
@@ -2731,6 +2832,19 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }.getOrDefault(false)
     }
 
+    private fun applyStoredPatch(): Boolean {
+        val file = artifactGameIds()
+            .asSequence()
+            .mapNotNull { patchStore.fileForGame(it) }
+            .firstOrNull()
+            ?: return false
+        return runCatching {
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                controller?.importPatchFd(descriptor.fd) == true
+            }
+        }.getOrDefault(false)
+    }
+
     private fun openPatchImportPicker() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
@@ -2753,17 +2867,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         val name = displayName(uri, "patch")
         val gameId = patchGameId()
         val stored = patchStore.importForGame(gameId, uri, name)
-        val applied = if (stored) {
-            patchStore.fileForGame(gameId)?.let { file ->
-                runCatching {
-                    ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
-                        controller?.importPatchFd(descriptor.fd) == true
-                    }
-                }.getOrDefault(false)
-            } ?: false
-        } else {
-            false
-        }
+        val applied = stored && applyStoredPatch()
         val message = when {
             applied -> "Patch imported"
             stored -> "Patch saved; apply failed"
@@ -2864,6 +2968,44 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         val width: Int,
         val height: Int,
     )
+
+    private data class GameDataImportResult(
+        var settingsImported: Boolean = false,
+        var inputMappingsImported: Boolean = false,
+        var saveImported: Boolean = false,
+        var statesImported: Int = 0,
+        var stateThumbnailsImported: Int = 0,
+        var cheatsImported: Boolean = false,
+        var patchImported: Boolean = false,
+        var cameraImageImported: Boolean = false,
+    ) {
+        private val anyImported: Boolean
+            get() = settingsImported ||
+                inputMappingsImported ||
+                saveImported ||
+                statesImported > 0 ||
+                stateThumbnailsImported > 0 ||
+                cheatsImported ||
+                patchImported ||
+                cameraImageImported
+
+        fun toastMessage(cheatsApplied: Boolean, patchApplied: Boolean): String {
+            if (!anyImported) {
+                return "Game data import failed"
+            }
+            val parts = buildList {
+                if (saveImported) add("save")
+                if (statesImported > 0) add("$statesImported states")
+                if (stateThumbnailsImported > 0) add("$stateThumbnailsImported thumbnails")
+                if (settingsImported) add("settings")
+                if (inputMappingsImported) add("input")
+                if (cheatsImported) add(if (cheatsApplied) "cheats" else "cheats saved")
+                if (patchImported) add(if (patchApplied) "patch" else "patch saved")
+                if (cameraImageImported) add("camera")
+            }
+            return "Game data imported: ${parts.joinToString(", ")}"
+        }
+    }
 
     companion object {
         private const val REQUEST_IMPORT_SAVE = 2001
