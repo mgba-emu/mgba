@@ -27,6 +27,7 @@ import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.input.AndroidInputMapper
 import io.mgba.android.input.VirtualGamepadView
 import io.mgba.android.settings.EmulatorPreferences
+import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.storage.ScreenshotExporter
 import io.mgba.android.storage.ScreenshotShareProvider
 import io.mgba.android.storage.SaveExporter
@@ -36,6 +37,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var controller: EmulatorController? = null
     private var gamepadView: VirtualGamepadView? = null
     private lateinit var preferences: EmulatorPreferences
+    private lateinit var perGameOverrides: PerGameOverrideStore
+    private var currentGameId: String? = null
     private var virtualKeys = 0
     private var hardwareButtonKeys = 0
     private var hardwareAxisKeys = 0
@@ -70,9 +73,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         preferences = EmulatorPreferences(this)
-        scaleMode = preferences.scaleMode
-        muted = preferences.muted
-        showVirtualGamepad = preferences.showVirtualGamepad
+        perGameOverrides = PerGameOverrideStore(this)
+        currentGameId = EmulatorSession.currentGame()?.uri
+        scaleMode = perGameOverrides.scaleMode(currentGameId, preferences.scaleMode)
+        muted = perGameOverrides.muted(currentGameId, preferences.muted)
+        showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         enterImmersiveMode()
         controller = EmulatorSession.current()
@@ -252,6 +257,24 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         controller?.setKeys(virtualKeys or hardwareButtonKeys or hardwareAxisKeys)
     }
 
+    private fun saveScaleModePreference() {
+        if (!perGameOverrides.setScaleMode(currentGameId, scaleMode)) {
+            preferences.scaleMode = scaleMode
+        }
+    }
+
+    private fun saveMutedPreference() {
+        if (!perGameOverrides.setMuted(currentGameId, muted)) {
+            preferences.muted = muted
+        }
+    }
+
+    private fun saveGamepadPreference() {
+        if (!perGameOverrides.setShowVirtualGamepad(currentGameId, showVirtualGamepad)) {
+            preferences.showVirtualGamepad = showVirtualGamepad
+        }
+    }
+
     private fun createStateToolbar(): LinearLayout {
         return LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -293,7 +316,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 setOnClickListener {
                     muted = !muted
                     controller?.setAudioEnabled(!muted)
-                    preferences.muted = muted
+                    saveMutedPreference()
                     updateRunButtons()
                 }
             }
@@ -302,7 +325,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 setOnClickListener {
                     scaleMode = (scaleMode + 1) % SCALE_LABELS.size
                     controller?.setScaleMode(scaleMode)
-                    preferences.scaleMode = scaleMode
+                    saveScaleModePreference()
                     updateRunButtons()
                 }
             }
@@ -310,7 +333,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             padButton = Button(context).apply {
                 setOnClickListener {
                     showVirtualGamepad = !showVirtualGamepad
-                    preferences.showVirtualGamepad = showVirtualGamepad
+                    saveGamepadPreference()
                     gamepadView?.visibility = if (showVirtualGamepad) View.VISIBLE else View.GONE
                     if (!showVirtualGamepad) {
                         gamepadView?.clearKeys()

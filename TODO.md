@@ -70,6 +70,7 @@
 - [x] 已为 ROM 库条目新增删除记录确认操作，只移除索引不删除用户文件。
 - [x] 已新增 Emulator debug stats overlay：native 帧计数、视频尺寸、运行状态和 Kotlin 侧 FPS 估算。
 - [x] 已新增 Android logcat 导出入口，导出最近日志到 `Documents/mGBA`。
+- [x] 已新增 per-game override 基础存储，当前游戏的缩放、静音和虚拟手柄显示不再污染全局设置。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -708,7 +709,7 @@ object NativeBridge {
 ### 10.1 全局设置
 
 - [ ] Video：
-  - [ ] 缩放模式。
+  - [x] 缩放模式。
   - [ ] 整数缩放。
   - [ ] 滤镜。
   - [ ] 帧跳过。
@@ -716,7 +717,7 @@ object NativeBridge {
   - [ ] 着色器，后续。
 - [ ] Audio：
   - [ ] 音量。
-  - [ ] 静音。
+  - [x] 静音。
   - [ ] buffer 模式。
   - [ ] 低通滤波。
 - [ ] Emulation：
@@ -728,7 +729,8 @@ object NativeBridge {
   - [ ] 倒带 buffer。
   - [ ] RTC 策略。
 - [ ] Input：
-  - [ ] 触屏布局。
+  - [x] 触屏显示。
+  - [ ] 触屏布局编辑。
   - [ ] 手柄映射。
   - [ ] 震动。
   - [ ] 允许相反方向。
@@ -738,9 +740,9 @@ object NativeBridge {
   - [ ] 清理 cache。
 - [ ] Advanced：
   - [ ] 日志级别。
-  - [ ] Debug overlay。
+  - [x] Debug overlay。
   - [ ] GDB stub。
-  - [ ] 崩溃日志导出。
+  - [x] 崩溃日志导出。
 
 ### 10.2 Per-game override
 
@@ -748,11 +750,13 @@ object NativeBridge {
   - [ ] BIOS。
   - [ ] 补丁。
   - [ ] 作弊自动启用。
-  - [ ] 视频缩放/滤镜。
-  - [ ] 输入布局。
+  - [x] 视频缩放。
+  - [ ] 视频滤镜。
+  - [x] 虚拟手柄显示。
+  - [ ] 输入布局编辑。
   - [ ] 传感器校准。
   - [ ] 快进/倒带。
-- [ ] 覆盖层写入 `PerGameOverrideStore`。
+- [x] 覆盖层写入 `PerGameOverrideStore`。
 - [ ] 加载 ROM 后把 override 映射到 `mCoreConfigSetOverride*` 或 `mCoreOptions`。
 
 ## 11. 即时存档 / 截图 / 作弊
@@ -933,7 +937,7 @@ object NativeBridge {
 ### 15.3 Settings
 
 - [ ] 全局设置。
-- [ ] 当前游戏设置。
+- [x] 当前游戏设置。
 - [ ] 输入映射。
 - [ ] BIOS。
 - [ ] 存储管理。
@@ -1146,7 +1150,7 @@ object NativeBridge {
 - [ ] 视频/音频/核心配置映射。
 - [ ] 验收：
   - [ ] 改设置后立即或下次启动生效。
-  - [ ] per-game 设置不污染全局。
+  - [x] per-game 设置不污染全局。
 
 ### PR 10：BIOS / Patch / Cheats / Archive
 

@@ -236,6 +236,7 @@ class MainActivity : Activity() {
             "${getString(R.string.native_version_label)}: ${result?.message ?: "Unable to open ROM"}"
         }
         if (result?.ok == true) {
+            EmulatorSession.setCurrentGame(uri.toString(), name)
             if (shouldStoreRecent) {
                 recentStore.add(uri, name)
                 renderRecentGames()
