@@ -31,6 +31,8 @@ public:
 	void setKeys(uint32_t keys);
 	bool saveStateSlot(int slot);
 	bool loadStateSlot(int slot);
+	void reset();
+	void setFastForward(bool enabled);
 	void start();
 	void pause();
 	void resume();
@@ -60,6 +62,7 @@ private:
 	std::thread m_thread;
 	std::atomic<bool> m_running{false};
 	std::atomic<bool> m_paused{true};
+	std::atomic<bool> m_fastForward{false};
 
 	ANativeWindow* m_window = nullptr;
 	EGLDisplay m_display = EGL_NO_DISPLAY;

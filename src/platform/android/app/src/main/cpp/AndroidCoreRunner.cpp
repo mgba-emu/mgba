@@ -318,6 +318,18 @@ bool AndroidCoreRunner::loadStateSlot(int slot) {
 	return ok;
 }
 
+void AndroidCoreRunner::reset() {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (m_core) {
+		m_core->reset(m_core);
+		m_audioOutput.clear();
+	}
+}
+
+void AndroidCoreRunner::setFastForward(bool enabled) {
+	m_fastForward = enabled;
+}
+
 void AndroidCoreRunner::start() {
 	if (m_running.exchange(true)) {
 		m_paused = false;
@@ -535,10 +547,14 @@ void AndroidCoreRunner::runLoop() {
 				renderFrameLocked();
 			}
 		}
-		nextFrame += std::chrono::microseconds(16667);
-		std::this_thread::sleep_until(nextFrame);
-		if (clock::now() - nextFrame > std::chrono::milliseconds(100)) {
+		if (m_fastForward) {
 			nextFrame = clock::now();
+		} else {
+			nextFrame += std::chrono::microseconds(16667);
+			std::this_thread::sleep_until(nextFrame);
+			if (clock::now() - nextFrame > std::chrono::milliseconds(100)) {
+				nextFrame = clock::now();
+			}
 		}
 	}
 	std::lock_guard<std::mutex> lock(m_mutex);

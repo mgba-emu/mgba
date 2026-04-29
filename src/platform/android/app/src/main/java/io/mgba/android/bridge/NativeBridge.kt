@@ -32,6 +32,12 @@ object NativeBridge {
     external fun nativeLoadStateSlot(handle: Long, slot: Int): Boolean
 
     @JvmStatic
+    external fun nativeReset(handle: Long)
+
+    @JvmStatic
+    external fun nativeSetFastForward(handle: Long, enabled: Boolean)
+
+    @JvmStatic
     external fun nativeStart(handle: Long)
 
     @JvmStatic

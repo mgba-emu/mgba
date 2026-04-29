@@ -45,6 +45,18 @@ class EmulatorController(context: Context) : AutoCloseable {
         return handle.isValid && NativeBridge.nativeLoadStateSlot(handle.value, slot)
     }
 
+    fun reset() {
+        if (handle.isValid) {
+            NativeBridge.nativeReset(handle.value)
+        }
+    }
+
+    fun setFastForward(enabled: Boolean) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetFastForward(handle.value, enabled)
+        }
+    }
+
     fun start() {
         if (handle.isValid) {
             NativeBridge.nativeStart(handle.value)

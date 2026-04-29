@@ -98,6 +98,20 @@ Java_io_mgba_android_bridge_NativeBridge_nativeLoadStateSlot(JNIEnv*, jclass, jl
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeReset(JNIEnv*, jclass, jlong handle) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->reset();
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetFastForward(JNIEnv*, jclass, jlong handle, jboolean enabled) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setFastForward(enabled == JNI_TRUE);
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeStart(JNIEnv*, jclass, jlong handle) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
 		runner->start();

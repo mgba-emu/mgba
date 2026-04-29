@@ -23,6 +23,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var hardwareAxisKeys = 0
     private var stateSlot = 1
     private var slotButton: Button? = null
+    private var pauseButton: Button? = null
+    private var fastButton: Button? = null
+    private var userPaused = false
+    private var fastForward = false
     private var hasSurface = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,7 +82,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
     override fun onResume() {
         super.onResume()
-        if (hasSurface) {
+        if (hasSurface && !userPaused) {
             controller?.resume()
         }
     }
@@ -99,6 +103,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         hasSurface = true
         controller?.setSurface(holder.surface)
         controller?.start()
+        if (userPaused) {
+            controller?.pause()
+        }
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
@@ -162,6 +169,33 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         return LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             alpha = 0.86f
+            pauseButton = Button(context).apply {
+                setOnClickListener {
+                    userPaused = !userPaused
+                    if (userPaused) {
+                        controller?.pause()
+                    } else {
+                        controller?.resume()
+                    }
+                    updateRunButtons()
+                }
+            }
+            addView(pauseButton)
+            addView(Button(context).apply {
+                text = "Reset"
+                setOnClickListener {
+                    controller?.reset()
+                    Toast.makeText(context, "Reset", Toast.LENGTH_SHORT).show()
+                }
+            })
+            fastButton = Button(context).apply {
+                setOnClickListener {
+                    fastForward = !fastForward
+                    controller?.setFastForward(fastForward)
+                    updateRunButtons()
+                }
+            }
+            addView(fastButton)
             addView(Button(context).apply {
                 text = "-"
                 setOnClickListener {
@@ -195,11 +229,17 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 }
             })
             updateSlotButton()
+            updateRunButtons()
         }
     }
 
     private fun updateSlotButton() {
         slotButton?.text = "Slot $stateSlot"
+    }
+
+    private fun updateRunButtons() {
+        pauseButton?.text = if (userPaused) "Resume" else "Pause"
+        fastButton?.text = if (fastForward) "1x" else "Fast"
     }
 
     private fun dp(value: Int): Int {
