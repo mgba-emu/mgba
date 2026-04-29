@@ -93,6 +93,7 @@
 - [x] 已新增 per-game frame skip 0-3 档运行控制，并在 native run loop 中跳过部分渲染帧。
 - [x] 已新增暂停态单帧步进控制，native 可执行一帧并立即刷新画面。
 - [x] 已新增 per-game joystick deadzone 25/35/45/55/65% 档位，并用于实体摇杆方向映射。
+- [x] 已将 Android trigger axes（LTRIGGER/RTRIGGER/BRAKE/GAS）映射到 GBA L/R。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -563,10 +564,10 @@ object NativeBridge {
   - [x] BUTTON_A / BUTTON_B / BUTTON_X / BUTTON_Y -> A/B 可配置。
   - [x] BUTTON_L1 / BUTTON_R1 -> L/R。
   - [x] BUTTON_START / BUTTON_SELECT。
-- [ ] 监听 `MotionEvent`：
-  - [ ] `AXIS_X` / `AXIS_Y` 左摇杆。
-  - [ ] `AXIS_HAT_X` / `AXIS_HAT_Y` 十字键。
-  - [ ] `AXIS_LTRIGGER` / `AXIS_RTRIGGER` 可映射。
+- [x] 监听 `MotionEvent`：
+  - [x] `AXIS_X` / `AXIS_Y` 左摇杆。
+  - [x] `AXIS_HAT_X` / `AXIS_HAT_Y` 十字键。
+  - [x] `AXIS_LTRIGGER` / `AXIS_RTRIGGER` 可映射。
 - [x] 支持 deadzone。
 - [ ] 支持每个设备独立 profile：
   - [x] 使用 `InputDevice.descriptor` 作为稳定 key。

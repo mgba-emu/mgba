@@ -19,7 +19,32 @@ object AndroidInputMapper {
     }
 
     fun motionKeys(event: MotionEvent, thresholdPercent: Int): Int {
-        val source = event.source
+        return motionKeysForAxes(
+            event.source,
+            event.getAxisValue(MotionEvent.AXIS_X),
+            event.getAxisValue(MotionEvent.AXIS_Y),
+            event.getAxisValue(MotionEvent.AXIS_HAT_X),
+            event.getAxisValue(MotionEvent.AXIS_HAT_Y),
+            event.getAxisValue(MotionEvent.AXIS_LTRIGGER),
+            event.getAxisValue(MotionEvent.AXIS_BRAKE),
+            event.getAxisValue(MotionEvent.AXIS_RTRIGGER),
+            event.getAxisValue(MotionEvent.AXIS_GAS),
+            thresholdPercent,
+        )
+    }
+
+    fun motionKeysForAxes(
+        source: Int,
+        xAxis: Float,
+        yAxis: Float,
+        hatXAxis: Float,
+        hatYAxis: Float,
+        leftTriggerAxis: Float,
+        brakeAxis: Float,
+        rightTriggerAxis: Float,
+        gasAxis: Float,
+        thresholdPercent: Int,
+    ): Int {
         if ((source and InputDevice.SOURCE_JOYSTICK) != InputDevice.SOURCE_JOYSTICK &&
             (source and InputDevice.SOURCE_GAMEPAD) != InputDevice.SOURCE_GAMEPAD
         ) {
@@ -28,8 +53,10 @@ object AndroidInputMapper {
 
         var keys = 0
         val threshold = (thresholdPercent.coerceIn(10, 90) / 100f)
-        val x = strongestAxis(event, MotionEvent.AXIS_X, MotionEvent.AXIS_HAT_X)
-        val y = strongestAxis(event, MotionEvent.AXIS_Y, MotionEvent.AXIS_HAT_Y)
+        val x = strongestValue(xAxis, hatXAxis)
+        val y = strongestValue(yAxis, hatYAxis)
+        val leftTrigger = strongestValue(leftTriggerAxis, brakeAxis)
+        val rightTrigger = strongestValue(rightTriggerAxis, gasAxis)
         if (x <= -threshold) {
             keys = keys or GbaKeyMask.Left
         } else if (x >= threshold) {
@@ -40,16 +67,20 @@ object AndroidInputMapper {
         } else if (y >= threshold) {
             keys = keys or GbaKeyMask.Down
         }
+        if (leftTrigger >= threshold) {
+            keys = keys or GbaKeyMask.L
+        }
+        if (rightTrigger >= threshold) {
+            keys = keys or GbaKeyMask.R
+        }
         return keys
     }
 
-    private fun strongestAxis(event: MotionEvent, primary: Int, secondary: Int): Float {
-        val primaryValue = event.getAxisValue(primary)
-        val secondaryValue = event.getAxisValue(secondary)
-        return if (kotlin.math.abs(primaryValue) >= kotlin.math.abs(secondaryValue)) {
-            primaryValue
+    private fun strongestValue(primary: Float, secondary: Float): Float {
+        return if (kotlin.math.abs(primary) >= kotlin.math.abs(secondary)) {
+            primary
         } else {
-            secondaryValue
+            secondary
         }
     }
 }

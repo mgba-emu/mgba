@@ -2,6 +2,7 @@ package io.mgba.android.input;
 
 import static org.junit.Assert.assertEquals;
 
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import org.junit.Test;
 
@@ -52,5 +53,117 @@ public class AndroidInputMapperTest {
     @Test
     public void ignoresUnknownKeys() {
         assertEquals(0, AndroidInputMapper.INSTANCE.keyMaskForKeyCode(KeyEvent.KEYCODE_SPACE));
+    }
+
+    @Test
+    public void mapsJoystickAxesAndHatDirections() {
+        int source = InputDevice.SOURCE_JOYSTICK;
+
+        assertEquals(
+            GbaKeyMask.Left | GbaKeyMask.Up,
+            AndroidInputMapper.INSTANCE.motionKeysForAxes(
+                source,
+                -0.6f,
+                -0.5f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                45
+            )
+        );
+        assertEquals(
+            GbaKeyMask.Right | GbaKeyMask.Down,
+            AndroidInputMapper.INSTANCE.motionKeysForAxes(
+                source,
+                0f,
+                0f,
+                1f,
+                1f,
+                0f,
+                0f,
+                0f,
+                0f,
+                45
+            )
+        );
+    }
+
+    @Test
+    public void mapsTriggerAxesToShoulderButtons() {
+        int source = InputDevice.SOURCE_GAMEPAD;
+
+        assertEquals(
+            GbaKeyMask.L | GbaKeyMask.R,
+            AndroidInputMapper.INSTANCE.motionKeysForAxes(
+                source,
+                0f,
+                0f,
+                0f,
+                0f,
+                0.5f,
+                0f,
+                0.2f,
+                0.8f,
+                45
+            )
+        );
+    }
+
+    @Test
+    public void clampsAxisThreshold() {
+        int source = InputDevice.SOURCE_GAMEPAD;
+
+        assertEquals(
+            GbaKeyMask.Right,
+            AndroidInputMapper.INSTANCE.motionKeysForAxes(
+                source,
+                0.2f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                5
+            )
+        );
+        assertEquals(
+            0,
+            AndroidInputMapper.INSTANCE.motionKeysForAxes(
+                source,
+                0.2f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                95
+            )
+        );
+    }
+
+    @Test
+    public void ignoresMotionFromNonGamepadSources() {
+        assertEquals(
+            0,
+            AndroidInputMapper.INSTANCE.motionKeysForAxes(
+                InputDevice.SOURCE_KEYBOARD,
+                1f,
+                1f,
+                1f,
+                1f,
+                1f,
+                1f,
+                1f,
+                1f,
+                45
+            )
+        );
     }
 }
