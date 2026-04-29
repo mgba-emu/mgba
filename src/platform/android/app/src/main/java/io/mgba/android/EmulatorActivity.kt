@@ -97,6 +97,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var showVirtualGamepad = true
     private var virtualGamepadSizePercent = 100
     private var virtualGamepadOpacityPercent = 100
+    private var virtualGamepadSpacingPercent = 100
     private var virtualGamepadHapticsEnabled = true
     private var virtualGamepadLeftHanded = false
     private var deadzonePercent = AndroidInputMapper.DefaultAxisThresholdPercent
@@ -160,6 +161,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             currentGameId,
             preferences.virtualGamepadOpacityPercent,
         )
+        virtualGamepadSpacingPercent = perGameOverrides.virtualGamepadSpacingPercent(
+            currentGameId,
+            preferences.virtualGamepadSpacingPercent,
+        )
         virtualGamepadHapticsEnabled = perGameOverrides.virtualGamepadHapticsEnabled(
             currentGameId,
             preferences.virtualGamepadHapticsEnabled,
@@ -204,6 +209,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             setStyle(
                 virtualGamepadSizePercent,
                 virtualGamepadOpacityPercent,
+                virtualGamepadSpacingPercent,
                 virtualGamepadHapticsEnabled,
                 virtualGamepadLeftHanded,
             )
@@ -444,6 +450,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
         if (!perGameOverrides.setVirtualGamepadOpacityPercent(currentGameId, virtualGamepadOpacityPercent)) {
             preferences.virtualGamepadOpacityPercent = virtualGamepadOpacityPercent
+        }
+        if (!perGameOverrides.setVirtualGamepadSpacingPercent(currentGameId, virtualGamepadSpacingPercent)) {
+            preferences.virtualGamepadSpacingPercent = virtualGamepadSpacingPercent
         }
         if (!perGameOverrides.setVirtualGamepadHapticsEnabled(currentGameId, virtualGamepadHapticsEnabled)) {
             preferences.virtualGamepadHapticsEnabled = virtualGamepadHapticsEnabled
@@ -899,6 +908,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         val opacityLabel = TextView(this).apply {
             setTextColor(getColor(R.color.mgba_text_primary))
         }
+        val spacingLabel = TextView(this).apply {
+            setTextColor(getColor(R.color.mgba_text_primary))
+        }
         val sizeSeek = SeekBar(this).apply {
             max = GAMEPAD_SIZE_MAX - GAMEPAD_SIZE_MIN
             progress = virtualGamepadSizePercent - GAMEPAD_SIZE_MIN
@@ -906,6 +918,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         val opacitySeek = SeekBar(this).apply {
             max = GAMEPAD_OPACITY_MAX - GAMEPAD_OPACITY_MIN
             progress = virtualGamepadOpacityPercent - GAMEPAD_OPACITY_MIN
+        }
+        val spacingSeek = SeekBar(this).apply {
+            max = GAMEPAD_SPACING_MAX - GAMEPAD_SPACING_MIN
+            progress = virtualGamepadSpacingPercent - GAMEPAD_SPACING_MIN
         }
         val hapticsCheck = CheckBox(this).apply {
             text = "Haptic feedback"
@@ -930,6 +946,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         fun updateLabels() {
             sizeLabel.text = "Size: $virtualGamepadSizePercent%"
             opacityLabel.text = "Opacity: $virtualGamepadOpacityPercent%"
+            spacingLabel.text = "Spacing: $virtualGamepadSpacingPercent%"
         }
         val listener = object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -937,6 +954,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     virtualGamepadSizePercent = GAMEPAD_SIZE_MIN + progress
                 } else if (seekBar === opacitySeek) {
                     virtualGamepadOpacityPercent = GAMEPAD_OPACITY_MIN + progress
+                } else if (seekBar === spacingSeek) {
+                    virtualGamepadSpacingPercent = GAMEPAD_SPACING_MIN + progress
                 }
                 applyGamepadStyle()
                 saveGamepadStylePreference()
@@ -949,6 +968,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
         sizeSeek.setOnSeekBarChangeListener(listener)
         opacitySeek.setOnSeekBarChangeListener(listener)
+        spacingSeek.setOnSeekBarChangeListener(listener)
         updateLabels()
 
         val content = LinearLayout(this).apply {
@@ -958,6 +978,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             addView(sizeSeek)
             addView(opacityLabel)
             addView(opacitySeek)
+            addView(spacingLabel)
+            addView(spacingSeek)
             addView(hapticsCheck)
             addView(leftHandedCheck)
         }
@@ -972,6 +994,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         gamepadView?.setStyle(
             virtualGamepadSizePercent,
             virtualGamepadOpacityPercent,
+            virtualGamepadSpacingPercent,
             virtualGamepadHapticsEnabled,
             virtualGamepadLeftHanded,
         )
@@ -1535,6 +1558,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val GAMEPAD_SIZE_MAX = 140
         private const val GAMEPAD_OPACITY_MIN = 35
         private const val GAMEPAD_OPACITY_MAX = 100
+        private const val GAMEPAD_SPACING_MIN = 70
+        private const val GAMEPAD_SPACING_MAX = 140
         private val DEADZONE_LEVELS = arrayOf(25, 35, 45, 55, 65)
         private val FRAME_SKIP_LABELS = arrayOf("Skip0", "Skip1", "Skip2", "Skip3")
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int")

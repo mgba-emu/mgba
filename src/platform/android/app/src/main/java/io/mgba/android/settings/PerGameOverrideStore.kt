@@ -33,6 +33,10 @@ class PerGameOverrideStore(context: Context) {
         return intOverride(gameId, KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT, fallback).coerceIn(35, 100)
     }
 
+    fun virtualGamepadSpacingPercent(gameId: String?, fallback: Int): Int {
+        return intOverride(gameId, KEY_VIRTUAL_GAMEPAD_SPACING_PERCENT, fallback).coerceIn(70, 140)
+    }
+
     fun virtualGamepadHapticsEnabled(gameId: String?, fallback: Boolean): Boolean {
         return booleanOverride(gameId, KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED, fallback)
     }
@@ -67,6 +71,10 @@ class PerGameOverrideStore(context: Context) {
 
     fun setVirtualGamepadOpacityPercent(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT, value.coerceIn(35, 100))
+    }
+
+    fun setVirtualGamepadSpacingPercent(gameId: String?, value: Int): Boolean {
+        return putIntOverride(gameId, KEY_VIRTUAL_GAMEPAD_SPACING_PERCENT, value.coerceIn(70, 140))
     }
 
     fun setVirtualGamepadHapticsEnabled(gameId: String?, value: Boolean): Boolean {
@@ -114,6 +122,7 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_DEADZONE_PERCENT = "deadzonePercent"
         const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
         const val KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT = "virtualGamepadOpacityPercent"
+        const val KEY_VIRTUAL_GAMEPAD_SPACING_PERCENT = "virtualGamepadSpacingPercent"
         const val KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED = "virtualGamepadHapticsEnabled"
         const val KEY_VIRTUAL_GAMEPAD_LEFT_HANDED = "virtualGamepadLeftHanded"
     }

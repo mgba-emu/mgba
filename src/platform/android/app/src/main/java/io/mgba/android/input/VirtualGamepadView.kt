@@ -39,6 +39,7 @@ class VirtualGamepadView(context: Context) : View(context) {
     private var onKeysChanged: ((Int) -> Unit)? = null
     private var sizePercent = 100
     private var opacityPercent = 100
+    private var spacingPercent = 100
     private var hapticsEnabled = true
     private var leftHanded = false
 
@@ -56,11 +57,19 @@ class VirtualGamepadView(context: Context) : View(context) {
         updateKeys(0)
     }
 
-    fun setStyle(sizePercent: Int, opacityPercent: Int, hapticsEnabled: Boolean, leftHanded: Boolean) {
+    fun setStyle(
+        sizePercent: Int,
+        opacityPercent: Int,
+        spacingPercent: Int,
+        hapticsEnabled: Boolean,
+        leftHanded: Boolean,
+    ) {
         val newSizePercent = sizePercent.coerceIn(60, 140)
         val newOpacityPercent = opacityPercent.coerceIn(35, 100)
+        val newSpacingPercent = spacingPercent.coerceIn(70, 140)
         if (this.sizePercent == newSizePercent &&
             this.opacityPercent == newOpacityPercent &&
+            this.spacingPercent == newSpacingPercent &&
             this.hapticsEnabled == hapticsEnabled &&
             this.leftHanded == leftHanded
         ) {
@@ -68,6 +77,7 @@ class VirtualGamepadView(context: Context) : View(context) {
         }
         this.sizePercent = newSizePercent
         this.opacityPercent = newOpacityPercent
+        this.spacingPercent = newSpacingPercent
         this.hapticsEnabled = hapticsEnabled
         this.leftHanded = leftHanded
         rebuildRegions(width, height)
@@ -146,24 +156,28 @@ class VirtualGamepadView(context: Context) : View(context) {
 
         val base = min(width, height).toFloat()
         val scale = sizePercent / 100f
+        val spacing = spacingPercent / 100f
         val button = base.times(0.108f).times(scale).coerceIn(dp(36f), dp(104f))
         val smallButton = button * 0.86f
         val padding = dp(24f) * scale
-        val controlsY = height - padding - button * 1.65f
-        val leftClusterX = padding + button * 1.75f
-        val rightClusterX = width - padding - button * 1.65f
+        val controlsY = height - padding - button * (1.25f + 0.4f * spacing)
+        val leftClusterX = padding + button * (1.2f + 0.55f * spacing)
+        val rightClusterX = width - padding - button * (1.1f + 0.55f * spacing)
         val dpadX = if (leftHanded) rightClusterX else leftClusterX
         val faceX = if (leftHanded) leftClusterX else rightClusterX
+        val dpadGap = button * spacing
+        val faceGap = button * (0.85f + 0.2f * spacing)
+        val centerGap = button * (1.45f + 0.3f * spacing)
 
-        addCircle("UP", GbaKeyMask.Up, dpadX, controlsY - button, smallButton)
-        addCircle("DOWN", GbaKeyMask.Down, dpadX, controlsY + button, smallButton)
-        addCircle("LEFT", GbaKeyMask.Left, dpadX - button, controlsY, smallButton)
-        addCircle("RIGHT", GbaKeyMask.Right, dpadX + button, controlsY, smallButton)
+        addCircle("UP", GbaKeyMask.Up, dpadX, controlsY - dpadGap, smallButton)
+        addCircle("DOWN", GbaKeyMask.Down, dpadX, controlsY + dpadGap, smallButton)
+        addCircle("LEFT", GbaKeyMask.Left, dpadX - dpadGap, controlsY, smallButton)
+        addCircle("RIGHT", GbaKeyMask.Right, dpadX + dpadGap, controlsY, smallButton)
 
-        addCircle("B", GbaKeyMask.B, faceX - button * 1.05f, controlsY + button * 0.35f, button)
-        addCircle("A", GbaKeyMask.A, faceX, controlsY - button * 0.45f, button)
-        addRoundRect("SELECT", GbaKeyMask.Select, width / 2f - button * 1.75f, controlsY + button * 1.05f, button * 1.55f, button * 0.58f)
-        addRoundRect("START", GbaKeyMask.Start, width / 2f + button * 0.2f, controlsY + button * 1.05f, button * 1.55f, button * 0.58f)
+        addCircle("B", GbaKeyMask.B, faceX - faceGap, controlsY + button * 0.35f * spacing, button)
+        addCircle("A", GbaKeyMask.A, faceX, controlsY - button * 0.45f * spacing, button)
+        addRoundRect("SELECT", GbaKeyMask.Select, width / 2f - centerGap, controlsY + button * 1.05f * spacing, button * 1.55f, button * 0.58f)
+        addRoundRect("START", GbaKeyMask.Start, width / 2f + button * 0.2f * spacing, controlsY + button * 1.05f * spacing, button * 1.55f, button * 0.58f)
         addRoundRect("L", GbaKeyMask.L, padding, padding, button * 1.7f, button * 0.7f)
         addRoundRect("R", GbaKeyMask.R, width - padding - button * 1.7f, padding, button * 1.7f, button * 0.7f)
     }
