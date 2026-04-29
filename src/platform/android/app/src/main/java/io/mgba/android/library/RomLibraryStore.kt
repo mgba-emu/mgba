@@ -10,6 +10,7 @@ data class LibraryRom(
     val displayName: String,
     val title: String = "",
     val platform: String = "",
+    val system: String = "",
     val gameCode: String = "",
     val maker: String = "",
     val version: Int = -1,
@@ -39,6 +40,7 @@ class RomLibraryStore(context: Context) {
                         displayName = item.optString("displayName", uri),
                         title = item.optString("title"),
                         platform = item.optString("platform"),
+                        system = item.optString("system"),
                         gameCode = item.optString("gameCode"),
                         maker = item.optString("maker"),
                         version = item.optInt("version", -1),
@@ -141,6 +143,7 @@ class RomLibraryStore(context: Context) {
             .put("displayName", item.displayName)
             .put("title", item.title)
             .put("platform", item.platform)
+            .put("system", item.system)
             .put("gameCode", item.gameCode)
             .put("maker", item.maker)
             .put("version", item.version)
@@ -158,6 +161,7 @@ class RomLibraryStore(context: Context) {
         return item.copy(
             title = item.title.ifBlank { previous?.title.orEmpty() },
             platform = item.platform.ifBlank { previous?.platform.orEmpty() },
+            system = item.system.ifBlank { previous?.system.orEmpty() },
             gameCode = item.gameCode.ifBlank { previous?.gameCode.orEmpty() },
             maker = item.maker.ifBlank { previous?.maker.orEmpty() },
             version = if (item.version >= 0) item.version else previous?.version ?: -1,

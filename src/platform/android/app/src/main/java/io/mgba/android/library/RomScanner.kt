@@ -50,6 +50,7 @@ class RomScanner(private val context: Context) {
                         displayName = name,
                         title = probe?.title.orEmpty(),
                         platform = probe?.platform.orEmpty(),
+                        system = probe?.system.orEmpty(),
                         gameCode = probe?.gameCode.orEmpty(),
                         maker = probe?.maker.orEmpty(),
                         version = probe?.version ?: -1,

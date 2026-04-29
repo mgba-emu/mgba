@@ -489,7 +489,8 @@ class MainActivity : Activity() {
                 false -> " + cheats failed"
                 null -> ""
             }
-            "${getString(R.string.native_version_label)}: ${result.platform} ${result.title}$patchStatus$cheatStatus"
+            val hardware = if (result.system.equals("CGB", ignoreCase = true)) "GBC" else result.platform
+            "${getString(R.string.native_version_label)}: $hardware ${result.title}$patchStatus$cheatStatus"
         } else {
             "${getString(R.string.native_version_label)}: ${result?.message ?: "Unable to open ROM"}"
         }
@@ -702,6 +703,8 @@ class MainActivity : Activity() {
                 it.displayName.contains(query, ignoreCase = true) ||
                     it.title.contains(query, ignoreCase = true) ||
                     it.platform.contains(query, ignoreCase = true) ||
+                    it.system.contains(query, ignoreCase = true) ||
+                    it.hardwareLabel().contains(query, ignoreCase = true) ||
                     it.crc32.contains(query, ignoreCase = true) ||
                     it.sha1.contains(query, ignoreCase = true)
             }
@@ -877,7 +880,7 @@ class MainActivity : Activity() {
     private fun libraryTitleLine(rom: LibraryRom): String {
         val marker = if (rom.favorite) "[*] " else ""
         val title = rom.title.ifBlank { rom.displayName }
-        val platform = rom.platform.takeIf { it.isNotBlank() }?.let { " [$it]" }.orEmpty()
+        val platform = rom.hardwareLabel().takeIf { it.isNotBlank() }?.let { " [$it]" }.orEmpty()
         val code = rom.gameCode.takeIf { it.isNotBlank() }?.let { " $it" }.orEmpty()
         val maker = rom.maker.takeIf { it.isNotBlank() }?.let { "/$it" }.orEmpty()
         val version = rom.version.takeIf { it >= 0 }?.let { " v$it" }.orEmpty()
@@ -1079,7 +1082,8 @@ private enum class LibraryMode(val label: String) {
     All("All"),
     Favorites("Favorites"),
     Gba("GBA"),
-    Gb("GB");
+    Gb("GB"),
+    Gbc("GBC");
 
     fun next(): LibraryMode {
         val modes = entries
@@ -1090,8 +1094,21 @@ private enum class LibraryMode(val label: String) {
         return when (this) {
             All -> true
             Favorites -> rom.favorite
-            Gba -> rom.platform.equals("GBA", ignoreCase = true)
-            Gb -> rom.platform.equals("GB", ignoreCase = true)
+            Gba -> rom.hardwareLabel() == "GBA"
+            Gb -> rom.hardwareLabel() == "GB"
+            Gbc -> rom.hardwareLabel() == "GBC"
         }
+    }
+}
+
+private fun LibraryRom.hardwareLabel(): String {
+    val platform = this.platform.uppercase(java.util.Locale.US)
+    val system = this.system.uppercase(java.util.Locale.US)
+    return when {
+        platform == "GBA" || system == "AGB" -> "GBA"
+        system == "CGB" || displayName.endsWith(".gbc", ignoreCase = true) -> "GBC"
+        platform == "GB" || system == "DMG" -> "GB"
+        platform.isNotBlank() -> platform
+        else -> system
     }
 }

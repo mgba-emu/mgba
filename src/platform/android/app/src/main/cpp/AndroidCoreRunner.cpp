@@ -89,9 +89,9 @@ std::string BoundedString(const char* value, size_t maxLength) {
 	return std::string(value, length);
 }
 
-std::string LoadResult(bool ok, const std::string& message, const std::string& platform, const std::string& title,
-                       const std::string& displayName, uint32_t crc32 = 0, const std::string& code = "",
-                       const std::string& maker = "", int version = -1) {
+std::string LoadResult(bool ok, const std::string& message, const std::string& platform, const std::string& system,
+                       const std::string& title, const std::string& displayName, uint32_t crc32 = 0,
+                       const std::string& code = "", const std::string& maker = "", int version = -1) {
 	std::ostringstream out;
 	std::ostringstream checksum;
 	if (crc32) {
@@ -100,6 +100,7 @@ std::string LoadResult(bool ok, const std::string& message, const std::string& p
 	out << "{\"ok\":" << (ok ? "true" : "false")
 	    << ",\"message\":\"" << JsonEscape(message)
 	    << "\",\"platform\":\"" << JsonEscape(platform)
+	    << "\",\"system\":\"" << JsonEscape(system)
 	    << "\",\"title\":\"" << JsonEscape(title)
 	    << "\",\"displayName\":\"" << JsonEscape(displayName)
 	    << "\",\"crc32\":\"" << checksum.str()
@@ -277,28 +278,28 @@ GLuint LinkProgram(const char* vertexSource, const char* fragmentSource) {
 
 std::string ProbeRomFd(int fd, const std::string& displayName) {
 	if (fd < 0) {
-		return LoadResult(false, "Invalid file descriptor", "", "", displayName);
+		return LoadResult(false, "Invalid file descriptor", "", "", "", displayName);
 	}
 
 	int ownedFd = dup(fd);
 	if (ownedFd < 0) {
-		return LoadResult(false, "Could not duplicate file descriptor", "", "", displayName);
+		return LoadResult(false, "Could not duplicate file descriptor", "", "", "", displayName);
 	}
 
 	struct VFile* vf = VFileFromFD(ownedFd);
 	if (!vf) {
-		return LoadResult(false, "Could not open selected file", "", "", displayName);
+		return LoadResult(false, "Could not open selected file", "", "", "", displayName);
 	}
 
 	struct mCore* core = mCoreFindVF(vf);
 	if (!core) {
 		vf->close(vf);
-		return LoadResult(false, "Selected file is not a supported ROM", "", "", displayName);
+		return LoadResult(false, "Selected file is not a supported ROM", "", "", "", displayName);
 	}
 
 	if (!core->init(core)) {
 		vf->close(vf);
-		return LoadResult(false, "Could not initialize emulator core", "", "", displayName);
+		return LoadResult(false, "Could not initialize emulator core", "", "", "", displayName);
 	}
 
 	struct mCoreOptions options = {};
@@ -315,7 +316,7 @@ std::string ProbeRomFd(int fd, const std::string& displayName) {
 	}
 	if (!core->loadROM(core, vf)) {
 		core->deinit(core);
-		return LoadResult(false, "Could not load ROM", "", "", displayName);
+		return LoadResult(false, "Could not load ROM", "", "", "", displayName);
 	}
 
 	struct mGameInfo info;
@@ -327,13 +328,14 @@ std::string ProbeRomFd(int fd, const std::string& displayName) {
 	}
 	const std::string code = BoundedString(info.code, sizeof(info.code));
 	const std::string maker = BoundedString(info.maker, sizeof(info.maker));
+	const std::string system = BoundedString(info.system, sizeof(info.system));
 	uint32_t crc32 = 0;
 	if (core->checksum) {
 		core->checksum(core, &crc32, mCHECKSUM_CRC32);
 	}
 	const std::string platform = PlatformName(core);
 	core->deinit(core);
-	return LoadResult(true, "Probed", platform, title, displayName, crc32, code, maker, info.version);
+	return LoadResult(true, "Probed", platform, system, title, displayName, crc32, code, maker, info.version);
 }
 
 AndroidCoreRunner::~AndroidCoreRunner() {
@@ -352,28 +354,28 @@ const std::string& AndroidCoreRunner::cachePath() const {
 
 std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName) {
 	if (fd < 0) {
-		return LoadResult(false, "Invalid file descriptor", "", "", displayName);
+		return LoadResult(false, "Invalid file descriptor", "", "", "", displayName);
 	}
 
 	int ownedFd = dup(fd);
 	if (ownedFd < 0) {
-		return LoadResult(false, "Could not duplicate file descriptor", "", "", displayName);
+		return LoadResult(false, "Could not duplicate file descriptor", "", "", "", displayName);
 	}
 
 	struct VFile* vf = VFileFromFD(ownedFd);
 	if (!vf) {
-		return LoadResult(false, "Could not open selected file", "", "", displayName);
+		return LoadResult(false, "Could not open selected file", "", "", "", displayName);
 	}
 
 	struct mCore* core = mCoreFindVF(vf);
 	if (!core) {
 		vf->close(vf);
-		return LoadResult(false, "Selected file is not a supported ROM", "", "", displayName);
+		return LoadResult(false, "Selected file is not a supported ROM", "", "", "", displayName);
 	}
 
 	if (!core->init(core)) {
 		vf->close(vf);
-		return LoadResult(false, "Could not initialize emulator core", "", "", displayName);
+		return LoadResult(false, "Could not initialize emulator core", "", "", "", displayName);
 	}
 
 	const std::string biosPath = DefaultBiosPath(m_basePath);
@@ -417,7 +419,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	}
 	if (!core->loadROM(core, vf)) {
 		core->deinit(core);
-		return LoadResult(false, "Could not load ROM", "", "", displayName);
+		return LoadResult(false, "Could not load ROM", "", "", "", displayName);
 	}
 	SetCoreBaseName(core, displayName);
 #if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
@@ -480,6 +482,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	}
 	const std::string code = BoundedString(info.code, sizeof(info.code));
 	const std::string maker = BoundedString(info.maker, sizeof(info.maker));
+	const std::string system = BoundedString(info.system, sizeof(info.system));
 	uint32_t crc32 = 0;
 	if (m_core->checksum) {
 		m_core->checksum(m_core, &crc32, mCHECKSUM_CRC32);
@@ -487,7 +490,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	m_platformName = PlatformName(m_core);
 	m_gameTitle = title;
 
-	return LoadResult(true, "Loaded", m_platformName, title, displayName, crc32, code, maker, info.version);
+	return LoadResult(true, "Loaded", m_platformName, system, title, displayName, crc32, code, maker, info.version);
 }
 
 void AndroidCoreRunner::setSurface(ANativeWindow* window) {

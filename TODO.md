@@ -701,7 +701,8 @@ object NativeBridge {
   - [ ] id。
   - [ ] uri。
   - [ ] displayName。
-  - [x] platform: GBA / GB（GBC 细分待 native metadata 扩展）。
+  - [x] platform: GBA / GB。
+  - [x] system: AGB / DMG / CGB，用于 GBC 细分。
   - [x] title from `mGameInfo`。
   - [x] game code。
   - [x] maker。
@@ -741,7 +742,7 @@ object NativeBridge {
   - [x] 最近。
   - [x] 收藏。
   - [x] GBA / GB 筛选。
-  - [ ] GBC 细分筛选。
+  - [x] GBC 细分筛选。
   - [x] 搜索。
   - [ ] 网格/列表切换。
 - [ ] 每个 ROM item 显示：
