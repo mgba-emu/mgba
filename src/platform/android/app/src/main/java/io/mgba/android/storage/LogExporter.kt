@@ -26,7 +26,7 @@ object LogExporter {
         }
         val uri = resolver.insert(MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), values) ?: return null
         return runCatching {
-            val logText = collectLogcat()
+            val logText = collectLogs(context)
             resolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
                 writer.write(logText)
             } ?: error("Could not open media output")
@@ -40,15 +40,24 @@ object LogExporter {
         }
     }
 
-    private fun collectLogcat(): String {
+    private fun collectLogs(context: Context): String {
         val process = Runtime.getRuntime().exec(arrayOf("logcat", "-d", "-t", "1000"))
         val output = process.inputStream.bufferedReader().use { it.readText() }
         val error = process.errorStream.bufferedReader().use { it.readText() }
         process.waitFor()
+        val appLog = AppLogStore.recent(context)
         return buildString {
             appendLine("mGBA Android log export")
             appendLine("Generated: ${Date()}")
             appendLine()
+            appendLine("App log ring buffer:")
+            if (appLog.isBlank()) {
+                appendLine("No app log entries were available.")
+            } else {
+                append(appLog)
+            }
+            appendLine()
+            appendLine("Logcat:")
             if (output.isBlank() && error.isBlank()) {
                 appendLine("No logcat output was available.")
             } else {

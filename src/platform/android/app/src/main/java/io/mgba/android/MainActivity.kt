@@ -36,6 +36,7 @@ import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.FastForwardModes
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.settings.RewindSettings
+import io.mgba.android.storage.AppLogStore
 import io.mgba.android.storage.BiosStore
 import io.mgba.android.storage.CheatStore
 import io.mgba.android.storage.LogExporter
@@ -511,6 +512,14 @@ class MainActivity : Activity() {
         } else {
             "${getString(R.string.native_version_label)}: ${result?.message ?: "Unable to open ROM"}"
         }
+        AppLogStore.append(
+            this,
+            if (result?.ok == true) {
+                "Loaded ROM $name (${result.platform}/${result.system.ifBlank { "unknown" }})"
+            } else {
+                "Failed to load ROM $name: ${result?.message ?: "Unable to open ROM"}"
+            },
+        )
         if (result?.ok == true) {
             EmulatorSession.setCurrentGame(gameId, name)
             if (shouldStoreRecent) {

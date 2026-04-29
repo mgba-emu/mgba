@@ -418,7 +418,7 @@ object NativeBridge {
   - [x] `mLOG_WARN` -> `ANDROID_LOG_WARN`
   - [x] `mLOG_INFO` -> `ANDROID_LOG_INFO`
   - [x] `mLOG_DEBUG` -> `ANDROID_LOG_DEBUG`
-- [ ] Kotlin 层保留运行日志 ring buffer，用于“导出日志”。
+- [x] Kotlin 层保留运行日志 ring buffer，用于“导出日志”。
 
 ## 5. 视频渲染计划
 
@@ -961,7 +961,7 @@ object NativeBridge {
   - [ ] 不在内存里长期保留大型 ROM，除非 provider 不支持 seek。
 - [ ] 崩溃恢复：
   - [ ] native crash 无法完全恢复，但下次启动提示导出日志。
-  - [ ] Java exception 写入 app log。
+  - [x] Java exception 写入 app log。
 
 ## 15. UI 页面清单
 
