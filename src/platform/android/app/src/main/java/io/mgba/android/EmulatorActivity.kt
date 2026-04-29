@@ -47,6 +47,7 @@ import io.mgba.android.settings.AudioLowPassModes
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.InputMappingStore
 import io.mgba.android.settings.PerGameOverrideStore
+import io.mgba.android.storage.CheatStore
 import io.mgba.android.storage.PatchStore
 import io.mgba.android.storage.ScreenshotExporter
 import io.mgba.android.storage.ScreenshotShareProvider
@@ -63,6 +64,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private lateinit var preferences: EmulatorPreferences
     private lateinit var perGameOverrides: PerGameOverrideStore
     private lateinit var inputMappingStore: InputMappingStore
+    private lateinit var cheatStore: CheatStore
     private lateinit var patchStore: PatchStore
     private var currentGameId: String? = null
     private var activeInputDeviceDescriptor: String? = null
@@ -167,6 +169,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         preferences = EmulatorPreferences(this)
         perGameOverrides = PerGameOverrideStore(this)
         inputMappingStore = InputMappingStore(this)
+        cheatStore = CheatStore(this)
         patchStore = PatchStore(this)
         currentGameId = EmulatorSession.currentGame()?.uri
         scaleMode = perGameOverrides.scaleMode(currentGameId, preferences.scaleMode)
@@ -1710,12 +1713,25 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun importCheats(uri: Uri) {
-        val ok = runCatching {
-            contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
-                controller?.importCheatsFd(descriptor.fd) == true
-            } == true
-        }.getOrDefault(false)
-        Toast.makeText(this, if (ok) "Cheats imported" else "Cheat import failed", Toast.LENGTH_SHORT).show()
+        val name = displayName(uri, "cheats")
+        val stored = cheatStore.importForGame(currentGameId, uri, name)
+        val applied = if (stored) {
+            cheatStore.fileForGame(currentGameId)?.let { file ->
+                runCatching {
+                    ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                        controller?.importCheatsFd(descriptor.fd) == true
+                    }
+                }.getOrDefault(false)
+            } ?: false
+        } else {
+            false
+        }
+        val message = when {
+            applied -> "Cheats imported"
+            stored -> "Cheats saved; apply failed"
+            else -> "Cheat import failed"
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun displayName(uri: Uri, fallback: String): String {

@@ -121,6 +121,7 @@
 - [x] 已新增 Android 音频低通滤波：复用 libretro 风格单极滤波，支持 Off/40/60/80 全局和 per-game 切换。
 - [x] 已新增 Android per-game patch 导入：模拟器内选择 patch 后保存到私有目录，立即调用 `core->loadPatch` 并在下次启动同一 ROM 时自动应用。
 - [x] 已增强 Android BIOS 管理：导入后显示文件大小和 SHA-1 摘要，并支持从 app 私有目录清除 BIOS。
+- [x] 已新增 Android per-game cheat 持久化：模拟器内导入 cheat 后保存到 `files/cheats`，并在下次启动同一 ROM 时自动应用。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -843,15 +844,15 @@ object NativeBridge {
 
 ### 11.3 作弊
 
-- [ ] 使用 `core->cheatDevice(core)`。
-- [ ] 导入 `.cheats` / GameShark / Action Replay 文本。
+- [x] 使用 `core->cheatDevice(core)`。
+- [x] 导入 `.cheats` / GameShark / Action Replay 文本。
 - [ ] 列表展示：
   - [ ] 名称。
   - [ ] 代码。
   - [ ] 启用开关。
   - [ ] 错误信息。
-- [ ] 保存到 `files/cheats/<romHash>.cheats`。
-- [ ] ROM 加载后 `mCoreAutoloadCheats(core)`。
+- [x] 保存到 `files/cheats/<romHash>.cheats`。
+- [x] ROM 加载后自动应用已保存 cheats。
 
 ## 12. BIOS / Patch / Archive
 

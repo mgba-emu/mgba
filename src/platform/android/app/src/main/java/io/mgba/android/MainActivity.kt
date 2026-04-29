@@ -35,6 +35,7 @@ import io.mgba.android.settings.AudioLowPassModes
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.storage.BiosStore
+import io.mgba.android.storage.CheatStore
 import io.mgba.android.storage.LogExporter
 import io.mgba.android.storage.PatchStore
 import java.io.File
@@ -48,6 +49,7 @@ class MainActivity : Activity() {
     private lateinit var preferences: EmulatorPreferences
     private lateinit var perGameOverrides: PerGameOverrideStore
     private lateinit var biosStore: BiosStore
+    private lateinit var cheatStore: CheatStore
     private lateinit var patchStore: PatchStore
     private lateinit var scanButton: Button
     private lateinit var biosButton: Button
@@ -74,6 +76,7 @@ class MainActivity : Activity() {
         preferences = EmulatorPreferences(this)
         perGameOverrides = PerGameOverrideStore(this)
         biosStore = BiosStore(this)
+        cheatStore = CheatStore(this)
         patchStore = PatchStore(this)
 
         val scroll = ScrollView(this).apply {
@@ -358,6 +361,7 @@ class MainActivity : Activity() {
     ) {
         val gameId = uri.toString()
         var patchApplied: Boolean? = null
+        var cheatsApplied: Boolean? = null
         val result = runCatching {
             openDescriptor()?.use { descriptor ->
                 val emulator = EmulatorSession.controller(this)
@@ -375,6 +379,7 @@ class MainActivity : Activity() {
                 emulator.loadRomFd(descriptor.fd, name).also { loadResult ->
                     if (loadResult.ok) {
                         patchApplied = applyStoredPatch(emulator, gameId)
+                        cheatsApplied = applyStoredCheats(emulator, gameId)
                     }
                 }
             }
@@ -385,7 +390,12 @@ class MainActivity : Activity() {
                 false -> " + patch failed"
                 null -> ""
             }
-            "${getString(R.string.native_version_label)}: ${result.platform} ${result.title}$patchStatus"
+            val cheatStatus = when (cheatsApplied) {
+                true -> " + cheats"
+                false -> " + cheats failed"
+                null -> ""
+            }
+            "${getString(R.string.native_version_label)}: ${result.platform} ${result.title}$patchStatus$cheatStatus"
         } else {
             "${getString(R.string.native_version_label)}: ${result?.message ?: "Unable to open ROM"}"
         }
@@ -406,6 +416,15 @@ class MainActivity : Activity() {
         return runCatching {
             ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
                 emulator.importPatchFd(descriptor.fd)
+            }
+        }.getOrDefault(false)
+    }
+
+    private fun applyStoredCheats(emulator: EmulatorController, gameId: String): Boolean? {
+        val file = cheatStore.fileForGame(gameId) ?: return null
+        return runCatching {
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                emulator.importCheatsFd(descriptor.fd)
             }
         }.getOrDefault(false)
     }
