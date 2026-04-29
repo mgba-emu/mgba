@@ -503,7 +503,7 @@ object NativeBridge {
 - [x] GBA/GBC 视频尺寸变化时：
   - [x] 调用 `core->currentVideoSize`。
   - [x] 更新 texture 尺寸和 viewport。
-  - [ ] 通知 Kotlin 更新 aspect ratio。
+  - [x] 通知 Kotlin 更新 aspect ratio。
 - [x] 初版可先实现最小渲染：
   - [x] 每帧 `glTexSubImage2D` 上传 core outputBuffer。
   - [x] 一个全屏 quad。

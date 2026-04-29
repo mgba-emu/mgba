@@ -82,6 +82,7 @@ import org.json.JSONObject
 
 class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener {
     private var controller: EmulatorController? = null
+    private var videoSurface: AspectRatioSurfaceView? = null
     private var gamepadView: VirtualGamepadView? = null
     private lateinit var preferences: EmulatorPreferences
     private lateinit var perGameOverrides: PerGameOverrideStore
@@ -186,6 +187,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var pendingExportSavePath = ""
     private var playAccountingStartedAtMs = 0L
     private var scaleMode = 0
+    private var videoAspectWidth = 0
+    private var videoAspectHeight = 0
     private var filterMode = 0
     private var interframeBlending = false
     private var orientationMode = 0
@@ -265,14 +268,16 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             setBackgroundColor(getColor(R.color.mgba_background))
         }
 
-        val surface = SurfaceView(this).apply {
+        val surface = AspectRatioSurfaceView(this).apply {
             holder.addCallback(this@EmulatorActivity)
         }
+        videoSurface = surface
         root.addView(
             surface,
             FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT,
+                android.view.Gravity.CENTER,
             ),
         )
 
@@ -490,6 +495,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         val stats = controller?.stats()
         if (stats != null && stats.frames > 0L && stats.videoWidth > 0 && stats.videoHeight > 0) {
             firstFrameLogged = true
+            updateVideoAspectRatio(stats.videoWidth, stats.videoHeight)
             val loadToFirstFrameMs = nowMs - launchStartedAtMs
             val loadedToFirstFrameMs = if (game.loadedAtMs > 0L) nowMs - game.loadedAtMs else -1L
             AppLogStore.append(
@@ -1138,6 +1144,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     scaleMode = (scaleMode + 1) % SCALE_LABELS.size
                     controller?.setScaleMode(scaleMode)
                     saveScaleModePreference()
+                    updateVideoAspectRatio(videoAspectWidth, videoAspectHeight)
                     updateRunButtons()
                 }
             }
@@ -2518,6 +2525,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun updateStatsOverlay() {
         val stats = controller?.stats() ?: return
+        updateVideoAspectRatio(stats.videoWidth, stats.videoHeight)
         val now = SystemClock.elapsedRealtime()
         val frameDelta = (stats.frames - lastStatsFrames).coerceAtLeast(0L)
         val elapsedMs = now - lastStatsAtMs
@@ -2561,6 +2569,19 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             FILTER_LABELS.getOrElse(stats.filterMode) { FILTER_LABELS[0] },
             if (stats.skipBios) "skip" else "boot",
         )
+    }
+
+    private fun updateVideoAspectRatio(width: Int, height: Int) {
+        if (width <= 0 || height <= 0) {
+            return
+        }
+        videoAspectWidth = width
+        videoAspectHeight = height
+        if (scaleMode == 1 || scaleMode == 4) {
+            videoSurface?.setVideoAspectRatio(0, 0)
+        } else {
+            videoSurface?.setVideoAspectRatio(width, height)
+        }
     }
 
     private fun exportRuntimeDiagnostics() {
@@ -3554,6 +3575,39 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 )
+        }
+    }
+
+    private class AspectRatioSurfaceView(context: android.content.Context) : SurfaceView(context) {
+        private var videoWidth = 0
+        private var videoHeight = 0
+
+        fun setVideoAspectRatio(width: Int, height: Int) {
+            val newWidth = width.coerceAtLeast(0)
+            val newHeight = height.coerceAtLeast(0)
+            if (videoWidth == newWidth && videoHeight == newHeight) {
+                return
+            }
+            videoWidth = newWidth
+            videoHeight = newHeight
+            requestLayout()
+        }
+
+        override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+            val availableWidth = View.MeasureSpec.getSize(widthMeasureSpec)
+            val availableHeight = View.MeasureSpec.getSize(heightMeasureSpec)
+            if (availableWidth <= 0 || availableHeight <= 0 || videoWidth <= 0 || videoHeight <= 0) {
+                setMeasuredDimension(availableWidth, availableHeight)
+                return
+            }
+
+            val videoAspect = videoWidth.toFloat() / videoHeight.toFloat()
+            val viewAspect = availableWidth.toFloat() / availableHeight.toFloat()
+            if (viewAspect > videoAspect) {
+                setMeasuredDimension((availableHeight * videoAspect).toInt(), availableHeight)
+            } else {
+                setMeasuredDimension(availableWidth, (availableWidth / videoAspect).toInt())
+            }
         }
     }
 
