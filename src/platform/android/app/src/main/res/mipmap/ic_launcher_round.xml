@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="@color/mgba_background"
+        android:pathData="M0,0h108v108h-108z" />
+    <path
+        android:fillColor="@color/mgba_panel"
+        android:pathData="M18,30h72v48h-72z" />
+    <path
+        android:fillColor="@color/mgba_text_primary"
+        android:pathData="M26,38h34v24h-34z" />
+    <path
+        android:fillColor="@color/mgba_background"
+        android:pathData="M30,42h26v16h-26z" />
+    <path
+        android:fillColor="@color/mgba_accent"
+        android:pathData="M32,46h20v8h-20z" />
+    <path
+        android:fillColor="@color/mgba_text_secondary"
+        android:pathData="M30,66h8v4h-8zM42,66h8v4h-8z" />
+    <path
+        android:fillColor="@color/mgba_text_primary"
+        android:pathData="M68,46h8v8h-8zM80,56h8v8h-8zM72,68h4v4h-4zM82,68h4v4h-4z" />
+    <path
+        android:fillColor="@color/mgba_accent"
+        android:pathData="M24,68h8v8h-8zM32,60h8v8h-8zM32,76h8v8h-8zM40,68h8v8h-8z" />
+</vector>
