@@ -27,6 +27,18 @@ data class LibraryRom(
 class RomLibraryStore(context: Context) {
     private val preferences = context.applicationContext.getSharedPreferences("rom_library", Context.MODE_PRIVATE)
 
+    fun sourceFolders(): List<Uri> {
+        val json = preferences.getString(KEY_SOURCES, "[]") ?: "[]"
+        val array = runCatching { JSONArray(json) }.getOrDefault(JSONArray())
+        return buildList {
+            for (index in 0 until array.length()) {
+                array.optString(index).takeIf { it.isNotBlank() }?.let { source ->
+                    add(Uri.parse(source))
+                }
+            }
+        }
+    }
+
     fun list(): List<LibraryRom> {
         val json = preferences.getString(KEY_ITEMS, "[]") ?: "[]"
         val array = runCatching { JSONArray(json) }.getOrDefault(JSONArray())
@@ -83,7 +95,10 @@ class RomLibraryStore(context: Context) {
         (preserved + scanned.map { item -> merge(item, existingByUri[item.uri]) })
             .sortedWith(librarySort)
             .forEach { item -> array.put(toJson(item)) }
-        preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
+        preferences.edit()
+            .putString(KEY_ITEMS, array.toString())
+            .putString(KEY_SOURCES, sourceFoldersJson(sourceTreeUri))
+            .apply()
     }
 
     fun markPlayed(uri: Uri, playedAt: Long = System.currentTimeMillis()) {
@@ -184,8 +199,16 @@ class RomLibraryStore(context: Context) {
         return item.uri.toString().startsWith("$sourceTreeUri/document/")
     }
 
+    private fun sourceFoldersJson(sourceTreeUri: Uri): String {
+        val sources = (sourceFolders() + sourceTreeUri).distinctBy { it.toString() }
+        val array = JSONArray()
+        sources.forEach { source -> array.put(source.toString()) }
+        return array.toString()
+    }
+
     private companion object {
         const val KEY_ITEMS = "items"
+        const val KEY_SOURCES = "sources"
         val librarySort = compareByDescending<LibraryRom> { it.favorite }.thenBy { it.displayName.lowercase() }
     }
 }

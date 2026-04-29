@@ -791,7 +791,7 @@ object NativeBridge {
   - [x] 震动。
   - [x] 允许相反方向。
 - [ ] Storage：
-  - [ ] ROM 文件夹。
+  - [x] ROM 文件夹。
   - [x] 导入/导出。
   - [x] 清理 cache。
 - [ ] Advanced：

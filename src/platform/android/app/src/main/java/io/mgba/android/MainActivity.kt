@@ -63,6 +63,7 @@ class MainActivity : Activity() {
     private lateinit var cheatStore: CheatStore
     private lateinit var patchStore: PatchStore
     private lateinit var scanButton: Button
+    private lateinit var rescanFoldersButton: Button
     private lateinit var biosButton: Button
     private lateinit var clearBiosButton: Button
     private lateinit var skipBiosButton: Button
@@ -166,6 +167,16 @@ class MainActivity : Activity() {
                 }
             }
         }
+        rescanFoldersButton = Button(this).apply {
+            setOnClickListener {
+                if (scanThread?.isAlive == true) {
+                    cancelLibraryScan()
+                } else {
+                    rescanKnownFolders()
+                }
+            }
+        }
+        updateRescanFoldersButton()
 
         biosButton = Button(this).apply {
             setOnClickListener {
@@ -401,6 +412,7 @@ class MainActivity : Activity() {
         root.addView(nativeStatus)
         root.addView(openButton)
         root.addView(scanButton)
+        root.addView(rescanFoldersButton)
         root.addView(biosButton)
         root.addView(clearBiosButton)
         root.addView(skipBiosButton)
@@ -1362,6 +1374,7 @@ class MainActivity : Activity() {
                     .onSuccess { roms ->
                         libraryStore.mergeScan(uri, roms)
                         renderLibrary()
+                        updateRescanFoldersButton()
                         nativeStatus.text = "${getString(R.string.native_version_label)}: ${roms.size} ROMs indexed"
                     }
                     .onFailure {
@@ -1373,12 +1386,62 @@ class MainActivity : Activity() {
         thread.start()
     }
 
+    private fun rescanKnownFolders() {
+        val sources = libraryStore.sourceFolders()
+        if (sources.isEmpty()) {
+            nativeStatus.text = "${getString(R.string.native_version_label)}: No folders added"
+            return
+        }
+        val generation = ++scanGeneration
+        scanThread?.interrupt()
+        scanButton.text = "Cancel Scan"
+        rescanFoldersButton.text = "Cancel Rescan"
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Rescanning folders"
+        val thread = Thread {
+            var total = 0
+            var failed = 0
+            sources.forEach { source ->
+                if (Thread.currentThread().isInterrupted) {
+                    return@forEach
+                }
+                runCatching { RomScanner(this).scan(source) }
+                    .onSuccess { roms ->
+                        total += roms.size
+                        libraryStore.mergeScan(source, roms)
+                    }
+                    .onFailure {
+                        failed += 1
+                    }
+            }
+            runOnUiThread {
+                if (generation != scanGeneration) {
+                    return@runOnUiThread
+                }
+                scanThread = null
+                scanButton.text = "Scan Folder"
+                updateRescanFoldersButton()
+                renderLibrary()
+                val failedStatus = if (failed > 0) " ($failed failed)" else ""
+                nativeStatus.text = "${getString(R.string.native_version_label)}: $total ROMs indexed$failedStatus"
+            }
+        }
+        scanThread = thread
+        thread.start()
+    }
+
     private fun cancelLibraryScan() {
         scanGeneration += 1
         scanThread?.interrupt()
         scanThread = null
         scanButton.text = "Scan Folder"
+        updateRescanFoldersButton()
         nativeStatus.text = "${getString(R.string.native_version_label)}: Scan canceled"
+    }
+
+    private fun updateRescanFoldersButton() {
+        val count = libraryStore.sourceFolders().size
+        rescanFoldersButton.text = if (count > 0) "Rescan Folders ($count)" else "Rescan Folders"
+        rescanFoldersButton.isEnabled = count > 0 || scanThread?.isAlive == true
     }
 
     private fun dp(value: Int): Int {
