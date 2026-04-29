@@ -100,6 +100,7 @@
 - [x] 已新增虚拟手柄左右手布局开关，可互换 D-pad 和 A/B 两侧。
 - [x] 已新增虚拟手柄按键间距设置，支持实时调整并持久化。
 - [x] 已新增虚拟手柄横屏/竖屏自动布局，竖屏时将肩键收进下半区控制区域。
+- [x] 已用单测锁定 Android `GbaKeyMask` 与 native `GBA_KEY_*` bit position 的对应关系。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -521,20 +522,20 @@ object NativeBridge {
 
 ### 7.1 GBA 键位映射
 
-- [ ] 统一使用 `include/mgba/internal/gba/input.h` 的枚举：
-  - [ ] `GBA_KEY_A`
-  - [ ] `GBA_KEY_B`
-  - [ ] `GBA_KEY_SELECT`
-  - [ ] `GBA_KEY_START`
-  - [ ] `GBA_KEY_RIGHT`
-  - [ ] `GBA_KEY_LEFT`
-  - [ ] `GBA_KEY_UP`
-  - [ ] `GBA_KEY_DOWN`
-  - [ ] `GBA_KEY_R`
-  - [ ] `GBA_KEY_L`
-- [ ] Kotlin 层维护一个 `Int keys` bitmask。
-- [ ] 每次触摸/手柄事件变化时调用 `nativeSetKeys(handle, keys)`。
-- [ ] Native 侧最终调用 `core->setKeys(core, keys)`。
+- [x] 统一使用 `include/mgba/internal/gba/input.h` 的枚举：
+  - [x] `GBA_KEY_A`
+  - [x] `GBA_KEY_B`
+  - [x] `GBA_KEY_SELECT`
+  - [x] `GBA_KEY_START`
+  - [x] `GBA_KEY_RIGHT`
+  - [x] `GBA_KEY_LEFT`
+  - [x] `GBA_KEY_UP`
+  - [x] `GBA_KEY_DOWN`
+  - [x] `GBA_KEY_R`
+  - [x] `GBA_KEY_L`
+- [x] Kotlin 层维护一个 `Int keys` bitmask。
+- [x] 每次触摸/手柄事件变化时调用 `nativeSetKeys(handle, keys)`。
+- [x] Native 侧最终调用 `core->setKeys(core, keys)`。
 - [x] 防止 Android 多点触控事件丢点导致按键卡住：
   - [x] `ACTION_CANCEL` 清空所有触摸按键。
   - [x] Activity pause 清空所有按键。

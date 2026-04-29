@@ -8,6 +8,20 @@ import org.junit.Test;
 
 public class AndroidInputMapperTest {
     @Test
+    public void gbaKeyMasksMatchNativeBitPositions() {
+        assertEquals(1 << 0, GbaKeyMask.A);
+        assertEquals(1 << 1, GbaKeyMask.B);
+        assertEquals(1 << 2, GbaKeyMask.Select);
+        assertEquals(1 << 3, GbaKeyMask.Start);
+        assertEquals(1 << 4, GbaKeyMask.Right);
+        assertEquals(1 << 5, GbaKeyMask.Left);
+        assertEquals(1 << 6, GbaKeyMask.Up);
+        assertEquals(1 << 7, GbaKeyMask.Down);
+        assertEquals(1 << 8, GbaKeyMask.R);
+        assertEquals(1 << 9, GbaKeyMask.L);
+    }
+
+    @Test
     public void mapsGamepadFaceButtons() {
         assertEquals(GbaKeyMask.A, AndroidInputMapper.INSTANCE.keyMaskForKeyCode(KeyEvent.KEYCODE_BUTTON_A));
         assertEquals(GbaKeyMask.B, AndroidInputMapper.INSTANCE.keyMaskForKeyCode(KeyEvent.KEYCODE_BUTTON_B));
