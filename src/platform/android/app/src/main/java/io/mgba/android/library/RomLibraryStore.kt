@@ -8,6 +8,7 @@ import org.json.JSONObject
 data class LibraryRom(
     val uri: Uri,
     val displayName: String,
+    val lastPlayedAt: Long = 0L,
 )
 
 class RomLibraryStore(context: Context) {
@@ -24,6 +25,7 @@ class RomLibraryStore(context: Context) {
                     LibraryRom(
                         uri = Uri.parse(uri),
                         displayName = item.optString("displayName", uri),
+                        lastPlayedAt = item.optLong("lastPlayedAt", 0L),
                     ),
                 )
             }
@@ -31,12 +33,29 @@ class RomLibraryStore(context: Context) {
     }
 
     fun replace(items: List<LibraryRom>) {
+        val existing = list().associateBy { it.uri }
         val array = JSONArray()
         items.distinctBy { it.uri }.sortedBy { it.displayName.lowercase() }.forEach { item ->
+            val merged = item.copy(lastPlayedAt = existing[item.uri]?.lastPlayedAt ?: item.lastPlayedAt)
             array.put(
                 JSONObject()
-                    .put("uri", item.uri.toString())
-                    .put("displayName", item.displayName),
+                    .put("uri", merged.uri.toString())
+                    .put("displayName", merged.displayName)
+                    .put("lastPlayedAt", merged.lastPlayedAt),
+            )
+        }
+        preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
+    }
+
+    fun markPlayed(uri: Uri, playedAt: Long = System.currentTimeMillis()) {
+        val array = JSONArray()
+        list().forEach { item ->
+            val updated = if (item.uri == uri) item.copy(lastPlayedAt = playedAt) else item
+            array.put(
+                JSONObject()
+                    .put("uri", updated.uri.toString())
+                    .put("displayName", updated.displayName)
+                    .put("lastPlayedAt", updated.lastPlayedAt),
             )
         }
         preferences.edit().putString(KEY_ITEMS, array.toString()).apply()

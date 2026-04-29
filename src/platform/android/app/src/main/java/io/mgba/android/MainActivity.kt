@@ -10,6 +10,7 @@ import android.provider.OpenableColumns
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.text.format.DateUtils
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import io.mgba.android.bridge.NativeBridge
 import io.mgba.android.emulator.EmulatorSession
+import io.mgba.android.library.LibraryRom
 import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.library.RomScanner
 import io.mgba.android.library.RecentGameStore
@@ -229,6 +231,8 @@ class MainActivity : Activity() {
                 recentStore.add(uri, name)
                 renderRecentGames()
             }
+            libraryStore.markPlayed(uri)
+            renderLibrary()
             startActivity(Intent(this, EmulatorActivity::class.java))
         }
     }
@@ -288,7 +292,7 @@ class MainActivity : Activity() {
         }
         roms.take(MAX_LIBRARY_ITEMS).forEach { rom ->
             libraryContainer.addView(Button(this).apply {
-                text = rom.displayName
+                text = libraryButtonLabel(rom)
                 setOnClickListener {
                     openRomUri(rom.uri, rom.displayName, shouldStoreRecent = true)
                 }
@@ -302,6 +306,18 @@ class MainActivity : Activity() {
                 setPadding(0, dp(6), 0, 0)
             })
         }
+    }
+
+    private fun libraryButtonLabel(rom: LibraryRom): String {
+        if (rom.lastPlayedAt <= 0L) {
+            return rom.displayName
+        }
+        val relative = DateUtils.getRelativeTimeSpanString(
+            rom.lastPlayedAt,
+            System.currentTimeMillis(),
+            DateUtils.MINUTE_IN_MILLIS,
+        )
+        return "${rom.displayName}\nLast played $relative"
     }
 
     private fun scanLibraryInBackground(uri: Uri) {

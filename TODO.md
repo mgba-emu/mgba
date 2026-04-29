@@ -65,6 +65,7 @@
 - [x] 已新增 Android About 对话框，展示 native 版本、mGBA copyright、MPL 2.0 和不捆绑 ROM/BIOS 声明。
 - [x] 已将 ROM 文件夹扫描移到后台线程，扫描期间禁用重复触发并在完成后刷新库。
 - [x] 已实现 ROM 文件夹扫描取消，避免旧扫描结果覆盖新库状态。
+- [x] 已为 ROM 库记录并显示 last played 时间，重新扫描时保留已有游玩元数据。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -652,7 +653,7 @@ object NativeBridge {
   - [ ] version。
   - [ ] crc32 / sha1。
   - [ ] file size。
-  - [ ] lastPlayedAt。
+  - [x] lastPlayedAt。
   - [ ] playTimeSeconds。
   - [ ] favorite。
   - [ ] coverPath 或 screenshot thumbnail。
@@ -688,7 +689,7 @@ object NativeBridge {
 - [ ] 每个 ROM item 显示：
   - [ ] 标题。
   - [ ] 平台。
-  - [ ] 最近游玩。
+  - [x] 最近游玩。
   - [ ] 缩略图。
   - [ ] 菜单：启动、设置、存档、作弊、导出、删除记录。
 
