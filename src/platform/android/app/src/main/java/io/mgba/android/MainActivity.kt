@@ -1352,6 +1352,25 @@ class MainActivity : Activity() {
         AlertDialog.Builder(this)
             .setTitle("About mGBA")
             .setMessage(message)
+            .setNeutralButton("Licenses") { _, _ ->
+                showLicensesDialog()
+            }
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    private fun showLicensesDialog() {
+        val message = listOf(
+            "mGBA: Mozilla Public License 2.0.",
+            "Android Gradle Plugin and Gradle wrapper: Apache License 2.0.",
+            "zlib and MiniZip: zlib license.",
+            "LZMA SDK: public domain by Igor Pavlov.",
+            "libpng source is preserved under the libpng license when enabled by a build.",
+            "No commercial ROMs or BIOS files are bundled.",
+        ).joinToString(separator = "\n\n")
+        AlertDialog.Builder(this)
+            .setTitle("Licenses")
+            .setMessage(message)
             .setPositiveButton("OK", null)
             .show()
     }

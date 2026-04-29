@@ -1108,7 +1108,7 @@ object NativeBridge {
   - [x] `app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip`
   - [x] CI artifact：`mgba-android-release-native-symbols`
 - [ ] Crash 符号化流程文档。
-- [ ] MPL 2.0 和第三方 license 页面。
+- [x] MPL 2.0 和第三方 license 页面。
 
 ## 18. 许可与合规
 
@@ -1116,7 +1116,7 @@ object NativeBridge {
 - [x] App 内 About 页面展示：
   - [x] mGBA copyright。
   - [x] MPL 2.0。
-  - [ ] 第三方库 license：zlib、libpng、lzma、sqlite、inih 等实际启用项。
+  - [x] 第三方库 license：zlib、libpng、lzma、sqlite、inih 等实际启用项。
 - [ ] 不分发 BIOS。
 - [ ] 不分发商业 ROM。
 - [ ] 如果启用 FFmpeg，明确 LGPL/GPL 组件选择和发布义务。
@@ -1241,7 +1241,7 @@ object NativeBridge {
 - [x] Crash/log export。
 - [ ] Proguard/R8。
 - [ ] Native symbols。
-- [ ] License 页面。
+- [x] License 页面。
 - [x] Release APK/AAB 构建输出。
 - [ ] 验收：
   - [ ] 设备矩阵通过。
