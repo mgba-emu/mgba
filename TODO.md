@@ -96,6 +96,7 @@
 - [x] 已将 Android trigger axes（LTRIGGER/RTRIGGER/BRAKE/GAS）映射到 GBA L/R。
 - [x] 已新增实体输入 debug 面板，显示最后输入设备、按键码、轴值、映射结果和 deadzone。
 - [x] 已新增虚拟手柄大小/透明度设置，并按全局或 per-game override 持久化。
+- [x] 已新增虚拟手柄触控震动反馈开关，并复用全局/per-game 设置链路。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -552,7 +553,7 @@ object NativeBridge {
   - [ ] 左右手模式。
   - [ ] 横屏布局。
   - [ ] 竖屏布局。
-  - [ ] 震动反馈开关。
+  - [x] 震动反馈开关。
 - [ ] 支持布局编辑模式：
   - [ ] 拖动按钮。
   - [ ] 双指缩放按钮。

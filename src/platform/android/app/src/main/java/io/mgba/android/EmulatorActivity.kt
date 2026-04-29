@@ -97,6 +97,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var showVirtualGamepad = true
     private var virtualGamepadSizePercent = 100
     private var virtualGamepadOpacityPercent = 100
+    private var virtualGamepadHapticsEnabled = true
     private var deadzonePercent = AndroidInputMapper.DefaultAxisThresholdPercent
     private var tiltEnabled = false
     private var lastRawTiltX = 0f
@@ -158,6 +159,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             currentGameId,
             preferences.virtualGamepadOpacityPercent,
         )
+        virtualGamepadHapticsEnabled = perGameOverrides.virtualGamepadHapticsEnabled(
+            currentGameId,
+            preferences.virtualGamepadHapticsEnabled,
+        )
         deadzonePercent = perGameOverrides.deadzonePercent(
             currentGameId,
             AndroidInputMapper.DefaultAxisThresholdPercent,
@@ -191,7 +196,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
         gamepadView = VirtualGamepadView(this).apply {
             visibility = if (showVirtualGamepad) View.VISIBLE else View.GONE
-            setStyle(virtualGamepadSizePercent, virtualGamepadOpacityPercent)
+            setStyle(virtualGamepadSizePercent, virtualGamepadOpacityPercent, virtualGamepadHapticsEnabled)
             setOnKeysChangedListener { keys ->
                 virtualKeys = keys
                 syncKeys()
@@ -429,6 +434,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
         if (!perGameOverrides.setVirtualGamepadOpacityPercent(currentGameId, virtualGamepadOpacityPercent)) {
             preferences.virtualGamepadOpacityPercent = virtualGamepadOpacityPercent
+        }
+        if (!perGameOverrides.setVirtualGamepadHapticsEnabled(currentGameId, virtualGamepadHapticsEnabled)) {
+            preferences.virtualGamepadHapticsEnabled = virtualGamepadHapticsEnabled
         }
     }
 
@@ -886,6 +894,16 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             max = GAMEPAD_OPACITY_MAX - GAMEPAD_OPACITY_MIN
             progress = virtualGamepadOpacityPercent - GAMEPAD_OPACITY_MIN
         }
+        val hapticsCheck = CheckBox(this).apply {
+            text = "Haptic feedback"
+            isChecked = virtualGamepadHapticsEnabled
+            setTextColor(getColor(R.color.mgba_text_primary))
+            setOnCheckedChangeListener { _, checked ->
+                virtualGamepadHapticsEnabled = checked
+                applyGamepadStyle()
+                saveGamepadStylePreference()
+            }
+        }
         fun updateLabels() {
             sizeLabel.text = "Size: $virtualGamepadSizePercent%"
             opacityLabel.text = "Opacity: $virtualGamepadOpacityPercent%"
@@ -917,6 +935,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             addView(sizeSeek)
             addView(opacityLabel)
             addView(opacitySeek)
+            addView(hapticsCheck)
         }
         AlertDialog.Builder(this)
             .setTitle("Virtual gamepad")
@@ -926,7 +945,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun applyGamepadStyle() {
-        gamepadView?.setStyle(virtualGamepadSizePercent, virtualGamepadOpacityPercent)
+        gamepadView?.setStyle(virtualGamepadSizePercent, virtualGamepadOpacityPercent, virtualGamepadHapticsEnabled)
     }
 
     private fun showInputMappingDialog() {

@@ -35,11 +35,18 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putInt(KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT, value.coerceIn(35, 100)).apply()
         }
 
+    var virtualGamepadHapticsEnabled: Boolean
+        get() = preferences.getBoolean(KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED, true)
+        set(value) {
+            preferences.edit().putBoolean(KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED, value).apply()
+        }
+
     private companion object {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_MUTED = "muted"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
         const val KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT = "virtualGamepadOpacityPercent"
+        const val KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED = "virtualGamepadHapticsEnabled"
     }
 }

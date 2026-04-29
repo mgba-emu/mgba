@@ -39,6 +39,7 @@ class VirtualGamepadView(context: Context) : View(context) {
     private var onKeysChanged: ((Int) -> Unit)? = null
     private var sizePercent = 100
     private var opacityPercent = 100
+    private var hapticsEnabled = true
 
     init {
         isFocusable = true
@@ -54,14 +55,18 @@ class VirtualGamepadView(context: Context) : View(context) {
         updateKeys(0)
     }
 
-    fun setStyle(sizePercent: Int, opacityPercent: Int) {
+    fun setStyle(sizePercent: Int, opacityPercent: Int, hapticsEnabled: Boolean) {
         val newSizePercent = sizePercent.coerceIn(60, 140)
         val newOpacityPercent = opacityPercent.coerceIn(35, 100)
-        if (this.sizePercent == newSizePercent && this.opacityPercent == newOpacityPercent) {
+        if (this.sizePercent == newSizePercent &&
+            this.opacityPercent == newOpacityPercent &&
+            this.hapticsEnabled == hapticsEnabled
+        ) {
             return
         }
         this.sizePercent = newSizePercent
         this.opacityPercent = newOpacityPercent
+        this.hapticsEnabled = hapticsEnabled
         rebuildRegions(width, height)
         invalidate()
     }
@@ -210,7 +215,7 @@ class VirtualGamepadView(context: Context) : View(context) {
         if (pressedKeys == keys) {
             return
         }
-        if (keys and pressedKeys.inv() != 0) {
+        if (hapticsEnabled && keys and pressedKeys.inv() != 0) {
             performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
         }
         pressedKeys = keys
