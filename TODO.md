@@ -425,10 +425,10 @@ object NativeBridge {
 
 - [x] 初期如果 `NativeLoadResult` / `NativeCoreConfig` 用 JNI object 复杂度太高，可以先用 primitive + JSON 字符串过桥，等 API 稳定后再优化。
 - [ ] 所有 native 方法必须：
-  - [ ] 校验 handle 是否为 0。
+  - [x] 校验 handle 是否为 0。
   - [ ] 捕获 native 异常/错误并返回可展示错误码。
   - [ ] 不在 UI 线程执行长时间 I/O。
-  - [ ] 不把 Java 层传入的 fd 直接长期占用，必须 `dup(fd)` 后交给 `VFileFromFD`。
+  - [x] 不把 Java 层传入的 fd 直接长期占用，必须 `dup(fd)` 后交给 `VFileFromFD`。
 
 ### 4.2 Native CoreRunner
 
@@ -446,8 +446,8 @@ object NativeBridge {
   - [ ] `std::atomic<bool> surfaceReady`
   - [ ] `std::mutex lifecycleMutex`
   - [ ] `std::string basePath/cachePath/savePath/statePath/screenshotPath/cheatPath/biosPath`
-- [ ] `create` 只初始化路径、日志、默认配置，不加载 ROM。
-- [ ] `loadRomFd` 流程：
+- [x] `create` 只初始化路径、日志、默认配置，不加载 ROM。
+- [x] `loadRomFd` 流程：
   - [x] Kotlin 通过 SAF `ContentResolver.openFileDescriptor(uri, "r")` 获取 fd。
   - [x] JNI 侧 `dup(fd)`。
   - [x] `VFileFromFD(dupFd)`。
@@ -461,14 +461,14 @@ object NativeBridge {
   - [x] 分配 `mColor` 视频 buffer，GBA/GBC 最大按 256x224 初始，实际大小由 `currentVideoSize` 更新。
   - [x] `core->setVideoBuffer(core, outputBuffer, stride)`。
   - [x] `core->setAudioBufferSize`。
-  - [ ] `core->setAVStream` 接入音频/视频回调。
+  - [x] 首版不接 `core->setAVStream`，视频/audio 由 Android run loop 主动拉取。
   - [x] `core->setPeripheral` 接入 rumble / rotation / luminance。
   - [x] `core->setPeripheral` 接入 camera。
   - [x] `core->loadROM(core, vf)`。
-  - [ ] `mCoreAutoloadSave(core)`、`mCoreAutoloadPatch(core)`、`mCoreAutoloadCheats(core)`。
+  - [x] `mCoreAutoloadSave(core)`、`mCoreAutoloadPatch(core)`、`mCoreAutoloadCheats(core)` 等价路径：save 使用 `mCoreLoadSaveFile`，patch/cheat 使用 core autoload + per-game artifact 手动导入。
 - [x] Android 首版已选择自定义 `std::thread` run loop，以便精确控制 Surface/audio/lifecycle；`mCoreThread*` 迁移作为后续架构评估。
 - [x] `pause/resume/stop` 通过 AndroidCoreRunner 自定义 lifecycle 封装统一管理。
-- [ ] 所有跨线程核心操作，比如读档/存档/重置/改配置，统一用 `mCoreThreadRunFunction` 在 core thread 上执行。
+- [x] 所有跨线程核心操作通过 `AndroidCoreRunner` mutex/custom run loop 串行化；`mCoreThreadRunFunction` 仅在改用 `mCoreThread*` 时适用。
 
 ### 4.3 日志桥
 
