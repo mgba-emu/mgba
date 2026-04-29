@@ -41,6 +41,7 @@
 - [x] 已实现截图只读 `ContentProvider` 分享，可从 emulator 工具条直接调用 Android 分享面板。
 - [x] 已实现 Android 10+ MediaStore 截图导出到 `Pictures/mGBA`。
 - [x] 已实现 SAF URI 最近打开列表，可从首页直接重新打开已授权 ROM。
+- [x] 已实现 SAF 文件夹递归扫描 ROM，并在首页渲染可直接启动的 ROM 库列表。
 - [x] 已实现 BIOS SAF 导入到 app 私有目录，并在 native ROM 加载时尝试交给 core。
 - [x] 已实现 patch SAF 导入到 app 私有目录，并在 native ROM 加载后尝试应用。
 - [x] 已实现电池存档从 native 内存克隆导出，并通过 MediaStore 写入 Android 10+ `Documents/mGBA`。
@@ -50,7 +51,7 @@
 - [x] 已提交 Gradle wrapper，Android 工程可直接使用 `./gradlew :app:assembleDebug` 构建。
 - [x] 已新增 GitHub Actions Android debug APK 构建 workflow。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
-- [ ] 完整 ROM 库扫描、即时存档缩略图、覆盖确认、可配置重映射和传感器输入仍待后续阶段实现。
+- [ ] ROM 库封面/搜索/增量扫描、即时存档缩略图、覆盖确认、可配置重映射和传感器输入仍待后续阶段实现。
 
 ## 1. 产品目标和范围
 

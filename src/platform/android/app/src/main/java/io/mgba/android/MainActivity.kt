@@ -10,9 +10,12 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import io.mgba.android.bridge.NativeBridge
 import io.mgba.android.emulator.EmulatorSession
+import io.mgba.android.library.RomLibraryStore
+import io.mgba.android.library.RomScanner
 import io.mgba.android.library.RecentGameStore
 import io.mgba.android.storage.BiosStore
 import io.mgba.android.storage.PatchStore
@@ -20,21 +23,32 @@ import io.mgba.android.storage.PatchStore
 class MainActivity : Activity() {
     private lateinit var nativeStatus: TextView
     private lateinit var recentStore: RecentGameStore
+    private lateinit var libraryStore: RomLibraryStore
     private lateinit var biosStore: BiosStore
     private lateinit var patchStore: PatchStore
     private lateinit var biosButton: Button
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
+    private lateinit var libraryContainer: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         recentStore = RecentGameStore(this)
+        libraryStore = RomLibraryStore(this)
         biosStore = BiosStore(this)
         patchStore = PatchStore(this)
 
+        val scroll = ScrollView(this).apply {
+            setBackgroundColor(getColor(R.color.mgba_background))
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            )
+        }
+
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
             setPadding(dp(24), dp(32), dp(24), dp(32))
             setBackgroundColor(getColor(R.color.mgba_background))
             layoutParams = ViewGroup.LayoutParams(
@@ -70,6 +84,13 @@ class MainActivity : Activity() {
             }
         }
 
+        val scanButton = Button(this).apply {
+            text = "Scan Folder"
+            setOnClickListener {
+                openFolderPicker()
+            }
+        }
+
         biosButton = Button(this).apply {
             text = biosStore.displayName?.let { "BIOS: $it" } ?: "Import BIOS"
             setOnClickListener {
@@ -88,16 +109,24 @@ class MainActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             setPadding(0, dp(24), 0, 0)
         }
+        libraryContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, dp(16), 0, 0)
+        }
 
         root.addView(title)
         root.addView(subtitle)
         root.addView(nativeStatus)
         root.addView(openButton)
+        root.addView(scanButton)
         root.addView(biosButton)
         root.addView(patchButton)
         root.addView(recentContainer)
-        setContentView(root)
+        root.addView(libraryContainer)
+        scroll.addView(root)
+        setContentView(scroll)
         renderRecentGames()
+        renderLibrary()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -130,6 +159,15 @@ class MainActivity : Activity() {
                     patchButton.text = "Patch: $name"
                 }
                 nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "Patch imported" else "Patch import failed"}"
+            }
+            REQUEST_SCAN_FOLDER -> {
+                runCatching {
+                    contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                val roms = runCatching { RomScanner(this).scan(uri) }.getOrDefault(emptyList())
+                libraryStore.replace(roms)
+                renderLibrary()
+                nativeStatus.text = "${getString(R.string.native_version_label)}: ${roms.size} ROMs indexed"
             }
         }
     }
@@ -178,6 +216,29 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun renderLibrary() {
+        libraryContainer.removeAllViews()
+        val roms = libraryStore.list()
+        if (roms.isEmpty()) {
+            return
+        }
+
+        libraryContainer.addView(TextView(this).apply {
+            text = "Library"
+            textSize = 14f
+            setTextColor(getColor(R.color.mgba_text_secondary))
+            setPadding(0, 0, 0, dp(8))
+        })
+        roms.take(MAX_LIBRARY_ITEMS).forEach { rom ->
+            libraryContainer.addView(Button(this).apply {
+                text = rom.displayName
+                setOnClickListener {
+                    openRomUri(rom.uri, rom.displayName, shouldStoreRecent = true)
+                }
+            })
+        }
+    }
+
     private fun dp(value: Int): Int {
         return (value * resources.displayMetrics.density).toInt()
     }
@@ -190,6 +251,14 @@ class MainActivity : Activity() {
             addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
         }
         startActivityForResult(intent, REQUEST_OPEN_ROM)
+    }
+
+    private fun openFolderPicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_SCAN_FOLDER)
     }
 
     private fun openBiosPicker() {
@@ -228,5 +297,7 @@ class MainActivity : Activity() {
         private const val REQUEST_OPEN_ROM = 1001
         private const val REQUEST_IMPORT_BIOS = 1002
         private const val REQUEST_IMPORT_PATCH = 1003
+        private const val REQUEST_SCAN_FOLDER = 1004
+        private const val MAX_LIBRARY_ITEMS = 24
     }
 }
