@@ -172,6 +172,8 @@
 - [x] 已完成 OnePlus7 真机真实 ROM zip 回归：`~/game/[gba]木叶战记.zip`、`~/game/[GBA]决战三国.zip`、`~/game/[gbc]水浒传.zip` 均通过 ACTION_VIEW 启动并渲染，crash buffer 为空。
 - [x] 已完成 OnePlus7 真机真实 ROM 音频 smoke：Balanced 2048 buffer 下 `木叶战记` 8783 native frames、`决战三国` 4938 native frames、`水浒传` 7235 native frames，三轮诊断均为 `underruns=0`。
 - [x] 已新增 Android 音频路由变化恢复：前台监听输出设备变化，真实 route change 时重建 OpenSL 输出并重套当前音量、buffer、低通设置；初始设备快照只记录不重启。
+- [x] 已完成 OnePlus7 真机 10 分钟音频长 smoke：`~/game/[gba]木叶战记.zip` 连跑 37263 native frames，Balanced 2048 buffer 下 `underruns=0`。
+- [x] 已完成 OnePlus7 真机后台 CPU 验收：HOME 后 app task 进入 paused/background，`/proc/<pid>/stat` 10 秒窗口 tick 增量 0，CPU 约 `0.000%`。
 - [x] 已修复 Android ZIP/native archive 编码兼容：Java ZIP 未识别老编码 entry 时 fallback 到 native archive，native entry token 和 ROM header JSON 均避免非法 Modified UTF-8 崩溃。
 - [x] 首帧真机截图验证已在 OnePlus7 上执行；模拟器因性能过慢已停用。
 
@@ -1115,10 +1117,10 @@ object NativeBridge {
 
 - [x] GBA 常规游戏 60 FPS 稳定（OnePlus7 真实 GBA smoke：`木叶战记` 8783 native frames、`决战三国` 4938 native frames，均 `underruns=0`）。
 - [x] GB/GBC 常规游戏稳定（OnePlus7 真实 GBC smoke：`水浒传` 7235 native frames，`underruns=0`）。
-- [ ] 音频 underrun 每 10 分钟少于 1 次，低端设备允许设置更大 buffer。
+- [x] 音频 underrun 每 10 分钟少于 1 次，低端设备允许设置更大 buffer（OnePlus7 真实 GBA 10 分钟长 smoke：`underruns=0`）。
 - [ ] ROM 加载到首帧小于 1 秒，archive/cache 情况另计。
 - [ ] 正常游玩 30 分钟 native heap 无持续增长。
-- [ ] App 切后台后 CPU 使用接近 0。
+- [x] App 切后台后 CPU 使用接近 0（OnePlus7 HOME 后 `/proc/<pid>/stat` 10 秒窗口 CPU 约 `0.000%`）。
 
 ### 16.5 回归用例
 
