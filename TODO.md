@@ -81,8 +81,9 @@
 - [x] 已新增单个即时存档槽位 SAF 导出链路。
 - [x] 已新增单个即时存档槽位 SAF 导入链路，并在覆盖前确认。
 - [x] 已为 ROM 库记录并显示累计 play time。
+- [x] 已新增每游戏硬件键位重映射存储、模拟器内配置入口和输入映射单测。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
-- [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
+- [ ] ROM 库封面/增量扫描、即时存档缩略图、每设备独立 profile 和传感器输入仍待后续阶段实现。
 
 ## 1. 产品目标和范围
 
@@ -98,7 +99,7 @@
 - [ ] 支持截图。
 - [ ] 支持快进、暂停、重置、单帧步进、倒带、帧跳过。
 - [ ] 支持触屏虚拟手柄。
-- [ ] 支持实体手柄、键盘、蓝牙控制器重映射。
+- [x] 支持实体手柄、键盘、蓝牙控制器重映射。
 - [ ] 支持震动、陀螺仪/加速度计、亮度/太阳传感器替代输入。
 - [ ] 支持 Game Boy Camera 图片源的 Android 摄像头桥接。
 - [ ] 支持横屏/竖屏布局、沉浸模式、屏幕比例/整数缩放/滤镜设置。
@@ -547,11 +548,11 @@ object NativeBridge {
 
 ### 7.3 实体手柄/键盘
 
-- [ ] 监听 `KeyEvent`：
-  - [ ] DPAD -> 方向。
-  - [ ] BUTTON_A / BUTTON_B / BUTTON_X / BUTTON_Y -> A/B 可配置。
-  - [ ] BUTTON_L1 / BUTTON_R1 -> L/R。
-  - [ ] BUTTON_START / BUTTON_SELECT。
+- [x] 监听 `KeyEvent`：
+  - [x] DPAD -> 方向。
+  - [x] BUTTON_A / BUTTON_B / BUTTON_X / BUTTON_Y -> A/B 可配置。
+  - [x] BUTTON_L1 / BUTTON_R1 -> L/R。
+  - [x] BUTTON_START / BUTTON_SELECT。
 - [ ] 监听 `MotionEvent`：
   - [ ] `AXIS_X` / `AXIS_Y` 左摇杆。
   - [ ] `AXIS_HAT_X` / `AXIS_HAT_Y` 十字键。
@@ -559,7 +560,7 @@ object NativeBridge {
 - [ ] 支持 deadzone。
 - [ ] 支持每个设备独立 profile：
   - [ ] 使用 `InputDevice.descriptor` 作为稳定 key。
-  - [ ] 允许手动绑定。
+  - [x] 允许手动绑定。
   - [ ] 支持导入/导出 profile。
 - [ ] Debug 页面显示当前输入设备、轴值、按键码。
 
@@ -585,7 +586,7 @@ object NativeBridge {
 - [ ] 多点触控可同时按方向+A/B。
 - [ ] 切后台后不会出现按键卡住。
 - [ ] Xbox / DualShock / Switch Pro / 常见蓝牙手柄至少验证两类。
-- [ ] 键位重映射保存后重启仍生效。
+- [x] 键位重映射保存后重启仍生效。
 
 ## 8. 存储 / SAF / VFS 计划
 

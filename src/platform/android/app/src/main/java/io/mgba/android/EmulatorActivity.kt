@@ -20,14 +20,18 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.input.AndroidInputMapper
+import io.mgba.android.input.GbaButtons
+import io.mgba.android.input.HardwareKeyProfile
 import io.mgba.android.input.VirtualGamepadView
 import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.settings.EmulatorPreferences
+import io.mgba.android.settings.InputMappingStore
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.storage.ScreenshotExporter
 import io.mgba.android.storage.ScreenshotShareProvider
@@ -39,7 +43,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var gamepadView: VirtualGamepadView? = null
     private lateinit var preferences: EmulatorPreferences
     private lateinit var perGameOverrides: PerGameOverrideStore
+    private lateinit var inputMappingStore: InputMappingStore
     private var currentGameId: String? = null
+    private var hardwareKeyProfile = HardwareKeyProfile.defaultProfile()
     private var virtualKeys = 0
     private var hardwareButtonKeys = 0
     private var hardwareAxisKeys = 0
@@ -61,9 +67,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var lastStatsAtMs = 0L
     private var pendingExportStateSlot = 1
     private var pendingImportStateSlot = 1
+    private var pendingHardwareMappingMask = 0
     private var playAccountingStartedAtMs = 0L
     private var scaleMode = 0
     private var hasSurface = false
+    private var inputMappingDialog: AlertDialog? = null
+    private var keyCaptureDialog: AlertDialog? = null
     private val statsHandler = Handler(Looper.getMainLooper())
     private val statsRunnable = object : Runnable {
         override fun run() {
@@ -78,7 +87,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         super.onCreate(savedInstanceState)
         preferences = EmulatorPreferences(this)
         perGameOverrides = PerGameOverrideStore(this)
+        inputMappingStore = InputMappingStore(this)
         currentGameId = EmulatorSession.currentGame()?.uri
+        hardwareKeyProfile = inputMappingStore.profile(currentGameId)
         scaleMode = perGameOverrides.scaleMode(currentGameId, preferences.scaleMode)
         muted = perGameOverrides.muted(currentGameId, preferences.muted)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
@@ -224,7 +235,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        val mask = AndroidInputMapper.keyMaskForKeyCode(event.keyCode)
+        if (pendingHardwareMappingMask != 0) {
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                captureHardwareMappingKey(event.keyCode)
+            }
+            return true
+        }
+
+        val mask = AndroidInputMapper.keyMaskForKeyCode(event.keyCode, hardwareKeyProfile)
         if (mask == 0) {
             return super.dispatchKeyEvent(event)
         }
@@ -375,6 +393,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 }
             }
             runRow.addView(padButton)
+            runRow.addView(Button(context).apply {
+                text = "Keys"
+                setOnClickListener {
+                    showInputMappingDialog()
+                }
+            })
             statsButton = Button(context).apply {
                 setOnClickListener {
                     showStats = !showStats
@@ -505,6 +529,99 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         scaleButton?.text = SCALE_LABELS[scaleMode]
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
         statsButton?.text = if (showStats) "Stats*" else "Stats"
+    }
+
+    private fun showInputMappingDialog() {
+        val rows = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(8), dp(4), dp(8), dp(4))
+        }
+        GbaButtons.All.forEach { button ->
+            rows.addView(Button(this).apply {
+                text = "${button.label}: ${formatKeyCode(hardwareKeyProfile.keyCodeForMask(button.mask))}"
+                setOnClickListener {
+                    beginHardwareKeyCapture(button.mask, button.label)
+                }
+            })
+        }
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Hardware keys")
+            .setMessage(if (currentGameId == null) "Bindings apply globally." else "Bindings apply to this game.")
+            .setView(ScrollView(this).apply { addView(rows) })
+            .setNeutralButton("Reset") { _, _ -> resetHardwareKeyMappings() }
+            .setNegativeButton("Close", null)
+            .show()
+        inputMappingDialog = dialog
+        dialog.setOnDismissListener {
+            if (inputMappingDialog === dialog) {
+                inputMappingDialog = null
+            }
+        }
+    }
+
+    private fun beginHardwareKeyCapture(mask: Int, label: String) {
+        pendingHardwareMappingMask = mask
+        inputMappingDialog?.dismiss()
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Map $label")
+            .setMessage("Press a hardware key. Press Back to cancel.")
+            .setNegativeButton("Cancel") { _, _ -> pendingHardwareMappingMask = 0 }
+            .create()
+        keyCaptureDialog = dialog
+        dialog.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                captureHardwareMappingKey(keyCode)
+            }
+            true
+        }
+        dialog.setOnDismissListener {
+            if (keyCaptureDialog === dialog) {
+                keyCaptureDialog = null
+            }
+            pendingHardwareMappingMask = 0
+        }
+        dialog.show()
+    }
+
+    private fun captureHardwareMappingKey(keyCode: Int) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            cancelHardwareMappingCapture()
+            return
+        }
+        val mask = pendingHardwareMappingMask
+        if (inputMappingStore.setKeyCode(currentGameId, mask, keyCode)) {
+            hardwareKeyProfile = inputMappingStore.profile(currentGameId)
+            clearInput()
+            Toast.makeText(
+                this,
+                "${GbaButtons.labelForMask(mask)} mapped to ${formatKeyCode(keyCode)}",
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
+        pendingHardwareMappingMask = 0
+        keyCaptureDialog?.dismiss()
+        keyCaptureDialog = null
+        showInputMappingDialog()
+    }
+
+    private fun cancelHardwareMappingCapture() {
+        pendingHardwareMappingMask = 0
+        keyCaptureDialog?.dismiss()
+        keyCaptureDialog = null
+        showInputMappingDialog()
+    }
+
+    private fun resetHardwareKeyMappings() {
+        inputMappingStore.reset(currentGameId)
+        hardwareKeyProfile = inputMappingStore.profile(currentGameId)
+        clearInput()
+        Toast.makeText(this, "Hardware keys reset", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun formatKeyCode(keyCode: Int?): String {
+        return keyCode?.let {
+            KeyEvent.keyCodeToString(it).removePrefix("KEYCODE_")
+        }.orEmpty()
     }
 
     private fun startStatsOverlay() {

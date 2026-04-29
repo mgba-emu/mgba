@@ -13,6 +13,25 @@ public class AndroidInputMapperTest {
     }
 
     @Test
+    public void customProfileReplacesDefaultTargetBinding() {
+        HardwareKeyProfile profile = HardwareKeyProfile.defaultProfile()
+            .withKeyCode(GbaKeyMask.B, KeyEvent.KEYCODE_BUTTON_A);
+
+        assertEquals(GbaKeyMask.B, AndroidInputMapper.INSTANCE.keyMaskForKeyCode(KeyEvent.KEYCODE_BUTTON_A, profile));
+        assertEquals(0, AndroidInputMapper.INSTANCE.keyMaskForKeyCode(KeyEvent.KEYCODE_BUTTON_B, profile));
+        assertEquals(GbaKeyMask.A, AndroidInputMapper.INSTANCE.keyMaskForKeyCode(KeyEvent.KEYCODE_X, profile));
+    }
+
+    @Test
+    public void customProfileKeepsLastBindingWhenKeyCodeConflicts() {
+        HardwareKeyProfile profile = HardwareKeyProfile.defaultProfile()
+            .withKeyCode(GbaKeyMask.A, KeyEvent.KEYCODE_SPACE)
+            .withKeyCode(GbaKeyMask.B, KeyEvent.KEYCODE_SPACE);
+
+        assertEquals(GbaKeyMask.B, AndroidInputMapper.INSTANCE.keyMaskForKeyCode(KeyEvent.KEYCODE_SPACE, profile));
+    }
+
+    @Test
     public void mapsKeyboardFallbackButtons() {
         assertEquals(GbaKeyMask.A, AndroidInputMapper.INSTANCE.keyMaskForKeyCode(KeyEvent.KEYCODE_X));
         assertEquals(GbaKeyMask.B, AndroidInputMapper.INSTANCE.keyMaskForKeyCode(KeyEvent.KEYCODE_Z));

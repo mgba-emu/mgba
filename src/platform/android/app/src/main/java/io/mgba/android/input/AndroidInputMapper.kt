@@ -1,37 +1,17 @@
 package io.mgba.android.input
 
 import android.view.InputDevice
-import android.view.KeyEvent
 import android.view.MotionEvent
 
 object AndroidInputMapper {
     private const val AxisThreshold = 0.45f
 
     fun keyMaskForKeyCode(keyCode: Int): Int {
-        return when (keyCode) {
-            KeyEvent.KEYCODE_BUTTON_A,
-            KeyEvent.KEYCODE_X -> GbaKeyMask.A
-            KeyEvent.KEYCODE_BUTTON_B,
-            KeyEvent.KEYCODE_Z,
-            KeyEvent.KEYCODE_C -> GbaKeyMask.B
-            KeyEvent.KEYCODE_BUTTON_SELECT,
-            KeyEvent.KEYCODE_TAB -> GbaKeyMask.Select
-            KeyEvent.KEYCODE_BUTTON_START,
-            KeyEvent.KEYCODE_ENTER -> GbaKeyMask.Start
-            KeyEvent.KEYCODE_DPAD_RIGHT,
-            KeyEvent.KEYCODE_RIGHT_BRACKET -> GbaKeyMask.Right
-            KeyEvent.KEYCODE_DPAD_LEFT,
-            KeyEvent.KEYCODE_LEFT_BRACKET -> GbaKeyMask.Left
-            KeyEvent.KEYCODE_DPAD_UP,
-            KeyEvent.KEYCODE_I -> GbaKeyMask.Up
-            KeyEvent.KEYCODE_DPAD_DOWN,
-            KeyEvent.KEYCODE_K -> GbaKeyMask.Down
-            KeyEvent.KEYCODE_BUTTON_R1,
-            KeyEvent.KEYCODE_E -> GbaKeyMask.R
-            KeyEvent.KEYCODE_BUTTON_L1,
-            KeyEvent.KEYCODE_Q -> GbaKeyMask.L
-            else -> 0
-        }
+        return keyMaskForKeyCode(keyCode, HardwareKeyProfile.defaultProfile())
+    }
+
+    fun keyMaskForKeyCode(keyCode: Int, profile: HardwareKeyProfile): Int {
+        return profile.maskForKeyCode(keyCode)
     }
 
     fun motionKeys(event: MotionEvent): Int {
