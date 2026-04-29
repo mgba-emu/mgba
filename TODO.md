@@ -126,6 +126,7 @@
 - [x] 已将 per-game override 读写迁移到 ROM CRC32 stable id，并在首次进入游戏时从旧 SAF URI key 复制已有配置。
 - [x] 已将硬件输入映射的 per-game scope 迁移到 ROM CRC32 stable id，并兼容旧 URI scope。
 - [x] 已新增虚拟手柄布局编辑模式，可拖动 D-pad、A/B、Start/Select 和肩键分区，并按 per-game stable id 持久化。
+- [x] 已为 ROM 库封面缩略图新增 LRU 内存 cache、按目标尺寸下采样，并在 `onTrimMemory` 中清理/收缩。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -963,7 +964,7 @@ object NativeBridge {
   - [ ] 或在 Manifest 处理 configChanges，但要慎用。
 - [ ] 内存压力：
   - [x] `onTrimMemory` 清理 ROM archive cache。
-  - [ ] `onTrimMemory` 清理封面 cache。
+  - [x] `onTrimMemory` 清理封面 cache。
   - [x] 不在内存里长期保留大型 ROM，除非 provider 不支持 seek。
 - [ ] 崩溃恢复：
   - [x] native crash 无法完全恢复，但下次启动提示导出日志。

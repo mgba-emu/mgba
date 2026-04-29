@@ -5,6 +5,7 @@ import android.app.ActivityManager
 import android.app.AlertDialog
 import android.app.ApplicationExitInfo
 import android.content.Intent
+import android.graphics.Bitmap
 import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -16,6 +17,7 @@ import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.text.format.DateUtils
+import android.util.LruCache
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -54,6 +56,11 @@ import org.json.JSONObject
 import java.util.zip.ZipInputStream
 
 class MainActivity : Activity() {
+    private val coverThumbnailCache = object : LruCache<String, Bitmap>(COVER_THUMBNAIL_CACHE_BYTES) {
+        override fun sizeOf(key: String, value: Bitmap): Int {
+            return value.byteCount
+        }
+    }
     private lateinit var nativeStatus: TextView
     private lateinit var recentStore: RecentGameStore
     private lateinit var libraryStore: RomLibraryStore
@@ -456,6 +463,9 @@ class MainActivity : Activity() {
             trimArchiveCache(maxBytes = ARCHIVE_CACHE_TRIM_BYTES)
             trimArchiveFileCache(maxBytes = ARCHIVE_CACHE_TRIM_BYTES)
             trimImportCache(maxBytes = ARCHIVE_CACHE_TRIM_BYTES)
+            coverThumbnailCache.evictAll()
+        } else if (level >= TRIM_MEMORY_UI_HIDDEN) {
+            coverThumbnailCache.trimToSize(COVER_THUMBNAIL_CACHE_BYTES / 2)
         }
     }
 
@@ -1274,6 +1284,7 @@ class MainActivity : Activity() {
                     Toast.makeText(this, "Cover import failed", Toast.LENGTH_SHORT).show()
                 } else {
                     libraryStore.setCoverPath(romUri, coverPath)
+                    coverThumbnailCache.evictAll()
                     renderLibrary()
                     nativeStatus.text = "${getString(R.string.native_version_label)}: Cover imported"
                     Toast.makeText(this, "Cover imported", Toast.LENGTH_SHORT).show()
@@ -1307,6 +1318,7 @@ class MainActivity : Activity() {
             File(path).delete()
         }
         libraryStore.setCoverPath(rom.uri, "")
+        coverThumbnailCache.evictAll()
         renderLibrary()
         nativeStatus.text = "${getString(R.string.native_version_label)}: Cover cleared"
     }
@@ -1322,15 +1334,48 @@ class MainActivity : Activity() {
         if (!File(path).isFile) {
             return null
         }
-        val bitmap = BitmapFactory.decodeFile(path) ?: return null
+        val widthPx = dp(widthDp)
+        val heightPx = dp(heightDp)
+        val bitmap = coverThumbnailBitmap(path, widthPx, heightPx) ?: return null
         return ImageView(this).apply {
             setImageBitmap(bitmap)
             scaleType = ImageView.ScaleType.CENTER_CROP
-            layoutParams = LinearLayout.LayoutParams(dp(widthDp), dp(heightDp)).apply {
+            layoutParams = LinearLayout.LayoutParams(widthPx, heightPx).apply {
                 rightMargin = dp(rightMarginDp)
                 bottomMargin = dp(bottomMarginDp)
             }
         }
+    }
+
+    private fun coverThumbnailBitmap(path: String, widthPx: Int, heightPx: Int): Bitmap? {
+        val file = File(path)
+        val key = "${file.absolutePath}:${file.lastModified()}:$widthPx:$heightPx"
+        coverThumbnailCache.get(key)?.let { return it }
+        val bitmap = decodeCoverThumbnail(path, widthPx, heightPx) ?: return null
+        coverThumbnailCache.put(key, bitmap)
+        return bitmap
+    }
+
+    private fun decodeCoverThumbnail(path: String, widthPx: Int, heightPx: Int): Bitmap? {
+        val bounds = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        BitmapFactory.decodeFile(path, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+            return null
+        }
+        var sample = 1
+        val targetWidth = widthPx.coerceAtLeast(1)
+        val targetHeight = heightPx.coerceAtLeast(1)
+        while (bounds.outWidth / sample > targetWidth * 2 || bounds.outHeight / sample > targetHeight * 2) {
+            sample *= 2
+        }
+        return BitmapFactory.decodeFile(
+            path,
+            BitmapFactory.Options().apply {
+                inSampleSize = sample
+            },
+        )
     }
 
     private fun libraryButtonLabel(rom: LibraryRom): String {
@@ -1781,6 +1826,7 @@ class MainActivity : Activity() {
         private const val LIBRARY_GRID_COLUMNS = 2
         private const val KEY_LIBRARY_VIEW_MODE = "libraryViewMode"
         private const val TRIM_MEMORY_RUNNING_LOW_LEVEL = 10
+        private const val COVER_THUMBNAIL_CACHE_BYTES = 4 * 1024 * 1024
         private const val ARCHIVE_CACHE_MAX_BYTES = 256L * 1024L * 1024L
         private const val ARCHIVE_CACHE_TRIM_BYTES = 64L * 1024L * 1024L
         private const val IMPORT_CACHE_MAX_BYTES = 256L * 1024L * 1024L
