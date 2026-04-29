@@ -153,6 +153,7 @@
 - [x] 已新增 Android Storage 管理摘要：展示 saves/states/screenshots/covers/logs/cache 占用并可清日志或 cache。
 - [x] 已增强 Android ROM 扫描进度：首页扫描/重扫时显示已发现数量和当前 ROM 名称。
 - [x] 已新增 Android 可重复手工验收清单，覆盖构建、设备矩阵、ROM、输入、存档、截图、传感器和诊断。
+- [x] 已新增 Android native bridge JSON 单测，锁定 `NativeLoadResult` 和 `NativeStats` 解析/coerce 行为。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
