@@ -100,6 +100,12 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putInt(KEY_REWIND_BUFFER_INTERVAL, RewindSettings.coerceInterval(value)).apply()
         }
 
+    var autoStateOnExit: Boolean
+        get() = preferences.getBoolean(KEY_AUTO_STATE_ON_EXIT, false)
+        set(value) {
+            preferences.edit().putBoolean(KEY_AUTO_STATE_ON_EXIT, value).apply()
+        }
+
     var showVirtualGamepad: Boolean
         get() = preferences.getBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, true)
         set(value) {
@@ -190,6 +196,7 @@ class EmulatorPreferences(context: Context) {
             .put(KEY_REWIND_ENABLED, rewindEnabled)
             .put(KEY_REWIND_BUFFER_CAPACITY, rewindBufferCapacity)
             .put(KEY_REWIND_BUFFER_INTERVAL, rewindBufferInterval)
+            .put(KEY_AUTO_STATE_ON_EXIT, autoStateOnExit)
             .put(KEY_SHOW_VIRTUAL_GAMEPAD, showVirtualGamepad)
             .put(KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT, virtualGamepadSizePercent)
             .put(KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT, virtualGamepadOpacityPercent)
@@ -233,6 +240,7 @@ class EmulatorPreferences(context: Context) {
                 KEY_REWIND_BUFFER_INTERVAL,
                 RewindSettings.coerceInterval(json.optInt(KEY_REWIND_BUFFER_INTERVAL, rewindBufferInterval)),
             )
+            .putBoolean(KEY_AUTO_STATE_ON_EXIT, json.optBoolean(KEY_AUTO_STATE_ON_EXIT, autoStateOnExit))
             .putBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, json.optBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, showVirtualGamepad))
             .putInt(
                 KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT,
@@ -280,6 +288,7 @@ class EmulatorPreferences(context: Context) {
         const val KEY_REWIND_ENABLED = "rewindEnabled"
         const val KEY_REWIND_BUFFER_CAPACITY = "rewindBufferCapacity"
         const val KEY_REWIND_BUFFER_INTERVAL = "rewindBufferInterval"
+        const val KEY_AUTO_STATE_ON_EXIT = "autoStateOnExit"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
         const val KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT = "virtualGamepadOpacityPercent"

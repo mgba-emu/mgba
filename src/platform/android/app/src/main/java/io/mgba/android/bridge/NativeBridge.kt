@@ -57,6 +57,12 @@ object NativeBridge {
     external fun nativeImportStateSlotFd(handle: Long, slot: Int, fd: Int): Boolean
 
     @JvmStatic
+    external fun nativeSaveAutoState(handle: Long): Boolean
+
+    @JvmStatic
+    external fun nativeLoadAutoState(handle: Long): Boolean
+
+    @JvmStatic
     external fun nativeReset(handle: Long)
 
     @JvmStatic

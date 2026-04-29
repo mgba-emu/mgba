@@ -71,6 +71,8 @@ public:
 	bool deleteStateSlot(int slot);
 	bool exportStateSlotFd(int slot, int fd);
 	bool importStateSlotFd(int slot, int fd);
+	bool saveAutoState();
+	bool loadAutoState();
 	void reset();
 	bool stepFrame();
 	void setFastForward(bool enabled);
@@ -125,6 +127,7 @@ private:
 	void runLoop();
 	std::string romIdFromSavePath() const;
 	std::string statePathForSlot(int slot);
+	std::string autoStatePath();
 	void unloadCore();
 
 	std::string m_basePath;

@@ -820,6 +820,44 @@ bool AndroidCoreRunner::importStateSlotFd(int slot, int fd) {
 	return ok;
 }
 
+bool AndroidCoreRunner::saveAutoState() {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	const std::string path = autoStatePath();
+	if (!m_core || path.empty()) {
+		return false;
+	}
+	struct VFile* vf = VFileOpen(path.c_str(), O_CREAT | O_TRUNC | O_RDWR);
+	if (!vf) {
+		return false;
+	}
+	const bool ok = mCoreSaveStateNamed(m_core, vf, SAVESTATE_ALL);
+	vf->close(vf);
+	return ok;
+}
+
+bool AndroidCoreRunner::loadAutoState() {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	const std::string path = autoStatePath();
+	if (!m_core || path.empty()) {
+		return false;
+	}
+	struct VFile* vf = VFileOpen(path.c_str(), O_RDONLY);
+	if (!vf) {
+		return false;
+	}
+	const bool ok = mCoreLoadStateNamed(m_core, vf, SAVESTATE_ALL);
+	vf->close(vf);
+	if (ok) {
+		resetRewindContextLocked();
+		m_previousVideoBuffer.clear();
+		m_blendedVideoBuffer.clear();
+		m_blendFrameReady = false;
+		m_core->currentVideoSize(m_core, &m_videoWidth, &m_videoHeight);
+		m_audioOutput.clear();
+	}
+	return ok;
+}
+
 void AndroidCoreRunner::reset() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (m_core) {
@@ -1674,6 +1712,18 @@ std::string AndroidCoreRunner::statePathForSlot(int slot) {
 	std::ostringstream path;
 	path << statesPath << "/" << romIdFromSavePath() << "-slot" << slot << ".ss";
 	return path.str();
+}
+
+std::string AndroidCoreRunner::autoStatePath() {
+	if (m_savePath.empty()) {
+		return "";
+	}
+	const std::string statesPath = m_basePath + "/states";
+	if (!EnsureDirectory(statesPath)) {
+		return "";
+	}
+
+	return statesPath + "/" + romIdFromSavePath() + "-auto.ss";
 }
 
 void AndroidCoreRunner::unloadCore() {

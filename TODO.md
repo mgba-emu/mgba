@@ -835,8 +835,8 @@ object NativeBridge {
   - [ ] 优先读取 state extdata 中的 screenshot。
   - [x] 若没有，保存时额外生成 PNG cache。
 - [ ] 自动保存策略：
-  - [ ] Activity pause 可触发 SRAM flush。
-  - [ ] 可选 auto-state on exit。
+  - [x] Activity pause 可触发 SRAM flush。
+  - [x] 可选 auto-state on exit。
 
 ### 11.2 截图
 

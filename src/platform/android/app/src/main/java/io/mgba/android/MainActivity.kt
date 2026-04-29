@@ -77,6 +77,7 @@ class MainActivity : Activity() {
     private lateinit var rewindButton: Button
     private lateinit var rewindBufferButton: Button
     private lateinit var rewindIntervalButton: Button
+    private lateinit var autoStateButton: Button
     private lateinit var opposingDirectionsButton: Button
     private lateinit var rumbleButton: Button
     private lateinit var logLevelButton: Button
@@ -266,6 +267,12 @@ class MainActivity : Activity() {
                 updateRewindButtons()
             }
         }
+        autoStateButton = Button(this).apply {
+            setOnClickListener {
+                preferences.autoStateOnExit = !preferences.autoStateOnExit
+                updateRewindButtons()
+            }
+        }
         updateRewindButtons()
 
         opposingDirectionsButton = Button(this).apply {
@@ -408,6 +415,7 @@ class MainActivity : Activity() {
         root.addView(rewindButton)
         root.addView(rewindBufferButton)
         root.addView(rewindIntervalButton)
+        root.addView(autoStateButton)
         root.addView(opposingDirectionsButton)
         root.addView(rumbleButton)
         root.addView(logLevelButton)
@@ -601,6 +609,7 @@ class MainActivity : Activity() {
         val gameId = uri.toString()
         var patchApplied: Boolean? = null
         var cheatsApplied: Boolean? = null
+        var autoStateLoaded = false
         var usedImportFallback = false
         fun loadDescriptor(descriptor: ParcelFileDescriptor): NativeLoadResult {
             val emulator = EmulatorSession.controller(this)
@@ -630,6 +639,7 @@ class MainActivity : Activity() {
                 if (loadResult.ok) {
                     patchApplied = applyStoredPatch(emulator, gameId, name, loadResult.crc32)
                     cheatsApplied = applyStoredCheats(emulator, gameId)
+                    autoStateLoaded = preferences.autoStateOnExit && emulator.loadAutoState()
                 }
             }
         }
@@ -663,9 +673,10 @@ class MainActivity : Activity() {
                 false -> " + cheats failed"
                 null -> ""
             }
+            val autoStateStatus = if (autoStateLoaded) " + auto-state" else ""
             val hardware = if (result.system.equals("CGB", ignoreCase = true)) "GBC" else result.platform
             val fallbackStatus = if (usedImportFallback) " + cache" else ""
-            "${getString(R.string.native_version_label)}: $hardware ${result.title}$patchStatus$cheatStatus$fallbackStatus"
+            "${getString(R.string.native_version_label)}: $hardware ${result.title}$patchStatus$cheatStatus$autoStateStatus$fallbackStatus"
         } else {
             "${getString(R.string.native_version_label)}: ${result?.message ?: "Unable to open ROM"}"
         }
@@ -958,6 +969,7 @@ class MainActivity : Activity() {
         rewindButton.text = if (preferences.rewindEnabled) "Rewind: On" else "Rewind: Off"
         rewindBufferButton.text = "Rewind Buffer: ${preferences.rewindBufferCapacity}"
         rewindIntervalButton.text = "Rewind Speed: ${preferences.rewindBufferInterval}"
+        autoStateButton.text = if (preferences.autoStateOnExit) "Auto State: On" else "Auto State: Off"
     }
 
     private fun updateOpposingDirectionsButton() {

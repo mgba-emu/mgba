@@ -102,6 +102,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var rewindEnabledButton: Button? = null
     private var rewindBufferButton: Button? = null
     private var rewindIntervalButton: Button? = null
+    private var autoStateButton: Button? = null
     private var frameSkipButton: Button? = null
     private var muteButton: Button? = null
     private var volumeButton: Button? = null
@@ -130,6 +131,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var rewindEnabled = true
     private var rewindBufferCapacity = 600
     private var rewindBufferInterval = 1
+    private var autoStateOnExit = false
     private var frameSkip = 0
     private var muted = false
     private var volumePercent = 100
@@ -214,6 +216,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         rewindEnabled = perGameOverrides.rewindEnabled(currentGameId, preferences.rewindEnabled)
         rewindBufferCapacity = perGameOverrides.rewindBufferCapacity(currentGameId, preferences.rewindBufferCapacity)
         rewindBufferInterval = perGameOverrides.rewindBufferInterval(currentGameId, preferences.rewindBufferInterval)
+        autoStateOnExit = preferences.autoStateOnExit
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
         virtualGamepadSizePercent = perGameOverrides.virtualGamepadSizePercent(
             currentGameId,
@@ -397,6 +400,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         stopStatsOverlay()
         controller?.setSurface(null)
         if (isFinishing) {
+            if (autoStateOnExit) {
+                controller?.saveAutoState()
+            }
             EmulatorSession.close()
         }
         super.onDestroy()
@@ -600,6 +606,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         if (!perGameOverrides.setRewindBufferInterval(currentGameId, rewindBufferInterval)) {
             preferences.rewindBufferInterval = rewindBufferInterval
         }
+    }
+
+    private fun saveAutoStatePreference() {
+        preferences.autoStateOnExit = autoStateOnExit
     }
 
     private fun saveGamepadPreference() {
@@ -826,6 +836,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(rewindIntervalButton)
+            autoStateButton = Button(context).apply {
+                setOnClickListener {
+                    autoStateOnExit = !autoStateOnExit
+                    saveAutoStatePreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(autoStateButton)
             frameSkipButton = Button(context).apply {
                 setOnClickListener {
                     frameSkip = (frameSkip + 1) % FRAME_SKIP_LABELS.size
@@ -1250,6 +1268,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         rewindEnabledButton?.text = if (rewindEnabled) "RwOn" else "RwOff"
         rewindBufferButton?.text = "RwB$rewindBufferCapacity"
         rewindIntervalButton?.text = "RwI$rewindBufferInterval"
+        autoStateButton?.text = if (autoStateOnExit) "AutoSt" else "NoAuto"
         frameSkipButton?.text = FRAME_SKIP_LABELS[frameSkip]
         muteButton?.text = if (muted) "Sound" else "Mute"
         volumeButton?.text = "Vol$volumePercent"
