@@ -68,6 +68,14 @@ class RomLibraryStore(context: Context) {
         preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
     }
 
+    fun remove(uri: Uri) {
+        val array = JSONArray()
+        list().filterNot { it.uri == uri }.forEach { item ->
+            array.put(toJson(item))
+        }
+        preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
+    }
+
     private fun toJson(item: LibraryRom): JSONObject {
         return JSONObject()
             .put("uri", item.uri.toString())

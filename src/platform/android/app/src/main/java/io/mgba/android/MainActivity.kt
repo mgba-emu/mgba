@@ -307,6 +307,12 @@ class MainActivity : Activity() {
                         renderLibrary()
                     }
                 })
+                addView(Button(context).apply {
+                    text = "Del"
+                    setOnClickListener {
+                        confirmRemoveLibraryRom(rom)
+                    }
+                })
             })
         }
         if (roms.size > MAX_LIBRARY_ITEMS) {
@@ -330,6 +336,19 @@ class MainActivity : Activity() {
         )
         val title = if (rom.favorite) "[*] ${rom.displayName}" else rom.displayName
         return "$title\nLast played $relative"
+    }
+
+    private fun confirmRemoveLibraryRom(rom: LibraryRom) {
+        AlertDialog.Builder(this)
+            .setTitle("Remove from library?")
+            .setMessage(rom.displayName)
+            .setPositiveButton("Remove") { _, _ ->
+                libraryStore.remove(rom.uri)
+                renderLibrary()
+                nativeStatus.text = "${getString(R.string.native_version_label)}: Removed from library"
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun scanLibraryInBackground(uri: Uri) {
