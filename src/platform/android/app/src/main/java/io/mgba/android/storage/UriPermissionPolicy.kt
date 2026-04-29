@@ -17,7 +17,8 @@ object UriPermissionPolicy {
         if (scheme != "content") {
             return false
         }
-        return hasPersistableReadGrant(flags)
+        val hasPrefixGrant = flags and Intent.FLAG_GRANT_PREFIX_URI_PERMISSION != 0
+        return hasPersistableReadGrant(flags) && hasPrefixGrant
     }
 
     private fun hasPersistableReadGrant(flags: Int): Boolean {
