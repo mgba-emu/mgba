@@ -1,0 +1,58 @@
+name: Android
+
+on:
+  push:
+    paths:
+      - ".github/workflows/android.yml"
+      - "src/platform/android/**"
+      - "include/**"
+      - "src/**"
+      - "CMakeLists.txt"
+  pull_request:
+    paths:
+      - ".github/workflows/android.yml"
+      - "src/platform/android/**"
+      - "include/**"
+      - "src/**"
+      - "CMakeLists.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  debug-apk:
+    name: Debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android packages
+        run: |
+          sdkmanager --install \
+            "platforms;android-36" \
+            "build-tools;36.0.0" \
+            "cmake;3.22.1" \
+            "ndk;28.2.13676358"
+
+      - name: Build debug APK
+        working-directory: src/platform/android
+        run: ./gradlew :app:assembleDebug --no-daemon
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mgba-android-debug-apk
+          path: src/platform/android/app/build/outputs/apk/debug/app-debug.apk

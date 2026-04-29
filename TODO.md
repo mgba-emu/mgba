@@ -41,6 +41,7 @@
 - [x] 已实现 SAF URI 最近打开列表，可从首页直接重新打开已授权 ROM。
 - [x] 已实现 emulator 画面沉浸全屏与游玩时保持屏幕常亮。
 - [x] 已提交 Gradle wrapper，Android 工程可直接使用 `./gradlew :app:assembleDebug` 构建。
+- [x] 已新增 GitHub Actions Android debug APK 构建 workflow。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] 完整 ROM 库扫描、截图分享/导出、即时存档缩略图、覆盖确认、可配置重映射、震动和传感器输入仍待后续阶段实现。
 
@@ -981,14 +982,14 @@ object NativeBridge {
 
 ### 17.1 CI
 
-- [ ] GitHub Actions 新增 Android workflow：
-  - [ ] checkout。
-  - [ ] setup JDK。
-  - [ ] setup Android SDK / NDK。
-  - [ ] Gradle cache。
-  - [ ] `./gradlew :app:assembleDebug`。
+- [x] GitHub Actions 新增 Android workflow：
+  - [x] checkout。
+  - [x] setup JDK。
+  - [x] setup Android SDK / NDK。
+  - [x] Gradle cache。
+  - [x] `./gradlew :app:assembleDebug`。
   - [ ] `./gradlew :app:testDebugUnitTest`。
-  - [ ] 上传 APK artifact。
+  - [x] 上传 APK artifact。
 - [ ] 可选 matrix：
   - [ ] arm64-v8a。
   - [ ] x86_64。
