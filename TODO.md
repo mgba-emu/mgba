@@ -658,8 +658,8 @@ object NativeBridge {
 - [x] 对不支持 seek/mmap 的 provider：
   - [x] 直接 SAF fd 加载失败时触发 fallback。
   - [x] 失败时复制到 `cache/imports/<hash>.<ext>` 再用真实文件 fd 加载。
-- [ ] 对 archive：
-  - [ ] 如果 `VDirOpenArchive(path)` 只能走路径，先复制 archive 到 cache，再用现有 archive VFS。
+- [x] 对 archive：
+  - [x] 如果 `VDirOpenArchive(path)` 只能走路径，先复制 archive 到 cache，再用现有 archive VFS。
   - [ ] 后续可实现 `VDirOpenArchiveVF`，减少大文件复制。
 - [ ] ROM hash：
   - [ ] 加载后计算 CRC32/SHA1。
@@ -884,12 +884,12 @@ object NativeBridge {
 
 ### 12.3 Archive
 
-- [ ] `.zip` / `.7z` 初期通过复制到 cache 后使用现有 path-based archive VFS。
+- [x] `.zip` / `.7z` 初期通过复制到 cache 后使用现有 path-based archive VFS。
 - [x] `.zip` 单 ROM archive 自动启动。
 - [x] `.zip` 多 ROM archive 弹出选择列表。
-- [ ] `.7z` archive 启动。
+- [x] `.7z` archive 启动。
 - [ ] cache 清理策略：
-  - [ ] 最近使用保留。
+  - [x] 最近使用保留。
   - [x] 可手动清空。
   - [x] 超过大小上限自动清理旧文件。
 
@@ -1219,7 +1219,7 @@ object NativeBridge {
 - [x] BIOS 管理。
 - [x] Patch 手动/自动加载。
 - [x] Cheat UI。
-- [ ] ZIP/7z cache 加载。
+- [x] ZIP/7z cache 加载。
 - [ ] 验收：
   - [ ] BIOS 文件可导入并使用。
   - [ ] patch 生效。

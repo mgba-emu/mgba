@@ -1,6 +1,7 @@
 package io.mgba.android.bridge
 
 import android.view.Surface
+import org.json.JSONArray
 
 object NativeBridge {
     init {
@@ -21,6 +22,12 @@ object NativeBridge {
 
     @JvmStatic
     external fun nativeProbeRomFd(fd: Int, displayName: String): String
+
+    @JvmStatic
+    external fun nativeListArchiveRomEntries(archivePath: String): String
+
+    @JvmStatic
+    external fun nativeExtractArchiveRomEntry(archivePath: String, entryName: String, outputPath: String): Boolean
 
     @JvmStatic
     external fun nativeSetSurface(handle: Long, surface: Surface?)
@@ -156,6 +163,23 @@ object NativeBridge {
                 """{"ok":false,"message":"${error.javaClass.simpleName}"}"""
             },
         )
+    }
+
+    fun archiveRomEntries(archivePath: String): List<String> {
+        return runCatching {
+            val array = JSONArray(nativeListArchiveRomEntries(archivePath))
+            buildList {
+                for (index in 0 until array.length()) {
+                    array.optString(index).takeIf { it.isNotBlank() }?.let(::add)
+                }
+            }
+        }.getOrDefault(emptyList())
+    }
+
+    fun extractArchiveRomEntry(archivePath: String, entryName: String, outputPath: String): Boolean {
+        return runCatching {
+            nativeExtractArchiveRomEntry(archivePath, entryName, outputPath)
+        }.getOrDefault(false)
     }
 
     fun stats(handle: Long): NativeStats {

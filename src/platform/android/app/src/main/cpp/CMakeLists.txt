@@ -65,6 +65,7 @@ target_compile_definitions(mgba-android
     PRIVATE
         ENABLE_VFS
         ENABLE_VFS_FD
+        ENABLE_DIRECTORIES
 )
 
 target_link_libraries(mgba-android

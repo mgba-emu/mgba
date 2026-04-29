@@ -385,6 +385,7 @@ class MainActivity : Activity() {
         super.onTrimMemory(level)
         if (level >= TRIM_MEMORY_RUNNING_LOW_LEVEL) {
             trimArchiveCache(maxBytes = ARCHIVE_CACHE_TRIM_BYTES)
+            trimArchiveFileCache(maxBytes = ARCHIVE_CACHE_TRIM_BYTES)
             trimImportCache(maxBytes = ARCHIVE_CACHE_TRIM_BYTES)
         }
     }
@@ -433,6 +434,10 @@ class MainActivity : Activity() {
             openZipRomUri(uri, name, shouldStoreRecent)
             return
         }
+        if (isSevenZipArchive(name)) {
+            openNativeArchiveRomUri(uri, name, shouldStoreRecent)
+            return
+        }
         launchRomFd(uri, name, shouldStoreRecent) {
             contentResolver.openFileDescriptor(uri, "r")
         }
@@ -473,6 +478,65 @@ class MainActivity : Activity() {
         ) {
             ParcelFileDescriptor.open(extracted, ParcelFileDescriptor.MODE_READ_ONLY)
         }
+    }
+
+    private fun openNativeArchiveRomUri(uri: Uri, name: String, shouldStoreRecent: Boolean) {
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Reading archive"
+        Thread {
+            val archive = runCatching { cacheArchiveFile(uri, name) }.getOrNull()
+            val entries = archive?.let { NativeBridge.archiveRomEntries(it.absolutePath) }.orEmpty()
+            runOnUiThread {
+                when {
+                    archive == null -> {
+                        nativeStatus.text = "${getString(R.string.native_version_label)}: Archive cache failed"
+                    }
+                    entries.isEmpty() -> {
+                        nativeStatus.text = "${getString(R.string.native_version_label)}: No supported ROM found in archive"
+                    }
+                    entries.size == 1 -> {
+                        launchNativeArchiveRomEntry(uri, name, archive, entries.first(), shouldStoreRecent)
+                    }
+                    else -> {
+                        val labels = entries.map { it.substringAfterLast('/') }.toTypedArray()
+                        AlertDialog.Builder(this)
+                            .setTitle("Select ROM")
+                            .setItems(labels) { _, which ->
+                                launchNativeArchiveRomEntry(uri, name, archive, entries[which], shouldStoreRecent)
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
+                    }
+                }
+            }
+        }.start()
+    }
+
+    private fun launchNativeArchiveRomEntry(
+        uri: Uri,
+        archiveName: String,
+        archive: File,
+        entryName: String,
+        shouldStoreRecent: Boolean,
+    ) {
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Extracting archive"
+        Thread {
+            val extracted = runCatching { extractNativeArchiveRomEntry(archive, uri, entryName) }.getOrNull()
+            runOnUiThread {
+                if (extracted == null) {
+                    nativeStatus.text = "${getString(R.string.native_version_label)}: Archive extract failed"
+                    return@runOnUiThread
+                }
+                launchRomFd(
+                    uri,
+                    entryName.substringAfterLast('/').ifBlank { archiveName },
+                    shouldStoreRecent,
+                    recentDisplayName = archiveName,
+                    allowImportFallback = false,
+                ) {
+                    ParcelFileDescriptor.open(extracted, ParcelFileDescriptor.MODE_READ_ONLY)
+                }
+            }
+        }.start()
     }
 
     private fun launchRomFd(
@@ -639,6 +703,49 @@ class MainActivity : Activity() {
         return null
     }
 
+    private fun cacheArchiveFile(uri: Uri, name: String): File? {
+        val extension = name.substringAfterLast('.', "").takeIf { it.isNotBlank() }?.let { ".$it" } ?: ".archive"
+        val directory = File(cacheDir, "archive-files")
+        val target = File(directory, "${sha1(uri.toString())}$extension")
+        val tmp = File(directory, "${target.name}.tmp")
+        directory.mkdirs()
+        contentResolver.openInputStream(uri)?.use { input ->
+            tmp.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        } ?: return null
+        if (target.exists()) {
+            target.delete()
+        }
+        if (!tmp.renameTo(target)) {
+            tmp.delete()
+            return null
+        }
+        target.setLastModified(System.currentTimeMillis())
+        trimArchiveFileCache(keep = target)
+        return target
+    }
+
+    private fun extractNativeArchiveRomEntry(archive: File, uri: Uri, entryName: String): File? {
+        val target = archiveCacheFile(uri, entryName)
+        val tmp = File(target.parentFile, "${target.name}.tmp")
+        target.parentFile?.mkdirs()
+        if (!NativeBridge.extractArchiveRomEntry(archive.absolutePath, entryName, tmp.absolutePath)) {
+            tmp.delete()
+            return null
+        }
+        if (target.exists()) {
+            target.delete()
+        }
+        if (!tmp.renameTo(target)) {
+            tmp.delete()
+            return null
+        }
+        target.setLastModified(System.currentTimeMillis())
+        trimArchiveCache(keep = target)
+        return target
+    }
+
     private fun archiveCacheFile(uri: Uri, entryName: String): File {
         val extension = entryName.substringAfterLast('.', "").takeIf { it.isNotBlank() }?.let { ".$it" } ?: ".rom"
         return File(File(cacheDir, "archive-roms"), "${sha1("${uri}\n$entryName")}$extension")
@@ -669,6 +776,10 @@ class MainActivity : Activity() {
 
     private fun isZipArchive(name: String): Boolean {
         return name.lowercase().endsWith(".zip")
+    }
+
+    private fun isSevenZipArchive(name: String): Boolean {
+        return name.lowercase().endsWith(".7z")
     }
 
     private fun isSupportedRomEntry(name: String): Boolean {
@@ -1308,7 +1419,9 @@ class MainActivity : Activity() {
     }
 
     private fun clearArchiveCache() {
-        val deleted = clearCacheDirectory("archive-roms") + clearCacheDirectory("imports")
+        val deleted = clearCacheDirectory("archive-roms") +
+            clearCacheDirectory("archive-files") +
+            clearCacheDirectory("imports")
         nativeStatus.text = "${getString(R.string.native_version_label)}: Cache cleared ($deleted files)"
     }
 
@@ -1319,6 +1432,25 @@ class MainActivity : Activity() {
 
     private fun trimArchiveCache(keep: File? = null, maxBytes: Long = ARCHIVE_CACHE_MAX_BYTES) {
         val directory = File(cacheDir, "archive-roms")
+        val files = directory.listFiles()?.filter { it.isFile } ?: return
+        val keepPath = keep?.absolutePath
+        var totalBytes = files.sumOf { it.length() }
+        files
+            .filter { it.absolutePath != keepPath }
+            .sortedBy { it.lastModified() }
+            .forEach { file ->
+                if (totalBytes <= maxBytes) {
+                    return@forEach
+                }
+                val size = file.length()
+                if (file.delete()) {
+                    totalBytes -= size
+                }
+            }
+    }
+
+    private fun trimArchiveFileCache(keep: File? = null, maxBytes: Long = ARCHIVE_CACHE_MAX_BYTES) {
+        val directory = File(cacheDir, "archive-files")
         val files = directory.listFiles()?.filter { it.isFile } ?: return
         val keepPath = keep?.absolutePath
         var totalBytes = files.sumOf { it.length() }

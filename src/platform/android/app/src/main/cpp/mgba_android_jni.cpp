@@ -3,17 +3,24 @@
 
 #include <mgba/core/log.h>
 #include <mgba/core/version.h>
+#include <mgba-util/vfs.h>
 
 #include <android/log.h>
 #include <android/native_window_jni.h>
 #include <jni.h>
 
+#include <fcntl.h>
+
+#include <algorithm>
+#include <cctype>
 #include <cstdarg>
 #include <cstdio>
+#include <cstring>
 #include <exception>
 #include <memory>
 #include <mutex>
 #include <string>
+#include <vector>
 
 using mgba::android::AndroidCoreRunner;
 using mgba::android::JStringToString;
@@ -32,6 +39,118 @@ std::once_flag g_androidLoggerOnce;
 
 AndroidCoreRunner* FromHandle(jlong handle) {
 	return reinterpret_cast<AndroidCoreRunner*>(handle);
+}
+
+std::string JsonEscape(const std::string& value) {
+	std::string escaped;
+	escaped.reserve(value.size());
+	for (char c : value) {
+		switch (c) {
+		case '"':
+			escaped += "\\\"";
+			break;
+		case '\\':
+			escaped += "\\\\";
+			break;
+		case '\n':
+			escaped += "\\n";
+			break;
+		case '\r':
+			escaped += "\\r";
+			break;
+		case '\t':
+			escaped += "\\t";
+			break;
+		default:
+			escaped += c;
+			break;
+		}
+	}
+	return escaped;
+}
+
+bool IsSupportedRomEntry(const std::string& name) {
+	std::string lower = name;
+	std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) {
+		return static_cast<char>(std::tolower(c));
+	});
+	constexpr const char* kExtensions[] = {".gba", ".agb", ".gb", ".gbc", ".sgb"};
+	for (const char* extension : kExtensions) {
+		if (lower.size() >= std::strlen(extension) &&
+		    lower.compare(lower.size() - std::strlen(extension), std::strlen(extension), extension) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
+std::string ListArchiveRomEntriesJson(const std::string& archivePath) {
+	std::vector<std::string> entries;
+	struct VDir* archive = VDirOpenArchive(archivePath.c_str());
+	if (!archive) {
+		return "[]";
+	}
+	while (struct VDirEntry* entry = archive->listNext(archive)) {
+		if (entry->type(entry) != VFS_FILE) {
+			continue;
+		}
+		const char* name = entry->name(entry);
+		if (name && IsSupportedRomEntry(name)) {
+			entries.emplace_back(name);
+		}
+	}
+	archive->close(archive);
+
+	std::string json = "[";
+	for (size_t i = 0; i < entries.size(); ++i) {
+		if (i) {
+			json += ",";
+		}
+		json += "\"";
+		json += JsonEscape(entries[i]);
+		json += "\"";
+	}
+	json += "]";
+	return json;
+}
+
+bool ExtractArchiveRomEntry(const std::string& archivePath, const std::string& entryName, const std::string& outputPath) {
+	struct VDir* archive = VDirOpenArchive(archivePath.c_str());
+	if (!archive) {
+		return false;
+	}
+	struct VFile* input = archive->openFile(archive, entryName.c_str(), O_RDONLY);
+	if (!input) {
+		archive->close(archive);
+		return false;
+	}
+	struct VFile* output = VFileOpen(outputPath.c_str(), O_CREAT | O_TRUNC | O_WRONLY);
+	if (!output) {
+		input->close(input);
+		archive->close(archive);
+		return false;
+	}
+	bool ok = true;
+	char buffer[64 * 1024];
+	while (true) {
+		const ssize_t read = input->read(input, buffer, sizeof(buffer));
+		if (read < 0) {
+			ok = false;
+			break;
+		}
+		if (read == 0) {
+			break;
+		}
+		const ssize_t written = output->write(output, buffer, static_cast<size_t>(read));
+		if (written != read) {
+			ok = false;
+			break;
+		}
+	}
+	output->close(output);
+	input->close(input);
+	archive->close(archive);
+	return ok;
 }
 
 android_LogPriority AndroidLogPriority(mLogLevel level) {
@@ -119,6 +238,24 @@ Java_io_mgba_android_bridge_NativeBridge_nativeProbeRomFd(JNIEnv* env, jclass, j
 	InstallAndroidLogger();
 	std::string result = mgba::android::ProbeRomFd(fd, JStringToString(env, displayName));
 	return env->NewStringUTF(result.c_str());
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeListArchiveRomEntries(JNIEnv* env, jclass, jstring archivePath) {
+	InstallAndroidLogger();
+	const std::string result = ListArchiveRomEntriesJson(JStringToString(env, archivePath));
+	return env->NewStringUTF(result.c_str());
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeExtractArchiveRomEntry(
+    JNIEnv* env, jclass, jstring archivePath, jstring entryName, jstring outputPath) {
+	InstallAndroidLogger();
+	const bool ok = ExtractArchiveRomEntry(
+		JStringToString(env, archivePath),
+		JStringToString(env, entryName),
+		JStringToString(env, outputPath));
+	return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 extern "C" JNIEXPORT void JNICALL
