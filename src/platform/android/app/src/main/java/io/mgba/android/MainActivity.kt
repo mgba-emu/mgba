@@ -1747,16 +1747,20 @@ class MainActivity : Activity() {
         val ok = raw?.let { importSettingsBackup(it) } == true
         if (ok) {
             updatePreferenceButtons()
+            renderRecentGames()
+            renderLibrary()
         }
         nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "Settings imported" else "Settings import failed"}"
     }
 
     private fun settingsBackupJson(): String {
         return JSONObject()
-            .put("version", 2)
+            .put("version", 3)
             .put("emulatorPreferences", JSONObject(preferences.exportJson()))
             .put("perGameOverrides", perGameOverrides.exportJson())
             .put("inputMappings", inputMappingStore.exportJson())
+            .put("romLibrary", libraryStore.exportJson())
+            .put("recentGames", recentStore.exportJson())
             .toString(2)
     }
 
@@ -1767,7 +1771,11 @@ class MainActivity : Activity() {
         val importedOverrides = overrides?.let { perGameOverrides.importJson(it) } ?: true
         val mappings = root.optJSONObject("inputMappings")
         val importedMappings = mappings?.let { inputMappingStore.importJson(it) } ?: true
-        return importedPreferences && importedOverrides && importedMappings
+        val library = root.optJSONObject("romLibrary")
+        val importedLibrary = library?.let { libraryStore.importJson(it) } ?: true
+        val recentGames = root.optJSONArray("recentGames")
+        val importedRecentGames = recentGames?.let { recentStore.importJson(it) } ?: true
+        return importedPreferences && importedOverrides && importedMappings && importedLibrary && importedRecentGames
     }
 
     private fun clearArchiveCache() {

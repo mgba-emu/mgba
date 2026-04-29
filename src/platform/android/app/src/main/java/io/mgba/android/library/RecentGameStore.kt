@@ -42,18 +42,52 @@ class RecentGameStore(context: Context) {
         val updated = listOf(
             RecentGame(uri, displayName, System.currentTimeMillis(), stableId, crc32),
         ) + existing
+        write(updated)
+    }
+
+    fun exportJson(): JSONArray {
         val array = JSONArray()
-        updated.take(MAX_ITEMS).forEach { item ->
-            array.put(
-                JSONObject()
-                    .put("uri", item.uri.toString())
-                    .put("displayName", item.displayName)
-                    .put("lastOpened", item.lastOpened)
-                    .put("stableId", item.stableId)
-                    .put("crc32", item.crc32),
-            )
+        list().forEach { item -> array.put(toJson(item)) }
+        return array
+    }
+
+    fun importJson(array: JSONArray): Boolean {
+        val items = buildList {
+            for (index in 0 until array.length()) {
+                jsonToRecent(array.optJSONObject(index))?.let(::add)
+            }
         }
+        write(items)
+        return true
+    }
+
+    private fun write(items: List<RecentGame>) {
+        val array = JSONArray()
+        items.take(MAX_ITEMS).forEach { item -> array.put(toJson(item)) }
         preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
+    }
+
+    private fun toJson(item: RecentGame): JSONObject {
+        return JSONObject()
+            .put("uri", item.uri.toString())
+            .put("displayName", item.displayName)
+            .put("lastOpened", item.lastOpened)
+            .put("stableId", item.stableId)
+            .put("crc32", item.crc32)
+    }
+
+    private fun jsonToRecent(item: JSONObject?): RecentGame? {
+        if (item == null) {
+            return null
+        }
+        val uri = item.optString("uri").takeIf { it.isNotBlank() } ?: return null
+        return RecentGame(
+            uri = Uri.parse(uri),
+            displayName = item.optString("displayName", uri),
+            lastOpened = item.optLong("lastOpened", 0L),
+            stableId = item.optString("stableId"),
+            crc32 = item.optString("crc32"),
+        )
     }
 
     private companion object {

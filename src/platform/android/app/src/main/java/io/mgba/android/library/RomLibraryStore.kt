@@ -44,28 +44,7 @@ class RomLibraryStore(context: Context) {
         val array = runCatching { JSONArray(json) }.getOrDefault(JSONArray())
         return buildList {
             for (index in 0 until array.length()) {
-                val item = array.optJSONObject(index) ?: continue
-                val uri = item.optString("uri").takeIf { it.isNotBlank() } ?: continue
-                add(
-                    LibraryRom(
-                        uri = Uri.parse(uri),
-                        displayName = item.optString("displayName", uri),
-                        title = item.optString("title"),
-                        platform = item.optString("platform"),
-                        system = item.optString("system"),
-                        gameCode = item.optString("gameCode"),
-                        maker = item.optString("maker"),
-                        version = item.optInt("version", -1),
-                        crc32 = item.optString("crc32"),
-                        sha1 = item.optString("sha1"),
-                        fileSize = item.optLong("fileSize", 0L),
-                        lastPlayedAt = item.optLong("lastPlayedAt", 0L),
-                        playTimeSeconds = item.optLong("playTimeSeconds", 0L),
-                        favorite = item.optBoolean("favorite", false),
-                        coverPath = item.optString("coverPath"),
-                        sourceTreeUri = item.optString("sourceTreeUri").takeIf { it.isNotBlank() }?.let(Uri::parse),
-                    ),
-                )
+                jsonToRom(array.optJSONObject(index))?.let(::add)
             }
         }.sortedWith(librarySort)
     }
@@ -152,6 +131,40 @@ class RomLibraryStore(context: Context) {
         preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
     }
 
+    fun exportJson(): JSONObject {
+        val sources = JSONArray()
+        sourceFolders().forEach { source -> sources.put(source.toString()) }
+        val items = JSONArray()
+        list().forEach { item -> items.put(toJson(item)) }
+        return JSONObject()
+            .put("version", 1)
+            .put("sources", sources)
+            .put("items", items)
+    }
+
+    fun importJson(json: JSONObject): Boolean {
+        val items = json.optJSONArray("items") ?: return false
+        val importedItems = buildList {
+            for (index in 0 until items.length()) {
+                jsonToRom(items.optJSONObject(index))?.let(::add)
+            }
+        }
+        val itemArray = JSONArray()
+        importedItems.distinctBy { it.uri }.sortedWith(librarySort).forEach { item ->
+            itemArray.put(toJson(item))
+        }
+        val sourceArray = JSONArray()
+        val sources = json.optJSONArray("sources") ?: JSONArray()
+        for (index in 0 until sources.length()) {
+            sources.optString(index).takeIf { it.isNotBlank() }?.let(sourceArray::put)
+        }
+        preferences.edit()
+            .putString(KEY_ITEMS, itemArray.toString())
+            .putString(KEY_SOURCES, sourceArray.toString())
+            .apply()
+        return true
+    }
+
     private fun toJson(item: LibraryRom): JSONObject {
         return JSONObject()
             .put("uri", item.uri.toString())
@@ -170,6 +183,31 @@ class RomLibraryStore(context: Context) {
             .put("favorite", item.favorite)
             .put("coverPath", item.coverPath)
             .put("sourceTreeUri", item.sourceTreeUri?.toString().orEmpty())
+    }
+
+    private fun jsonToRom(item: JSONObject?): LibraryRom? {
+        if (item == null) {
+            return null
+        }
+        val uri = item.optString("uri").takeIf { it.isNotBlank() } ?: return null
+        return LibraryRom(
+            uri = Uri.parse(uri),
+            displayName = item.optString("displayName", uri),
+            title = item.optString("title"),
+            platform = item.optString("platform"),
+            system = item.optString("system"),
+            gameCode = item.optString("gameCode"),
+            maker = item.optString("maker"),
+            version = item.optInt("version", -1),
+            crc32 = item.optString("crc32"),
+            sha1 = item.optString("sha1"),
+            fileSize = item.optLong("fileSize", 0L),
+            lastPlayedAt = item.optLong("lastPlayedAt", 0L),
+            playTimeSeconds = item.optLong("playTimeSeconds", 0L),
+            favorite = item.optBoolean("favorite", false),
+            coverPath = item.optString("coverPath"),
+            sourceTreeUri = item.optString("sourceTreeUri").takeIf { it.isNotBlank() }?.let(Uri::parse),
+        )
     }
 
     private fun merge(item: LibraryRom, previous: LibraryRom?): LibraryRom {
