@@ -55,10 +55,12 @@ import io.mgba.android.settings.FastForwardModes
 import io.mgba.android.settings.InputMappingStore
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.settings.RewindSettings
+import io.mgba.android.storage.AppLogStore
 import io.mgba.android.storage.CheatEntry
 import io.mgba.android.storage.CheatStore
 import io.mgba.android.storage.BiosStore
 import io.mgba.android.storage.BiosSlot
+import io.mgba.android.storage.LogExporter
 import io.mgba.android.storage.PatchStore
 import io.mgba.android.storage.ScreenshotExporter
 import io.mgba.android.storage.ScreenshotShareProvider
@@ -1113,6 +1115,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(statsButton)
+            runRow.addView(Button(context).apply {
+                text = "Diag"
+                setOnClickListener {
+                    exportRuntimeDiagnostics()
+                }
+            })
             runRow.addView(Button(context).apply {
                 text = "Shot"
                 setOnClickListener {
@@ -2231,6 +2239,41 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             FILTER_LABELS.getOrElse(stats.filterMode) { FILTER_LABELS[0] },
             if (stats.skipBios) "skip" else "boot",
         )
+    }
+
+    private fun exportRuntimeDiagnostics() {
+        AppLogStore.append(this, runtimeDiagnosticsText())
+        val uri = LogExporter.exportRecent(this)
+        Toast.makeText(
+            this,
+            if (uri != null) "Diagnostics exported" else "Diagnostics export unavailable",
+            Toast.LENGTH_SHORT,
+        ).show()
+    }
+
+    private fun runtimeDiagnosticsText(): String {
+        val stats = controller?.stats()
+        return buildString {
+            appendLine("Runtime diagnostics")
+            appendLine("gameId=$currentGameId")
+            appendLine("stableGameId=$currentStableGameId")
+            appendLine("overrideGameId=$currentOverrideGameId")
+            appendLine("paused=$userPaused fastForward=$fastForward rewinding=$rewinding")
+            appendLine("stateSlot=$stateSlot autoStateOnExit=$autoStateOnExit")
+            appendLine("video scale=${SCALE_LABELS.getOrElse(scaleMode) { SCALE_LABELS[0] }} filter=${FILTER_LABELS.getOrElse(filterMode) { FILTER_LABELS[0] }} interframe=$interframeBlending")
+            appendLine("audio muted=$muted volume=$volumePercent buffer=${AudioBufferModes.nameFor(audioBufferMode)} lowPass=${AudioLowPassModes.nameFor(audioLowPassMode)}")
+            appendLine("input virtual=$showVirtualGamepad deadzone=$deadzonePercent opposing=$allowOpposingDirections activeDevice=${activeInputDeviceName.orEmpty()}")
+            appendLine("sensors rumble=$rumbleEnabled tilt=$tiltEnabled solar=$solarLevel camera=${cameraImagePath.isNotBlank()}")
+            if (stats == null) {
+                appendLine("nativeStats=unavailable")
+            } else {
+                appendLine("nativeFrames=${stats.frames}")
+                appendLine("nativeVideo=${stats.videoWidth}x${stats.videoHeight}")
+                appendLine("nativeRun running=${stats.running} paused=${stats.paused} fast=${stats.fastForward} rewind=${stats.rewinding}")
+                appendLine("nativeAudio volume=${stats.volumePercent} buffer=${stats.audioBufferSamples} lowPass=${stats.audioLowPassRange} underruns=${stats.audioUnderruns}")
+                appendLine("nativeRom platform=${stats.romPlatform} title=${stats.gameTitle} skipBios=${stats.skipBios}")
+            }
+        }
     }
 
     private fun startRumblePolling() {
