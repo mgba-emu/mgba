@@ -1413,6 +1413,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     exitWithConfirmation()
                 }
             })
+            styleToolbarRow(runRow)
+            styleToolbarRow(stateRow)
             addView(scrollableToolbarRow(runRow))
             addView(scrollableToolbarRow(stateRow))
             stateThumbnailView = ImageView(context).apply {
@@ -1435,11 +1437,42 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun scrollableToolbarRow(row: LinearLayout): HorizontalScrollView {
         return HorizontalScrollView(this).apply {
             isHorizontalScrollBarEnabled = false
+            clipToPadding = false
+            setPadding(dp(4), 0, dp(4), 0)
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
             )
             addView(row)
+        }
+    }
+
+    private fun styleToolbarRow(row: LinearLayout) {
+        row.clipToPadding = false
+        row.setPadding(dp(4), 0, dp(4), 0)
+        for (index in 0 until row.childCount) {
+            (row.getChildAt(index) as? Button)?.applyToolbarStyle()
+        }
+    }
+
+    private fun Button.applyToolbarStyle() {
+        setAllCaps(false)
+        setIncludeFontPadding(false)
+        maxLines = 1
+        textSize = 12f
+        gravity = android.view.Gravity.CENTER
+        minimumWidth = dp(48)
+        minimumHeight = dp(38)
+        setMinWidth(dp(48))
+        setMinHeight(dp(38))
+        setPadding(dp(10), 0, dp(10), 0)
+        background?.mutate()?.alpha = 220
+        layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            dp(40),
+        ).apply {
+            rightMargin = dp(6)
+            bottomMargin = dp(4)
         }
     }
 
