@@ -28,11 +28,13 @@ object AppLogStore {
     fun markCrash(context: Context, message: String) {
         synchronized(lock) {
             val file = crashMarkerFile(context) ?: return
-            file.writeText(buildString {
-                append(timestampFormat.format(Date()))
-                append(" ")
-                appendLine(message)
-            })
+            replaceFileAtomically(file) { temp ->
+                temp.writeText(buildString {
+                    append(timestampFormat.format(Date()))
+                    append(" ")
+                    appendLine(message)
+                })
+            }
         }
     }
 
@@ -61,7 +63,9 @@ object AppLogStore {
     fun markProcessExitConsumed(context: Context, timestampMs: Long) {
         synchronized(lock) {
             val file = consumedExitFile(context) ?: return
-            file.writeText(timestampMs.toString())
+            replaceFileAtomically(file) { temp ->
+                temp.writeText(timestampMs.toString())
+            }
         }
     }
 
@@ -109,7 +113,9 @@ object AppLogStore {
         }
         val bytes = file.readBytes()
         val keep = bytes.takeLast(TRIM_BYTES)
-        file.writeBytes(keep.toByteArray())
+        replaceFileAtomically(file) { temp ->
+            temp.writeBytes(keep.toByteArray())
+        }
     }
 
     private const val MAX_BYTES = 128 * 1024

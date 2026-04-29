@@ -183,6 +183,7 @@
 - [x] 已增强 Android Game Boy Camera 静态图写入安全性：导入、拍摄和游戏数据包恢复均先验证临时图片再原子替换。
 - [x] 已增强 Android 即时存档缩略图写入安全性：保存和游戏数据包导入缩略图均先验证临时 PNG 再原子替换。
 - [x] 已增强 Android per-game BIOS 迁移安全性：旧 game id 迁移到 stable id 时先原子复制 BIOS，再写入迁移 metadata。
+- [x] 已增强 Android 日志恢复标记写入安全性：crash marker、process-exit marker 和日志裁剪改为原子替换。
 - [x] 已完成 OnePlus7 真机首帧验证：通过 ACTION_VIEW 打开仓库 homebrew GB/GBA 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 已完成 OnePlus7 真机 GBC 验证：通过 ACTION_VIEW 打开仓库 homebrew GBC 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 已修复 Android 竖屏游戏内工具栏溢出：运行/存档两行可横向滚动，Save/Load 等按钮在 OnePlus7 上可访问。
