@@ -107,6 +107,7 @@
 - [x] 已新增 Android pause/unload 电池存档显式 flush，使用临时文件替换降低写坏风险。
 - [x] 已修复 Surface 重建后非用户暂停状态不会自动 resume 的生命周期问题。
 - [x] 已在 EmulatorActivity 真正 finish 时关闭 EmulatorSession，释放 native runner/thread/audio。
+- [x] 已收敛 Android Surface 生命周期验收：Surface 销毁释放 EGL/window，恢复时重绑并继续渲染。
 - [x] 已新增 Android 画面 Pix/Smooth 过滤切换，JNI 透传到 GLES texture filtering 并按游戏持久化。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
@@ -436,20 +437,20 @@ object NativeBridge {
   - [x] native 保存 ANativeWindow。
   - [x] 初始化 EGL。
   - [x] 如果 ROM 已加载，恢复渲染。
-- [ ] `surfaceChanged`：
-  - [ ] 更新 viewport 宽高。
-  - [ ] 更新缩放策略。
-- [ ] `surfaceDestroyed`：
-  - [ ] 停止 GL 绘制。
-  - [ ] 释放 EGLSurface。
-  - [ ] 不销毁 core，不丢游戏状态。
-- [ ] Activity `onPause`：
+- [x] `surfaceChanged`：
+  - [x] 更新 viewport 宽高。
+  - [x] 更新缩放策略。
+- [x] `surfaceDestroyed`：
+  - [x] 停止 GL 绘制。
+  - [x] 释放 EGLSurface。
+  - [x] 不销毁 core，不丢游戏状态。
+- [x] Activity `onPause`：
   - [x] pause core thread。
   - [x] pause audio。
   - [x] 可选自动保存 SRAM。
-- [ ] Activity `onResume`：
-  - [ ] 重新绑定 Surface 后再恢复渲染。
-  - [ ] 恢复 audio。
+- [x] Activity `onResume`：
+  - [x] 重新绑定 Surface 后再恢复渲染。
+  - [x] 恢复 audio。
 
 ### 5.3 画面设置
 
