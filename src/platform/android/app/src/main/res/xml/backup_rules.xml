@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
-    <exclude domain="cache" path="." />
+    <exclude domain="file" path="bios/" />
+    <exclude domain="file" path="patches/" />
+    <exclude domain="file" path="screenshots/" />
+    <exclude domain="file" path="exports/" />
 </full-backup-content>

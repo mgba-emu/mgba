@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
     <cloud-backup>
-        <exclude domain="cache" path="." />
+        <exclude domain="file" path="bios/" />
+        <exclude domain="file" path="patches/" />
+        <exclude domain="file" path="screenshots/" />
+        <exclude domain="file" path="exports/" />
     </cloud-backup>
     <device-transfer>
-        <exclude domain="cache" path="." />
+        <exclude domain="file" path="bios/" />
+        <exclude domain="file" path="patches/" />
+        <exclude domain="file" path="screenshots/" />
+        <exclude domain="file" path="exports/" />
     </device-transfer>
 </data-extraction-rules>

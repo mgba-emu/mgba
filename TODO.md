@@ -57,6 +57,7 @@
 - [x] 已实现虚拟按键按下时的系统 haptic feedback。
 - [x] 已提交 Gradle wrapper，Android 工程可直接使用 `./gradlew :app:assembleDebug` 构建。
 - [x] 已新增 GitHub Actions Android debug APK 构建 workflow。
+- [x] 已修复 Android backup/data-extraction XML 规则，并验证 `:app:bundleRelease` 可生成 release AAB。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/搜索/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -1012,10 +1013,10 @@ object NativeBridge {
 
 ### 17.2 Release
 
-- [ ] Debug APK。
+- [x] Debug APK。
 - [ ] Internal Release APK。
-- [ ] AAB。
-- [ ] Proguard/R8 验证。
+- [x] AAB。
+- [x] Proguard/R8 验证。
 - [ ] Native symbols 输出：
   - [ ] `app/build/intermediates/merged_native_libs/**`
   - [ ] `app/build/outputs/native-debug-symbols/**`
