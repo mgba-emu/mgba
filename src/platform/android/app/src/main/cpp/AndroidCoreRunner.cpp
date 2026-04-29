@@ -500,7 +500,8 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	options.rewindBufferCapacity = m_rewindBufferCapacity.load();
 	options.rewindBufferInterval = m_rewindBufferInterval.load();
 	options.audioBuffers = m_audioBufferSamples.load();
-	options.skipBios = m_skipBios.load();
+	const bool skipBios = m_skipBios.load();
+	options.skipBios = skipBios;
 	options.videoSync = false;
 	options.audioSync = true;
 	options.volume = 0x100;
@@ -550,7 +551,10 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	}
 	if (!core->loadROM(core, vf)) {
 		core->deinit(core);
-		return LoadResult(false, "Could not load ROM", "", "", "", displayName);
+		const std::string message = hasAnyBios && !skipBios
+		    ? "Could not load ROM; check imported BIOS files or enable Skip BIOS"
+		    : "Could not load ROM";
+		return LoadResult(false, message, "", "", "", displayName);
 	}
 	SetCoreBaseName(core, displayName);
 #if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)

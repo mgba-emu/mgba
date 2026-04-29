@@ -869,7 +869,7 @@ object NativeBridge {
 - [x] 导入 BIOS 到 app 私有目录，不长期依赖外部 URI。
 - [x] 设置 `mCoreOptions.bios`。
 - [x] 设置 `mCoreOptions.useBios` / `skipBios`。
-- [ ] 加载失败给明确错误提示。
+- [x] 加载失败给明确错误提示。
 
 ### 12.2 Patch
 
