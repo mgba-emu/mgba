@@ -54,7 +54,7 @@ The same switch is available as `MGBA_ANDROID_ENABLE_GDB_STUB=true`. When compil
 
 Android-specific release notices are tracked in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Keep that file and the in-app Licenses dialog in sync whenever runtime or bundled source dependencies change.
 
-CI also rejects ROM, save-state, battery-save, and BIOS files under `app/src/main` so generated release artifacts do not accidentally bundle redistributability-sensitive game data.
+CI also rejects ROM, archive, save-state, battery-save, and BIOS files under `app/src/main` so generated release artifacts do not accidentally bundle redistributability-sensitive game data. Run `scripts/check-bundled-assets.sh` locally before release builds to use the same check.
 
 ## Release signing
 

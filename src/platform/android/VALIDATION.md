@@ -16,9 +16,11 @@ export ANDROID_HOME="$HOME/Library/Android/sdk"
 
 ## Latest Automated Pass
 
-2026-04-30 on `master` (`9545717dc`):
+2026-04-30 on `master`:
 
 ```bash
+scripts/check-bundled-assets.sh
+
 JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
 ANDROID_HOME="$HOME/Library/Android/sdk" \
 ./gradlew :app:assembleDebug :app:testDebugUnitTest \
@@ -32,6 +34,7 @@ ANDROID_HOME="$HOME/Library/Android/sdk" \
 
 Result:
 
+- Bundled asset check passed.
 - Debug APK, release APK, and release AAB built successfully.
 - Unit tests passed.
 - Android JNI/native wrapper warning check passed.
@@ -42,6 +45,7 @@ Result:
 Run these from `src/platform/android` before installing:
 
 ```bash
+scripts/check-bundled-assets.sh
 ./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon
 ./gradlew :app:externalNativeBuildDebug -PmgbaAndroidWarningsAsErrors=true --no-daemon
 ./gradlew :app:assembleRelease :app:bundleRelease --no-daemon
