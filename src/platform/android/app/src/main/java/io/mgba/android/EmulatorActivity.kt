@@ -60,6 +60,18 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var currentGameId: String? = null
     private var activeInputDeviceDescriptor: String? = null
     private var activeInputDeviceName: String? = null
+    private var lastInputDeviceDescriptor: String? = null
+    private var lastInputDeviceName: String? = null
+    private var lastInputKeyCode: Int? = null
+    private var lastInputKeyAction = "None"
+    private var lastMotionSource = 0
+    private var lastMotionKeys = 0
+    private var lastAxisX = 0f
+    private var lastAxisY = 0f
+    private var lastHatX = 0f
+    private var lastHatY = 0f
+    private var lastLeftTrigger = 0f
+    private var lastRightTrigger = 0f
     private var virtualKeys = 0
     private var hardwareButtonKeys = 0
     private var hardwareAxisKeys = 0
@@ -320,6 +332,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        rememberLastKeyEvent(event)
         if (pendingHardwareMappingMask != 0) {
             if (event.action == KeyEvent.ACTION_DOWN) {
                 captureHardwareMappingKey(event)
@@ -356,6 +369,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             return super.onGenericMotionEvent(event)
         }
         val keys = AndroidInputMapper.motionKeys(event, deadzonePercent)
+        rememberLastMotionEvent(event, keys)
+        if (isGamepadMotionSource(event.source)) {
+            rememberInputDevice(event)
+        }
         if (keys == 0 && hardwareAxisKeys == 0) {
             return super.onGenericMotionEvent(event)
         }
@@ -854,6 +871,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 openInputProfileImportPicker()
             }
         })
+        rows.addView(Button(this).apply {
+            text = "Input Debug"
+            setOnClickListener {
+                inputMappingDialog?.dismiss()
+                showInputDebugDialog()
+            }
+        })
         val dialog = AlertDialog.Builder(this)
             .setTitle("Hardware keys")
             .setMessage(inputMappingScopeLabel())
@@ -970,7 +994,79 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         Toast.makeText(this, if (ok) "Input profile imported" else "Input profile import failed", Toast.LENGTH_SHORT).show()
     }
 
+    private fun showInputDebugDialog() {
+        val content = TextView(this).apply {
+            setPadding(dp(16), dp(12), dp(16), dp(12))
+            setTextColor(getColor(R.color.mgba_text_primary))
+            text = inputDebugSummary()
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Input debug")
+            .setView(ScrollView(this).apply { addView(content) })
+            .setPositiveButton("Close", null)
+            .show()
+    }
+
+    private fun inputDebugSummary(): String {
+        return String.format(
+            Locale.US,
+            "Device\nName: %s\nDescriptor: %s\n\nLast key\nAction: %s\nCode: %s\n\nLast axes\nSource: 0x%08X\nX: %.3f\nY: %.3f\nHat X: %.3f\nHat Y: %.3f\nLeft trigger: %.3f\nRight trigger: %.3f\nMapped keys: %s\nDeadzone: %d%%",
+            lastInputDeviceName ?: "(none)",
+            lastInputDeviceDescriptor ?: "(none)",
+            lastInputKeyAction,
+            formatKeyCodeWithNumber(lastInputKeyCode),
+            lastMotionSource,
+            lastAxisX,
+            lastAxisY,
+            lastHatX,
+            lastHatY,
+            lastLeftTrigger,
+            lastRightTrigger,
+            formatGbaMask(lastMotionKeys),
+            deadzonePercent,
+        )
+    }
+
+    private fun rememberLastKeyEvent(event: KeyEvent) {
+        lastInputKeyCode = event.keyCode
+        lastInputKeyAction = when (event.action) {
+            KeyEvent.ACTION_DOWN -> "Down"
+            KeyEvent.ACTION_UP -> "Up"
+            else -> event.action.toString()
+        }
+        rememberLastInputDevice(event.device?.descriptor, event.device?.name)
+    }
+
+    private fun rememberLastMotionEvent(event: MotionEvent, keys: Int) {
+        rememberLastInputDevice(event.device?.descriptor, event.device?.name)
+        lastMotionSource = event.source
+        lastMotionKeys = keys
+        lastAxisX = event.getAxisValue(MotionEvent.AXIS_X)
+        lastAxisY = event.getAxisValue(MotionEvent.AXIS_Y)
+        lastHatX = event.getAxisValue(MotionEvent.AXIS_HAT_X)
+        lastHatY = event.getAxisValue(MotionEvent.AXIS_HAT_Y)
+        lastLeftTrigger = max(
+            event.getAxisValue(MotionEvent.AXIS_LTRIGGER),
+            event.getAxisValue(MotionEvent.AXIS_BRAKE),
+        )
+        lastRightTrigger = max(
+            event.getAxisValue(MotionEvent.AXIS_RTRIGGER),
+            event.getAxisValue(MotionEvent.AXIS_GAS),
+        )
+    }
+
+    private fun rememberLastInputDevice(descriptor: String?, name: String?) {
+        lastInputDeviceDescriptor = descriptor?.takeIf { it.isNotBlank() } ?: lastInputDeviceDescriptor
+        lastInputDeviceName = name?.takeIf { it.isNotBlank() } ?: lastInputDeviceName
+    }
+
     private fun rememberInputDevice(event: KeyEvent) {
+        val descriptor = event.deviceDescriptor() ?: return
+        activeInputDeviceDescriptor = descriptor
+        activeInputDeviceName = event.device?.name
+    }
+
+    private fun rememberInputDevice(event: MotionEvent) {
         val descriptor = event.deviceDescriptor() ?: return
         activeInputDeviceDescriptor = descriptor
         activeInputDeviceName = event.device?.name
@@ -978,6 +1074,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun KeyEvent.deviceDescriptor(): String? {
         return device?.descriptor?.takeIf { it.isNotBlank() }
+    }
+
+    private fun MotionEvent.deviceDescriptor(): String? {
+        return device?.descriptor?.takeIf { it.isNotBlank() }
+    }
+
+    private fun isGamepadMotionSource(source: Int): Boolean {
+        return (source and android.view.InputDevice.SOURCE_JOYSTICK) == android.view.InputDevice.SOURCE_JOYSTICK ||
+            (source and android.view.InputDevice.SOURCE_GAMEPAD) == android.view.InputDevice.SOURCE_GAMEPAD
     }
 
     private fun inputMappingScopeLabel(): String {
@@ -989,6 +1094,19 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         return keyCode?.let {
             KeyEvent.keyCodeToString(it).removePrefix("KEYCODE_")
         }.orEmpty()
+    }
+
+    private fun formatKeyCodeWithNumber(keyCode: Int?): String {
+        return keyCode?.let { "${formatKeyCode(it)} ($it)" } ?: "(none)"
+    }
+
+    private fun formatGbaMask(mask: Int): String {
+        if (mask == 0) {
+            return "(none)"
+        }
+        return GbaButtons.All
+            .filter { (mask and it.mask) != 0 }
+            .joinToString("+") { it.label }
     }
 
     private fun startStatsOverlay() {

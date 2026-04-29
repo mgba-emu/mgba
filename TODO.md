@@ -94,6 +94,7 @@
 - [x] 已新增暂停态单帧步进控制，native 可执行一帧并立即刷新画面。
 - [x] 已新增 per-game joystick deadzone 25/35/45/55/65% 档位，并用于实体摇杆方向映射。
 - [x] 已将 Android trigger axes（LTRIGGER/RTRIGGER/BRAKE/GAS）映射到 GBA L/R。
+- [x] 已新增实体输入 debug 面板，显示最后输入设备、按键码、轴值、映射结果和 deadzone。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -573,7 +574,7 @@ object NativeBridge {
   - [x] 使用 `InputDevice.descriptor` 作为稳定 key。
   - [x] 允许手动绑定。
   - [x] 支持导入/导出 profile。
-- [ ] Debug 页面显示当前输入设备、轴值、按键码。
+- [x] Debug 页面显示当前输入设备、轴值、按键码。
 
 ### 7.4 特殊输入/外设
 
