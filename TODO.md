@@ -135,6 +135,7 @@
 - [x] 已新增当前游戏数据包导出：zip 内包含 metadata、battery save、1-9 槽 state、state 缩略图、cheats、patch 和 per-game/input settings。
 - [x] 已新增当前游戏数据包导入：导入前校验 metadata CRC/stable id，不匹配时提示但允许继续覆盖。
 - [x] 已增强当前游戏数据包迁移：包含 Game Boy Camera 静态图，导入后立即刷新当前会话设置、输入映射、cheat 和 patch。
+- [x] 已新增 Android native wrapper 警告检查：CI 使用 `mgbaAndroidWarningsAsErrors=true` 将端口层 native warning 作为失败处理。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -1112,7 +1113,7 @@ object NativeBridge {
 - [ ] 可选 matrix：
   - [ ] arm64-v8a。
   - [ ] x86_64。
-- [ ] Native warnings 作为 PR 检查。
+- [x] Native warnings 作为 PR 检查。
 
 ### 17.2 Release
 

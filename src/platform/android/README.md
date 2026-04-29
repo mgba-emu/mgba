@@ -22,6 +22,16 @@ cd src/platform/android
 
 The checked-in Gradle wrapper pins Gradle 9.3.1 for reproducible local and CI builds.
 
+## Native warning check
+
+CI treats Android platform native warnings as errors with:
+
+```bash
+./gradlew :app:externalNativeBuildDebug -PmgbaAndroidWarningsAsErrors=true
+```
+
+This strict mode applies to the Android JNI/native wrapper target. It can also be enabled with `MGBA_ANDROID_WARNINGS_AS_ERRORS=true`.
+
 ## Release signing
 
 Release builds are unsigned unless signing inputs are provided. Configure either Gradle properties or matching environment variables:

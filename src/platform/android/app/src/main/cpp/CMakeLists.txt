@@ -8,6 +8,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 get_filename_component(MGBA_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../../../.." ABSOLUTE)
 
+option(MGBA_ANDROID_WARNINGS_AS_ERRORS "Treat Android platform native warnings as errors" OFF)
+
 add_compile_definitions(IOAPI_NO_64)
 
 set(ENABLE_DEBUGGERS OFF CACHE BOOL "" FORCE)
@@ -67,6 +69,14 @@ target_compile_definitions(mgba-android
         ENABLE_VFS_FD
         ENABLE_DIRECTORIES
 )
+
+if(MGBA_ANDROID_WARNINGS_AS_ERRORS)
+    target_compile_options(mgba-android
+        PRIVATE
+            $<$<COMPILE_LANGUAGE:C>:-Wall -Wextra -Werror>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra -Werror>
+    )
+endif()
 
 target_link_libraries(mgba-android
     PRIVATE

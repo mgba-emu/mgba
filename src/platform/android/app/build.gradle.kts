@@ -11,11 +11,16 @@ fun signingValue(propertyName: String, environmentName: String): String? {
         ?.takeIf { it.isNotBlank() }
 }
 
+fun booleanValue(propertyName: String, environmentName: String): Boolean {
+    return signingValue(propertyName, environmentName)?.toBooleanStrictOrNull() == true
+}
+
 val releaseKeystoreFile = signingValue("mgbaAndroidKeystoreFile", "MGBA_ANDROID_KEYSTORE_FILE")
 val releaseKeystoreBase64 = signingValue("mgbaAndroidKeystoreBase64", "MGBA_ANDROID_KEYSTORE_BASE64")
 val releaseKeystorePassword = signingValue("mgbaAndroidKeystorePassword", "MGBA_ANDROID_KEYSTORE_PASSWORD")
 val releaseKeyAlias = signingValue("mgbaAndroidKeyAlias", "MGBA_ANDROID_KEY_ALIAS")
 val releaseKeyPassword = signingValue("mgbaAndroidKeyPassword", "MGBA_ANDROID_KEY_PASSWORD")
+val nativeWarningsAsErrors = booleanValue("mgbaAndroidWarningsAsErrors", "MGBA_ANDROID_WARNINGS_AS_ERRORS")
 val generatedReleaseKeystore = layout.buildDirectory.file("generated/signing/mgba-release.jks").get().asFile
 val releaseKeystore = releaseKeystoreFile?.let { file(it) } ?: releaseKeystoreBase64?.let { encoded ->
     generatedReleaseKeystore.parentFile.mkdirs()
@@ -41,7 +46,10 @@ android {
 
         externalNativeBuild {
             cmake {
-                arguments += listOf("-DANDROID_STL=c++_shared")
+                arguments += listOf(
+                    "-DANDROID_STL=c++_shared",
+                    "-DMGBA_ANDROID_WARNINGS_AS_ERRORS=$nativeWarningsAsErrors",
+                )
             }
         }
 
