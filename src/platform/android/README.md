@@ -1,6 +1,8 @@
 # mGBA Android
 
-This directory contains the native Android port scaffold for mGBA.
+This directory contains the native Android app for mGBA. It uses Android
+Activity/View APIs for the shell, JNI/NDK for the emulator bridge, and the
+existing mGBA C/C++ core for emulation.
 
 ## Toolchain
 
@@ -21,6 +23,16 @@ cd src/platform/android
 ```
 
 The checked-in Gradle wrapper pins Gradle 9.3.1 for reproducible local and CI builds.
+
+Before cutting release artifacts locally, run the same gate used by CI:
+
+```bash
+scripts/check-bundled-assets.sh
+./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon
+./gradlew :app:externalNativeBuildDebug -PmgbaAndroidWarningsAsErrors=true --no-daemon
+./gradlew :app:lintDebug --no-daemon
+./gradlew :app:assembleRelease :app:bundleRelease --no-daemon
+```
 
 To build a subset of ABIs locally or in CI, pass a comma-separated filter:
 
