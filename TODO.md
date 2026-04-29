@@ -795,7 +795,7 @@ object NativeBridge {
   - [ ] 导入/导出。
   - [x] 清理 cache。
 - [ ] Advanced：
-  - [ ] 日志级别。
+  - [x] 日志级别。
   - [x] Debug overlay。
   - [ ] GDB stub。
   - [x] 崩溃日志导出。

@@ -475,7 +475,8 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	options.videoSync = false;
 	options.audioSync = true;
 	options.volume = 0x100;
-	options.logLevel = mLOG_WARN | mLOG_ERROR | mLOG_FATAL;
+	const int logLevel = m_logLevel.load();
+	options.logLevel = logLevel ? logLevel : (mLOG_WARN | mLOG_ERROR | mLOG_FATAL);
 
 	mCoreInitConfig(core, "android");
 	mCoreConfigLoadDefaults(&core->config, &options);
@@ -884,6 +885,15 @@ void AndroidCoreRunner::setSkipBios(bool enabled) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (m_core) {
 		m_core->opts.skipBios = enabled;
+	}
+}
+
+void AndroidCoreRunner::setLogLevel(int levels) {
+	m_logLevel = levels;
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (m_core) {
+		m_core->opts.logLevel = levels;
+		mCoreConfigSetIntValue(&m_core->config, "logLevel", levels);
 	}
 }
 

@@ -144,6 +144,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setLogLevelMode(mode: Int) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetLogLevelMode(handle.value, mode.coerceIn(0, 2))
+        }
+    }
+
     fun stats(): NativeStats? {
         if (!handle.isValid) {
             return null

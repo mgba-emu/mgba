@@ -38,6 +38,7 @@ import io.mgba.android.settings.AudioBufferModes
 import io.mgba.android.settings.AudioLowPassModes
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.FastForwardModes
+import io.mgba.android.settings.LogLevelModes
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.settings.RewindSettings
 import io.mgba.android.storage.AppLogStore
@@ -75,6 +76,7 @@ class MainActivity : Activity() {
     private lateinit var rewindIntervalButton: Button
     private lateinit var opposingDirectionsButton: Button
     private lateinit var rumbleButton: Button
+    private lateinit var logLevelButton: Button
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
@@ -272,6 +274,14 @@ class MainActivity : Activity() {
         }
         updateRumbleButton()
 
+        logLevelButton = Button(this).apply {
+            setOnClickListener {
+                preferences.logLevelMode = LogLevelModes.next(preferences.logLevelMode)
+                updateLogLevelButton()
+            }
+        }
+        updateLogLevelButton()
+
         patchButton = Button(this).apply {
             text = patchStore.displayName?.let { "Patch: $it" } ?: "Import Patch"
             setOnClickListener {
@@ -365,6 +375,7 @@ class MainActivity : Activity() {
         root.addView(rewindIntervalButton)
         root.addView(opposingDirectionsButton)
         root.addView(rumbleButton)
+        root.addView(logLevelButton)
         root.addView(patchButton)
         root.addView(aboutButton)
         root.addView(logButton)
@@ -565,6 +576,7 @@ class MainActivity : Activity() {
                 ),
             )
             emulator.setFrameSkip(perGameOverrides.frameSkip(gameId, preferences.frameSkip))
+            emulator.setLogLevelMode(preferences.logLevelMode)
             emulator.setRewindConfig(
                 perGameOverrides.rewindEnabled(gameId, preferences.rewindEnabled),
                 perGameOverrides.rewindBufferCapacity(gameId, preferences.rewindBufferCapacity),
@@ -913,6 +925,10 @@ class MainActivity : Activity() {
         } else {
             "Rumble: Off"
         }
+    }
+
+    private fun updateLogLevelButton() {
+        logLevelButton.text = "Log Level: ${LogLevelModes.labels[preferences.logLevelMode]}"
     }
 
     private fun renderLibrary() {

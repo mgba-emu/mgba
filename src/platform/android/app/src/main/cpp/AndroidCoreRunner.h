@@ -84,6 +84,7 @@ public:
 	void setScaleMode(int mode);
 	void setFilterMode(int mode);
 	void setSkipBios(bool enabled);
+	void setLogLevel(int levels);
 	std::string statsJson();
 	std::string takeScreenshot();
 	bool takeScreenshotFd(int fd);
@@ -153,6 +154,7 @@ private:
 	std::atomic<int> m_scaleMode{0};
 	std::atomic<int> m_filterMode{0};
 	std::atomic<bool> m_skipBios{false};
+	std::atomic<int> m_logLevel{0};
 	std::atomic<uint64_t> m_frameCounter{0};
 	std::atomic<bool> m_rumbleActive{false};
 	std::atomic<int32_t> m_tiltX{0};

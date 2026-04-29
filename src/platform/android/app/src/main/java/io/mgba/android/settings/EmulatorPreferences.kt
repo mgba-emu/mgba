@@ -141,6 +141,12 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putBoolean(KEY_RUMBLE_ENABLED, value).apply()
         }
 
+    var logLevelMode: Int
+        get() = LogLevelModes.coerce(preferences.getInt(KEY_LOG_LEVEL_MODE, LogLevelModes.ModeWarn))
+        set(value) {
+            preferences.edit().putInt(KEY_LOG_LEVEL_MODE, LogLevelModes.coerce(value)).apply()
+        }
+
     private companion object {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_FILTER_MODE = "filterMode"
@@ -164,5 +170,6 @@ class EmulatorPreferences(context: Context) {
         const val KEY_VIRTUAL_GAMEPAD_LEFT_HANDED = "virtualGamepadLeftHanded"
         const val KEY_ALLOW_OPPOSING_DIRECTIONS = "allowOpposingDirections"
         const val KEY_RUMBLE_ENABLED = "rumbleEnabled"
+        const val KEY_LOG_LEVEL_MODE = "logLevelMode"
     }
 }

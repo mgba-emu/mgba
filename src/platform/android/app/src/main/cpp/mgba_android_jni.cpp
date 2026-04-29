@@ -191,6 +191,23 @@ void InstallAndroidLogger() {
 	});
 }
 
+int LogLevelsForMode(int mode) {
+	switch (mode) {
+	case 2:
+		return mLOG_ALL;
+	case 1:
+		return mLOG_FATAL | mLOG_ERROR | mLOG_WARN | mLOG_GAME_ERROR | mLOG_INFO;
+	case 0:
+	default:
+		return mLOG_FATAL | mLOG_ERROR | mLOG_WARN | mLOG_GAME_ERROR;
+	}
+}
+
+void ApplyAndroidLoggerLevel(int levels) {
+	InstallAndroidLogger();
+	g_androidLogger.filter.defaultLevels = levels;
+}
+
 } // namespace
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -423,6 +440,15 @@ extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeSetSkipBios(JNIEnv*, jclass, jlong handle, jboolean enabled) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
 		runner->setSkipBios(enabled == JNI_TRUE);
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetLogLevelMode(JNIEnv*, jclass, jlong handle, jint mode) {
+	const int levels = LogLevelsForMode(mode);
+	ApplyAndroidLoggerLevel(levels);
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setLogLevel(levels);
 	}
 }
 

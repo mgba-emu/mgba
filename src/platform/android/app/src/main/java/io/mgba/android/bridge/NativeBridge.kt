@@ -96,6 +96,9 @@ object NativeBridge {
     external fun nativeSetSkipBios(handle: Long, enabled: Boolean)
 
     @JvmStatic
+    external fun nativeSetLogLevelMode(handle: Long, mode: Int)
+
+    @JvmStatic
     external fun nativeGetStats(handle: Long): String
 
     @JvmStatic
