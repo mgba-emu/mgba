@@ -44,6 +44,7 @@ private:
 
 	std::string m_basePath;
 	std::string m_cachePath;
+	std::string m_savePath;
 	mCore* m_core = nullptr;
 	std::vector<mColor> m_videoBuffer;
 	unsigned m_videoWidth = 0;

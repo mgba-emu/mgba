@@ -34,6 +34,7 @@
 - [x] 已实现 JNI `nativeSetKeys` 到 `core->setKeys` 的输入链路。
 - [x] 已实现 OpenSL ES 音频输出器，从 mGBA audio buffer 拉取样本并重采样到 Android 48 kHz stereo PCM。
 - [x] 已实现实体键盘、D-pad、gamepad buttons 和 joystick axes 到 mGBA key bitmask 的基础映射。
+- [x] 已实现基础电池存档链路：按 ROM CRC32 在 app 私有 `saves/` 目录创建 `.sav` 并交给 core 读写。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] 可配置重映射、震动和传感器输入仍待后续阶段实现。
 

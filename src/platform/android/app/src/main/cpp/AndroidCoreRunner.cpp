@@ -6,11 +6,14 @@
 #include <mgba-util/image.h>
 #include <mgba-util/vfs.h>
 
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <algorithm>
+#include <cerrno>
 #include <chrono>
 #include <cstring>
+#include <iomanip>
 #include <sstream>
 #include <utility>
 
@@ -88,6 +91,35 @@ std::string LoadResult(bool ok, const std::string& message, const std::string& p
 	    << "\",\"displayName\":\"" << JsonEscape(displayName)
 	    << "\"}";
 	return out.str();
+}
+
+bool EnsureDirectory(const std::string& path) {
+	if (mkdir(path.c_str(), 0700) == 0) {
+		return true;
+	}
+	return errno == EEXIST;
+}
+
+std::string SavePathForCore(const mCore* core, const std::string& basePath) {
+	if (!core || !core->checksum) {
+		return "";
+	}
+	uint32_t crc32 = 0;
+	core->checksum(core, &crc32, mCHECKSUM_CRC32);
+	if (!crc32) {
+		return "";
+	}
+
+	const std::string savesPath = basePath + "/saves";
+	if (!EnsureDirectory(savesPath)) {
+		return "";
+	}
+
+	std::ostringstream name;
+	name << savesPath << "/" << PlatformName(core) << "-";
+	name << std::hex << std::setfill('0') << std::setw(8) << crc32;
+	name << ".sav";
+	return name.str();
 }
 
 GLuint CompileShader(GLenum type, const char* source) {
@@ -205,8 +237,14 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 		return LoadResult(false, "Could not load ROM", "", "", displayName);
 	}
 
+	const std::string savePath = SavePathForCore(core, m_basePath);
+	if (!savePath.empty()) {
+		mCoreLoadSaveFile(core, savePath.c_str(), false);
+	}
+
 	unloadCore();
 	m_core = core;
+	m_savePath = savePath;
 	m_videoBuffer = std::move(videoBuffer);
 	m_videoStride = stride;
 	m_textureHeight = textureHeight;
