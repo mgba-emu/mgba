@@ -34,6 +34,7 @@ public:
 	bool hasStateSlot(int slot);
 	void reset();
 	void setFastForward(bool enabled);
+	void setAudioEnabled(bool enabled);
 	void setScaleMode(int mode);
 	std::string takeScreenshot();
 	std::string exportBatterySave();

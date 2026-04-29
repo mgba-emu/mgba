@@ -41,6 +41,9 @@ object NativeBridge {
     external fun nativeSetFastForward(handle: Long, enabled: Boolean)
 
     @JvmStatic
+    external fun nativeSetAudioEnabled(handle: Long, enabled: Boolean)
+
+    @JvmStatic
     external fun nativeSetScaleMode(handle: Long, mode: Int)
 
     @JvmStatic

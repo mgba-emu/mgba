@@ -36,9 +36,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var slotButton: Button? = null
     private var pauseButton: Button? = null
     private var fastButton: Button? = null
+    private var muteButton: Button? = null
     private var scaleButton: Button? = null
     private var userPaused = false
     private var fastForward = false
+    private var muted = false
     private var scaleMode = 0
     private var hasSurface = false
 
@@ -237,6 +239,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 }
             }
             runRow.addView(fastButton)
+            muteButton = Button(context).apply {
+                setOnClickListener {
+                    muted = !muted
+                    controller?.setAudioEnabled(!muted)
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(muteButton)
             scaleButton = Button(context).apply {
                 setOnClickListener {
                     scaleMode = (scaleMode + 1) % SCALE_LABELS.size
@@ -337,6 +347,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private fun updateRunButtons() {
         pauseButton?.text = if (userPaused) "Resume" else "Pause"
         fastButton?.text = if (fastForward) "1x" else "Fast"
+        muteButton?.text = if (muted) "Sound" else "Mute"
         scaleButton?.text = SCALE_LABELS[scaleMode]
     }
 

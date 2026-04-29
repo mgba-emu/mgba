@@ -120,6 +120,13 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetFastForward(JNIEnv*, jclass, j
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetAudioEnabled(JNIEnv*, jclass, jlong handle, jboolean enabled) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setAudioEnabled(enabled == JNI_TRUE);
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeSetScaleMode(JNIEnv*, jclass, jlong handle, jint mode) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
 		runner->setScaleMode(mode);

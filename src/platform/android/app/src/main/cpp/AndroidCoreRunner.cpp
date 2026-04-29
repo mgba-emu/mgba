@@ -441,6 +441,10 @@ void AndroidCoreRunner::setFastForward(bool enabled) {
 	m_fastForward = enabled;
 }
 
+void AndroidCoreRunner::setAudioEnabled(bool enabled) {
+	m_audioOutput.setEnabled(enabled);
+}
+
 void AndroidCoreRunner::setScaleMode(int mode) {
 	if (mode < 0 || mode > 2) {
 		mode = 0;

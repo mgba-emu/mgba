@@ -61,6 +61,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setAudioEnabled(enabled: Boolean) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetAudioEnabled(handle.value, enabled)
+        }
+    }
+
     fun setScaleMode(mode: Int) {
         if (handle.isValid) {
             NativeBridge.nativeSetScaleMode(handle.value, mode)

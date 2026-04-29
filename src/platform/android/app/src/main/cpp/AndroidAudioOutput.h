@@ -25,6 +25,7 @@ public:
 	void pause();
 	void resume();
 	void clear();
+	void setEnabled(bool enabled);
 	void enqueueFromCore(mCore* core);
 
 private:
@@ -37,6 +38,7 @@ private:
 	std::mutex m_mutex;
 	bool m_started = false;
 	bool m_paused = true;
+	bool m_enabled = true;
 	bool m_resamplerReady = false;
 
 	SLObjectItf m_engineObject = nullptr;

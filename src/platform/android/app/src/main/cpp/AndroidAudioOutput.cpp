@@ -35,7 +35,7 @@ bool AndroidAudioOutput::start() {
 	if (m_started) {
 		m_paused = false;
 		if (m_player) {
-			(*m_player)->SetPlayState(m_player, SL_PLAYSTATE_PLAYING);
+			(*m_player)->SetPlayState(m_player, m_enabled ? SL_PLAYSTATE_PLAYING : SL_PLAYSTATE_PAUSED);
 		}
 		return true;
 	}
@@ -57,7 +57,7 @@ bool AndroidAudioOutput::start() {
 	m_started = true;
 	m_paused = false;
 	if (m_player) {
-		(*m_player)->SetPlayState(m_player, SL_PLAYSTATE_PLAYING);
+		(*m_player)->SetPlayState(m_player, m_enabled ? SL_PLAYSTATE_PLAYING : SL_PLAYSTATE_PAUSED);
 	}
 	return true;
 }
@@ -96,7 +96,7 @@ void AndroidAudioOutput::resume() {
 	}
 	m_paused = false;
 	if (m_player) {
-		(*m_player)->SetPlayState(m_player, SL_PLAYSTATE_PLAYING);
+		(*m_player)->SetPlayState(m_player, m_enabled ? SL_PLAYSTATE_PLAYING : SL_PLAYSTATE_PAUSED);
 	}
 }
 
@@ -111,9 +111,28 @@ void AndroidAudioOutput::clear() {
 	m_nextBuffer = 0;
 }
 
+void AndroidAudioOutput::setEnabled(bool enabled) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	m_enabled = enabled;
+	if (!m_enabled) {
+		if (m_player) {
+			(*m_player)->SetPlayState(m_player, SL_PLAYSTATE_PAUSED);
+		}
+		if (m_bufferQueue) {
+			(*m_bufferQueue)->Clear(m_bufferQueue);
+		}
+		if (m_resamplerReady) {
+			mAudioBufferClear(&m_resampledBuffer);
+		}
+		m_nextBuffer = 0;
+	} else if (m_started && !m_paused && m_player) {
+		(*m_player)->SetPlayState(m_player, SL_PLAYSTATE_PLAYING);
+	}
+}
+
 void AndroidAudioOutput::enqueueFromCore(mCore* core) {
 	std::lock_guard<std::mutex> lock(m_mutex);
-	if (!m_started || m_paused || !m_bufferQueue || !core) {
+	if (!m_started || m_paused || !m_enabled || !m_bufferQueue || !core) {
 		return;
 	}
 
