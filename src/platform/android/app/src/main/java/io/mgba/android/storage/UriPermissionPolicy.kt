@@ -15,9 +15,13 @@ object UriPermissionPolicy {
         return hasReadGrant && hasPersistableGrant
     }
 
-    fun canOpenStoredRecent(scheme: String?, hasPersistedReadPermission: Boolean): Boolean {
+    fun canOpenStoredRecent(
+        scheme: String?,
+        hasPersistedReadPermission: Boolean,
+        fileReadable: Boolean,
+    ): Boolean {
         if (scheme == "file") {
-            return true
+            return fileReadable
         }
         return scheme == "content" && hasPersistedReadPermission
     }

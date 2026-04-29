@@ -43,20 +43,21 @@ public class UriPermissionPolicyTest {
     }
 
     @Test
-    public void fileRecentEntriesCanOpenWithoutPersistedReadPermission() {
-        assertTrue(UriPermissionPolicy.INSTANCE.canOpenStoredRecent("file", false));
+    public void fileRecentEntriesNeedReadableFile() {
+        assertTrue(UriPermissionPolicy.INSTANCE.canOpenStoredRecent("file", false, true));
+        assertFalse(UriPermissionPolicy.INSTANCE.canOpenStoredRecent("file", false, false));
     }
 
     @Test
     public void contentRecentEntriesNeedPersistedReadPermission() {
-        assertTrue(UriPermissionPolicy.INSTANCE.canOpenStoredRecent("content", true));
-        assertFalse(UriPermissionPolicy.INSTANCE.canOpenStoredRecent("content", false));
+        assertTrue(UriPermissionPolicy.INSTANCE.canOpenStoredRecent("content", true, false));
+        assertFalse(UriPermissionPolicy.INSTANCE.canOpenStoredRecent("content", false, true));
     }
 
     @Test
     public void unsupportedRecentSchemesCannotOpen() {
-        assertFalse(UriPermissionPolicy.INSTANCE.canOpenStoredRecent(null, true));
-        assertFalse(UriPermissionPolicy.INSTANCE.canOpenStoredRecent("http", true));
+        assertFalse(UriPermissionPolicy.INSTANCE.canOpenStoredRecent(null, true, true));
+        assertFalse(UriPermissionPolicy.INSTANCE.canOpenStoredRecent("http", true, true));
     }
 
     @Test

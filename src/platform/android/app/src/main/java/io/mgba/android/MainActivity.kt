@@ -1252,8 +1252,20 @@ class MainActivity : Activity() {
     }
 
     private fun canOpenStoredRecent(uri: Uri): Boolean {
-        val hasReadPermission = persistedReadPermissionCovers(uri)
-        return UriPermissionPolicy.canOpenStoredRecent(uri.scheme, hasReadPermission)
+        val fileReadable = fileUriReadable(uri)
+        val hasReadPermission = if (uri.scheme == "content") persistedReadPermissionCovers(uri) else false
+        return UriPermissionPolicy.canOpenStoredRecent(uri.scheme, hasReadPermission, fileReadable)
+    }
+
+    private fun fileUriReadable(uri: Uri): Boolean {
+        if (uri.scheme != "file") {
+            return false
+        }
+        val path = uri.path ?: return false
+        return runCatching {
+            val file = File(path)
+            file.exists() && file.canRead()
+        }.getOrDefault(false)
     }
 
     private fun persistedReadPermissionCovers(uri: Uri): Boolean {
