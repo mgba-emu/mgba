@@ -33,6 +33,7 @@ import io.mgba.android.bridge.NativeLoadResult
 import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.library.LibraryRom
+import io.mgba.android.library.RomFileSupport
 import io.mgba.android.library.RomIdentity
 import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.library.RomScanner
@@ -476,6 +477,13 @@ class MainActivity : Activity() {
         showCrashRecoveryPromptIfNeeded()
         renderRecentGames()
         renderLibrary()
+        handleViewIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleViewIntent(intent)
     }
 
     override fun onTrimMemory(level: Int) {
@@ -544,6 +552,25 @@ class MainActivity : Activity() {
         launchRomFd(uri, name, shouldStoreRecent, romSha1 = { sha1(uri) }) {
             contentResolver.openFileDescriptor(uri, "r")
         }
+    }
+
+    private fun handleViewIntent(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_VIEW) {
+            return
+        }
+        val uri = intent.data ?: return
+        runCatching {
+            val flags = intent.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION
+            if (flags != 0) {
+                contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        }
+        val name = displayName(uri)
+        if (!RomFileSupport.isSupportedRomName(name)) {
+            nativeStatus.text = "${getString(R.string.native_version_label)}: Unsupported ROM file"
+            return
+        }
+        openRomUri(uri, name, shouldStoreRecent = true)
     }
 
     private fun openZipRomUri(uri: Uri, name: String, shouldStoreRecent: Boolean) {
@@ -1763,15 +1790,18 @@ class MainActivity : Activity() {
     }
 
     private fun displayName(uri: Uri): String {
+        if (uri.scheme == "file") {
+            return uri.path?.let(::File)?.name?.takeIf { it.isNotBlank() } ?: uri.lastPathSegment ?: "rom"
+        }
         var cursor: Cursor? = null
-        return try {
+        return runCatching {
             cursor = contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
             if (cursor != null && cursor.moveToFirst()) {
                 cursor.getString(0) ?: uri.lastPathSegment ?: "rom"
             } else {
                 uri.lastPathSegment ?: "rom"
             }
-        } finally {
+        }.getOrDefault(uri.lastPathSegment ?: "rom").also {
             cursor?.close()
         }
     }

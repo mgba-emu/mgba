@@ -157,7 +157,9 @@
 - [x] 已新增 Game Boy Camera Android 捕获入口：可调用系统相机 App 并持久化为当前游戏 camera image source。
 - [x] 已补齐 Android ROM 启动 SHA-1：普通 ROM 和解包后的 archive entry 会写入会话、最近列表和游戏数据包 metadata，stable id 优先 SHA-1 并兼容 CRC32 旧数据。
 - [x] 已完成 Android 最终本地构建验收：`assembleDebug`、`testDebugUnitTest`、`assembleRelease`、`bundleRelease` 和 native warnings-as-errors 均通过。
-- [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
+- [x] 已新增 Android ACTION_VIEW ROM 文件打开入口，支持文件管理器/系统分享面板以 `.gba`、`.gb`、`.gbc`、`.sgb`、`.zip`、`.7z` 启动。
+- [x] 已完成 OnePlus7 真机首帧验证：通过 ACTION_VIEW 打开仓库 homebrew GB/GBA 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
+- [x] 首帧真机截图验证已在 OnePlus7 上执行；模拟器因性能过慢已停用。
 
 ## 1. 产品目标和范围
 
@@ -1076,9 +1078,9 @@ object NativeBridge {
 
 ### 16.2 Android Instrumented Test
 
-- [ ] 启动 MainActivity。
-- [ ] 打开测试 ROM。
-- [ ] 等待渲染非黑帧。
+- [x] 启动 MainActivity。
+- [x] 打开测试 ROM。
+- [x] 等待渲染非黑帧。
 - [ ] 点击虚拟 A/B/方向，确认 native 收到 key bit。
 - [ ] 保存 state。
 - [ ] 读 state。
@@ -1088,6 +1090,7 @@ object NativeBridge {
 ### 16.3 手工设备矩阵
 
 - [ ] arm64 中端手机。
+- [x] OnePlus7 真机（arm64，Android 11）。
 - [ ] arm64 低端手机。
 - [ ] 平板。
 - [ ] Android 模拟器 x86_64。
@@ -1105,8 +1108,8 @@ object NativeBridge {
 
 ### 16.5 回归用例
 
-- [ ] GBA ROM。
-- [ ] GB ROM。
+- [x] GBA ROM。
+- [x] GB ROM。
 - [ ] GBC ROM。
 - [ ] 需要 RTC 的游戏。
 - [ ] 需要 rumble 的游戏。
@@ -1188,22 +1191,22 @@ object NativeBridge {
 
 ### PR 3：ROM fd 探测和加载
 
-- [ ] SAF 打开 ROM。
-- [ ] JNI `nativeLoadRomFd`。
-- [ ] `mCoreFindVF` + `core->init` + `core->loadROM`。
-- [ ] 返回 game info。
+- [x] SAF 打开 ROM。
+- [x] JNI `nativeLoadRomFd`。
+- [x] `mCoreFindVF` + `core->init` + `core->loadROM`。
+- [x] 返回 game info。
 - [ ] 验收：
   - [ ] `.gba` / `.gb` / `.gbc` 测试 ROM 能被识别。
   - [ ] 非 ROM 文件返回友好错误。
 
 ### PR 4：视频首帧和持续渲染
 
-- [ ] SurfaceView。
-- [ ] Native EGL。
+- [x] SurfaceView。
+- [x] Native EGL。
 - [ ] RGB565 texture upload。
-- [ ] core thread run。
+- [x] core thread run。
 - [ ] 验收：
-  - [ ] 测试 ROM 可见画面。
+  - [x] 测试 ROM 可见画面。
   - [ ] 旋转/切后台恢复。
 
 ### PR 5：音频

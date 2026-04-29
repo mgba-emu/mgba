@@ -81,6 +81,21 @@ std::string PlatformName(const mCore* core) {
 	}
 }
 
+bool HasBiosForPlatform(const mCore* core, bool hasDefaultBios, bool hasGbaBios, bool hasGbBios, bool hasGbcBios) {
+	if (!core) {
+		return false;
+	}
+	switch (core->platform(core)) {
+	case mPLATFORM_GBA:
+		return hasDefaultBios || hasGbaBios;
+	case mPLATFORM_GB:
+		return hasDefaultBios || hasGbBios || hasGbcBios;
+	case mPLATFORM_NONE:
+	default:
+		return hasDefaultBios || hasGbaBios || hasGbBios || hasGbcBios;
+	}
+}
+
 void ApplyRtcMode(mCore* core, int mode, int64_t valueMs) {
 	if (!core) {
 		return;
@@ -504,11 +519,11 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	const bool hasGbaBios = IsRegularFile(gbaBiosPath);
 	const bool hasGbBios = IsRegularFile(gbBiosPath);
 	const bool hasGbcBios = IsRegularFile(gbcBiosPath);
-	const bool hasAnyBios = hasDefaultBios || hasGbaBios || hasGbBios || hasGbcBios;
+	const bool hasPlatformBios = HasBiosForPlatform(core, hasDefaultBios, hasGbaBios, hasGbBios, hasGbcBios);
 
 	struct mCoreOptions options = {};
 	options.bios = hasDefaultBios ? const_cast<char*>(biosPath.c_str()) : nullptr;
-	options.useBios = hasAnyBios;
+	options.useBios = hasPlatformBios;
 	options.savegamePath = const_cast<char*>(savegamePath.c_str());
 	options.savestatePath = const_cast<char*>(savestatePath.c_str());
 	options.screenshotPath = const_cast<char*>(screenshotPath.c_str());
@@ -520,7 +535,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	options.frameskip = m_frameSkip.load();
 	options.audioBuffers = m_audioBufferSamples.load();
 	options.interframeBlending = m_interframeBlending.load();
-	const bool skipBios = m_skipBios.load();
+	const bool skipBios = m_skipBios.load() || !hasPlatformBios;
 	options.skipBios = skipBios;
 	options.videoSync = false;
 	options.audioSync = true;
@@ -537,7 +552,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	mCoreConfigSetValue(&core->config, "screenshotPath", screenshotPath.c_str());
 	mCoreConfigSetValue(&core->config, "patchPath", patchPath.c_str());
 	mCoreConfigSetValue(&core->config, "cheatsPath", cheatsPath.c_str());
-	mCoreConfigSetIntValue(&core->config, "useBios", hasAnyBios ? 1 : 0);
+	mCoreConfigSetIntValue(&core->config, "useBios", hasPlatformBios ? 1 : 0);
 	mCoreConfigSetOverrideIntValue(&core->config, "skipBios", options.skipBios ? 1 : 0);
 	mCoreConfigSetOverrideIntValue(&core->config, "rewindEnable", options.rewindEnable ? 1 : 0);
 	mCoreConfigSetOverrideIntValue(&core->config, "rewindBufferCapacity", options.rewindBufferCapacity);
@@ -578,7 +593,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	}
 	if (!core->loadROM(core, vf)) {
 		core->deinit(core);
-		const std::string message = hasAnyBios && !skipBios
+		const std::string message = hasPlatformBios && !skipBios
 		    ? "Could not load ROM; check imported BIOS files or enable Skip BIOS"
 		    : "Could not load ROM";
 		return LoadResult(false, message, "", "", "", displayName);
@@ -602,7 +617,6 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	m_videoStride = stride;
 	m_textureHeight = textureHeight;
 	m_core->currentVideoSize(m_core, &m_videoWidth, &m_videoHeight);
-	resetRewindContextLocked();
 	m_audioOutput.clear();
 	m_audioOutput.resetUnderrunCount();
 	m_previousVideoBuffer.clear();
@@ -647,6 +661,9 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 		m_core->setPeripheral(m_core, mPERIPH_IMAGE_SOURCE, &m_imageSource.d);
 	}
 	ApplyRtcMode(m_core, m_rtcMode.load(), m_rtcValueMs.load());
+	m_core->reset(m_core);
+	resetRewindContextLocked();
+	m_audioOutput.clear();
 
 	struct mGameInfo info;
 	std::memset(&info, 0, sizeof(info));
@@ -1708,7 +1725,7 @@ void AndroidCoreRunner::runLoop() {
 							m_rewinding = false;
 							rewinding = false;
 						}
-					} else if (m_rewind.rewindFrameCounter == 0) {
+					} else if (m_frameCounter.load() > 0 && m_rewind.rewindFrameCounter == 0) {
 						mCoreRewindAppend(&m_rewind, m_core);
 						m_rewind.rewindFrameCounter = m_core->opts.rewindBufferInterval;
 					}

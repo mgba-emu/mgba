@@ -229,7 +229,6 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         autoStateOnExit = preferences.autoStateOnExit
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         applyOrientationMode()
-        enterImmersiveMode()
         controller = EmulatorSession.current()
         if (controller == null) {
             finish()
@@ -242,7 +241,6 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
 
         val surface = SurfaceView(this).apply {
-            setBackgroundColor(android.graphics.Color.BLACK)
             holder.addCallback(this@EmulatorActivity)
         }
         root.addView(
@@ -309,6 +307,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         )
 
         setContentView(root)
+        enterImmersiveMode()
     }
 
     override fun onResume() {
