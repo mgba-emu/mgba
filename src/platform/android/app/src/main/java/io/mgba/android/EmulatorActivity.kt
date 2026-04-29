@@ -935,6 +935,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             val stateRow = LinearLayout(context).apply {
                 orientation = LinearLayout.HORIZONTAL
             }
+            val runOptions = mutableListOf<Button>()
+            val stateOptions = mutableListOf<Button>()
             pauseButton = Button(context).apply {
                 setOnClickListener {
                     userPaused = !userPaused
@@ -959,7 +961,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     Toast.makeText(context, "Reset", Toast.LENGTH_SHORT).show()
                 }
             })
-            runRow.addView(Button(context).apply {
+            runOptions.add(Button(context).apply {
                 text = "Step"
                 setOnClickListener {
                     stepFrame()
@@ -1008,7 +1010,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(fastModeButton)
+            fastModeButton?.let(runOptions::add)
             fastMultiplierButton = Button(context).apply {
                 setOnClickListener {
                     fastForwardMultiplier = FastForwardModes.nextMultiplier(fastForwardMultiplier)
@@ -1017,7 +1019,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(fastMultiplierButton)
+            fastMultiplierButton?.let(runOptions::add)
             rewindButton = Button(context).apply {
                 setOnClickListener {
                     if (!rewindEnabled) {
@@ -1056,7 +1058,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(rewindEnabledButton)
+            rewindEnabledButton?.let(runOptions::add)
             rewindBufferButton = Button(context).apply {
                 setOnClickListener {
                     rewindBufferCapacity = RewindSettings.nextCapacity(rewindBufferCapacity)
@@ -1066,7 +1068,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(rewindBufferButton)
+            rewindBufferButton?.let(runOptions::add)
             rewindIntervalButton = Button(context).apply {
                 setOnClickListener {
                     rewindBufferInterval = RewindSettings.nextInterval(rewindBufferInterval)
@@ -1076,7 +1078,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(rewindIntervalButton)
+            rewindIntervalButton?.let(runOptions::add)
             autoStateButton = Button(context).apply {
                 setOnClickListener {
                     autoStateOnExit = !autoStateOnExit
@@ -1084,7 +1086,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(autoStateButton)
+            autoStateButton?.let(runOptions::add)
             frameSkipButton = Button(context).apply {
                 setOnClickListener {
                     frameSkip = (frameSkip + 1) % FRAME_SKIP_LABELS.size
@@ -1093,7 +1095,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(frameSkipButton)
+            frameSkipButton?.let(runOptions::add)
             muteButton = Button(context).apply {
                 setOnClickListener {
                     muted = !muted
@@ -1102,7 +1104,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(muteButton)
+            muteButton?.let(runOptions::add)
             volumeButton = Button(context).apply {
                 setOnClickListener {
                     val index = VOLUME_LEVELS.indexOf(volumePercent).takeIf { it >= 0 } ?: 0
@@ -1112,7 +1114,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(volumeButton)
+            volumeButton?.let(runOptions::add)
             audioBufferButton = Button(context).apply {
                 setOnClickListener {
                     audioBufferMode = (audioBufferMode + 1) % AudioBufferModes.labels.size
@@ -1121,7 +1123,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(audioBufferButton)
+            audioBufferButton?.let(runOptions::add)
             audioLowPassButton = Button(context).apply {
                 setOnClickListener {
                     audioLowPassMode = (audioLowPassMode + 1) % AudioLowPassModes.labels.size
@@ -1130,7 +1132,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(audioLowPassButton)
+            audioLowPassButton?.let(runOptions::add)
             scaleButton = Button(context).apply {
                 setOnClickListener {
                     scaleMode = (scaleMode + 1) % SCALE_LABELS.size
@@ -1139,7 +1141,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(scaleButton)
+            scaleButton?.let(runOptions::add)
             filterButton = Button(context).apply {
                 setOnClickListener {
                     filterMode = (filterMode + 1) % FILTER_LABELS.size
@@ -1148,7 +1150,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(filterButton)
+            filterButton?.let(runOptions::add)
             interframeBlendButton = Button(context).apply {
                 setOnClickListener {
                     interframeBlending = !interframeBlending
@@ -1157,7 +1159,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(interframeBlendButton)
+            interframeBlendButton?.let(runOptions::add)
             orientationButton = Button(context).apply {
                 setOnClickListener {
                     orientationMode = (orientationMode + 1) % ORIENTATION_LABELS.size
@@ -1166,7 +1168,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(orientationButton)
+            orientationButton?.let(runOptions::add)
             skipBiosButton = Button(context).apply {
                 setOnClickListener {
                     skipBios = !skipBios
@@ -1176,8 +1178,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     Toast.makeText(context, "BIOS setting applies on reset or next launch", Toast.LENGTH_SHORT).show()
                 }
             }
-            runRow.addView(skipBiosButton)
-            runRow.addView(Button(context).apply {
+            skipBiosButton?.let(runOptions::add)
+            runOptions.add(Button(context).apply {
                 text = "GameBIOS"
                 setOnClickListener {
                     showGameBiosDialog()
@@ -1195,13 +1197,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(padButton)
+            padButton?.let(runOptions::add)
             padSettingsButton = Button(context).apply {
                 setOnClickListener {
                     showGamepadSettingsDialog()
                 }
             }
-            runRow.addView(padSettingsButton)
+            padSettingsButton?.let(runOptions::add)
             deadzoneButton = Button(context).apply {
                 setOnClickListener {
                     val index = DEADZONE_LEVELS.indexOf(deadzonePercent).takeIf { it >= 0 } ?: 2
@@ -1212,7 +1214,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(deadzoneButton)
+            deadzoneButton?.let(runOptions::add)
             opposingDirectionsButton = Button(context).apply {
                 setOnClickListener {
                     allowOpposingDirections = !allowOpposingDirections
@@ -1221,7 +1223,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(opposingDirectionsButton)
+            opposingDirectionsButton?.let(runOptions::add)
             rumbleButton = Button(context).apply {
                 setOnClickListener {
                     rumbleEnabled = !rumbleEnabled
@@ -1233,7 +1235,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     updateRunButtons()
                 }
             }
-            runRow.addView(rumbleButton)
+            rumbleButton?.let(runOptions::add)
             tiltButton = Button(context).apply {
                 setOnClickListener {
                     tiltEnabled = !tiltEnabled
@@ -1243,8 +1245,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     Toast.makeText(context, if (tiltEnabled) "Tilt enabled" else "Tilt disabled", Toast.LENGTH_SHORT).show()
                 }
             }
-            runRow.addView(tiltButton)
-            runRow.addView(Button(context).apply {
+            tiltButton?.let(runOptions::add)
+            runOptions.add(Button(context).apply {
                 text = "Cal"
                 setOnClickListener {
                     calibrateTilt()
@@ -1255,14 +1257,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     showSolarDialog()
                 }
             }
-            runRow.addView(solarButton)
+            solarButton?.let(runOptions::add)
             cameraButton = Button(context).apply {
                 setOnClickListener {
                     showCameraImageDialog()
                 }
             }
-            runRow.addView(cameraButton)
-            runRow.addView(Button(context).apply {
+            cameraButton?.let(runOptions::add)
+            runOptions.add(Button(context).apply {
                 text = "Keys"
                 setOnClickListener {
                     showInputMappingDialog()
@@ -1280,13 +1282,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(statsButton)
-            runRow.addView(Button(context).apply {
+            runOptions.add(Button(context).apply {
                 text = "Diag"
                 setOnClickListener {
                     exportRuntimeDiagnostics()
                 }
             })
-            runRow.addView(Button(context).apply {
+            runOptions.add(Button(context).apply {
                 text = "Shot"
                 setOnClickListener {
                     val path = controller?.takeScreenshot()
@@ -1298,13 +1300,19 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     }
                 }
             })
-            runRow.addView(Button(context).apply {
+            runOptions.add(Button(context).apply {
                 text = "Export"
                 setOnClickListener {
                     exportScreenshot()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            runRow.addView(Button(context).apply {
+                text = "More"
+                setOnClickListener {
+                    showToolbarOptionsDialog("Run Options", runOptions)
+                }
+            })
+            stateOptions.add(Button(context).apply {
                 text = "Slots"
                 setOnClickListener {
                     showStateSlotsDialog()
@@ -1341,76 +1349,82 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     Toast.makeText(context, if (ok) "State loaded" else "Load failed", Toast.LENGTH_SHORT).show()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            stateOptions.add(Button(context).apply {
                 text = "Del"
                 setOnClickListener {
                     deleteStateWithConfirmation()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            stateOptions.add(Button(context).apply {
                 text = "StateOut"
                 setOnClickListener {
                     openStateExportPicker()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            stateOptions.add(Button(context).apply {
                 text = "StateIn"
                 setOnClickListener {
                     importStateWithConfirmation()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            stateOptions.add(Button(context).apply {
                 text = "Backup"
                 setOnClickListener {
                     exportBatterySave()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            stateOptions.add(Button(context).apply {
                 text = "DataOut"
                 setOnClickListener {
                     openGameDataExportPicker()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            stateOptions.add(Button(context).apply {
                 text = "DataIn"
                 setOnClickListener {
                     openGameDataImportPicker()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            stateOptions.add(Button(context).apply {
                 text = "Import"
                 setOnClickListener {
                     openSaveImportPicker()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            stateOptions.add(Button(context).apply {
                 text = "Cheats"
                 setOnClickListener {
                     showCheatActionsDialog()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            stateOptions.add(Button(context).apply {
                 text = "NoCheat"
                 setOnClickListener {
                     clearCheatsWithConfirmation()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            stateOptions.add(Button(context).apply {
                 text = "Patch"
                 setOnClickListener {
                     openPatchImportPicker()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            stateOptions.add(Button(context).apply {
                 text = "NoPatch"
                 setOnClickListener {
                     clearPatchWithConfirmation()
                 }
             })
-            stateRow.addView(Button(context).apply {
+            stateOptions.add(Button(context).apply {
                 text = "Exit"
                 setOnClickListener {
                     exitWithConfirmation()
+                }
+            })
+            stateRow.addView(Button(context).apply {
+                text = "More"
+                setOnClickListener {
+                    showToolbarOptionsDialog("State And Data", stateOptions)
                 }
             })
             styleToolbarRow(runRow)
@@ -1444,6 +1458,54 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 LinearLayout.LayoutParams.WRAP_CONTENT,
             )
             addView(row)
+        }
+    }
+
+    private fun showToolbarOptionsDialog(title: String, options: List<Button>) {
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(12), dp(8), dp(12), dp(4))
+        }
+        val dialogButtons = mutableListOf<Pair<Button, Button>>()
+        var row: LinearLayout? = null
+        options.forEachIndexed { index, sourceButton ->
+            if (index % 2 == 0) {
+                row = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    content.addView(this)
+                }
+            }
+            val optionButton = Button(this).apply {
+                setAllCaps(false)
+                textSize = 13f
+                maxLines = 1
+                setOnClickListener {
+                    sourceButton.performClick()
+                    updateDialogOptionButtons(dialogButtons)
+                }
+            }
+            dialogButtons.add(sourceButton to optionButton)
+            row?.addView(
+                optionButton,
+                LinearLayout.LayoutParams(0, dp(44), 1f).apply {
+                    leftMargin = dp(4)
+                    rightMargin = dp(4)
+                    bottomMargin = dp(8)
+                },
+            )
+        }
+        updateDialogOptionButtons(dialogButtons)
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setView(ScrollView(this).apply { addView(content) })
+            .setPositiveButton("Close", null)
+            .show()
+    }
+
+    private fun updateDialogOptionButtons(buttons: List<Pair<Button, Button>>) {
+        buttons.forEach { (sourceButton, optionButton) ->
+            optionButton.text = sourceButton.text
+            optionButton.isEnabled = sourceButton.isEnabled
         }
     }
 
