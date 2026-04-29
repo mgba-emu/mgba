@@ -19,6 +19,7 @@ import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.text.InputType
 import android.text.format.DateUtils
@@ -331,6 +332,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode != RESULT_OK) {
+            return
+        }
+        if (requestCode == REQUEST_CAPTURE_CAMERA_IMAGE) {
+            importCapturedCameraImage(data)
             return
         }
         val uri = data?.data ?: return
@@ -1602,19 +1607,29 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun showCameraImageDialog() {
         val actions = if (cameraImagePath.isBlank()) {
-            arrayOf("Import Static Image")
+            arrayOf("Capture Image", "Import Static Image")
         } else {
-            arrayOf("Import Static Image", "Clear Static Image")
+            arrayOf("Capture Image", "Import Static Image", "Clear Static Image")
         }
         AlertDialog.Builder(this)
             .setTitle("Game Boy Camera")
             .setItems(actions) { _, which ->
                 when (actions[which]) {
+                    "Capture Image" -> openCameraCapture()
                     "Import Static Image" -> openCameraImagePicker()
                     "Clear Static Image" -> clearCameraImage()
                 }
             }
             .show()
+    }
+
+    private fun openCameraCapture() {
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        runCatching {
+            startActivityForResult(intent, REQUEST_CAPTURE_CAMERA_IMAGE)
+        }.onFailure {
+            Toast.makeText(this, "Camera app unavailable", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun openCameraImagePicker() {
@@ -1646,6 +1661,41 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     Toast.makeText(this, "Camera image imported", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(this, "Camera image import failed", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
+    private fun importCapturedCameraImage(data: Intent?) {
+        val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            data?.extras?.getParcelable("data", Bitmap::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            data?.extras?.get("data") as? Bitmap
+        }
+        if (bitmap == null) {
+            Toast.makeText(this, "Camera capture failed", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val overrideGameId = currentOverrideGameId
+        val storageGameId = artifactGameId()
+        if (overrideGameId.isNullOrBlank() || storageGameId.isNullOrBlank()) {
+            Toast.makeText(this, "Camera image unavailable for this game", Toast.LENGTH_SHORT).show()
+            return
+        }
+        Thread {
+            val path = copyCameraBitmap(storageGameId, bitmap)
+            val appliedPath = path?.takeIf { setCameraImageFromPath(it) }
+            if (appliedPath != null) {
+                perGameOverrides.setCameraImagePath(overrideGameId, appliedPath)
+            }
+            runOnUiThread {
+                if (appliedPath != null) {
+                    cameraImagePath = appliedPath
+                    updateRunButtons()
+                    Toast.makeText(this, "Camera image captured", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Camera capture import failed", Toast.LENGTH_SHORT).show()
                 }
             }
         }.start()
@@ -1720,6 +1770,18 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     input.copyTo(output)
                 }
             } ?: return@runCatching null
+            validatedCameraImagePath(target)
+        }.getOrNull()
+    }
+
+    private fun copyCameraBitmap(gameId: String, bitmap: Bitmap): String? {
+        return runCatching {
+            val target = cameraImageTarget(gameId)
+            target.outputStream().use { output ->
+                if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)) {
+                    return@runCatching null
+                }
+            }
             validatedCameraImagePath(target)
         }.getOrNull()
     }
@@ -3277,6 +3339,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val REQUEST_EXPORT_DIAGNOSTICS = 2012
         private const val REQUEST_EXPORT_SAVE = 2013
         private const val REQUEST_EXPORT_SCREENSHOT = 2014
+        private const val REQUEST_CAPTURE_CAMERA_IMAGE = 2015
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L

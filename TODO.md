@@ -154,6 +154,7 @@
 - [x] 已增强 Android ROM 扫描进度：首页扫描/重扫时显示已发现数量和当前 ROM 名称。
 - [x] 已新增 Android 可重复手工验收清单，覆盖构建、设备矩阵、ROM、输入、存档、截图、传感器和诊断。
 - [x] 已新增 Android native bridge JSON 单测，锁定 `NativeLoadResult` 和 `NativeStats` 解析/coerce 行为。
+- [x] 已新增 Game Boy Camera Android 捕获入口：可调用系统相机 App 并持久化为当前游戏 camera image source。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -172,7 +173,7 @@
 - [x] 支持触屏虚拟手柄。
 - [x] 支持实体手柄、键盘、蓝牙控制器重映射。
 - [x] 支持震动、陀螺仪/加速度计、亮度/太阳传感器替代输入。
-- [ ] 支持 Game Boy Camera 图片源的 Android 摄像头桥接。
+- [x] 支持 Game Boy Camera 图片源的 Android 摄像头桥接。
 - [x] 支持横屏/竖屏布局、沉浸模式、屏幕比例/整数缩放/滤镜设置。
 - [x] 支持 ROM 库、最近打开、搜索、封面/标题信息、最后游玩时间。
 - [x] 支持 per-game override：每个游戏独立 BIOS、画面、音频、输入、作弊、传感器配置。
@@ -649,8 +650,8 @@ object NativeBridge {
 - [x] Solar sensor：
   - [x] 默认提供手动亮度滑条。
   - [x] 可选使用 Android light sensor。
-- [ ] Game Boy Camera：
-  - [ ] 后期接 CameraX。
+- [x] Game Boy Camera：
+  - [x] 系统相机 App 捕获入口。
   - [x] 先提供静态图片导入作为 image source。
 
 ### 7.5 输入验收标准
