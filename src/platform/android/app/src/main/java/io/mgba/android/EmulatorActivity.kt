@@ -877,6 +877,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     openPatchImportPicker()
                 }
             })
+            stateRow.addView(Button(context).apply {
+                text = "NoPatch"
+                setOnClickListener {
+                    clearPatchWithConfirmation()
+                }
+            })
             addView(runRow)
             addView(stateRow)
             stateThumbnailView = ImageView(context).apply {
@@ -1716,6 +1722,18 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             else -> "Patch import failed"
         }
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun clearPatchWithConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("Clear patch?")
+            .setMessage("Remove the saved patch for this game. Active patch changes may stay until reset or next launch.")
+            .setPositiveButton("Clear") { _, _ ->
+                val ok = patchStore.clearForGame(currentGameId)
+                Toast.makeText(this, if (ok) "Patch cleared" else "Clear failed", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun importCheats(uri: Uri) {

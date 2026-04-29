@@ -67,6 +67,26 @@ class PatchStore(context: Context) {
         return preferences.getString(gameDisplayNameKey(id), null)
     }
 
+    fun clearForGame(gameId: String?): Boolean {
+        val id = patchId(gameId) ?: return false
+        val fileName = preferences.getString(gameFileNameKey(id), null)
+        val deleted = runCatching {
+            if (fileName == null) {
+                true
+            } else {
+                val file = File(File(appContext.filesDir, PATCH_DIRECTORY), fileName)
+                !file.exists() || file.delete()
+            }
+        }.getOrDefault(false)
+        if (deleted) {
+            preferences.edit()
+                .remove(gameDisplayNameKey(id))
+                .remove(gameFileNameKey(id))
+                .apply()
+        }
+        return deleted
+    }
+
     private fun patchDirectory(): File? {
         val directory = File(appContext.filesDir, PATCH_DIRECTORY)
         return if (directory.exists() || directory.mkdirs()) directory else null
