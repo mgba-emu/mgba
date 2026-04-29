@@ -32,6 +32,7 @@ class MainActivity : Activity() {
     private lateinit var libraryStore: RomLibraryStore
     private lateinit var biosStore: BiosStore
     private lateinit var patchStore: PatchStore
+    private lateinit var scanButton: Button
     private lateinit var biosButton: Button
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
@@ -92,7 +93,7 @@ class MainActivity : Activity() {
             }
         }
 
-        val scanButton = Button(this).apply {
+        scanButton = Button(this).apply {
             text = "Scan Folder"
             setOnClickListener {
                 openFolderPicker()
@@ -199,10 +200,7 @@ class MainActivity : Activity() {
                 runCatching {
                     contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
-                val roms = runCatching { RomScanner(this).scan(uri) }.getOrDefault(emptyList())
-                libraryStore.replace(roms)
-                renderLibrary()
-                nativeStatus.text = "${getString(R.string.native_version_label)}: ${roms.size} ROMs indexed"
+                scanLibraryInBackground(uri)
             }
         }
     }
@@ -297,6 +295,26 @@ class MainActivity : Activity() {
                 setPadding(0, dp(6), 0, 0)
             })
         }
+    }
+
+    private fun scanLibraryInBackground(uri: Uri) {
+        scanButton.isEnabled = false
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Scanning folder"
+        Thread {
+            val result = runCatching { RomScanner(this).scan(uri) }
+            runOnUiThread {
+                scanButton.isEnabled = true
+                result
+                    .onSuccess { roms ->
+                        libraryStore.replace(roms)
+                        renderLibrary()
+                        nativeStatus.text = "${getString(R.string.native_version_label)}: ${roms.size} ROMs indexed"
+                    }
+                    .onFailure {
+                        nativeStatus.text = "${getString(R.string.native_version_label)}: Scan failed"
+                    }
+            }
+        }.start()
     }
 
     private fun dp(value: Int): Int {
