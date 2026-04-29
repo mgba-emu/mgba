@@ -47,6 +47,13 @@ public class NativeTypesTest {
         assertTrue(stats.getPaused());
         assertEquals(100, stats.getVolumePercent());
         assertEquals(1024, stats.getAudioBufferSamples());
+        assertFalse(stats.getAudioStarted());
+        assertTrue(stats.getAudioPaused());
+        assertTrue(stats.getAudioEnabled());
+        assertEquals(0L, stats.getAudioEnqueuedBuffers());
+        assertEquals(0L, stats.getAudioEnqueuedOutputFrames());
+        assertEquals(0L, stats.getAudioReadFrames());
+        assertEquals(0L, stats.getAudioLastReadFrames());
         assertEquals(0, stats.getInputKeys());
         assertEquals(0, stats.getSeenInputKeys());
     }
@@ -58,6 +65,13 @@ public class NativeTypesTest {
                 + "\"fastForwardMultiplier\":99,"
                 + "\"volumePercent\":200,"
                 + "\"audioBufferSamples\":64,"
+                + "\"audioStarted\":true,"
+                + "\"audioPaused\":false,"
+                + "\"audioEnabled\":false,"
+                + "\"audioEnqueuedBuffers\":12,"
+                + "\"audioEnqueuedOutputFrames\":9600,"
+                + "\"audioReadFrames\":8800,"
+                + "\"audioLastReadFrames\":800,"
                 + "\"audioLowPassRange\":120,"
                 + "\"inputKeys\":2049,"
                 + "\"seenInputKeys\":1073"
@@ -67,6 +81,13 @@ public class NativeTypesTest {
         assertEquals(0, stats.getFastForwardMultiplier());
         assertEquals(100, stats.getVolumePercent());
         assertEquals(512, stats.getAudioBufferSamples());
+        assertTrue(stats.getAudioStarted());
+        assertFalse(stats.getAudioPaused());
+        assertFalse(stats.getAudioEnabled());
+        assertEquals(12L, stats.getAudioEnqueuedBuffers());
+        assertEquals(9600L, stats.getAudioEnqueuedOutputFrames());
+        assertEquals(8800L, stats.getAudioReadFrames());
+        assertEquals(800L, stats.getAudioLastReadFrames());
         assertEquals(95, stats.getAudioLowPassRange());
         assertEquals(1, stats.getInputKeys());
         assertEquals(49, stats.getSeenInputKeys());

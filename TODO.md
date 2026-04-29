@@ -180,6 +180,7 @@
 - [x] 已修复 Android ZIP/native archive 编码兼容：Java ZIP 未识别老编码 entry 时 fallback 到 native archive，native entry token 和 ROM header JSON 均避免非法 Modified UTF-8 崩溃。
 - [x] 已修复 Android launcher 回前台恢复：HOME 后从 launcher 入口返回会将活动中的 EmulatorActivity 拉回前台，避免停在 MainActivity。
 - [x] 已完成 Android 模拟器锁屏/解锁恢复验证：`Medium_Phone` arm64 AVD 跑 `~/game/[gba]木叶战记.zip`，解锁后仍聚焦 EmulatorActivity 且画面继续渲染。
+- [x] 已增强 Android native audio 诊断：stats/DIAG 导出 started/paused/enabled、queued buffers/frames、read frames 和 last read frames，模拟器真实 ROM smoke 已确认字段递增。
 
 ## 1. 产品目标和范围
 

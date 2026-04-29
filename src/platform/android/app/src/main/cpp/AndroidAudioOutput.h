@@ -16,6 +16,17 @@ struct mCore;
 
 namespace mgba::android {
 
+struct AndroidAudioStats {
+	bool started = false;
+	bool paused = true;
+	bool enabled = true;
+	uint64_t underruns = 0;
+	uint64_t enqueuedBuffers = 0;
+	uint64_t enqueuedOutputFrames = 0;
+	uint64_t readFrames = 0;
+	uint64_t lastReadFrames = 0;
+};
+
 class AndroidAudioOutput {
 public:
 	AndroidAudioOutput();
@@ -30,6 +41,7 @@ public:
 	void setVolumePercent(int percent);
 	void setLowPassRangePercent(int percent);
 	uint64_t underrunCount() const;
+	AndroidAudioStats stats() const;
 	void resetUnderrunCount();
 	void enqueueFromCore(mCore* core);
 
@@ -40,7 +52,7 @@ private:
 	void destroyEngineLocked();
 	size_t fillBufferLocked(mCore* core, int16_t* output, size_t frames);
 
-	std::mutex m_mutex;
+	mutable std::mutex m_mutex;
 	bool m_started = false;
 	bool m_paused = true;
 	bool m_enabled = true;
@@ -63,6 +75,10 @@ private:
 	size_t m_nextBuffer = 0;
 	size_t m_warmupBuffersRemaining = 0;
 	std::atomic<uint64_t> m_underrunCount{0};
+	std::atomic<uint64_t> m_enqueuedBuffers{0};
+	std::atomic<uint64_t> m_enqueuedOutputFrames{0};
+	std::atomic<uint64_t> m_readFrames{0};
+	std::atomic<uint64_t> m_lastReadFrames{0};
 };
 
 } // namespace mgba::android

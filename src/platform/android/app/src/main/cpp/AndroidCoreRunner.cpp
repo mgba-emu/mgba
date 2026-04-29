@@ -1097,6 +1097,7 @@ void AndroidCoreRunner::setRtcMode(int mode, int64_t valueMs) {
 
 std::string AndroidCoreRunner::statsJson() {
 	std::lock_guard<std::mutex> lock(m_mutex);
+	const AndroidAudioStats audioStats = m_audioOutput.stats();
 	std::ostringstream out;
 	out << "{\"frames\":" << m_frameCounter.load()
 	    << ",\"videoWidth\":" << m_videoWidth
@@ -1112,7 +1113,14 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"frameSkip\":" << m_frameSkip.load()
 	    << ",\"volumePercent\":" << m_volumePercent.load()
 	    << ",\"audioBufferSamples\":" << m_audioBufferSamples.load()
-	    << ",\"audioUnderruns\":" << m_audioOutput.underrunCount()
+	    << ",\"audioStarted\":" << (audioStats.started ? "true" : "false")
+	    << ",\"audioPaused\":" << (audioStats.paused ? "true" : "false")
+	    << ",\"audioEnabled\":" << (audioStats.enabled ? "true" : "false")
+	    << ",\"audioUnderruns\":" << audioStats.underruns
+	    << ",\"audioEnqueuedBuffers\":" << audioStats.enqueuedBuffers
+	    << ",\"audioEnqueuedOutputFrames\":" << audioStats.enqueuedOutputFrames
+	    << ",\"audioReadFrames\":" << audioStats.readFrames
+	    << ",\"audioLastReadFrames\":" << audioStats.lastReadFrames
 	    << ",\"audioLowPassRange\":" << m_lowPassRangePercent.load()
 	    << ",\"inputKeys\":" << m_inputKeys
 	    << ",\"seenInputKeys\":" << m_seenInputKeys

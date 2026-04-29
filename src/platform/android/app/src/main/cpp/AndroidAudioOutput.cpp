@@ -78,6 +78,10 @@ void AndroidAudioOutput::stop() {
 	m_warmupBuffersRemaining = 0;
 	m_lowPassLeftPrev = 0;
 	m_lowPassRightPrev = 0;
+	m_enqueuedBuffers = 0;
+	m_enqueuedOutputFrames = 0;
+	m_readFrames = 0;
+	m_lastReadFrames = 0;
 }
 
 void AndroidAudioOutput::pause() {
@@ -158,6 +162,20 @@ uint64_t AndroidAudioOutput::underrunCount() const {
 	return m_underrunCount.load();
 }
 
+AndroidAudioStats AndroidAudioOutput::stats() const {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	return AndroidAudioStats{
+		m_started,
+		m_paused,
+		m_enabled,
+		m_underrunCount.load(),
+		m_enqueuedBuffers.load(),
+		m_enqueuedOutputFrames.load(),
+		m_readFrames.load(),
+		m_lastReadFrames.load(),
+	};
+}
+
 void AndroidAudioOutput::resetUnderrunCount() {
 	m_underrunCount = 0;
 }
@@ -175,7 +193,7 @@ void AndroidAudioOutput::enqueueFromCore(mCore* core) {
 
 	while (state.count < kQueueDepth) {
 		auto& buffer = m_buffers[m_nextBuffer];
-		fillBufferLocked(core, buffer.data(), kFramesPerBuffer);
+		const size_t readFrames = fillBufferLocked(core, buffer.data(), kFramesPerBuffer);
 		const SLresult result = (*m_bufferQueue)->Enqueue(
 			m_bufferQueue,
 			buffer.data(),
@@ -184,6 +202,10 @@ void AndroidAudioOutput::enqueueFromCore(mCore* core) {
 			break;
 		}
 		m_nextBuffer = (m_nextBuffer + 1) % m_buffers.size();
+		++m_enqueuedBuffers;
+		m_enqueuedOutputFrames += kFramesPerBuffer;
+		m_readFrames += readFrames;
+		m_lastReadFrames = readFrames;
 		++state.count;
 	}
 }
