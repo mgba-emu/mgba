@@ -22,6 +22,7 @@ import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.input.AndroidInputMapper
 import io.mgba.android.input.VirtualGamepadView
+import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.storage.ScreenshotExporter
 import io.mgba.android.storage.ScreenshotShareProvider
 import io.mgba.android.storage.SaveExporter
@@ -29,6 +30,7 @@ import io.mgba.android.storage.SaveExporter
 class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var controller: EmulatorController? = null
     private var gamepadView: VirtualGamepadView? = null
+    private lateinit var preferences: EmulatorPreferences
     private var virtualKeys = 0
     private var hardwareButtonKeys = 0
     private var hardwareAxisKeys = 0
@@ -46,6 +48,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        preferences = EmulatorPreferences(this)
+        scaleMode = preferences.scaleMode
+        muted = preferences.muted
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         enterImmersiveMode()
         controller = EmulatorSession.current()
@@ -53,6 +58,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             finish()
             return
         }
+        controller?.setScaleMode(scaleMode)
+        controller?.setAudioEnabled(!muted)
 
         val root = FrameLayout(this).apply {
             setBackgroundColor(getColor(R.color.mgba_background))
@@ -243,6 +250,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 setOnClickListener {
                     muted = !muted
                     controller?.setAudioEnabled(!muted)
+                    preferences.muted = muted
                     updateRunButtons()
                 }
             }
@@ -251,6 +259,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 setOnClickListener {
                     scaleMode = (scaleMode + 1) % SCALE_LABELS.size
                     controller?.setScaleMode(scaleMode)
+                    preferences.scaleMode = scaleMode
                     updateRunButtons()
                 }
             }
