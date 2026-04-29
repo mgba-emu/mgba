@@ -74,6 +74,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private lateinit var cheatStore: CheatStore
     private lateinit var patchStore: PatchStore
     private var currentGameId: String? = null
+    private var currentStableGameId: String? = null
     private var activeInputDeviceDescriptor: String? = null
     private var activeInputDeviceName: String? = null
     private var lastInputDeviceDescriptor: String? = null
@@ -200,7 +201,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         inputMappingStore = InputMappingStore(this)
         cheatStore = CheatStore(this)
         patchStore = PatchStore(this)
-        currentGameId = EmulatorSession.currentGame()?.uri
+        val currentGame = EmulatorSession.currentGame()
+        currentGameId = currentGame?.uri
+        currentStableGameId = currentGame?.stableId?.takeIf { it.isNotBlank() }
         scaleMode = perGameOverrides.scaleMode(currentGameId, preferences.scaleMode)
         filterMode = perGameOverrides.filterMode(currentGameId, preferences.filterMode)
         interframeBlending = perGameOverrides.interframeBlending(currentGameId, preferences.interframeBlending)
@@ -1454,12 +1457,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun importCameraImage(imageUri: Uri) {
         val gameId = currentGameId
-        if (gameId.isNullOrBlank()) {
+        val storageGameId = artifactGameId()
+        if (gameId.isNullOrBlank() || storageGameId.isNullOrBlank()) {
             Toast.makeText(this, "Camera image unavailable for this game", Toast.LENGTH_SHORT).show()
             return
         }
         Thread {
-            val path = copyCameraImage(gameId, imageUri)
+            val path = copyCameraImage(storageGameId, imageUri)
             val appliedPath = path?.takeIf { setCameraImageFromPath(it) }
             if (appliedPath != null) {
                 perGameOverrides.setCameraImagePath(gameId, appliedPath)
@@ -2151,7 +2155,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun recordStateThumbnail(sourcePath: String, slot: Int): Boolean {
-        val target = stateThumbnailFile(slot) ?: return false
+        val target = stateThumbnailFile(slot, forWrite = true) ?: return false
         return runCatching {
             target.parentFile?.mkdirs()
             File(sourcePath).copyTo(target, overwrite = true)
@@ -2161,12 +2165,55 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun deleteStateThumbnail(slot: Int) {
-        stateThumbnailFile(slot)?.delete()
+        artifactGameIds().forEach { gameId ->
+            stateThumbnailFileForGame(gameId, slot).delete()
+        }
     }
 
-    private fun stateThumbnailFile(slot: Int): File? {
-        val gameId = currentGameId ?: return null
+    private fun stateThumbnailFile(slot: Int, forWrite: Boolean = false): File? {
+        if (!forWrite) {
+            artifactGameIds()
+                .asSequence()
+                .map { stateThumbnailFileForGame(it, slot) }
+                .firstOrNull { it.isFile }
+                ?.let { return it }
+        }
+        val gameId = artifactGameId() ?: return null
+        return stateThumbnailFileForGame(gameId, slot)
+    }
+
+    private fun stateThumbnailFileForGame(gameId: String, slot: Int): File {
         return File(File(filesDir, "state-thumbnails"), "${sha1(gameId)}-slot-$slot.png")
+    }
+
+    private fun artifactGameId(): String? {
+        return currentStableGameId?.takeIf { it.isNotBlank() }
+            ?: currentGameId?.takeIf { it.isNotBlank() }
+    }
+
+    private fun artifactGameIds(): List<String> {
+        return listOfNotNull(
+            currentStableGameId?.takeIf { it.isNotBlank() },
+            currentGameId?.takeIf { it.isNotBlank() },
+        ).distinct()
+    }
+
+    private fun patchGameId(): String? {
+        return artifactGameIds().firstOrNull { patchStore.fileForGame(it) != null } ?: artifactGameId()
+    }
+
+    private fun cheatGameId(): String? {
+        return artifactGameIds().firstOrNull { cheatStore.fileForGame(it) != null } ?: artifactGameId()
+    }
+
+    private fun clearPatchArtifacts(): Boolean {
+        val ids = artifactGameIds()
+        return ids.isNotEmpty() && ids.map { patchStore.clearForGame(it) }.all { it }
+    }
+
+    private fun clearCheatArtifacts(): Boolean {
+        val ids = artifactGameIds()
+        return ids.isNotEmpty() && ids.map { cheatStore.clearForGame(it) }.all { it }
     }
 
     private fun sha1(value: String): String {
@@ -2220,7 +2267,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun showCheatActionsDialog() {
-        val entries = cheatStore.entriesForGame(currentGameId)
+        val gameId = cheatGameId()
+        val entries = cheatStore.entriesForGame(gameId)
         val labels = buildList {
             entries.forEach { entry ->
                 val state = if (entry.enabled) "[x]" else "[ ]"
@@ -2264,7 +2312,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             .setTitle("Add cheat")
             .setView(body)
             .setPositiveButton("Save") { _, _ ->
-                val stored = cheatStore.addManual(currentGameId, nameInput.text.toString(), codeInput.text.toString())
+                val stored = cheatStore.addManual(cheatGameId(), nameInput.text.toString(), codeInput.text.toString())
                 val applied = stored && applyStoredCheats()
                 val message = when {
                     applied -> "Cheat saved"
@@ -2278,7 +2326,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun toggleCheat(index: Int, enabled: Boolean) {
-        val stored = cheatStore.setEnabled(currentGameId, index, enabled)
+        val stored = cheatStore.setEnabled(cheatGameId(), index, enabled)
         val applied = stored && applyStoredCheats()
         val message = when {
             applied -> if (enabled) "Cheat enabled" else "Cheat disabled"
@@ -2289,7 +2337,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun applyStoredCheats(): Boolean {
-        val file = cheatStore.fileForGame(currentGameId) ?: return false
+        val file = artifactGameIds()
+            .asSequence()
+            .mapNotNull { cheatStore.fileForGame(it) }
+            .firstOrNull()
+            ?: return false
         return runCatching {
             ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
                 controller?.importCheatsFd(descriptor.fd) == true
@@ -2317,9 +2369,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun importPatch(uri: Uri) {
         val name = displayName(uri, "patch")
-        val stored = patchStore.importForGame(currentGameId, uri, name)
+        val gameId = patchGameId()
+        val stored = patchStore.importForGame(gameId, uri, name)
         val applied = if (stored) {
-            patchStore.fileForGame(currentGameId)?.let { file ->
+            patchStore.fileForGame(gameId)?.let { file ->
                 runCatching {
                     ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
                         controller?.importPatchFd(descriptor.fd) == true
@@ -2342,7 +2395,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             .setTitle("Clear patch?")
             .setMessage("Remove the saved patch for this game. Active patch changes may stay until reset or next launch.")
             .setPositiveButton("Clear") { _, _ ->
-                val ok = patchStore.clearForGame(currentGameId)
+                val ok = clearPatchArtifacts()
                 Toast.makeText(this, if (ok) "Patch cleared" else "Clear failed", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
@@ -2362,7 +2415,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun importCheats(uri: Uri) {
         val name = displayName(uri, "cheats")
-        val stored = cheatStore.importForGame(currentGameId, uri, name)
+        val stored = cheatStore.importForGame(cheatGameId(), uri, name)
         val applied = stored && applyStoredCheats()
         val message = when {
             applied -> "Cheats imported"
@@ -2377,7 +2430,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             .setTitle("Clear cheats?")
             .setMessage("Remove saved cheats for this game. Active cheats may stay until reset or next launch.")
             .setPositiveButton("Clear") { _, _ ->
-                val ok = cheatStore.clearForGame(currentGameId)
+                val ok = clearCheatArtifacts()
                 Toast.makeText(this, if (ok) "Cheats cleared" else "Clear failed", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)

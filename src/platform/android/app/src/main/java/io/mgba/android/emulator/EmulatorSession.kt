@@ -5,6 +5,8 @@ import android.content.Context
 data class CurrentGame(
     val uri: String,
     val displayName: String,
+    val stableId: String,
+    val crc32: String,
 )
 
 object EmulatorSession {
@@ -15,8 +17,8 @@ object EmulatorSession {
         return controller ?: EmulatorController(context).also { controller = it }
     }
 
-    fun setCurrentGame(uri: String, displayName: String) {
-        currentGame = CurrentGame(uri, displayName)
+    fun setCurrentGame(uri: String, displayName: String, stableId: String = uri, crc32: String = "") {
+        currentGame = CurrentGame(uri, displayName, stableId, crc32)
     }
 
     fun currentGame(): CurrentGame? {

@@ -649,8 +649,9 @@ class MainActivity : Activity() {
             )
             return emulator.loadRomFd(descriptor.fd, name).also { loadResult ->
                 if (loadResult.ok) {
-                    patchApplied = applyStoredPatch(emulator, gameId, name, loadResult.crc32)
-                    cheatsApplied = applyStoredCheats(emulator, gameId)
+                    val stableGameId = stableGameIdFor(gameId, loadResult.crc32)
+                    patchApplied = applyStoredPatch(emulator, gameId, stableGameId, name, loadResult.crc32)
+                    cheatsApplied = applyStoredCheats(emulator, gameId, stableGameId)
                     autoStateLoaded = preferences.autoStateOnExit && emulator.loadAutoState()
                 }
             }
@@ -701,7 +702,7 @@ class MainActivity : Activity() {
             },
         )
         if (result?.ok == true) {
-            EmulatorSession.setCurrentGame(gameId, name)
+            EmulatorSession.setCurrentGame(gameId, name, stableGameIdFor(gameId, result.crc32), result.crc32)
             if (shouldStoreRecent) {
                 recentStore.add(uri, recentDisplayName)
                 renderRecentGames()
@@ -715,10 +716,16 @@ class MainActivity : Activity() {
     private fun applyStoredPatch(
         emulator: EmulatorController,
         gameId: String,
+        stableGameId: String,
         displayName: String,
         crc32: String,
     ): Boolean? {
-        val file = patchStore.fileForGame(gameId) ?: patchStore.autoPatchFile(displayName, crc32) ?: return null
+        val file = artifactGameIds(gameId, stableGameId)
+            .asSequence()
+            .mapNotNull { patchStore.fileForGame(it) }
+            .firstOrNull()
+            ?: patchStore.autoPatchFile(displayName, crc32)
+            ?: return null
         return runCatching {
             ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
                 emulator.importPatchFd(descriptor.fd)
@@ -726,13 +733,26 @@ class MainActivity : Activity() {
         }.getOrDefault(false)
     }
 
-    private fun applyStoredCheats(emulator: EmulatorController, gameId: String): Boolean? {
-        val file = cheatStore.fileForGame(gameId) ?: return null
+    private fun applyStoredCheats(emulator: EmulatorController, gameId: String, stableGameId: String): Boolean? {
+        val file = artifactGameIds(gameId, stableGameId)
+            .asSequence()
+            .mapNotNull { cheatStore.fileForGame(it) }
+            .firstOrNull()
+            ?: return null
         return runCatching {
             ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
                 emulator.importCheatsFd(descriptor.fd)
             }
         }.getOrDefault(false)
+    }
+
+    private fun stableGameIdFor(gameId: String, crc32: String): String {
+        val normalizedCrc = crc32.trim().lowercase(java.util.Locale.US)
+        return if (normalizedCrc.isBlank()) gameId else "crc32:$normalizedCrc"
+    }
+
+    private fun artifactGameIds(gameId: String, stableGameId: String): List<String> {
+        return listOf(stableGameId, gameId).filter { it.isNotBlank() }.distinct()
     }
 
     private fun zipRomEntries(uri: Uri): List<String> {

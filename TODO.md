@@ -122,6 +122,7 @@
 - [x] 已新增 Android per-game patch 导入：模拟器内选择 patch 后保存到私有目录，立即调用 `core->loadPatch` 并在下次启动同一 ROM 时自动应用。
 - [x] 已增强 Android BIOS 管理：导入后显示文件大小和 SHA-1 摘要，并支持从 app 私有目录清除 BIOS。
 - [x] 已新增 Android per-game cheat 持久化：模拟器内导入 cheat 后保存到 `files/cheats`，并在下次启动同一 ROM 时自动应用。
+- [x] 已将当前 ROM 会话扩展为 URI + CRC32 stable id，并让 patch/cheat/state thumbnail/Camera 静态图 artifact 优先按 stable id 存取，同时兼容旧 URI 记录。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -663,7 +664,8 @@ object NativeBridge {
   - [ ] 后续可实现 `VDirOpenArchiveVF`，减少大文件复制。
 - [ ] ROM hash：
   - [ ] 加载后计算 CRC32/SHA1。
-  - [ ] 用 hash 作为保存/状态/封面/配置的稳定 key。
+  - [x] 用 hash 作为保存/状态缩略图/封面/patch/cheat artifact 的稳定 key。
+  - [ ] 将 per-game 配置 key 从 SAF URI 迁移到 ROM hash，并保留旧 URI fallback。
 
 ### 8.3 Save / State 命名
 
