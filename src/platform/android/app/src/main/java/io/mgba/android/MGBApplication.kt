@@ -9,7 +9,9 @@ class MGBApplication : Application() {
         super.onCreate()
         val previousHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            AppLogStore.append(this, "Uncaught exception on ${thread.name}", throwable)
+            val message = "Uncaught exception on ${thread.name}"
+            AppLogStore.markCrash(this, message)
+            AppLogStore.append(this, message, throwable)
             if (previousHandler != null) {
                 previousHandler.uncaughtException(thread, throwable)
             } else {

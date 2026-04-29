@@ -25,6 +25,46 @@ object AppLogStore {
         }
     }
 
+    fun markCrash(context: Context, message: String) {
+        synchronized(lock) {
+            val file = crashMarkerFile(context) ?: return
+            file.writeText(buildString {
+                append(timestampFormat.format(Date()))
+                append(" ")
+                appendLine(message)
+            })
+        }
+    }
+
+    fun consumeCrashMarker(context: Context): String? {
+        synchronized(lock) {
+            val file = crashMarkerFile(context) ?: return null
+            if (!file.isFile) {
+                return null
+            }
+            val message = file.readText().trim().ifEmpty { "The previous session crashed." }
+            file.delete()
+            return message
+        }
+    }
+
+    fun hasConsumedProcessExit(context: Context, timestampMs: Long): Boolean {
+        synchronized(lock) {
+            val file = consumedExitFile(context) ?: return false
+            if (!file.isFile) {
+                return false
+            }
+            return file.readText().trim().toLongOrNull() == timestampMs
+        }
+    }
+
+    fun markProcessExitConsumed(context: Context, timestampMs: Long) {
+        synchronized(lock) {
+            val file = consumedExitFile(context) ?: return
+            file.writeText(timestampMs.toString())
+        }
+    }
+
     fun recent(context: Context): String {
         synchronized(lock) {
             val file = logFile(context) ?: return ""
@@ -36,11 +76,23 @@ object AppLogStore {
     }
 
     private fun logFile(context: Context): File? {
+        return File(logDirectory(context) ?: return null, "app.log")
+    }
+
+    private fun crashMarkerFile(context: Context): File? {
+        return File(logDirectory(context) ?: return null, "crash.marker")
+    }
+
+    private fun consumedExitFile(context: Context): File? {
+        return File(logDirectory(context) ?: return null, "last-consumed-exit.txt")
+    }
+
+    private fun logDirectory(context: Context): File? {
         val directory = File(context.applicationContext.filesDir, "logs")
         if (!directory.exists() && !directory.mkdirs()) {
             return null
         }
-        return File(directory, "app.log")
+        return directory
     }
 
     private fun trimIfNeeded(file: File) {

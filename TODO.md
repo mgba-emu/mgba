@@ -961,7 +961,7 @@ object NativeBridge {
   - [ ] `onTrimMemory` 清理封面 cache。
   - [x] 不在内存里长期保留大型 ROM，除非 provider 不支持 seek。
 - [ ] 崩溃恢复：
-  - [ ] native crash 无法完全恢复，但下次启动提示导出日志。
+  - [x] native crash 无法完全恢复，但下次启动提示导出日志。
   - [x] Java exception 写入 app log。
 
 ## 15. UI 页面清单

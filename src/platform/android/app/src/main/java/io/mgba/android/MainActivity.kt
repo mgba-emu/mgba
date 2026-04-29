@@ -1,11 +1,14 @@
 package io.mgba.android
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.AlertDialog
+import android.app.ApplicationExitInfo
 import android.content.Intent
 import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
@@ -373,6 +376,7 @@ class MainActivity : Activity() {
         root.addView(libraryContainer)
         scroll.addView(root)
         setContentView(scroll)
+        showCrashRecoveryPromptIfNeeded()
         renderRecentGames()
         renderLibrary()
     }
@@ -1223,6 +1227,74 @@ class MainActivity : Activity() {
             .setMessage(message)
             .setPositiveButton("OK", null)
             .show()
+    }
+
+    private fun showCrashRecoveryPromptIfNeeded() {
+        val processCrash = previousProcessCrashMessage()
+        val markedCrash = AppLogStore.consumeCrashMarker(this)
+        val message = markedCrash ?: processCrash ?: return
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Previous crash detected"
+        AlertDialog.Builder(this)
+            .setTitle("Previous Crash Detected")
+            .setMessage("$message\n\nExport recent logs to Documents/mGBA for debugging?")
+            .setPositiveButton("Export Logs") { _, _ ->
+                exportLogs()
+            }
+            .setNegativeButton("Dismiss", null)
+            .show()
+    }
+
+    private fun previousProcessCrashMessage(): String? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return null
+        }
+        val manager = getSystemService(ActivityManager::class.java) ?: return null
+        val exit = manager.getHistoricalProcessExitReasons(packageName, 0, 5)
+            .firstOrNull { info ->
+                isCrashExitReason(info.reason) &&
+                    !AppLogStore.hasConsumedProcessExit(this, info.timestamp)
+            } ?: return null
+        AppLogStore.markProcessExitConsumed(this, exit.timestamp)
+        return buildString {
+            append("The previous process ended with ")
+            append(exitReasonLabel(exit.reason))
+            append(" at ")
+            append(
+                DateUtils.formatDateTime(
+                    this@MainActivity,
+                    exit.timestamp,
+                    DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME,
+                ),
+            )
+            val description = exit.description?.trim()
+            if (!description.isNullOrEmpty()) {
+                append(".\n")
+                append(description)
+            } else {
+                append(".")
+            }
+        }
+    }
+
+    private fun isCrashExitReason(reason: Int): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return false
+        }
+        return reason == ApplicationExitInfo.REASON_CRASH ||
+            reason == ApplicationExitInfo.REASON_CRASH_NATIVE ||
+            reason == ApplicationExitInfo.REASON_ANR
+    }
+
+    private fun exitReasonLabel(reason: Int): String {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return "a crash"
+        }
+        return when (reason) {
+            ApplicationExitInfo.REASON_CRASH -> "a Java crash"
+            ApplicationExitInfo.REASON_CRASH_NATIVE -> "a native crash"
+            ApplicationExitInfo.REASON_ANR -> "an ANR"
+            else -> "an unexpected exit"
+        }
     }
 
     private fun exportLogs() {
