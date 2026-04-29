@@ -162,11 +162,12 @@ class BiosStore(context: Context) {
             val source = biosFile(slot, legacyDirectory)
             val target = biosFile(slot, primaryDirectory)
             if (source.isFile && !target.exists()) {
-                source.copyTo(target, overwrite = false)
-                preferences.getString(gameDisplayNameKey(legacyGameId, slot), null)?.let { displayName ->
-                    editor.putString(gameDisplayNameKey(primaryGameId, slot), displayName)
+                if (replaceFileAtomically(target) { temp -> source.copyTo(temp, overwrite = true) }) {
+                    preferences.getString(gameDisplayNameKey(legacyGameId, slot), null)?.let { displayName ->
+                        editor.putString(gameDisplayNameKey(primaryGameId, slot), displayName)
+                    }
+                    changed = true
                 }
-                changed = true
             }
         }
         if (changed) {
