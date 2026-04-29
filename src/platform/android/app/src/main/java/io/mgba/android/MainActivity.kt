@@ -51,6 +51,7 @@ class MainActivity : Activity() {
     private lateinit var patchStore: PatchStore
     private lateinit var scanButton: Button
     private lateinit var biosButton: Button
+    private lateinit var clearBiosButton: Button
     private lateinit var skipBiosButton: Button
     private lateinit var audioBufferButton: Button
     private lateinit var audioLowPassButton: Button
@@ -133,11 +134,18 @@ class MainActivity : Activity() {
         }
 
         biosButton = Button(this).apply {
-            text = biosStore.displayName?.let { "BIOS: $it" } ?: "Import BIOS"
             setOnClickListener {
                 openBiosPicker()
             }
         }
+        clearBiosButton = Button(this).apply {
+            setOnClickListener {
+                val ok = biosStore.clearDefault()
+                updateBiosButtons()
+                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "BIOS cleared" else "BIOS clear failed"}"
+            }
+        }
+        updateBiosButtons()
 
         skipBiosButton = Button(this).apply {
             setOnClickListener {
@@ -231,6 +239,7 @@ class MainActivity : Activity() {
         root.addView(openButton)
         root.addView(scanButton)
         root.addView(biosButton)
+        root.addView(clearBiosButton)
         root.addView(skipBiosButton)
         root.addView(audioBufferButton)
         root.addView(audioLowPassButton)
@@ -273,9 +282,7 @@ class MainActivity : Activity() {
             REQUEST_IMPORT_BIOS -> {
                 val name = displayName(uri)
                 val ok = biosStore.importDefault(uri, name)
-                if (ok) {
-                    biosButton.text = "BIOS: $name"
-                }
+                updateBiosButtons()
                 nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "BIOS imported" else "BIOS import failed"}"
             }
             REQUEST_IMPORT_PATCH -> {
@@ -489,6 +496,19 @@ class MainActivity : Activity() {
 
     private fun updateSkipBiosButton() {
         skipBiosButton.text = if (preferences.skipBios) "Skip BIOS: On" else "Skip BIOS: Off"
+    }
+
+    private fun updateBiosButtons() {
+        val info = biosStore.info
+        if (info == null) {
+            biosButton.text = "Import BIOS"
+            clearBiosButton.text = "Clear BIOS"
+            clearBiosButton.isEnabled = false
+        } else {
+            biosButton.text = "BIOS: ${info.displayName} (${formatBytes(info.sizeBytes)}, SHA1 ${info.sha1.take(8)})"
+            clearBiosButton.text = "Clear BIOS"
+            clearBiosButton.isEnabled = true
+        }
     }
 
     private fun updateAudioBufferButton() {

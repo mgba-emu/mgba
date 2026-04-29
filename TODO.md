@@ -120,6 +120,7 @@
 - [x] 已扩展 Android debug stats overlay：展示 FPS、frame time、core frame counter、ROM platform/title、音频 buffer 和 underrun。
 - [x] 已新增 Android 音频低通滤波：复用 libretro 风格单极滤波，支持 Off/40/60/80 全局和 per-game 切换。
 - [x] 已新增 Android per-game patch 导入：模拟器内选择 patch 后保存到私有目录，立即调用 `core->loadPatch` 并在下次启动同一 ROM 时自动应用。
+- [x] 已增强 Android BIOS 管理：导入后显示文件大小和 SHA-1 摘要，并支持从 app 私有目录清除 BIOS。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -859,9 +860,9 @@ object NativeBridge {
 - [ ] BIOS 管理页支持：
   - [ ] 选择 GBA BIOS。
   - [ ] 选择 GB/GBC BIOS，如核心支持。
-  - [ ] 显示文件 hash 和大小。
-  - [ ] 删除 BIOS。
-- [ ] 导入 BIOS 到 app 私有目录，不长期依赖外部 URI。
+  - [x] 显示文件 hash 和大小。
+  - [x] 删除 BIOS。
+- [x] 导入 BIOS 到 app 私有目录，不长期依赖外部 URI。
 - [ ] 设置 `mCoreOptions.bios`。
 - [ ] 设置 `mCoreOptions.useBios` / `skipBios`。
 - [ ] 加载失败给明确错误提示。
