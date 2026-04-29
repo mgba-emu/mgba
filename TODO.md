@@ -168,6 +168,7 @@
 - [x] 已完成 OnePlus7 真机非法 ROM 回归：ACTION_VIEW 假 `.gba` 留在 MainActivity 并显示不支持 ROM，crash buffer 为空。
 - [x] 已完成 OnePlus7 真机大 ROM 回归：8MB/64Mb mooneye GB 测试 ROM 启动并显示 `Test OK`，crash buffer 为空。
 - [x] 已完成 OnePlus7 真机 patch/cheat 回归：per-game IPS 与 `.cheats` 文件自动导入，`app.log` 记录 `patch=applied, cheats=applied`，渲染正常且 crash buffer 为空。
+- [x] 已新增并通过 OnePlus7 真机 native smoke instrumentation：public-domain GB 测试 ROM 可 probe/load，`nativeStepFrame` 连跑 300 帧，state save/load/delete 成功。
 - [x] 首帧真机截图验证已在 OnePlus7 上执行；模拟器因性能过慢已停用。
 
 ## 1. 产品目标和范围
@@ -1076,14 +1077,14 @@ object NativeBridge {
 
 ### 16.1 Native 单元测试
 
-- [ ] 新增 Android 可跑的 native smoke test：
-  - [ ] `mCoreFindVF` 可以识别测试 ROM。
-  - [ ] `core->init` 成功。
-  - [ ] `core->loadROM` 成功。
-  - [ ] `core->runFrame` 连跑 300 帧不崩。
-  - [ ] `mCoreSaveStateNamed` / `mCoreLoadStateNamed` 成功。
-- [ ] 测试 ROM 必须是 homebrew/public-domain，不提交商业 ROM。
-- [ ] 如果仓库已有测试 ROM 规则，遵守现有规则。
+- [x] 新增 Android 可跑的 native smoke test：
+  - [x] `mCoreFindVF` 可以识别测试 ROM。
+  - [x] `core->init` 成功。
+  - [x] `core->loadROM` 成功。
+  - [x] `core->runFrame` 连跑 300 帧不崩。
+  - [x] `mCoreSaveStateNamed` / `mCoreLoadStateNamed` 成功。
+- [x] 测试 ROM 必须是 homebrew/public-domain，不提交商业 ROM。
+- [x] 如果仓库已有测试 ROM 规则，遵守现有规则。
 
 ### 16.2 Android Instrumented Test
 
