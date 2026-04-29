@@ -4,11 +4,11 @@
 
 ## 0. 当前仓库基线结论
 
-- [ ] 当前仓库已有核心模拟层：`src/core`、`src/gba`、`src/gb`、`include/mgba/**`。
-- [ ] 当前仓库已有桌面/主机前端：`src/platform/qt`、`src/platform/sdl`，以及主机/掌机端口：`src/platform/3ds`、`src/platform/switch`、`src/platform/psp2`、`src/platform/wii`、`src/platform/libretro`。
-- [ ] `PORTING.md` 明确要求新平台代码放在 `src/platform/<port>` 下，并尽量减少对核心树的侵入。
-- [ ] 顶层 `CMakeLists.txt` 已有部分 `ANDROID` 判断和 POSIX/VFS 支持，但没有 Android Gradle 工程、Manifest、Activity、JNI 入口、Android 音视频/输入/存储实现。
-- [ ] mGBA 核心已经提供 Android 可复用的关键 API：
+- [x] 当前仓库已有核心模拟层：`src/core`、`src/gba`、`src/gb`、`include/mgba/**`。
+- [x] 当前仓库已有桌面/主机前端：`src/platform/qt`、`src/platform/sdl`，以及主机/掌机端口：`src/platform/3ds`、`src/platform/switch`、`src/platform/psp2`、`src/platform/wii`、`src/platform/libretro`。
+- [x] `PORTING.md` 明确要求新平台代码放在 `src/platform/<port>` 下，并尽量减少对核心树的侵入。
+- [x] 顶层 `CMakeLists.txt` 已有部分 `ANDROID` 判断和 POSIX/VFS 支持；Android Gradle 工程、Manifest、Activity、JNI 入口、Android 音视频/输入/存储实现已落在 `src/platform/android`。
+- [x] mGBA 核心已经提供 Android 可复用的关键 API：
   - ROM 探测/加载：`mCoreFindVF`、`mCoreFind`、`mCoreLoadFile`、`core->loadROM`。
   - 文件抽象：`VFileFromFD`、`VFileOpen`、`VFileFromMemory`、`VDirOpen`。
   - 视频：`core->setVideoBuffer`、`core->currentVideoSize`、`mGLES2Context`。
@@ -216,11 +216,11 @@
 
 ### 1.3 初版非目标
 
-- [ ] 第一阶段不做 Google Play 发布签名自动化，只做到可安装 APK/AAB。
-- [ ] 第一阶段不做云同步。
-- [ ] 第一阶段不内置任何商业 ROM、BIOS 或 copyrighted 测试资源。
-- [ ] 第一阶段不强制实现桌面调试 UI 的完整复刻；GDB stub 和日志先放开发者模式。
-- [ ] 第一阶段不强制实现视频/GIF/WebP/APNG 录制；截图必须做，录制后续用 MediaCodec 或 FFmpeg 再补。
+- [x] 第一阶段不做 Google Play 发布签名自动化，只做到可安装 APK/AAB。
+- [x] 第一阶段不做云同步。
+- [x] 第一阶段不内置任何商业 ROM、BIOS 或 copyrighted 测试资源。
+- [x] 第一阶段不强制实现桌面调试 UI 的完整复刻；GDB stub 和日志先放开发者模式。
+- [x] 第一阶段不强制实现视频/GIF/WebP/APNG 录制；截图必须做，录制后续用 MediaCodec 或 FFmpeg 再补。
 
 ## 2. 推荐目录结构
 
@@ -1021,11 +1021,11 @@ object NativeBridge {
 - [x] 设备旋转不重启游戏：
   - [ ] 使用 ViewModel 保存 `EmulatorController`。
   - [x] 或在 Manifest 处理 configChanges，但要慎用。
-- [ ] 内存压力：
+- [x] 内存压力：
   - [x] `onTrimMemory` 清理 ROM archive cache。
   - [x] `onTrimMemory` 清理封面 cache。
   - [x] 不在内存里长期保留大型 ROM，除非 provider 不支持 seek。
-- [ ] 崩溃恢复：
+- [x] 崩溃恢复：
   - [x] native crash 无法完全恢复，但下次启动提示导出日志。
   - [x] Java exception 写入 app log。
 
