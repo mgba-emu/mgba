@@ -32,7 +32,7 @@ class RomScanner(private val context: Context) {
                 val mime = cursor.getString(mimeIndex)
                 if (mime == DocumentsContract.Document.MIME_TYPE_DIR) {
                     results += scanDocument(treeUri, childId, depth + 1)
-                } else if (isSupportedRom(name)) {
+                } else if (RomFileSupport.isSupportedRomName(name)) {
                     results += LibraryRom(
                         uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childId),
                         displayName = name,
@@ -43,16 +43,16 @@ class RomScanner(private val context: Context) {
         return results
     }
 
-    private fun isSupportedRom(name: String): Boolean {
-        val lower = name.lowercase()
-        return lower.endsWith(".gba") ||
-            lower.endsWith(".gb") ||
-            lower.endsWith(".gbc") ||
-            lower.endsWith(".zip") ||
-            lower.endsWith(".7z")
-    }
-
     private companion object {
         const val MAX_DEPTH = 8
+    }
+}
+
+object RomFileSupport {
+    private val supportedExtensions = setOf(".gba", ".agb", ".gb", ".gbc", ".sgb", ".zip", ".7z")
+
+    fun isSupportedRomName(name: String): Boolean {
+        val lower = name.lowercase()
+        return supportedExtensions.any { lower.endsWith(it) }
     }
 }

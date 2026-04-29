@@ -61,6 +61,7 @@
 - [x] 已扩展 GitHub Actions Android build：debug APK、release APK、release AAB 和 native symbols artifacts。
 - [x] 已新增 Android 输入映射单元测试，并验证 `:app:testDebugUnitTest`。
 - [x] 已为 ROM 库首页新增搜索过滤、结果计数和空匹配状态。
+- [x] 已补齐 ROM 扫描扩展名过滤：`.gba`、`.agb`、`.gb`、`.gbc`、`.sgb`、`.zip`、`.7z`。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -661,7 +662,7 @@ object NativeBridge {
 - [ ] 用户选择文件夹。
 - [ ] 保存 tree URI 权限。
 - [ ] 后台遍历文档树。
-- [ ] 过滤扩展名：`.gba`、`.agb`、`.gb`、`.gbc`、`.sgb`、`.zip`、`.7z`。
+- [x] 过滤扩展名：`.gba`、`.agb`、`.gb`、`.gbc`、`.sgb`、`.zip`、`.7z`。
 - [ ] 对每个候选文件：
   - [ ] 打开 fd。
   - [ ] native 探测 `mCoreFindVF`。
