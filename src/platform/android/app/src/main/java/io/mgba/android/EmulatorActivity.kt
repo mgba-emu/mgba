@@ -40,9 +40,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var fastButton: Button? = null
     private var muteButton: Button? = null
     private var scaleButton: Button? = null
+    private var padButton: Button? = null
     private var userPaused = false
     private var fastForward = false
     private var muted = false
+    private var showVirtualGamepad = true
     private var scaleMode = 0
     private var hasSurface = false
 
@@ -51,6 +53,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         preferences = EmulatorPreferences(this)
         scaleMode = preferences.scaleMode
         muted = preferences.muted
+        showVirtualGamepad = preferences.showVirtualGamepad
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         enterImmersiveMode()
         controller = EmulatorSession.current()
@@ -78,6 +81,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         )
 
         gamepadView = VirtualGamepadView(this).apply {
+            visibility = if (showVirtualGamepad) View.VISIBLE else View.GONE
             setOnKeysChangedListener { keys ->
                 virtualKeys = keys
                 syncKeys()
@@ -264,6 +268,18 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 }
             }
             runRow.addView(scaleButton)
+            padButton = Button(context).apply {
+                setOnClickListener {
+                    showVirtualGamepad = !showVirtualGamepad
+                    preferences.showVirtualGamepad = showVirtualGamepad
+                    gamepadView?.visibility = if (showVirtualGamepad) View.VISIBLE else View.GONE
+                    if (!showVirtualGamepad) {
+                        gamepadView?.clearKeys()
+                    }
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(padButton)
             runRow.addView(Button(context).apply {
                 text = "Shot"
                 setOnClickListener {
@@ -358,6 +374,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         fastButton?.text = if (fastForward) "1x" else "Fast"
         muteButton?.text = if (muted) "Sound" else "Mute"
         scaleButton?.text = SCALE_LABELS[scaleMode]
+        padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
     }
 
     private fun saveStateWithConfirmation() {

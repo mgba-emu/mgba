@@ -17,8 +17,15 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putBoolean(KEY_MUTED, value).apply()
         }
 
+    var showVirtualGamepad: Boolean
+        get() = preferences.getBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, true)
+        set(value) {
+            preferences.edit().putBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, value).apply()
+        }
+
     private companion object {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_MUTED = "muted"
+        const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
     }
 }
