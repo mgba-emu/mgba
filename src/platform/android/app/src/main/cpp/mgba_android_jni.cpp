@@ -178,11 +178,18 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetScaleMode(JNIEnv*, jclass, jlo
 	}
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetFilterMode(JNIEnv*, jclass, jlong handle, jint mode) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setFilterMode(mode);
+	}
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeGetStats(JNIEnv* env, jclass, jlong handle) {
 	AndroidCoreRunner* runner = FromHandle(handle);
 	if (!runner) {
-		return env->NewStringUTF("{\"frames\":0,\"videoWidth\":0,\"videoHeight\":0,\"running\":false,\"paused\":true,\"fastForward\":false,\"frameSkip\":0,\"scaleMode\":0}");
+		return env->NewStringUTF("{\"frames\":0,\"videoWidth\":0,\"videoHeight\":0,\"running\":false,\"paused\":true,\"fastForward\":false,\"frameSkip\":0,\"scaleMode\":0,\"filterMode\":0}");
 	}
 	std::string result = runner->statsJson();
 	return env->NewStringUTF(result.c_str());

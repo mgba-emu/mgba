@@ -83,6 +83,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var frameSkipButton: Button? = null
     private var muteButton: Button? = null
     private var scaleButton: Button? = null
+    private var filterButton: Button? = null
     private var padButton: Button? = null
     private var padSettingsButton: Button? = null
     private var deadzoneButton: Button? = null
@@ -117,6 +118,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var pendingHardwareMappingMask = 0
     private var playAccountingStartedAtMs = 0L
     private var scaleMode = 0
+    private var filterMode = 0
     private var hasSurface = false
     private var inputMappingDialog: AlertDialog? = null
     private var keyCaptureDialog: AlertDialog? = null
@@ -150,6 +152,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         inputMappingStore = InputMappingStore(this)
         currentGameId = EmulatorSession.currentGame()?.uri
         scaleMode = perGameOverrides.scaleMode(currentGameId, preferences.scaleMode)
+        filterMode = perGameOverrides.filterMode(currentGameId, preferences.filterMode)
         frameSkip = perGameOverrides.frameSkip(currentGameId, 0)
         muted = perGameOverrides.muted(currentGameId, preferences.muted)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
@@ -185,6 +188,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             return
         }
         controller?.setScaleMode(scaleMode)
+        controller?.setFilterMode(filterMode)
         controller?.setFrameSkip(frameSkip)
         controller?.setAudioEnabled(!muted)
 
@@ -432,6 +436,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
+    private fun saveFilterModePreference() {
+        if (!perGameOverrides.setFilterMode(currentGameId, filterMode)) {
+            preferences.filterMode = filterMode
+        }
+    }
+
     private fun saveMutedPreference() {
         if (!perGameOverrides.setMuted(currentGameId, muted)) {
             preferences.muted = muted
@@ -564,6 +574,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(scaleButton)
+            filterButton = Button(context).apply {
+                setOnClickListener {
+                    filterMode = (filterMode + 1) % FILTER_LABELS.size
+                    controller?.setFilterMode(filterMode)
+                    saveFilterModePreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(filterButton)
             padButton = Button(context).apply {
                 setOnClickListener {
                     showVirtualGamepad = !showVirtualGamepad
@@ -779,6 +798,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         frameSkipButton?.text = FRAME_SKIP_LABELS[frameSkip]
         muteButton?.text = if (muted) "Sound" else "Mute"
         scaleButton?.text = SCALE_LABELS[scaleMode]
+        filterButton?.text = FILTER_LABELS[filterMode]
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
         padSettingsButton?.text = "PadCfg"
         deadzoneButton?.text = "DZ$deadzonePercent"
@@ -1306,7 +1326,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         lastStatsAtMs = now
         statsOverlay?.text = String.format(
             Locale.US,
-            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s  Skip %d",
+            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nScale %s  Filter %s",
             fps,
             stats.frames,
             stats.videoWidth,
@@ -1314,6 +1334,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             if (stats.running && !stats.paused) "on" else "off",
             if (stats.fastForward) "on" else "off",
             frameSkip,
+            SCALE_LABELS.getOrElse(stats.scaleMode) { SCALE_LABELS[0] },
+            FILTER_LABELS.getOrElse(stats.filterMode) { FILTER_LABELS[0] },
         )
     }
 
@@ -1578,5 +1600,6 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private val DEADZONE_LEVELS = arrayOf(25, 35, 45, 55, 65)
         private val FRAME_SKIP_LABELS = arrayOf("Skip0", "Skip1", "Skip2", "Skip3")
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int")
+        private val FILTER_LABELS = arrayOf("Pix", "Smooth")
     }
 }

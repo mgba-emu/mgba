@@ -65,6 +65,9 @@ object NativeBridge {
     external fun nativeSetScaleMode(handle: Long, mode: Int)
 
     @JvmStatic
+    external fun nativeSetFilterMode(handle: Long, mode: Int)
+
+    @JvmStatic
     external fun nativeGetStats(handle: Long): String
 
     @JvmStatic

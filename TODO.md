@@ -102,6 +102,7 @@
 - [x] 已新增虚拟手柄横屏/竖屏自动布局，竖屏时将肩键收进下半区控制区域。
 - [x] 已用单测锁定 Android `GbaKeyMask` 与 native `GBA_KEY_*` bit position 的对应关系。
 - [x] 已为虚拟手柄 PadCfg 新增 Reset，一键恢复默认布局样式。
+- [x] 已新增 Android 画面 Pix/Smooth 过滤切换，JNI 透传到 GLES texture filtering 并按游戏持久化。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -416,7 +417,7 @@ object NativeBridge {
 - [ ] 初版可先实现最小渲染：
   - [ ] 每帧 `glTexSubImage2D` 上传 core outputBuffer。
   - [ ] 一个全屏 quad。
-  - [ ] nearest / linear filtering 可切换。
+  - [x] nearest / linear filtering 可切换。
   - [ ] letterbox/pillarbox 维持比例。
 - [ ] 第二阶段接入现有 `src/platform/opengl/gles2.c` / `mGLES2Context`：
   - [ ] 复用 shader pipeline。
@@ -454,8 +455,8 @@ object NativeBridge {
   - [ ] Integer scale。
   - [ ] Stretch。
 - [ ] 滤镜：
-  - [ ] Nearest。
-  - [ ] Linear。
+  - [x] Nearest。
+  - [x] Linear。
   - [ ] mGBA shader preset，后续阶段。
 - [ ] 旋转：
   - [ ] 跟随系统。

@@ -63,6 +63,7 @@ public:
 	void setFrameSkip(int frames);
 	void setAudioEnabled(bool enabled);
 	void setScaleMode(int mode);
+	void setFilterMode(int mode);
 	std::string statsJson();
 	std::string takeScreenshot();
 	std::string exportBatterySave();
@@ -84,6 +85,7 @@ public:
 private:
 	bool initEglLocked();
 	bool initGlLocked();
+	void applyTextureFilterLocked();
 	void destroyEglLocked();
 	void renderFrameLocked();
 	std::chrono::microseconds frameDurationLocked() const;
@@ -110,6 +112,7 @@ private:
 	std::atomic<bool> m_fastForward{false};
 	std::atomic<int> m_frameSkip{0};
 	std::atomic<int> m_scaleMode{0};
+	std::atomic<int> m_filterMode{0};
 	std::atomic<uint64_t> m_frameCounter{0};
 	std::atomic<bool> m_rumbleActive{false};
 	std::atomic<int32_t> m_tiltX{0};
@@ -128,6 +131,7 @@ private:
 
 	GLuint m_program = 0;
 	GLuint m_texture = 0;
+	int m_appliedFilterMode = -1;
 	GLuint m_vbo = 0;
 	GLint m_positionLocation = -1;
 	GLint m_texCoordLocation = -1;

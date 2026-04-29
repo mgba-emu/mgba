@@ -727,6 +727,13 @@ void AndroidCoreRunner::setScaleMode(int mode) {
 	m_scaleMode = mode;
 }
 
+void AndroidCoreRunner::setFilterMode(int mode) {
+	if (mode < 0 || mode > 1) {
+		mode = 0;
+	}
+	m_filterMode = mode;
+}
+
 std::string AndroidCoreRunner::statsJson() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	std::ostringstream out;
@@ -738,6 +745,7 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"fastForward\":" << (m_fastForward.load() ? "true" : "false")
 	    << ",\"frameSkip\":" << m_frameSkip.load()
 	    << ",\"scaleMode\":" << m_scaleMode.load()
+	    << ",\"filterMode\":" << m_filterMode.load()
 	    << "}";
 	return out.str();
 }
@@ -1017,8 +1025,7 @@ bool AndroidCoreRunner::initGlLocked() {
 
 	glGenTextures(1, &m_texture);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	applyTextureFilterLocked();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_videoStride, m_textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -1027,12 +1034,27 @@ bool AndroidCoreRunner::initGlLocked() {
 	return true;
 }
 
+void AndroidCoreRunner::applyTextureFilterLocked() {
+	if (!m_texture) {
+		return;
+	}
+	const int filterMode = m_filterMode.load();
+	if (m_appliedFilterMode == filterMode) {
+		return;
+	}
+	const GLint filter = filterMode == 1 ? GL_LINEAR : GL_NEAREST;
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+	m_appliedFilterMode = filterMode;
+}
+
 void AndroidCoreRunner::destroyEglLocked() {
 	if (m_display != EGL_NO_DISPLAY) {
 		eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 	}
 	m_program = 0;
 	m_texture = 0;
+	m_appliedFilterMode = -1;
 	m_vbo = 0;
 	m_positionLocation = -1;
 	m_texCoordLocation = -1;
@@ -1095,6 +1117,7 @@ void AndroidCoreRunner::renderFrameLocked() {
 	glUseProgram(m_program);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
+	applyTextureFilterLocked();
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_videoStride, m_videoHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_videoBuffer.data());
 	glUniform1i(m_textureLocation, 0);
 

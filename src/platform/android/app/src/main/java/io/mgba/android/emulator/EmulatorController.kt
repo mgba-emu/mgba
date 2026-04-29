@@ -96,6 +96,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setFilterMode(mode: Int) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetFilterMode(handle.value, mode.coerceIn(0, 1))
+        }
+    }
+
     fun stats(): NativeStats? {
         if (!handle.isValid) {
             return null
