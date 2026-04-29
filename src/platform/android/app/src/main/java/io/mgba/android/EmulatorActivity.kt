@@ -20,6 +20,7 @@ import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.input.AndroidInputMapper
 import io.mgba.android.input.VirtualGamepadView
+import io.mgba.android.storage.ScreenshotExporter
 import io.mgba.android.storage.ScreenshotShareProvider
 
 class EmulatorActivity : Activity(), SurfaceHolder.Callback {
@@ -184,8 +185,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
     private fun createStateToolbar(): LinearLayout {
         return LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
+            orientation = LinearLayout.VERTICAL
             alpha = 0.86f
+            val runRow = LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+            }
+            val stateRow = LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+            }
             pauseButton = Button(context).apply {
                 setOnClickListener {
                     userPaused = !userPaused
@@ -197,8 +204,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                     updateRunButtons()
                 }
             }
-            addView(pauseButton)
-            addView(Button(context).apply {
+            runRow.addView(pauseButton)
+            runRow.addView(Button(context).apply {
                 text = "Reset"
                 setOnClickListener {
                     controller?.reset()
@@ -212,8 +219,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                     updateRunButtons()
                 }
             }
-            addView(fastButton)
-            addView(Button(context).apply {
+            runRow.addView(fastButton)
+            runRow.addView(Button(context).apply {
                 text = "Shot"
                 setOnClickListener {
                     val path = controller?.takeScreenshot()
@@ -224,7 +231,19 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                     }
                 }
             })
-            addView(Button(context).apply {
+            runRow.addView(Button(context).apply {
+                text = "Export"
+                setOnClickListener {
+                    val path = controller?.takeScreenshot()
+                    val uri = path?.let { ScreenshotExporter.exportToPictures(context, it) }
+                    Toast.makeText(
+                        context,
+                        if (uri != null) "Screenshot exported" else "Export unavailable",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+            })
+            stateRow.addView(Button(context).apply {
                 text = "-"
                 setOnClickListener {
                     stateSlot = if (stateSlot == 1) 9 else stateSlot - 1
@@ -234,28 +253,30 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             slotButton = Button(context).apply {
                 isEnabled = false
             }
-            addView(slotButton)
-            addView(Button(context).apply {
+            stateRow.addView(slotButton)
+            stateRow.addView(Button(context).apply {
                 text = "+"
                 setOnClickListener {
                     stateSlot = if (stateSlot == 9) 1 else stateSlot + 1
                     updateSlotButton()
                 }
             })
-            addView(Button(context).apply {
+            stateRow.addView(Button(context).apply {
                 text = "Save"
                 setOnClickListener {
                     val ok = controller?.saveStateSlot(stateSlot) == true
                     Toast.makeText(context, if (ok) "State saved" else "Save failed", Toast.LENGTH_SHORT).show()
                 }
             })
-            addView(Button(context).apply {
+            stateRow.addView(Button(context).apply {
                 text = "Load"
                 setOnClickListener {
                     val ok = controller?.loadStateSlot(stateSlot) == true
                     Toast.makeText(context, if (ok) "State loaded" else "Load failed", Toast.LENGTH_SHORT).show()
                 }
             })
+            addView(runRow)
+            addView(stateRow)
             updateSlotButton()
             updateRunButtons()
         }
