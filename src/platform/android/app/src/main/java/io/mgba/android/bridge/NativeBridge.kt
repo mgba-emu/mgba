@@ -102,6 +102,9 @@ object NativeBridge {
     external fun nativeSetLogLevelMode(handle: Long, mode: Int)
 
     @JvmStatic
+    external fun nativeSetRtcMode(handle: Long, mode: Int, valueMs: Long)
+
+    @JvmStatic
     external fun nativeGetStats(handle: Long): String
 
     @JvmStatic

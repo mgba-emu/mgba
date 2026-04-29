@@ -147,6 +147,24 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putInt(KEY_LOG_LEVEL_MODE, LogLevelModes.coerce(value)).apply()
         }
 
+    var rtcMode: Int
+        get() = RtcModes.coerce(preferences.getInt(KEY_RTC_MODE, RtcModes.ModeWallClock))
+        set(value) {
+            preferences.edit().putInt(KEY_RTC_MODE, RtcModes.coerce(value)).apply()
+        }
+
+    var rtcFixedTimeMs: Long
+        get() = preferences.getLong(KEY_RTC_FIXED_TIME_MS, RtcModes.DefaultFixedTimeMs)
+        set(value) {
+            preferences.edit().putLong(KEY_RTC_FIXED_TIME_MS, value).apply()
+        }
+
+    var rtcOffsetMs: Long
+        get() = preferences.getLong(KEY_RTC_OFFSET_MS, 0L)
+        set(value) {
+            preferences.edit().putLong(KEY_RTC_OFFSET_MS, value).apply()
+        }
+
     private companion object {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_FILTER_MODE = "filterMode"
@@ -171,5 +189,8 @@ class EmulatorPreferences(context: Context) {
         const val KEY_ALLOW_OPPOSING_DIRECTIONS = "allowOpposingDirections"
         const val KEY_RUMBLE_ENABLED = "rumbleEnabled"
         const val KEY_LOG_LEVEL_MODE = "logLevelMode"
+        const val KEY_RTC_MODE = "rtcMode"
+        const val KEY_RTC_FIXED_TIME_MS = "rtcFixedTimeMs"
+        const val KEY_RTC_OFFSET_MS = "rtcOffsetMs"
     }
 }

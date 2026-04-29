@@ -41,6 +41,7 @@ import io.mgba.android.settings.FastForwardModes
 import io.mgba.android.settings.LogLevelModes
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.settings.RewindSettings
+import io.mgba.android.settings.RtcModes
 import io.mgba.android.storage.AppLogStore
 import io.mgba.android.storage.BiosStore
 import io.mgba.android.storage.BiosSlot
@@ -77,6 +78,7 @@ class MainActivity : Activity() {
     private lateinit var opposingDirectionsButton: Button
     private lateinit var rumbleButton: Button
     private lateinit var logLevelButton: Button
+    private lateinit var rtcButton: Button
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
@@ -282,6 +284,18 @@ class MainActivity : Activity() {
         }
         updateLogLevelButton()
 
+        rtcButton = Button(this).apply {
+            setOnClickListener {
+                preferences.rtcMode = RtcModes.next(preferences.rtcMode)
+                when (preferences.rtcMode) {
+                    RtcModes.ModeFixed, RtcModes.ModeFakeEpoch -> preferences.rtcFixedTimeMs = System.currentTimeMillis()
+                    RtcModes.ModeWallClockOffset -> preferences.rtcOffsetMs = 0L
+                }
+                updateRtcButton()
+            }
+        }
+        updateRtcButton()
+
         patchButton = Button(this).apply {
             text = patchStore.displayName?.let { "Patch: $it" } ?: "Import Patch"
             setOnClickListener {
@@ -376,6 +390,7 @@ class MainActivity : Activity() {
         root.addView(opposingDirectionsButton)
         root.addView(rumbleButton)
         root.addView(logLevelButton)
+        root.addView(rtcButton)
         root.addView(patchButton)
         root.addView(aboutButton)
         root.addView(logButton)
@@ -577,6 +592,7 @@ class MainActivity : Activity() {
             )
             emulator.setFrameSkip(perGameOverrides.frameSkip(gameId, preferences.frameSkip))
             emulator.setLogLevelMode(preferences.logLevelMode)
+            emulator.setRtcMode(preferences.rtcMode, rtcValueForMode(preferences.rtcMode))
             emulator.setRewindConfig(
                 perGameOverrides.rewindEnabled(gameId, preferences.rewindEnabled),
                 perGameOverrides.rewindBufferCapacity(gameId, preferences.rewindBufferCapacity),
@@ -929,6 +945,30 @@ class MainActivity : Activity() {
 
     private fun updateLogLevelButton() {
         logLevelButton.text = "Log Level: ${LogLevelModes.labels[preferences.logLevelMode]}"
+    }
+
+    private fun rtcValueForMode(mode: Int): Long {
+        return when (RtcModes.coerce(mode)) {
+            RtcModes.ModeFixed, RtcModes.ModeFakeEpoch -> preferences.rtcFixedTimeMs
+            RtcModes.ModeWallClockOffset -> preferences.rtcOffsetMs
+            else -> 0L
+        }
+    }
+
+    private fun updateRtcButton() {
+        val mode = preferences.rtcMode
+        rtcButton.text = when (mode) {
+            RtcModes.ModeFixed, RtcModes.ModeFakeEpoch -> {
+                val label = DateUtils.formatDateTime(
+                    this,
+                    preferences.rtcFixedTimeMs,
+                    DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME,
+                )
+                "RTC: ${RtcModes.labels[mode]} $label"
+            }
+            RtcModes.ModeWallClockOffset -> "RTC: Offset ${preferences.rtcOffsetMs / DateUtils.MINUTE_IN_MILLIS}m"
+            else -> "RTC: ${RtcModes.labels[mode]}"
+        }
     }
 
     private fun renderLibrary() {

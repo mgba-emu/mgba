@@ -81,6 +81,31 @@ std::string PlatformName(const mCore* core) {
 	}
 }
 
+void ApplyRtcMode(mCore* core, int mode, int64_t valueMs) {
+	if (!core) {
+		return;
+	}
+	switch (mode) {
+	case 1:
+		core->rtc.override = RTC_FIXED;
+		core->rtc.value = valueMs;
+		break;
+	case 2:
+		core->rtc.override = RTC_FAKE_EPOCH;
+		core->rtc.value = valueMs;
+		break;
+	case 3:
+		core->rtc.override = RTC_WALLCLOCK_OFFSET;
+		core->rtc.value = valueMs;
+		break;
+	case 0:
+	default:
+		core->rtc.override = RTC_NO_OVERRIDE;
+		core->rtc.value = 0;
+		break;
+	}
+}
+
 std::string BoundedString(const char* value, size_t maxLength) {
 	size_t length = 0;
 	while (length < maxLength && value[length]) {
@@ -583,6 +608,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	if (m_core->setPeripheral) {
 		m_core->setPeripheral(m_core, mPERIPH_IMAGE_SOURCE, &m_imageSource.d);
 	}
+	ApplyRtcMode(m_core, m_rtcMode.load(), m_rtcValueMs.load());
 
 	struct mGameInfo info;
 	std::memset(&info, 0, sizeof(info));
@@ -908,6 +934,16 @@ void AndroidCoreRunner::setLogLevel(int levels) {
 		m_core->opts.logLevel = levels;
 		mCoreConfigSetIntValue(&m_core->config, "logLevel", levels);
 	}
+}
+
+void AndroidCoreRunner::setRtcMode(int mode, int64_t valueMs) {
+	if (mode < 0 || mode > 3) {
+		mode = 0;
+	}
+	m_rtcMode = mode;
+	m_rtcValueMs = valueMs;
+	std::lock_guard<std::mutex> lock(m_mutex);
+	ApplyRtcMode(m_core, mode, valueMs);
 }
 
 std::string AndroidCoreRunner::statsJson() {

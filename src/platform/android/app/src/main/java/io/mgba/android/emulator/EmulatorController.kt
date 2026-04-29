@@ -154,6 +154,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setRtcMode(mode: Int, valueMs: Long) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetRtcMode(handle.value, mode.coerceIn(0, 3), valueMs)
+        }
+    }
+
     fun stats(): NativeStats? {
         if (!handle.isValid) {
             return null

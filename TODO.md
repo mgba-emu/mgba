@@ -783,7 +783,7 @@ object NativeBridge {
   - [x] 快进倍率。
   - [x] 倒带开关。
   - [x] 倒带 buffer。
-  - [ ] RTC 策略。
+  - [x] RTC 策略。
 - [ ] Input：
   - [x] 触屏显示。
   - [ ] 触屏布局编辑。

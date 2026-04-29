@@ -460,6 +460,13 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetLogLevelMode(JNIEnv*, jclass, 
 	}
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetRtcMode(JNIEnv*, jclass, jlong handle, jint mode, jlong valueMs) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setRtcMode(mode, static_cast<int64_t>(valueMs));
+	}
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeGetStats(JNIEnv* env, jclass, jlong handle) {
 	AndroidCoreRunner* runner = FromHandle(handle);
