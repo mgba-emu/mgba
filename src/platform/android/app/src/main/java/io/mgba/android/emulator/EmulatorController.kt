@@ -57,6 +57,13 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun takeScreenshot(): String? {
+        if (!handle.isValid) {
+            return null
+        }
+        return NativeBridge.nativeTakeScreenshot(handle.value).takeIf { it.isNotBlank() }
+    }
+
     fun start() {
         if (handle.isValid) {
             NativeBridge.nativeStart(handle.value)

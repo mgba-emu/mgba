@@ -33,6 +33,7 @@ public:
 	bool loadStateSlot(int slot);
 	void reset();
 	void setFastForward(bool enabled);
+	std::string takeScreenshot();
 	void start();
 	void pause();
 	void resume();
@@ -44,6 +45,7 @@ private:
 	void destroyEglLocked();
 	void renderFrameLocked();
 	void runLoop();
+	std::string romIdFromSavePath() const;
 	std::string statePathForSlot(int slot);
 	void unloadCore();
 

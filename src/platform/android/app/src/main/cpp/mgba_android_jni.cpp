@@ -111,6 +111,15 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetFastForward(JNIEnv*, jclass, j
 	}
 }
 
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeTakeScreenshot(JNIEnv* env, jclass, jlong handle) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		const std::string path = runner->takeScreenshot();
+		return env->NewStringUTF(path.c_str());
+	}
+	return env->NewStringUTF("");
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeStart(JNIEnv*, jclass, jlong handle) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {

@@ -197,6 +197,17 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             }
             addView(fastButton)
             addView(Button(context).apply {
+                text = "Shot"
+                setOnClickListener {
+                    val path = controller?.takeScreenshot()
+                    Toast.makeText(
+                        context,
+                        if (path != null) "Screenshot saved" else "Screenshot failed",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+            })
+            addView(Button(context).apply {
                 text = "-"
                 setOnClickListener {
                     stateSlot = if (stateSlot == 1) 9 else stateSlot - 1

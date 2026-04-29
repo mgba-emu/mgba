@@ -14,7 +14,9 @@
 #include <algorithm>
 #include <cerrno>
 #include <chrono>
+#include <ctime>
 #include <cstring>
+#include <fstream>
 #include <iomanip>
 #include <sstream>
 #include <utility>
@@ -122,6 +124,70 @@ std::string SavePathForCore(const mCore* core, const std::string& basePath) {
 	name << std::hex << std::setfill('0') << std::setw(8) << crc32;
 	name << ".sav";
 	return name.str();
+}
+
+void WriteLe16(std::ostream& out, uint16_t value) {
+	const char bytes[] = {
+		static_cast<char>(value & 0xFF),
+		static_cast<char>((value >> 8) & 0xFF),
+	};
+	out.write(bytes, sizeof(bytes));
+}
+
+void WriteLe32(std::ostream& out, uint32_t value) {
+	const char bytes[] = {
+		static_cast<char>(value & 0xFF),
+		static_cast<char>((value >> 8) & 0xFF),
+		static_cast<char>((value >> 16) & 0xFF),
+		static_cast<char>((value >> 24) & 0xFF),
+	};
+	out.write(bytes, sizeof(bytes));
+}
+
+bool WriteBmpScreenshot(const std::string& path, const std::vector<mColor>& pixels, unsigned width, unsigned height, unsigned stride) {
+	if (!width || !height || stride < width || pixels.size() < static_cast<size_t>(stride) * height) {
+		return false;
+	}
+
+	const uint32_t rowBytes = ((width * 3U) + 3U) & ~3U;
+	const uint32_t pixelBytes = rowBytes * height;
+	const uint32_t fileBytes = 14U + 40U + pixelBytes;
+	std::ofstream out(path, std::ios::binary | std::ios::trunc);
+	if (!out) {
+		return false;
+	}
+
+	out.write("BM", 2);
+	WriteLe32(out, fileBytes);
+	WriteLe16(out, 0);
+	WriteLe16(out, 0);
+	WriteLe32(out, 14U + 40U);
+	WriteLe32(out, 40U);
+	WriteLe32(out, width);
+	WriteLe32(out, height);
+	WriteLe16(out, 1);
+	WriteLe16(out, 24);
+	WriteLe32(out, 0);
+	WriteLe32(out, pixelBytes);
+	WriteLe32(out, 2835);
+	WriteLe32(out, 2835);
+	WriteLe32(out, 0);
+	WriteLe32(out, 0);
+
+	const char padding[3] = {0, 0, 0};
+	for (int y = static_cast<int>(height) - 1; y >= 0; --y) {
+		for (unsigned x = 0; x < width; ++x) {
+			const mColor color = pixels[static_cast<size_t>(y) * stride + x];
+			const char bgr[] = {
+				static_cast<char>((color >> 16) & 0xFF),
+				static_cast<char>((color >> 8) & 0xFF),
+				static_cast<char>(color & 0xFF),
+			};
+			out.write(bgr, sizeof(bgr));
+		}
+		out.write(padding, rowBytes - width * 3U);
+	}
+	return static_cast<bool>(out);
 }
 
 GLuint CompileShader(GLenum type, const char* source) {
@@ -328,6 +394,38 @@ void AndroidCoreRunner::reset() {
 
 void AndroidCoreRunner::setFastForward(bool enabled) {
 	m_fastForward = enabled;
+}
+
+std::string AndroidCoreRunner::takeScreenshot() {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (!m_core || m_savePath.empty()) {
+		return "";
+	}
+
+	unsigned width = 0;
+	unsigned height = 0;
+	m_core->currentVideoSize(m_core, &width, &height);
+	if (!width || !height) {
+		width = m_videoWidth;
+		height = m_videoHeight;
+	}
+	if (!width || !height) {
+		return "";
+	}
+
+	const std::string screenshotsPath = m_basePath + "/screenshots";
+	if (!EnsureDirectory(screenshotsPath)) {
+		return "";
+	}
+
+	char timestamp[32] = {};
+	const std::time_t now = std::time(nullptr);
+	std::tm tm = {};
+	localtime_r(&now, &tm);
+	std::strftime(timestamp, sizeof(timestamp), "%Y%m%d-%H%M%S", &tm);
+
+	const std::string path = screenshotsPath + "/" + romIdFromSavePath() + "-" + timestamp + ".bmp";
+	return WriteBmpScreenshot(path, m_videoBuffer, width, height, m_videoStride) ? path : "";
 }
 
 void AndroidCoreRunner::start() {
@@ -561,6 +659,19 @@ void AndroidCoreRunner::runLoop() {
 	destroyEglLocked();
 }
 
+std::string AndroidCoreRunner::romIdFromSavePath() const {
+	if (m_savePath.empty()) {
+		return "";
+	}
+	size_t nameStart = m_savePath.find_last_of('/');
+	nameStart = nameStart == std::string::npos ? 0 : nameStart + 1;
+	size_t nameEnd = m_savePath.rfind(".sav");
+	if (nameEnd == std::string::npos || nameEnd < nameStart) {
+		nameEnd = m_savePath.size();
+	}
+	return m_savePath.substr(nameStart, nameEnd - nameStart);
+}
+
 std::string AndroidCoreRunner::statePathForSlot(int slot) {
 	if (slot < 1 || slot > 9 || m_savePath.empty()) {
 		return "";
@@ -570,14 +681,8 @@ std::string AndroidCoreRunner::statePathForSlot(int slot) {
 		return "";
 	}
 
-	size_t nameStart = m_savePath.find_last_of('/');
-	nameStart = nameStart == std::string::npos ? 0 : nameStart + 1;
-	size_t nameEnd = m_savePath.rfind(".sav");
-	if (nameEnd == std::string::npos || nameEnd < nameStart) {
-		nameEnd = m_savePath.size();
-	}
 	std::ostringstream path;
-	path << statesPath << "/" << m_savePath.substr(nameStart, nameEnd - nameStart) << "-slot" << slot << ".ss";
+	path << statesPath << "/" << romIdFromSavePath() << "-slot" << slot << ".ss";
 	return path.str();
 }
 
