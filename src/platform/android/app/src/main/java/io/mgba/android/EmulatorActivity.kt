@@ -72,6 +72,7 @@ import io.mgba.android.storage.PatchStore
 import io.mgba.android.storage.ScreenshotExporter
 import io.mgba.android.storage.ScreenshotShareProvider
 import io.mgba.android.storage.SaveExporter
+import io.mgba.android.storage.replaceFileAtomically
 import java.io.File
 import java.security.MessageDigest
 import java.util.Locale
@@ -2108,24 +2109,31 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun copyCameraImage(gameId: String, imageUri: Uri): String? {
         return runCatching {
             val target = cameraImageTarget(gameId)
-            contentResolver.openInputStream(imageUri)?.use { input ->
-                target.outputStream().use { output ->
-                    input.copyTo(output)
+            val copied = replaceFileAtomically(target) { temp ->
+                val input = contentResolver.openInputStream(imageUri) ?: error("Camera image input unavailable")
+                input.use {
+                    temp.outputStream().use { output ->
+                        it.copyTo(output)
+                    }
                 }
-            } ?: return@runCatching null
-            validatedCameraImagePath(target)
+                validatedCameraImagePath(temp) ?: error("Invalid camera image")
+            }
+            if (copied) target.absolutePath else null
         }.getOrNull()
     }
 
     private fun copyCameraBitmap(gameId: String, bitmap: Bitmap): String? {
         return runCatching {
             val target = cameraImageTarget(gameId)
-            target.outputStream().use { output ->
-                if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)) {
-                    return@runCatching null
+            val copied = replaceFileAtomically(target) { temp ->
+                temp.outputStream().use { output ->
+                    if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)) {
+                        error("Camera bitmap encode failed")
+                    }
                 }
+                validatedCameraImagePath(temp) ?: error("Invalid camera image")
             }
-            validatedCameraImagePath(target)
+            if (copied) target.absolutePath else null
         }.getOrNull()
     }
 
@@ -2134,8 +2142,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         val storageGameId = artifactGameId()?.takeIf { it.isNotBlank() } ?: return false
         val targetPath = runCatching {
             val target = cameraImageTarget(storageGameId)
-            file.copyTo(target, overwrite = true)
-            validatedCameraImagePath(target)
+            val copied = replaceFileAtomically(target) { temp ->
+                file.copyTo(temp, overwrite = true)
+                validatedCameraImagePath(temp) ?: error("Invalid camera image")
+            }
+            if (copied) target.absolutePath else null
         }.getOrNull() ?: return false
         perGameOverrides.setCameraImagePath(overrideGameId, targetPath)
         return true

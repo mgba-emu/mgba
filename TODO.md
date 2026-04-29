@@ -180,6 +180,7 @@
 - [x] 已增强 Android 用户导入文件安全性：BIOS、patch、cheat 写入统一走临时文件原子替换，失败保留旧文件并清理临时文件。
 - [x] 已补齐 Android cheat 启用状态写入安全性：切换单条 cheat 开关时同样走原子替换，避免中断写坏 cheat 文件。
 - [x] 已增强 Android ROM cache 与封面导入写入安全性：archive/import cache 和 cover 文件统一原子替换，坏封面不会覆盖旧封面。
+- [x] 已增强 Android Game Boy Camera 静态图写入安全性：导入、拍摄和游戏数据包恢复均先验证临时图片再原子替换。
 - [x] 已完成 OnePlus7 真机首帧验证：通过 ACTION_VIEW 打开仓库 homebrew GB/GBA 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 已完成 OnePlus7 真机 GBC 验证：通过 ACTION_VIEW 打开仓库 homebrew GBC 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 已修复 Android 竖屏游戏内工具栏溢出：运行/存档两行可横向滚动，Save/Load 等按钮在 OnePlus7 上可访问。
