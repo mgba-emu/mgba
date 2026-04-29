@@ -60,6 +60,7 @@ public:
 	void reset();
 	bool stepFrame();
 	void setFastForward(bool enabled);
+	void setFastForwardMultiplier(int multiplier);
 	void setFrameSkip(int frames);
 	void setAudioEnabled(bool enabled);
 	void setVolumePercent(int percent);
@@ -118,6 +119,7 @@ private:
 	std::atomic<bool> m_running{false};
 	std::atomic<bool> m_paused{true};
 	std::atomic<bool> m_fastForward{false};
+	std::atomic<int> m_fastForwardMultiplier{0};
 	std::atomic<int> m_frameSkip{0};
 	std::atomic<int> m_volumePercent{100};
 	std::atomic<int> m_audioBufferSamples{1024};

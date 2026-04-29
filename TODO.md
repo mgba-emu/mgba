@@ -777,7 +777,7 @@ object NativeBridge {
   - [ ] 使用 BIOS。
   - [ ] BIOS 文件路径。
   - [ ] 跳过 BIOS。
-  - [ ] 快进倍率。
+  - [x] 快进倍率。
   - [ ] 倒带开关。
   - [ ] 倒带 buffer。
   - [ ] RTC 策略。
@@ -894,10 +894,10 @@ object NativeBridge {
 
 ### 13.1 快进
 
-- [ ] UI 提供按住快进和切换快进两种模式。
-- [ ] 设置快进倍率：2x / 3x / 4x / unlimited。
-- [ ] Native 调整 sync/audio wait 策略。
-- [ ] 快进时 overlay 显示倍率。
+- [x] UI 提供按住快进和切换快进两种模式。
+- [x] 设置快进倍率：2x / 3x / 4x / unlimited。
+- [x] Native 调整 sync/audio wait 策略。
+- [x] 快进时 overlay 显示倍率。
 
 ### 13.2 倒带
 
@@ -979,7 +979,7 @@ object NativeBridge {
 - [ ] 顶部/底部临时菜单：
   - [ ] 暂停/继续。
   - [ ] 重置。
-  - [ ] 快进。
+  - [x] 快进。
   - [ ] 倒带。
   - [ ] 存档。
   - [ ] 读档。

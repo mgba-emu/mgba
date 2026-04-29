@@ -78,6 +78,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setFastForwardMultiplier(multiplier: Int) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetFastForwardMultiplier(handle.value, multiplier)
+        }
+    }
+
     fun setFrameSkip(frames: Int) {
         if (handle.isValid) {
             NativeBridge.nativeSetFrameSkip(handle.value, frames.coerceIn(0, 3))

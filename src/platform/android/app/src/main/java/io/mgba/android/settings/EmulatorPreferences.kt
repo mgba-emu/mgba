@@ -53,6 +53,22 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putInt(KEY_AUDIO_LOW_PASS_MODE, value.coerceIn(0, 3)).apply()
         }
 
+    var fastForwardMode: Int
+        get() = FastForwardModes.coerceMode(preferences.getInt(KEY_FAST_FORWARD_MODE, FastForwardModes.ModeToggle))
+        set(value) {
+            preferences.edit().putInt(KEY_FAST_FORWARD_MODE, FastForwardModes.coerceMode(value)).apply()
+        }
+
+    var fastForwardMultiplier: Int
+        get() = FastForwardModes.coerceMultiplier(
+            preferences.getInt(KEY_FAST_FORWARD_MULTIPLIER, FastForwardModes.MultiplierMax),
+        )
+        set(value) {
+            preferences.edit()
+                .putInt(KEY_FAST_FORWARD_MULTIPLIER, FastForwardModes.coerceMultiplier(value))
+                .apply()
+        }
+
     var showVirtualGamepad: Boolean
         get() = preferences.getBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, true)
         set(value) {
@@ -98,6 +114,8 @@ class EmulatorPreferences(context: Context) {
         const val KEY_VOLUME_PERCENT = "volumePercent"
         const val KEY_AUDIO_BUFFER_MODE = "audioBufferMode"
         const val KEY_AUDIO_LOW_PASS_MODE = "audioLowPassMode"
+        const val KEY_FAST_FORWARD_MODE = "fastForwardMode"
+        const val KEY_FAST_FORWARD_MULTIPLIER = "fastForwardMultiplier"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
         const val KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT = "virtualGamepadOpacityPercent"

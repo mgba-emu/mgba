@@ -37,6 +37,14 @@ class PerGameOverrideStore(context: Context) {
         return intOverride(gameId, KEY_AUDIO_LOW_PASS_MODE, fallback).coerceIn(0, 3)
     }
 
+    fun fastForwardMode(gameId: String?, fallback: Int): Int {
+        return FastForwardModes.coerceMode(intOverride(gameId, KEY_FAST_FORWARD_MODE, fallback))
+    }
+
+    fun fastForwardMultiplier(gameId: String?, fallback: Int): Int {
+        return FastForwardModes.coerceMultiplier(intOverride(gameId, KEY_FAST_FORWARD_MULTIPLIER, fallback))
+    }
+
     fun showVirtualGamepad(gameId: String?, fallback: Boolean): Boolean {
         return booleanOverride(gameId, KEY_SHOW_VIRTUAL_GAMEPAD, fallback)
     }
@@ -99,6 +107,14 @@ class PerGameOverrideStore(context: Context) {
 
     fun setAudioLowPassMode(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_AUDIO_LOW_PASS_MODE, value.coerceIn(0, 3))
+    }
+
+    fun setFastForwardMode(gameId: String?, value: Int): Boolean {
+        return putIntOverride(gameId, KEY_FAST_FORWARD_MODE, FastForwardModes.coerceMode(value))
+    }
+
+    fun setFastForwardMultiplier(gameId: String?, value: Int): Boolean {
+        return putIntOverride(gameId, KEY_FAST_FORWARD_MULTIPLIER, FastForwardModes.coerceMultiplier(value))
     }
 
     fun setShowVirtualGamepad(gameId: String?, value: Boolean): Boolean {
@@ -171,6 +187,8 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_VOLUME_PERCENT = "volumePercent"
         const val KEY_AUDIO_BUFFER_MODE = "audioBufferMode"
         const val KEY_AUDIO_LOW_PASS_MODE = "audioLowPassMode"
+        const val KEY_FAST_FORWARD_MODE = "fastForwardMode"
+        const val KEY_FAST_FORWARD_MULTIPLIER = "fastForwardMultiplier"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_FRAME_SKIP = "frameSkip"
         const val KEY_DEADZONE_PERCENT = "deadzonePercent"

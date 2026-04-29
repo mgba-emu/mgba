@@ -712,6 +712,13 @@ void AndroidCoreRunner::setFastForward(bool enabled) {
 	m_fastForward = enabled;
 }
 
+void AndroidCoreRunner::setFastForwardMultiplier(int multiplier) {
+	if (multiplier != 2 && multiplier != 3 && multiplier != 4) {
+		multiplier = 0;
+	}
+	m_fastForwardMultiplier = multiplier;
+}
+
 void AndroidCoreRunner::setFrameSkip(int frames) {
 	if (frames < 0) {
 		frames = 0;
@@ -778,6 +785,7 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"running\":" << (m_running.load() ? "true" : "false")
 	    << ",\"paused\":" << (m_paused.load() ? "true" : "false")
 	    << ",\"fastForward\":" << (m_fastForward.load() ? "true" : "false")
+	    << ",\"fastForwardMultiplier\":" << m_fastForwardMultiplier.load()
 	    << ",\"frameSkip\":" << m_frameSkip.load()
 	    << ",\"volumePercent\":" << m_volumePercent.load()
 	    << ",\"audioBufferSamples\":" << m_audioBufferSamples.load()
@@ -1280,10 +1288,12 @@ void AndroidCoreRunner::runLoop() {
 				if (skip <= 0 || frame % static_cast<uint64_t>(skip + 1) == 0) {
 					renderFrameLocked();
 				}
-				nextFrame += frameDurationLocked();
+				const int fastMultiplier = m_fastForward.load() ? m_fastForwardMultiplier.load() : 1;
+				const auto frameDuration = frameDurationLocked();
+				nextFrame += fastMultiplier > 1 ? frameDuration / fastMultiplier : frameDuration;
 			}
 		}
-		if (m_fastForward) {
+		if (m_fastForward && m_fastForwardMultiplier.load() == 0) {
 			nextFrame = clock::now();
 		} else {
 			std::this_thread::sleep_until(nextFrame);

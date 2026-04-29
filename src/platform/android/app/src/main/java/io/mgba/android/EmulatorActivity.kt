@@ -45,6 +45,7 @@ import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.settings.AudioBufferModes
 import io.mgba.android.settings.AudioLowPassModes
 import io.mgba.android.settings.EmulatorPreferences
+import io.mgba.android.settings.FastForwardModes
 import io.mgba.android.settings.InputMappingStore
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.storage.CheatStore
@@ -89,6 +90,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var stateThumbnailView: ImageView? = null
     private var pauseButton: Button? = null
     private var fastButton: Button? = null
+    private var fastModeButton: Button? = null
+    private var fastMultiplierButton: Button? = null
     private var frameSkipButton: Button? = null
     private var muteButton: Button? = null
     private var volumeButton: Button? = null
@@ -107,6 +110,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var statsOverlay: TextView? = null
     private var userPaused = false
     private var fastForward = false
+    private var fastForwardMode = FastForwardModes.ModeToggle
+    private var fastForwardMultiplier = FastForwardModes.MultiplierMax
     private var frameSkip = 0
     private var muted = false
     private var volumePercent = 100
@@ -181,6 +186,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         volumePercent = perGameOverrides.volumePercent(currentGameId, preferences.volumePercent)
         audioBufferMode = perGameOverrides.audioBufferMode(currentGameId, preferences.audioBufferMode)
         audioLowPassMode = perGameOverrides.audioLowPassMode(currentGameId, preferences.audioLowPassMode)
+        fastForwardMode = perGameOverrides.fastForwardMode(currentGameId, preferences.fastForwardMode)
+        fastForwardMultiplier = perGameOverrides.fastForwardMultiplier(currentGameId, preferences.fastForwardMultiplier)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
         virtualGamepadSizePercent = perGameOverrides.virtualGamepadSizePercent(
             currentGameId,
@@ -222,6 +229,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         controller?.setVolumePercent(volumePercent)
         controller?.setAudioBufferSamples(AudioBufferModes.samplesFor(audioBufferMode))
         controller?.setLowPassRangePercent(AudioLowPassModes.rangeFor(audioLowPassMode))
+        controller?.setFastForwardMultiplier(fastForwardMultiplier)
 
         val root = FrameLayout(this).apply {
             setBackgroundColor(getColor(R.color.mgba_background))
@@ -461,6 +469,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         hardwareAxisKeys = 0
         gamepadView?.clearKeys()
         syncKeys()
+        if (fastForwardMode == FastForwardModes.ModeHold) {
+            setFastForwardActive(false)
+        }
     }
 
     private fun syncKeys() {
@@ -512,6 +523,18 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun saveAudioLowPassPreference() {
         if (!perGameOverrides.setAudioLowPassMode(currentGameId, audioLowPassMode)) {
             preferences.audioLowPassMode = audioLowPassMode
+        }
+    }
+
+    private fun saveFastForwardModePreference() {
+        if (!perGameOverrides.setFastForwardMode(currentGameId, fastForwardMode)) {
+            preferences.fastForwardMode = fastForwardMode
+        }
+    }
+
+    private fun saveFastForwardMultiplierPreference() {
+        if (!perGameOverrides.setFastForwardMultiplier(currentGameId, fastForwardMultiplier)) {
+            preferences.fastForwardMultiplier = fastForwardMultiplier
         }
     }
 
@@ -608,12 +631,57 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             })
             fastButton = Button(context).apply {
                 setOnClickListener {
-                    fastForward = !fastForward
-                    controller?.setFastForward(fastForward)
-                    updateRunButtons()
+                    if (fastForwardMode == FastForwardModes.ModeToggle) {
+                        setFastForwardActive(!fastForward)
+                    }
+                }
+                setOnTouchListener { view, event ->
+                    if (fastForwardMode != FastForwardModes.ModeHold) {
+                        return@setOnTouchListener false
+                    }
+                    when (event.actionMasked) {
+                        MotionEvent.ACTION_DOWN -> {
+                            setFastForwardActive(true)
+                            true
+                        }
+                        MotionEvent.ACTION_UP -> {
+                            setFastForwardActive(false)
+                            view.performClick()
+                            true
+                        }
+                        MotionEvent.ACTION_CANCEL -> {
+                            setFastForwardActive(false)
+                            true
+                        }
+                        else -> true
+                    }
                 }
             }
             runRow.addView(fastButton)
+            fastModeButton = Button(context).apply {
+                setOnClickListener {
+                    fastForwardMode = if (fastForwardMode == FastForwardModes.ModeToggle) {
+                        FastForwardModes.ModeHold
+                    } else {
+                        FastForwardModes.ModeToggle
+                    }
+                    if (fastForwardMode == FastForwardModes.ModeHold) {
+                        setFastForwardActive(false)
+                    }
+                    saveFastForwardModePreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(fastModeButton)
+            fastMultiplierButton = Button(context).apply {
+                setOnClickListener {
+                    fastForwardMultiplier = FastForwardModes.nextMultiplier(fastForwardMultiplier)
+                    controller?.setFastForwardMultiplier(fastForwardMultiplier)
+                    saveFastForwardMultiplierPreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(fastMultiplierButton)
             frameSkipButton = Button(context).apply {
                 setOnClickListener {
                     frameSkip = (frameSkip + 1) % FRAME_SKIP_LABELS.size
@@ -932,7 +1000,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun updateRunButtons() {
         pauseButton?.text = if (userPaused) "Resume" else "Pause"
-        fastButton?.text = if (fastForward) "1x" else "Fast"
+        fastButton?.text = when {
+            fastForward -> "1x"
+            fastForwardMode == FastForwardModes.ModeHold -> "Hold"
+            else -> "Fast"
+        }
+        fastModeButton?.text = if (fastForwardMode == FastForwardModes.ModeHold) "Mode:Hold" else "Mode:Tog"
+        fastMultiplierButton?.text = "Fwd:${FastForwardModes.labelForMultiplier(fastForwardMultiplier)}"
         frameSkipButton?.text = FRAME_SKIP_LABELS[frameSkip]
         muteButton?.text = if (muted) "Sound" else "Mute"
         volumeButton?.text = "Vol$volumePercent"
@@ -961,6 +1035,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         val ok = controller?.stepFrame() == true
         updateRunButtons()
         Toast.makeText(this, if (ok) "Stepped" else "Step failed", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun setFastForwardActive(enabled: Boolean) {
+        fastForward = enabled
+        controller?.setFastForward(enabled)
+        updateRunButtons()
     }
 
     private fun updateSensorRegistration() {
@@ -1481,7 +1561,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             stats.videoWidth,
             stats.videoHeight,
             if (stats.running && !stats.paused) "on" else "off",
-            if (stats.fastForward) "on" else "off",
+            if (stats.fastForward) FastForwardModes.labelForMultiplier(stats.fastForwardMultiplier) else "off",
             frameSkip,
             if (muted) "muted" else "on",
             stats.volumePercent,

@@ -33,6 +33,7 @@ import io.mgba.android.library.RecentGameStore
 import io.mgba.android.settings.AudioBufferModes
 import io.mgba.android.settings.AudioLowPassModes
 import io.mgba.android.settings.EmulatorPreferences
+import io.mgba.android.settings.FastForwardModes
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.storage.BiosStore
 import io.mgba.android.storage.CheatStore
@@ -57,6 +58,8 @@ class MainActivity : Activity() {
     private lateinit var skipBiosButton: Button
     private lateinit var audioBufferButton: Button
     private lateinit var audioLowPassButton: Button
+    private lateinit var fastForwardModeButton: Button
+    private lateinit var fastForwardSpeedButton: Button
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
@@ -174,6 +177,24 @@ class MainActivity : Activity() {
         }
         updateAudioLowPassButton()
 
+        fastForwardModeButton = Button(this).apply {
+            setOnClickListener {
+                preferences.fastForwardMode = if (preferences.fastForwardMode == FastForwardModes.ModeToggle) {
+                    FastForwardModes.ModeHold
+                } else {
+                    FastForwardModes.ModeToggle
+                }
+                updateFastForwardButtons()
+            }
+        }
+        fastForwardSpeedButton = Button(this).apply {
+            setOnClickListener {
+                preferences.fastForwardMultiplier = FastForwardModes.nextMultiplier(preferences.fastForwardMultiplier)
+                updateFastForwardButtons()
+            }
+        }
+        updateFastForwardButtons()
+
         patchButton = Button(this).apply {
             text = patchStore.displayName?.let { "Patch: $it" } ?: "Import Patch"
             setOnClickListener {
@@ -246,6 +267,8 @@ class MainActivity : Activity() {
         root.addView(skipBiosButton)
         root.addView(audioBufferButton)
         root.addView(audioLowPassButton)
+        root.addView(fastForwardModeButton)
+        root.addView(fastForwardSpeedButton)
         root.addView(patchButton)
         root.addView(aboutButton)
         root.addView(logButton)
@@ -536,6 +559,11 @@ class MainActivity : Activity() {
 
     private fun updateAudioLowPassButton() {
         audioLowPassButton.text = "Low Pass: ${AudioLowPassModes.nameFor(preferences.audioLowPassMode)}"
+    }
+
+    private fun updateFastForwardButtons() {
+        fastForwardModeButton.text = "Fast Mode: ${FastForwardModes.modeLabels[preferences.fastForwardMode]}"
+        fastForwardSpeedButton.text = "Fast Speed: ${FastForwardModes.labelForMultiplier(preferences.fastForwardMultiplier)}"
     }
 
     private fun renderLibrary() {

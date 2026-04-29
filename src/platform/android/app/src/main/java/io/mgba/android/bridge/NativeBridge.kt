@@ -56,6 +56,9 @@ object NativeBridge {
     external fun nativeSetFastForward(handle: Long, enabled: Boolean)
 
     @JvmStatic
+    external fun nativeSetFastForwardMultiplier(handle: Long, multiplier: Int)
+
+    @JvmStatic
     external fun nativeSetFrameSkip(handle: Long, frames: Int)
 
     @JvmStatic
