@@ -225,6 +225,13 @@ class MainActivity : Activity() {
         renderLibrary()
     }
 
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= TRIM_MEMORY_RUNNING_LOW_LEVEL) {
+            trimArchiveCache(maxBytes = ARCHIVE_CACHE_TRIM_BYTES)
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode != RESULT_OK) {
@@ -380,7 +387,7 @@ class MainActivity : Activity() {
                             return null
                         }
                         target.setLastModified(System.currentTimeMillis())
-                        trimArchiveCache(target)
+                        trimArchiveCache(keep = target)
                         return target
                     }
                     zip.closeEntry()
@@ -785,7 +792,7 @@ class MainActivity : Activity() {
         nativeStatus.text = "${getString(R.string.native_version_label)}: ZIP cache cleared ($deleted files)"
     }
 
-    private fun trimArchiveCache(keep: File? = null) {
+    private fun trimArchiveCache(keep: File? = null, maxBytes: Long = ARCHIVE_CACHE_MAX_BYTES) {
         val directory = File(cacheDir, "archive-roms")
         val files = directory.listFiles()?.filter { it.isFile } ?: return
         val keepPath = keep?.absolutePath
@@ -794,7 +801,7 @@ class MainActivity : Activity() {
             .filter { it.absolutePath != keepPath }
             .sortedBy { it.lastModified() }
             .forEach { file ->
-                if (totalBytes <= ARCHIVE_CACHE_MAX_BYTES) {
+                if (totalBytes <= maxBytes) {
                     return@forEach
                 }
                 val size = file.length()
@@ -811,7 +818,9 @@ class MainActivity : Activity() {
         private const val REQUEST_SCAN_FOLDER = 1004
         private const val REQUEST_IMPORT_COVER = 1005
         private const val MAX_LIBRARY_ITEMS = 24
+        private const val TRIM_MEMORY_RUNNING_LOW_LEVEL = 10
         private const val ARCHIVE_CACHE_MAX_BYTES = 256L * 1024L * 1024L
+        private const val ARCHIVE_CACHE_TRIM_BYTES = 64L * 1024L * 1024L
         private val ROM_ENTRY_EXTENSIONS = arrayOf(".gba", ".agb", ".gb", ".gbc", ".sgb")
     }
 }

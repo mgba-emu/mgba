@@ -112,6 +112,7 @@
 - [x] 已新增 Android ZIP archive ROM 启动：单 ROM 自动解压，多 ROM 弹出选择列表，解压结果写入 cache。
 - [x] 已新增 Android ZIP cache 手动清理入口。
 - [x] 已新增 Android ZIP cache 256 MiB 上限清理，解压后自动删除较旧 cache 文件。
+- [x] 已接入 Android `onTrimMemory`，低内存时将 ZIP cache 收缩到 64 MiB。
 - [x] 已新增 Android 画面 Pix/Smooth 过滤切换，JNI 透传到 GLES texture filtering 并按游戏持久化。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
@@ -945,7 +946,8 @@ object NativeBridge {
   - [ ] 使用 ViewModel 保存 `EmulatorController`。
   - [ ] 或在 Manifest 处理 configChanges，但要慎用。
 - [ ] 内存压力：
-  - [ ] `onTrimMemory` 清理 ROM archive cache、封面 cache。
+  - [x] `onTrimMemory` 清理 ROM archive cache。
+  - [ ] `onTrimMemory` 清理封面 cache。
   - [ ] 不在内存里长期保留大型 ROM，除非 provider 不支持 seek。
 - [ ] 崩溃恢复：
   - [ ] native crash 无法完全恢复，但下次启动提示导出日志。
