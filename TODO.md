@@ -729,13 +729,13 @@ object NativeBridge {
 
 ### 8.3 Save / State 命名
 
-- [ ] 保存文件命名建议：
-  - [ ] `files/saves/<romHash>/<displayName>.sav`
-  - [ ] `files/states/<romHash>/slot-1.ss`
-  - [ ] `files/states/<romHash>/slot-1.png` 或状态 extdata 缩略图 cache。
-  - [ ] `files/screenshots/<displayName>-yyyyMMdd-HHmmss.png`
-  - [ ] `files/cheats/<romHash>.cheats`
-  - [ ] `files/patches/<romHash>.<ips|ups|bps>`
+- [x] 保存文件命名：
+  - [x] `files/saves/<romId>.sav`
+  - [x] `files/states/<romId>-slot1.ss`
+  - [x] `files/state-thumbnails/<gameIdSha1>-slot-1.png`
+  - [x] `files/screenshots/<romId>-yyyyMMdd-HHmmss.png`
+  - [x] `files/cheats/<stableGameId>.cheats`
+  - [x] `files/patches/<stableGameId>.<ips|ups|bps|patch>`
 - [x] 设置 `mCoreOptions`：
   - [x] `savegamePath`
   - [x] `savestatePath`
@@ -765,10 +765,10 @@ object NativeBridge {
 
 ### 9.1 数据模型
 
-- [ ] `RomEntry`
-  - [ ] id。
-  - [ ] uri。
-  - [ ] displayName。
+- [x] `RomEntry`
+  - [x] id / stable key：URI + CRC32/SHA1 metadata。
+  - [x] uri。
+  - [x] displayName。
   - [x] platform: GBA / GB。
   - [x] system: AGB / DMG / CGB，用于 GBC 细分。
   - [x] title from `mGameInfo`。
@@ -782,9 +782,9 @@ object NativeBridge {
   - [x] playTimeSeconds。
   - [x] favorite。
   - [x] coverPath 或 screenshot thumbnail。
-- [ ] 数据存储：
-  - [ ] 首选 Room。
-  - [ ] 若不想引 AndroidX Room，初期用 DataStore/JSON，后期迁移。
+- [x] 数据存储：
+  - [ ] 首选 Room，后续如库规模扩大再评估。
+  - [x] 首版使用 JSON / SharedPreferences，避免为单端口引入 Room 依赖。
 
 ### 9.2 扫描流程
 
@@ -830,14 +830,14 @@ object NativeBridge {
 
 ### 10.1 全局设置
 
-- [ ] Video：
+- [x] Video：
   - [x] 缩放模式。
   - [x] 整数缩放。
   - [x] 滤镜。
   - [x] 帧跳过。
   - [x] interframe blending。
   - [ ] 着色器，后续。
-- [ ] Audio：
+- [x] Audio：
   - [x] 音量。
   - [x] 静音。
   - [x] buffer 模式。
@@ -860,7 +860,7 @@ object NativeBridge {
   - [x] ROM 文件夹。
   - [x] 导入/导出。
   - [x] 清理 cache。
-- [ ] Advanced：
+- [x] Advanced：
   - [x] 日志级别。
   - [x] Debug overlay。
   - [ ] GDB stub。
@@ -886,21 +886,21 @@ object NativeBridge {
 ### 11.1 即时存档
 
 - [x] UI 做 9 个槽位，和桌面功能对应。
-- [ ] `SaveStateScreen` 展示：
+- [x] `SaveStateScreen` 展示：
   - [x] 槽位号。
-  - [ ] 缩略图。
+  - [x] 缩略图。
   - [x] 保存时间。
-  - [ ] 操作：
+  - [x] 操作：
     - [x] 保存。
     - [x] 读取。
     - [x] 删除。
     - [x] 导出。
-- [ ] Native 操作必须在 core thread 执行。
+- [x] Native 操作通过 `AndroidCoreRunner` mutex/custom run loop 串行化，避免和运行帧并发改 core。
 - [x] 保存 flags 使用 `SAVESTATE_ALL`。
-- [ ] 缩略图：
-  - [ ] 优先读取 state extdata 中的 screenshot。
+- [x] 缩略图：
+  - [ ] 优先读取 state extdata 中的 screenshot，后续优化。
   - [x] 若没有，保存时额外生成 PNG cache。
-- [ ] 自动保存策略：
+- [x] 自动保存策略：
   - [x] Activity pause 可触发 SRAM flush。
   - [x] 可选 auto-state on exit。
 
@@ -954,7 +954,7 @@ object NativeBridge {
 - [x] `.zip` 单 ROM archive 自动启动。
 - [x] `.zip` 多 ROM archive 弹出选择列表。
 - [x] `.7z` archive 启动。
-- [ ] cache 清理策略：
+- [x] cache 清理策略：
   - [x] 最近使用保留。
   - [x] 可手动清空。
   - [x] 超过大小上限自动清理旧文件。
