@@ -785,6 +785,19 @@ void AndroidCoreRunner::renderFrameLocked() {
 	eglSwapBuffers(m_display, m_surface);
 }
 
+std::chrono::microseconds AndroidCoreRunner::frameDurationLocked() const {
+	if (!m_core || !m_core->frameCycles || !m_core->frequency) {
+		return std::chrono::microseconds(16667);
+	}
+	const int32_t cycles = m_core->frameCycles(m_core);
+	const int32_t frequency = m_core->frequency(m_core);
+	if (cycles <= 0 || frequency <= 0) {
+		return std::chrono::microseconds(16667);
+	}
+	const auto micros = static_cast<int64_t>((static_cast<double>(cycles) * 1000000.0) / static_cast<double>(frequency));
+	return std::chrono::microseconds(std::max<int64_t>(1, micros));
+}
+
 void AndroidCoreRunner::runLoop() {
 	using clock = std::chrono::steady_clock;
 	auto nextFrame = clock::now();
@@ -800,12 +813,12 @@ void AndroidCoreRunner::runLoop() {
 				m_core->runFrame(m_core);
 				m_audioOutput.enqueueFromCore(m_core);
 				renderFrameLocked();
+				nextFrame += frameDurationLocked();
 			}
 		}
 		if (m_fastForward) {
 			nextFrame = clock::now();
 		} else {
-			nextFrame += std::chrono::microseconds(16667);
 			std::this_thread::sleep_until(nextFrame);
 			if (clock::now() - nextFrame > std::chrono::milliseconds(100)) {
 				nextFrame = clock::now();

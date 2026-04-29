@@ -8,6 +8,7 @@
 #include <android/native_window.h>
 
 #include <atomic>
+#include <chrono>
 #include <cstdint>
 #include <mgba-util/image.h>
 #include <mutex>
@@ -50,6 +51,7 @@ private:
 	bool initGlLocked();
 	void destroyEglLocked();
 	void renderFrameLocked();
+	std::chrono::microseconds frameDurationLocked() const;
 	void runLoop();
 	std::string romIdFromSavePath() const;
 	std::string statePathForSlot(int slot);
