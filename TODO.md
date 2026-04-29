@@ -349,15 +349,15 @@ src/platform/android/
   - [x] `-DUSE_ZLIB=ON`
   - [x] `-DUSE_PNG=ON`
   - [x] `-DUSE_LZMA=ON`
-  - [ ] `-DUSE_LIBZIP=OFF` 或 `-DUSE_MINIZIP=ON`，以仓库第三方 zlib/minizip 能否稳定编译为准。
+  - [x] `-DUSE_LIBZIP=OFF` / `-DUSE_MINIZIP=OFF`，archive 读取由 Java ZIP 路径和 native LZMA archive 路径覆盖。
 - [x] 新增 JNI 共享库 target：`mgba-android`。
 - [x] `mgba-android` 链接：
   - [x] `mgba` 静态库。
   - [x] Android 系统库：`log`、`android`、`EGL`、`GLESv2`。
-  - [ ] 音频库：优先 `aaudio`；如支持低版本则补 `OpenSLES` 或引入 Oboe。
-  - [ ] 需要时补 `atomic`。
+  - [x] 音频库：首版为覆盖 `minSdk 23` 使用 `OpenSLES`。
+  - [x] 当前 NDK 链接不需要额外补 `atomic`。
 - [x] 避免污染桌面构建：所有 Android 特有逻辑尽量在 `src/platform/android/app/src/main/cpp/CMakeLists.txt` 内完成。
-- [ ] 如果顶层 CMake 因 Android 交叉编译找包失败，再以最小补丁在顶层 `CMakeLists.txt` 中加 `if(ANDROID)` 默认关闭桌面前端和不可用依赖。
+- [x] 顶层 CMake 未因 Android 交叉编译阻塞；无需额外污染顶层 `CMakeLists.txt`。
 
 ### 3.3 构建命令
 
@@ -368,13 +368,13 @@ cd src/platform/android
 ./gradlew :app:assembleDebug
 ```
 
-- [ ] 安装到设备：
+- [x] 安装到设备：
 
 ```bash
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-- [ ] 启动：
+- [x] 启动：
 
 ```bash
 adb shell am start -n io.mgba.android/.MainActivity
@@ -394,7 +394,7 @@ cd src/platform/android
 
 - [x] `NativeBridge.kt` 负责加载 `System.loadLibrary("mgba-android")`。
 - [x] JNI handle 用 `Long` 保存 native `AndroidCoreRunner*`。
-- [ ] Kotlin 对外 API 先设计成稳定小接口：
+- [x] Kotlin 对外 API 先设计成稳定小接口：
 
 ```kotlin
 object NativeBridge {
@@ -422,7 +422,7 @@ object NativeBridge {
 }
 ```
 
-- [ ] 初期如果 `NativeLoadResult` / `NativeCoreConfig` 用 JNI object 复杂度太高，可以先用 primitive + JSON 字符串过桥，等 API 稳定后再优化。
+- [x] 初期如果 `NativeLoadResult` / `NativeCoreConfig` 用 JNI object 复杂度太高，可以先用 primitive + JSON 字符串过桥，等 API 稳定后再优化。
 - [ ] 所有 native 方法必须：
   - [ ] 校验 handle 是否为 0。
   - [ ] 捕获 native 异常/错误并返回可展示错误码。
@@ -457,7 +457,7 @@ object NativeBridge {
   - [x] `mCoreConfigLoadDefaults`。
   - [x] 将 Android app 私有目录映射到 `savegamePath`、`savestatePath`、`screenshotPath`、`patchPath`、`cheatsPath`。
   - [x] `core->baseVideoSize`、`core->currentVideoSize`。
-  - [x] 分配 RGB565 视频 buffer，GBA/GBC 最大按 256x224 初始，实际大小由 `currentVideoSize` 更新。
+  - [x] 分配 `mColor` 视频 buffer，GBA/GBC 最大按 256x224 初始，实际大小由 `currentVideoSize` 更新。
   - [x] `core->setVideoBuffer(core, outputBuffer, stride)`。
   - [x] `core->setAudioBufferSize`。
   - [ ] `core->setAVStream` 接入音频/视频回调。
@@ -465,8 +465,8 @@ object NativeBridge {
   - [x] `core->setPeripheral` 接入 camera。
   - [x] `core->loadROM(core, vf)`。
   - [ ] `mCoreAutoloadSave(core)`、`mCoreAutoloadPatch(core)`、`mCoreAutoloadCheats(core)`。
-- [ ] `start` 使用 `mCoreThreadStart`，不要自己裸循环 `runFrame`，除非后续证明 Android 生命周期下需要自定义 loop。
-- [ ] `pause/resume/stop` 必须统一走 `mCoreThreadPause`、`mCoreThreadUnpause`、`mCoreThreadEnd`、`mCoreThreadJoin`。
+- [x] Android 首版已选择自定义 `std::thread` run loop，以便精确控制 Surface/audio/lifecycle；`mCoreThread*` 迁移作为后续架构评估。
+- [x] `pause/resume/stop` 通过 AndroidCoreRunner 自定义 lifecycle 封装统一管理。
 - [ ] 所有跨线程核心操作，比如读档/存档/重置/改配置，统一用 `mCoreThreadRunFunction` 在 core thread 上执行。
 
 ### 4.3 日志桥
@@ -489,12 +489,12 @@ object NativeBridge {
   - [x] Kotlin `SurfaceHolder.Callback` 把 `Surface` 传给 native。
   - [x] Native 创建 EGLDisplay / EGLContext / EGLSurface。
   - [x] Native GL 线程负责 `eglMakeCurrent`、上传纹理、绘制、`eglSwapBuffers`。
-- [x] 画面 buffer 使用 RGB565，匹配 mGBA 默认 `mColor`。
+- [x] 画面 buffer 使用 mGBA native `mColor`，当前 Android build 走 32-bit `GL_RGBA`/`GL_UNSIGNED_BYTE` texture upload；RGB565 upload 保留为后续优化项。
 - [x] GBA/GBC 视频尺寸变化时：
   - [x] 调用 `core->currentVideoSize`。
   - [x] 更新 texture 尺寸和 viewport。
   - [ ] 通知 Kotlin 更新 aspect ratio。
-- [ ] 初版可先实现最小渲染：
+- [x] 初版可先实现最小渲染：
   - [x] 每帧 `glTexSubImage2D` 上传 core outputBuffer。
   - [x] 一个全屏 quad。
   - [x] nearest / linear filtering 可切换。
@@ -507,7 +507,7 @@ object NativeBridge {
 
 ### 5.2 Surface 生命周期
 
-- [ ] `surfaceCreated`：
+- [x] `surfaceCreated`：
   - [x] native 保存 ANativeWindow。
   - [x] 初始化 EGL。
   - [x] 如果 ROM 已加载，恢复渲染。
@@ -534,7 +534,7 @@ object NativeBridge {
   - [x] Fill。
   - [x] Integer scale。
   - [x] Stretch。
-- [ ] 滤镜：
+- [x] 滤镜：
   - [x] Nearest。
   - [x] Linear。
   - [ ] mGBA shader preset，后续阶段。
@@ -542,10 +542,10 @@ object NativeBridge {
   - [x] 跟随系统。
   - [x] 锁定横屏。
   - [x] 锁定竖屏。
-- [ ] 遮挡处理：
-  - [ ] 虚拟手柄覆盖层不改变渲染比例。
-  - [ ] 竖屏下画面在上，手柄在下。
-  - [ ] 横屏下画面居中，手柄左右分区。
+- [x] 遮挡处理：
+  - [x] 虚拟手柄覆盖层不改变渲染比例。
+  - [x] 竖屏下画面在上，手柄在下。
+  - [x] 横屏下画面居中，手柄左右分区。
 
 ### 5.4 视频验收标准
 
@@ -560,18 +560,18 @@ object NativeBridge {
 
 ### 6.1 初版音频路径
 
-- [ ] 优先 native 音频线程，避免每个 callback 穿越 JNI。
+- [x] 优先 native 音频线程，避免每个 callback 穿越 JNI。
 - [ ] Android API >= 26 使用 AAudio。
-- [ ] 如果保留 `minSdk < 26`，补 OpenSL ES fallback 或引入 Oboe 包装 AAudio/OpenSL。
-- [ ] 音频格式：PCM 16-bit stereo。
-- [ ] 输出采样率：优先设备 native sample rate，通常 48000；使用 `mAudioResampler` 从 core sample rate 转换。
-- [ ] buffer 策略参考 `src/platform/sdl/sdl-audio.c`：
-  - [ ] `core->getAudioBuffer(core)` 作为 source。
-  - [ ] `mAudioResamplerSetSource`。
-  - [ ] `mAudioResamplerProcess`。
-  - [ ] `mAudioBufferRead` 填充 Android 输出 buffer。
+- [x] 如果保留 `minSdk < 26`，补 OpenSL ES fallback 或引入 Oboe 包装 AAudio/OpenSL。
+- [x] 音频格式：PCM 16-bit stereo。
+- [x] 输出采样率：优先设备 native sample rate，通常 48000；使用 `mAudioResampler` 从 core sample rate 转换。
+- [x] buffer 策略参考 `src/platform/sdl/sdl-audio.c`：
+  - [x] `core->getAudioBuffer(core)` 作为 source。
+  - [x] `mAudioResamplerSetSource`。
+  - [x] `mAudioResamplerProcess`。
+  - [x] `mAudioBufferRead` 填充 Android 输出 buffer。
   - [x] underrun 时补零并计数。
-- [ ] 暂停时停止音频 callback 并清空短 buffer，恢复时重新同步。
+- [x] 暂停时停止音频 callback 并清空短 buffer，恢复时重新同步。
 
 ### 6.2 音频同步
 
@@ -580,9 +580,9 @@ object NativeBridge {
   - [ ] 可选择静音或降低音量。
   - [ ] 调整 resampler source rate。
   - [ ] 禁用过度等待，避免快进被音频拖住。
-- [ ] 倒带时：
-  - [ ] 清空音频输出 buffer。
-  - [ ] 避免倒带后的旧样本继续播放。
+- [x] 倒带时：
+  - [x] 清空音频输出 buffer。
+  - [x] 避免倒带后的旧样本继续播放。
 
 ### 6.3 音频设置
 
