@@ -99,6 +99,8 @@ class MainActivity : Activity() {
     private lateinit var rtcButton: Button
     private lateinit var patchButton: Button
     private lateinit var storageButton: Button
+    private lateinit var settingsButton: Button
+    private lateinit var settingsContainer: LinearLayout
     private lateinit var resumeButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
@@ -399,6 +401,11 @@ class MainActivity : Activity() {
                 openSettingsImportPicker()
             }
         }
+        settingsContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = View.GONE
+            setPadding(0, 0, 0, dp(16))
+        }
 
         recentContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -444,41 +451,75 @@ class MainActivity : Activity() {
                 renderLibrary()
             }
         }
+        settingsButton = Button(this).apply {
+            setOnClickListener {
+                toggleSettingsPanel()
+            }
+        }
+        updateSettingsButton()
+        val topActions = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, dp(12))
+            addView(Button(context).apply {
+                text = "Search"
+                setOnClickListener {
+                    focusLibrarySearch(scroll)
+                }
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    rightMargin = dp(6)
+                }
+            })
+            addView(Button(context).apply {
+                text = "Add"
+                setOnClickListener {
+                    showAddDialog()
+                }
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    rightMargin = dp(6)
+                }
+            })
+            addView(settingsButton.apply {
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            })
+        }
+        settingsContainer.addView(openButton)
+        settingsContainer.addView(scanButton)
+        settingsContainer.addView(rescanFoldersButton)
+        settingsContainer.addView(libraryFoldersButton)
+        settingsContainer.addView(biosButton)
+        settingsContainer.addView(clearBiosButton)
+        settingsContainer.addView(skipBiosButton)
+        settingsContainer.addView(scaleButton)
+        settingsContainer.addView(filterButton)
+        settingsContainer.addView(interframeBlendButton)
+        settingsContainer.addView(audioBufferButton)
+        settingsContainer.addView(audioLowPassButton)
+        settingsContainer.addView(fastForwardModeButton)
+        settingsContainer.addView(fastForwardSpeedButton)
+        settingsContainer.addView(frameSkipButton)
+        settingsContainer.addView(rewindButton)
+        settingsContainer.addView(rewindBufferButton)
+        settingsContainer.addView(rewindIntervalButton)
+        settingsContainer.addView(autoStateButton)
+        settingsContainer.addView(opposingDirectionsButton)
+        settingsContainer.addView(rumbleButton)
+        settingsContainer.addView(logLevelButton)
+        settingsContainer.addView(rtcButton)
+        settingsContainer.addView(patchButton)
+        settingsContainer.addView(aboutButton)
+        settingsContainer.addView(logButton)
+        settingsContainer.addView(storageButton)
+        settingsContainer.addView(clearArchiveCacheButton)
+        settingsContainer.addView(exportSettingsButton)
+        settingsContainer.addView(importSettingsButton)
 
         root.addView(title)
         root.addView(subtitle)
         root.addView(nativeStatus)
-        root.addView(openButton)
+        root.addView(topActions)
         root.addView(resumeButton)
-        root.addView(scanButton)
-        root.addView(rescanFoldersButton)
-        root.addView(libraryFoldersButton)
-        root.addView(biosButton)
-        root.addView(clearBiosButton)
-        root.addView(skipBiosButton)
-        root.addView(scaleButton)
-        root.addView(filterButton)
-        root.addView(interframeBlendButton)
-        root.addView(audioBufferButton)
-        root.addView(audioLowPassButton)
-        root.addView(fastForwardModeButton)
-        root.addView(fastForwardSpeedButton)
-        root.addView(frameSkipButton)
-        root.addView(rewindButton)
-        root.addView(rewindBufferButton)
-        root.addView(rewindIntervalButton)
-        root.addView(autoStateButton)
-        root.addView(opposingDirectionsButton)
-        root.addView(rumbleButton)
-        root.addView(logLevelButton)
-        root.addView(rtcButton)
-        root.addView(patchButton)
-        root.addView(aboutButton)
-        root.addView(logButton)
-        root.addView(storageButton)
-        root.addView(clearArchiveCacheButton)
-        root.addView(exportSettingsButton)
-        root.addView(importSettingsButton)
+        root.addView(settingsContainer)
         root.addView(recentContainer)
         root.addView(librarySearch)
         root.addView(libraryFilterButton)
@@ -620,6 +661,61 @@ class MainActivity : Activity() {
         }
         val hasActiveSession = EmulatorSession.currentGame() != null && EmulatorSession.current() != null
         resumeButton.visibility = if (hasActiveSession) View.VISIBLE else View.GONE
+    }
+
+    private fun focusLibrarySearch(scroll: ScrollView) {
+        if (libraryStore.list().isEmpty()) {
+            nativeStatus.text = "${getString(R.string.native_version_label)}: Library is empty"
+            return
+        }
+        librarySearch.visibility = View.VISIBLE
+        librarySearch.requestFocus()
+        librarySearch.setSelection(librarySearch.text.length)
+        scroll.post {
+            scroll.smoothScrollTo(0, librarySearch.top)
+        }
+    }
+
+    private fun showAddDialog() {
+        val actions = mutableListOf<Pair<String, () -> Unit>>()
+        actions += "Open ROM" to { openRomPicker() }
+        actions += if (scanThread?.isAlive == true) {
+            "Cancel Scan" to { cancelLibraryScan() }
+        } else {
+            "Scan Folder" to { openFolderPicker() }
+        }
+        val folderCount = libraryStore.sourceFolders().size
+        if (folderCount > 0) {
+            actions += "Rescan Folders ($folderCount)" to { rescanKnownFolders() }
+            actions += "Library Folders ($folderCount)" to { showLibraryFoldersDialog() }
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Add")
+            .setItems(actions.map { it.first }.toTypedArray()) { _, which ->
+                actions[which].second.invoke()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun toggleSettingsPanel() {
+        settingsContainer.visibility = if (settingsContainer.visibility == View.VISIBLE) {
+            View.GONE
+        } else {
+            View.VISIBLE
+        }
+        updateSettingsButton()
+    }
+
+    private fun updateSettingsButton() {
+        if (!::settingsButton.isInitialized) {
+            return
+        }
+        settingsButton.text = if (::settingsContainer.isInitialized && settingsContainer.visibility == View.VISIBLE) {
+            "Hide"
+        } else {
+            "Settings"
+        }
     }
 
     private fun openZipRomUri(uri: Uri, name: String, shouldStoreRecent: Boolean) {

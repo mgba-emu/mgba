@@ -149,6 +149,7 @@
 - [x] 已增强 Android 电池存档导出：Android 6-9 通过 SAF 创建 `.sav` fallback 导出。
 - [x] 已增强 Android 截图导出：Android 6-9 通过 SAF 创建 PNG fallback 导出。
 - [x] 已优化 Android 虚拟手柄和运行工具条布局：竖屏肩键避让方向/AB 区，横屏肩键避让顶部工具条，工具条按钮改为紧凑单行样式，并用真实 ZIP ROM 截图确认按键不重叠。
+- [x] 已优化 Android 首页顶部操作：新增 Search / Add / Settings 操作条，并把全局/库管理设置折叠进 Settings 区域，减少首页按钮堆叠。
 - [x] 已新增 Android 最近打开管理：首页可清空 Recent 列表。
 - [x] 已新增 Android CI 合规检查：禁止在 App 源码中捆绑 ROM、save、savestate 或 BIOS 文件。
 - [x] 已新增 Android Storage 管理摘要：展示 saves/states/screenshots/covers/logs/cache 占用并可清日志或 cache。
@@ -1036,7 +1037,7 @@ object NativeBridge {
 ### 15.1 MainActivity / Library
 
 - [x] ROM 库首页。
-- [ ] 顶部操作：搜索、添加、设置。
+- [x] 顶部操作：搜索、添加、设置。
 - [x] 最近游戏横向区或列表排序。
 - [x] 空状态。
 - [x] 扫描进度。
