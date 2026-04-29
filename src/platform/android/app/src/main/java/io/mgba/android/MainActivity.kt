@@ -94,6 +94,7 @@ class MainActivity : Activity() {
     private lateinit var logLevelButton: Button
     private lateinit var rtcButton: Button
     private lateinit var patchButton: Button
+    private lateinit var storageButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
     private lateinit var libraryFilterButton: Button
@@ -360,6 +361,13 @@ class MainActivity : Activity() {
             }
         }
 
+        storageButton = Button(this).apply {
+            text = "Storage"
+            setOnClickListener {
+                showStorageDialog()
+            }
+        }
+
         val clearArchiveCacheButton = Button(this).apply {
             text = "Clear Cache"
             setOnClickListener {
@@ -453,6 +461,7 @@ class MainActivity : Activity() {
         root.addView(patchButton)
         root.addView(aboutButton)
         root.addView(logButton)
+        root.addView(storageButton)
         root.addView(clearArchiveCacheButton)
         root.addView(exportSettingsButton)
         root.addView(importSettingsButton)
@@ -1915,6 +1924,56 @@ class MainActivity : Activity() {
         nativeStatus.text = "${getString(R.string.native_version_label)}: Cache cleared ($deleted files)"
     }
 
+    private fun showStorageDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Storage")
+            .setMessage(storageSummary())
+            .setPositiveButton("OK", null)
+            .setNegativeButton("Clear Logs") { _, _ ->
+                val ok = AppLogStore.clear(this)
+                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "Logs cleared" else "Log clear failed"}"
+            }
+            .setNeutralButton("Clear Cache") { _, _ ->
+                clearArchiveCache()
+            }
+            .show()
+    }
+
+    private fun storageSummary(): String {
+        val entries = listOf(
+            "Saves" to File(filesDir, "saves"),
+            "States" to File(filesDir, "states"),
+            "State thumbnails" to File(filesDir, "state-thumbnails"),
+            "Screenshots" to File(filesDir, "screenshots"),
+            "Covers" to File(filesDir, "covers"),
+            "Cheats" to File(filesDir, "cheats"),
+            "Patches" to File(filesDir, "patches"),
+            "BIOS" to File(filesDir, "bios"),
+            "Logs" to File(filesDir, "logs"),
+            "Archive cache" to File(cacheDir, "archive-roms"),
+            "Archive files" to File(cacheDir, "archive-files"),
+            "Import cache" to File(cacheDir, "imports"),
+        )
+        return entries.joinToString("\n") { (label, file) ->
+            val stats = storageStats(file)
+            "$label: ${stats.count} files, ${formatBytes(stats.bytes)}"
+        }
+    }
+
+    private fun storageStats(file: File): StorageStats {
+        if (!file.exists()) {
+            return StorageStats(0, 0L)
+        }
+        if (file.isFile) {
+            return StorageStats(1, file.length())
+        }
+        val children = file.listFiles().orEmpty()
+        return children.fold(StorageStats(0, 0L)) { total, child ->
+            val childStats = storageStats(child)
+            StorageStats(total.count + childStats.count, total.bytes + childStats.bytes)
+        }
+    }
+
     private fun clearCacheDirectory(name: String): Int {
         val directory = File(cacheDir, name)
         return directory.listFiles()?.count { it.delete() } ?: 0
@@ -2038,7 +2097,13 @@ private enum class LibraryMode(val label: String) {
             Gbc -> rom.hardwareLabel() == "GBC"
         }
     }
+
 }
+
+private data class StorageStats(
+    val count: Int,
+    val bytes: Long,
+)
 
 private fun LibraryRom.hardwareLabel(): String {
     val platform = this.platform.uppercase(java.util.Locale.US)

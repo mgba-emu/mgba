@@ -150,6 +150,7 @@
 - [x] 已增强 Android 截图导出：Android 6-9 通过 SAF 创建 PNG fallback 导出。
 - [x] 已新增 Android 最近打开管理：首页可清空 Recent 列表。
 - [x] 已新增 Android CI 合规检查：禁止在 App 源码中捆绑 ROM、save、savestate 或 BIOS 文件。
+- [x] 已新增 Android Storage 管理摘要：展示 saves/states/screenshots/covers/logs/cache 占用并可清日志或 cache。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -823,7 +824,7 @@ object NativeBridge {
   - [x] 手柄映射。
   - [x] 震动。
   - [x] 允许相反方向。
-- [ ] Storage：
+- [x] Storage：
   - [x] ROM 文件夹。
   - [x] 导入/导出。
   - [x] 清理 cache。
@@ -1035,7 +1036,7 @@ object NativeBridge {
 - [x] 当前游戏设置。
 - [ ] 输入映射。
 - [ ] BIOS。
-- [ ] 存储管理。
+- [x] 存储管理。
 - [ ] 关于/许可。
 
 ### 15.4 SaveState

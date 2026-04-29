@@ -75,6 +75,14 @@ object AppLogStore {
         }
     }
 
+    fun clear(context: Context): Boolean {
+        synchronized(lock) {
+            val directory = logDirectory(context) ?: return false
+            directory.listFiles()?.forEach { file -> file.delete() }
+            return true
+        }
+    }
+
     private fun logFile(context: Context): File? {
         return File(logDirectory(context) ?: return null, "app.log")
     }
