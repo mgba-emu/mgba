@@ -95,6 +95,9 @@ object NativeBridge {
     external fun nativeTakeScreenshot(handle: Long): String
 
     @JvmStatic
+    external fun nativeTakeScreenshotFd(handle: Long, fd: Int): Boolean
+
+    @JvmStatic
     external fun nativeExportBatterySave(handle: Long): String
 
     @JvmStatic

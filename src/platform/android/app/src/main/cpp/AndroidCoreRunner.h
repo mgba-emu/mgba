@@ -74,6 +74,7 @@ public:
 	void setSkipBios(bool enabled);
 	std::string statsJson();
 	std::string takeScreenshot();
+	bool takeScreenshotFd(int fd);
 	std::string exportBatterySave();
 	bool importBatterySaveFd(int fd);
 	bool importPatchFd(int fd);

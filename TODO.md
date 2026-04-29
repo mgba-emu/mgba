@@ -37,7 +37,7 @@
 - [x] 已实现基础电池存档链路：按 ROM CRC32 在 app 私有 `saves/` 目录创建 `.sav` 并交给 core 读写。
 - [x] 已实现 1-9 槽即时存档/读档 native 链路，并在 emulator 画面提供基础槽位工具条。
 - [x] 已实现基础运行控制：暂停/继续、重置和快进开关。
-- [x] 已实现无外部依赖的 BMP 截图保存，输出到 app 私有 `screenshots/` 目录。
+- [x] 已通过 `mCoreTakeScreenshotVF` 实现 PNG 截图保存，输出到 app 私有 `screenshots/` 目录。
 - [x] 已实现截图只读 `ContentProvider` 分享，可从 emulator 工具条直接调用 Android 分享面板。
 - [x] 已实现 Android 10+ MediaStore 截图导出到 `Pictures/mGBA`。
 - [x] 已实现 SAF URI 最近打开列表，可从首页直接重新打开已授权 ROM。
@@ -830,17 +830,17 @@ object NativeBridge {
 - [ ] 保存 flags 使用 `SAVESTATE_ALL`。
 - [ ] 缩略图：
   - [ ] 优先读取 state extdata 中的 screenshot。
-  - [ ] 若没有，保存时额外生成 PNG cache。
+  - [x] 若没有，保存时额外生成 PNG cache。
 - [ ] 自动保存策略：
   - [ ] Activity pause 可触发 SRAM flush。
   - [ ] 可选 auto-state on exit。
 
 ### 11.2 截图
 
-- [ ] 使用 `mCoreTakeScreenshotVF(core, vf)`。
-- [ ] Kotlin 创建目标 document 或 app 私有文件。
-- [ ] Native 用 `VFileFromFD` 写入。
-- [ ] 截图完成后发送 MediaStore scan 或分享入口。
+- [x] 使用 `mCoreTakeScreenshotVF(core, vf)`。
+- [x] Kotlin 创建目标 document 或 app 私有文件。
+- [x] Native 用 `VFileFromFD` 写入。
+- [x] 截图完成后发送 MediaStore scan 或分享入口。
 
 ### 11.3 作弊
 

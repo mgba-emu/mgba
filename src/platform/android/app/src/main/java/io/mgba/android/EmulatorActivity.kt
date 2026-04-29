@@ -933,11 +933,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             runRow.addView(Button(context).apply {
                 text = "Export"
                 setOnClickListener {
-                    val path = controller?.takeScreenshot()
-                    if (path != null) {
-                        recordScreenshotCover(path)
+                    val uri = ScreenshotExporter.exportToPictures(context, screenshotExportName()) { descriptor ->
+                        controller?.takeScreenshotFd(descriptor.fd) == true
                     }
-                    val uri = path?.let { ScreenshotExporter.exportToPictures(context, it) }
                     Toast.makeText(
                         context,
                         if (uri != null) "Screenshot exported" else "Export unavailable",
@@ -1826,7 +1824,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun stateThumbnailFile(slot: Int): File? {
         val gameId = currentGameId ?: return null
-        return File(File(filesDir, "state-thumbnails"), "${sha1(gameId)}-slot-$slot.bmp")
+        return File(File(filesDir, "state-thumbnails"), "${sha1(gameId)}-slot-$slot.png")
     }
 
     private fun sha1(value: String): String {
@@ -1837,7 +1835,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun shareScreenshot(path: String) {
         val uri = ScreenshotShareProvider.uriFor(this, path)
         val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "image/bmp"
+            type = "image/png"
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
@@ -1849,6 +1847,16 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         runCatching {
             RomLibraryStore(this).setCoverPath(Uri.parse(gameId), path)
         }
+    }
+
+    private fun screenshotExportName(): String {
+        val base = EmulatorSession.currentGame()?.displayName
+            ?.substringBeforeLast('.')
+            ?.replace(Regex("[^A-Za-z0-9._-]+"), "-")
+            ?.trim('-')
+            ?.ifBlank { null }
+            ?: "mgba-screenshot"
+        return "$base-${System.currentTimeMillis()}.png"
     }
 
     private fun openSaveImportPicker() {

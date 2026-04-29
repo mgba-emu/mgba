@@ -12,7 +12,7 @@ import java.io.FileNotFoundException
 class ScreenshotShareProvider : ContentProvider() {
     override fun onCreate(): Boolean = true
 
-    override fun getType(uri: Uri): String = "image/bmp"
+    override fun getType(uri: Uri): String = "image/png"
 
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
         if (mode != "r") {

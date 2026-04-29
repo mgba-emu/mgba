@@ -21,7 +21,6 @@
 #include <ctime>
 #include <cstring>
 #include <fstream>
-#include <iomanip>
 #include <limits>
 #include <sstream>
 #include <utility>
@@ -164,70 +163,6 @@ bool LoadDefaultPatch(mCore* core, const std::string& basePath) {
 	const bool ok = core->loadPatch(core, vf);
 	vf->close(vf);
 	return ok;
-}
-
-void WriteLe16(std::ostream& out, uint16_t value) {
-	const char bytes[] = {
-		static_cast<char>(value & 0xFF),
-		static_cast<char>((value >> 8) & 0xFF),
-	};
-	out.write(bytes, sizeof(bytes));
-}
-
-void WriteLe32(std::ostream& out, uint32_t value) {
-	const char bytes[] = {
-		static_cast<char>(value & 0xFF),
-		static_cast<char>((value >> 8) & 0xFF),
-		static_cast<char>((value >> 16) & 0xFF),
-		static_cast<char>((value >> 24) & 0xFF),
-	};
-	out.write(bytes, sizeof(bytes));
-}
-
-bool WriteBmpScreenshot(const std::string& path, const std::vector<mColor>& pixels, unsigned width, unsigned height, unsigned stride) {
-	if (!width || !height || stride < width || pixels.size() < static_cast<size_t>(stride) * height) {
-		return false;
-	}
-
-	const uint32_t rowBytes = ((width * 3U) + 3U) & ~3U;
-	const uint32_t pixelBytes = rowBytes * height;
-	const uint32_t fileBytes = 14U + 40U + pixelBytes;
-	std::ofstream out(path, std::ios::binary | std::ios::trunc);
-	if (!out) {
-		return false;
-	}
-
-	out.write("BM", 2);
-	WriteLe32(out, fileBytes);
-	WriteLe16(out, 0);
-	WriteLe16(out, 0);
-	WriteLe32(out, 14U + 40U);
-	WriteLe32(out, 40U);
-	WriteLe32(out, width);
-	WriteLe32(out, height);
-	WriteLe16(out, 1);
-	WriteLe16(out, 24);
-	WriteLe32(out, 0);
-	WriteLe32(out, pixelBytes);
-	WriteLe32(out, 2835);
-	WriteLe32(out, 2835);
-	WriteLe32(out, 0);
-	WriteLe32(out, 0);
-
-	const char padding[3] = {0, 0, 0};
-	for (int y = static_cast<int>(height) - 1; y >= 0; --y) {
-		for (unsigned x = 0; x < width; ++x) {
-			const mColor color = pixels[static_cast<size_t>(y) * stride + x];
-			const char bgr[] = {
-				static_cast<char>((color >> 16) & 0xFF),
-				static_cast<char>((color >> 8) & 0xFF),
-				static_cast<char>(color & 0xFF),
-			};
-			out.write(bgr, sizeof(bgr));
-		}
-		out.write(padding, rowBytes - width * 3U);
-	}
-	return static_cast<bool>(out);
 }
 
 void AndroidRumbleReset(mRumble* rumble, bool enable) {
@@ -862,8 +797,42 @@ std::string AndroidCoreRunner::takeScreenshot() {
 	localtime_r(&now, &tm);
 	std::strftime(timestamp, sizeof(timestamp), "%Y%m%d-%H%M%S", &tm);
 
-	const std::string path = screenshotsPath + "/" + romIdFromSavePath() + "-" + timestamp + ".bmp";
-	return WriteBmpScreenshot(path, m_videoBuffer, width, height, m_videoStride) ? path : "";
+	const std::string path = screenshotsPath + "/" + romIdFromSavePath() + "-" + timestamp + ".png";
+	struct VFile* vf = VFileOpen(path.c_str(), O_CREAT | O_TRUNC | O_WRONLY);
+	if (!vf) {
+		return "";
+	}
+	const bool ok = mCoreTakeScreenshotVF(m_core, vf);
+	vf->close(vf);
+	if (!ok) {
+		std::remove(path.c_str());
+		return "";
+	}
+	return path;
+}
+
+bool AndroidCoreRunner::takeScreenshotFd(int fd) {
+	if (fd < 0) {
+		return false;
+	}
+
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (!m_core) {
+		return false;
+	}
+
+	int ownedFd = dup(fd);
+	if (ownedFd < 0) {
+		return false;
+	}
+	struct VFile* vf = VFileFromFD(ownedFd);
+	if (!vf) {
+		close(ownedFd);
+		return false;
+	}
+	const bool ok = mCoreTakeScreenshotVF(m_core, vf);
+	vf->close(vf);
+	return ok;
 }
 
 std::string AndroidCoreRunner::exportBatterySave() {
