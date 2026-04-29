@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.os.SystemClock
+import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.text.Editable
 import android.text.InputType
@@ -35,6 +36,7 @@ import io.mgba.android.bridge.NativeLoadResult
 import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.library.LibraryRom
+import io.mgba.android.library.RecentGame
 import io.mgba.android.library.RomFileSupport
 import io.mgba.android.library.RomIdentity
 import io.mgba.android.library.RomLibraryStore
@@ -1231,10 +1233,61 @@ class MainActivity : Activity() {
             recentContainer.addView(Button(this).apply {
                 text = game.displayName
                 setOnClickListener {
-                    openRomUri(game.uri, game.displayName, shouldStoreRecent = true)
+                    openRecentGame(game)
                 }
             })
         }
+    }
+
+    private fun openRecentGame(game: RecentGame) {
+        if (!canOpenStoredRecent(game.uri)) {
+            val removed = recentStore.remove(game.uri)
+            renderRecentGames()
+            val message = "Recent item unavailable: ${game.displayName}"
+            nativeStatus.text = "${getString(R.string.native_version_label)}: $message"
+            AppLogStore.append(this, "$message (removed=$removed)")
+            return
+        }
+        openRomUri(game.uri, game.displayName, shouldStoreRecent = true)
+    }
+
+    private fun canOpenStoredRecent(uri: Uri): Boolean {
+        val hasReadPermission = persistedReadPermissionCovers(uri)
+        return UriPermissionPolicy.canOpenStoredRecent(uri.scheme, hasReadPermission)
+    }
+
+    private fun persistedReadPermissionCovers(uri: Uri): Boolean {
+        return runCatching {
+            contentResolver.persistedUriPermissions.any { permission ->
+                permission.isReadPermission && persistedUriCovers(permission.uri, uri)
+            }
+        }.getOrDefault(false)
+    }
+
+    private fun persistedUriCovers(persistedUri: Uri, targetUri: Uri): Boolean {
+        if (persistedUri == targetUri) {
+            return true
+        }
+        if (persistedUri.scheme != targetUri.scheme || persistedUri.authority != targetUri.authority) {
+            return false
+        }
+        return runCatching {
+            if (!isTreeDocumentUri(persistedUri)) {
+                return@runCatching false
+            }
+            val treeDocumentId = DocumentsContract.getTreeDocumentId(persistedUri)
+            val targetDocumentId = DocumentsContract.getDocumentId(targetUri)
+            targetDocumentId == treeDocumentId ||
+                if (treeDocumentId.endsWith(":")) {
+                    targetDocumentId.startsWith(treeDocumentId)
+                } else {
+                    targetDocumentId.startsWith("$treeDocumentId/")
+                }
+        }.getOrDefault(false)
+    }
+
+    private fun isTreeDocumentUri(uri: Uri): Boolean {
+        return uri.pathSegments.firstOrNull() == "tree"
     }
 
     private fun updateSkipBiosButton() {

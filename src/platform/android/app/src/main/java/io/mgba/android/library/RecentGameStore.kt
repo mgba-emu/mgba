@@ -53,6 +53,16 @@ class RecentGameStore(context: Context) {
         return count
     }
 
+    fun remove(uri: Uri): Boolean {
+        val current = list()
+        val updated = current.filterNot { it.uri == uri }
+        if (updated.size == current.size) {
+            return false
+        }
+        write(updated)
+        return true
+    }
+
     fun exportJson(): JSONArray {
         val array = JSONArray()
         list().forEach { item -> array.put(toJson(item)) }
