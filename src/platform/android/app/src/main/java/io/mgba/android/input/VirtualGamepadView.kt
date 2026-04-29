@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.view.MotionEvent
 import android.view.View
+import android.view.HapticFeedbackConstants
 import kotlin.math.min
 
 class VirtualGamepadView(context: Context) : View(context) {
@@ -190,6 +191,9 @@ class VirtualGamepadView(context: Context) : View(context) {
     private fun updateKeys(keys: Int) {
         if (pressedKeys == keys) {
             return
+        }
+        if (keys and pressedKeys.inv() != 0) {
+            performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
         }
         pressedKeys = keys
         onKeysChanged?.invoke(keys)
