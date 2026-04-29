@@ -130,6 +130,7 @@
 - [x] 已补齐 cheat 条目级编辑/删除：导入或手动新增后的单条作弊码可修改名称和代码内容。
 - [x] 已补齐 patch 自动搜索文件名：除 CRC32 外也查找 `<romName>.ips/.ups/.bps` 和完整显示名派生的补丁名。
 - [x] 已新增 Android internal release signing config：支持 keystore 文件或 base64 secret，并在 README 中记录本地/CI 配置变量。
+- [x] 已新增 Android crash symbolication 文档，串起 log export、CI native symbols artifact、`ndk-stack` 和 `llvm-addr2line` 排查流程。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -1116,7 +1117,7 @@ object NativeBridge {
 - [x] Native symbols 输出：
   - [x] `app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip`
   - [x] CI artifact：`mgba-android-release-native-symbols`
-- [ ] Crash 符号化流程文档。
+- [x] Crash 符号化流程文档。
 - [x] MPL 2.0 和第三方 license 页面。
 
 ## 18. 许可与合规

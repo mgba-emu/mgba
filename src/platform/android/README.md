@@ -35,3 +35,7 @@ Release builds are unsigned unless signing inputs are provided. Configure either
 | `mgbaAndroidKeyPassword` | `MGBA_ANDROID_KEY_PASSWORD` |
 
 `mgbaAndroidKeystoreFile` points to a local keystore path. `mgbaAndroidKeystoreBase64` is useful for CI secrets and is decoded into the build directory at configuration time. When all required values are present, `:app:assembleRelease` and `:app:bundleRelease` use the release signing config automatically.
+
+## Crash symbolication
+
+Release native symbols are produced at `app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip` and uploaded by CI as `mgba-android-release-native-symbols`. See [CRASH_SYMBOLS.md](CRASH_SYMBOLS.md) for the local and internal release crash debug flow.
