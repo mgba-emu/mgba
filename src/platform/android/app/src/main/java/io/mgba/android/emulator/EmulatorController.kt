@@ -115,6 +115,10 @@ class EmulatorController(context: Context) : AutoCloseable {
         return handle.isValid && NativeBridge.nativeImportCheatsFd(handle.value, fd)
     }
 
+    fun pollRumble(): Boolean {
+        return handle.isValid && NativeBridge.nativePollRumble(handle.value)
+    }
+
     fun start() {
         if (handle.isValid) {
             NativeBridge.nativeStart(handle.value)

@@ -228,6 +228,23 @@ bool WriteBmpScreenshot(const std::string& path, const std::vector<mColor>& pixe
 	return static_cast<bool>(out);
 }
 
+void AndroidRumbleReset(mRumble* rumble, bool enable) {
+	auto* state = reinterpret_cast<AndroidRumbleState*>(rumble);
+	if (state && state->runner) {
+		state->runner->setRumbleActive(enable);
+	}
+}
+
+void AndroidRumbleSet(mRumble* rumble, bool enable, uint32_t) {
+	auto* state = reinterpret_cast<AndroidRumbleState*>(rumble);
+	if (state && state->runner) {
+		state->runner->setRumbleActive(enable);
+	}
+}
+
+void AndroidRumbleIntegrate(mRumble*, uint32_t) {
+}
+
 GLuint CompileShader(GLenum type, const char* source) {
 	GLuint shader = glCreateShader(type);
 	glShaderSource(shader, 1, &source, nullptr);
@@ -418,6 +435,15 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	m_core->currentVideoSize(m_core, &m_videoWidth, &m_videoHeight);
 	m_audioOutput.clear();
 	m_frameCounter = 0;
+	m_rumbleActive = false;
+	m_rumble = {};
+	m_rumble.runner = this;
+	m_rumble.d.reset = AndroidRumbleReset;
+	m_rumble.d.setRumble = AndroidRumbleSet;
+	m_rumble.d.integrate = AndroidRumbleIntegrate;
+	if (m_core->setPeripheral) {
+		m_core->setPeripheral(m_core, mPERIPH_RUMBLE, &m_rumble.d);
+	}
 
 	struct mGameInfo info;
 	std::memset(&info, 0, sizeof(info));
@@ -603,6 +629,7 @@ bool AndroidCoreRunner::importStateSlotFd(int slot, int fd) {
 void AndroidCoreRunner::reset() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (m_core) {
+		m_rumbleActive = false;
 		m_core->reset(m_core);
 		m_audioOutput.clear();
 	}
@@ -760,6 +787,14 @@ bool AndroidCoreRunner::importCheatsFd(int fd) {
 	return ok;
 }
 
+bool AndroidCoreRunner::pollRumble() const {
+	return m_rumbleActive.load();
+}
+
+void AndroidCoreRunner::setRumbleActive(bool active) {
+	m_rumbleActive = active;
+}
+
 void AndroidCoreRunner::start() {
 	if (m_running.exchange(true)) {
 		m_paused = false;
@@ -773,6 +808,7 @@ void AndroidCoreRunner::start() {
 
 void AndroidCoreRunner::pause() {
 	m_paused = true;
+	m_rumbleActive = false;
 	m_audioOutput.pause();
 }
 
@@ -790,6 +826,7 @@ void AndroidCoreRunner::stop() {
 		m_thread.join();
 	}
 	m_paused = true;
+	m_rumbleActive = false;
 	m_audioOutput.stop();
 }
 
@@ -1047,6 +1084,10 @@ void AndroidCoreRunner::unloadCore() {
 	if (!m_core) {
 		return;
 	}
+	if (m_core->setPeripheral) {
+		m_core->setPeripheral(m_core, mPERIPH_RUMBLE, nullptr);
+	}
+	m_rumbleActive = false;
 	m_core->unloadROM(m_core);
 	m_core->deinit(m_core);
 	m_core = nullptr;

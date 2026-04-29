@@ -10,6 +10,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <mgba/core/interface.h>
 #include <mgba-util/image.h>
 #include <mutex>
 #include <string>
@@ -21,6 +22,13 @@ struct mCore;
 namespace mgba::android {
 
 std::string ProbeRomFd(int fd, const std::string& displayName);
+
+class AndroidCoreRunner;
+
+struct AndroidRumbleState {
+	mRumble d = {};
+	AndroidCoreRunner* runner = nullptr;
+};
 
 class AndroidCoreRunner {
 public:
@@ -47,6 +55,8 @@ public:
 	std::string exportBatterySave();
 	bool importBatterySaveFd(int fd);
 	bool importCheatsFd(int fd);
+	bool pollRumble() const;
+	void setRumbleActive(bool active);
 	void start();
 	void pause();
 	void resume();
@@ -81,6 +91,8 @@ private:
 	std::atomic<bool> m_fastForward{false};
 	std::atomic<int> m_scaleMode{0};
 	std::atomic<uint64_t> m_frameCounter{0};
+	std::atomic<bool> m_rumbleActive{false};
+	AndroidRumbleState m_rumble;
 
 	ANativeWindow* m_window = nullptr;
 	EGLDisplay m_display = EGL_NO_DISPLAY;

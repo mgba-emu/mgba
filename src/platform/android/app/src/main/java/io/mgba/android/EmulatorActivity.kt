@@ -10,6 +10,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.SurfaceHolder
@@ -79,12 +81,21 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var inputMappingDialog: AlertDialog? = null
     private var keyCaptureDialog: AlertDialog? = null
     private val statsHandler = Handler(Looper.getMainLooper())
+    private val rumbleHandler = Handler(Looper.getMainLooper())
+    private val vibrator: Vibrator? by lazy { getSystemService(Vibrator::class.java) }
+    private var lastRumbleAtMs = 0L
     private val statsRunnable = object : Runnable {
         override fun run() {
             updateStatsOverlay()
             if (showStats) {
                 statsHandler.postDelayed(this, 1000L)
             }
+        }
+    }
+    private val rumbleRunnable = object : Runnable {
+        override fun run() {
+            pollRumble()
+            rumbleHandler.postDelayed(this, RUMBLE_POLL_MS)
         }
     }
 
@@ -176,6 +187,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             controller?.resume()
             startPlayAccounting()
         }
+        startRumblePolling()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -202,6 +214,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     override fun onPause() {
         clearInput()
         recordPlayTime()
+        stopRumblePolling()
         stopStatsOverlay()
         controller?.pause()
         super.onPause()
@@ -210,6 +223,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     override fun onDestroy() {
         clearInput()
         recordPlayTime()
+        stopRumblePolling()
         stopStatsOverlay()
         controller?.setSurface(null)
         super.onDestroy()
@@ -347,9 +361,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                     userPaused = !userPaused
                     if (userPaused) {
                         recordPlayTime()
+                        stopRumblePolling()
                         controller?.pause()
                     } else {
                         controller?.resume()
+                        startRumblePolling()
                         startPlayAccounting()
                     }
                     updateRunButtons()
@@ -716,6 +732,39 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         )
     }
 
+    private fun startRumblePolling() {
+        rumbleHandler.removeCallbacks(rumbleRunnable)
+        rumbleHandler.post(rumbleRunnable)
+    }
+
+    private fun stopRumblePolling() {
+        rumbleHandler.removeCallbacks(rumbleRunnable)
+    }
+
+    private fun pollRumble() {
+        if (controller?.pollRumble() == true) {
+            triggerRumblePulse()
+        }
+    }
+
+    private fun triggerRumblePulse() {
+        val vibrator = vibrator ?: return
+        if (!vibrator.hasVibrator()) {
+            return
+        }
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastRumbleAtMs < RUMBLE_INTERVAL_MS) {
+            return
+        }
+        lastRumbleAtMs = now
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(RUMBLE_PULSE_MS, VibrationEffect.DEFAULT_AMPLITUDE))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(RUMBLE_PULSE_MS)
+        }
+    }
+
     private fun saveStateWithConfirmation() {
         if (controller?.hasStateSlot(stateSlot) != true) {
             saveStateNow()
@@ -925,6 +974,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         private const val REQUEST_IMPORT_CHEATS = 2002
         private const val REQUEST_EXPORT_STATE = 2003
         private const val REQUEST_IMPORT_STATE = 2004
+        private const val RUMBLE_POLL_MS = 50L
+        private const val RUMBLE_INTERVAL_MS = 90L
+        private const val RUMBLE_PULSE_MS = 45L
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int")
     }
 }

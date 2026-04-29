@@ -74,6 +74,9 @@ object NativeBridge {
     external fun nativeImportCheatsFd(handle: Long, fd: Int): Boolean
 
     @JvmStatic
+    external fun nativePollRumble(handle: Long): Boolean
+
+    @JvmStatic
     external fun nativeStart(handle: Long)
 
     @JvmStatic

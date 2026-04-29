@@ -85,8 +85,9 @@
 - [x] 已将硬件键位重映射扩展为按 `InputDevice.descriptor` 区分的每设备 profile。
 - [x] 已新增即时存档槽位缩略图：保存时生成、切换槽位显示、删除/导入时清理。
 - [x] 已新增 ROM 库按 SAF 文件夹来源增量合并扫描，避免重扫一个目录时冲掉其他库来源。
+- [x] 已接入 native `mPERIPH_RUMBLE` 到 Android `Vibrator` 的运行时震动反馈。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
-- [ ] ROM 库封面、profile 导入/导出和传感器输入仍待后续阶段实现。
+- [ ] ROM 库封面、profile 导入/导出、rotation/solar 传感器输入仍待后续阶段实现。
 
 ## 1. 产品目标和范围
 
@@ -570,8 +571,8 @@ object NativeBridge {
 ### 7.4 特殊输入/外设
 
 - [ ] Rumble：
-  - [ ] Native 接 mGBA `mPERIPH_RUMBLE`。
-  - [ ] Kotlin 使用 `Vibrator` / `VibrationEffect` / controller haptics。
+  - [x] Native 接 mGBA `mPERIPH_RUMBLE`。
+  - [x] Kotlin 使用 `Vibrator` / `VibrationEffect` / controller haptics。
 - [ ] Rotation / tilt：
   - [ ] Native 接 `mPERIPH_ROTATION`。
   - [ ] Kotlin 监听 accelerometer / gyroscope。
