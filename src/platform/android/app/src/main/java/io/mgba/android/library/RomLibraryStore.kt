@@ -9,6 +9,7 @@ data class LibraryRom(
     val uri: Uri,
     val displayName: String,
     val lastPlayedAt: Long = 0L,
+    val favorite: Boolean = false,
 )
 
 class RomLibraryStore(context: Context) {
@@ -26,22 +27,24 @@ class RomLibraryStore(context: Context) {
                         uri = Uri.parse(uri),
                         displayName = item.optString("displayName", uri),
                         lastPlayedAt = item.optLong("lastPlayedAt", 0L),
+                        favorite = item.optBoolean("favorite", false),
                     ),
                 )
             }
-        }.sortedBy { it.displayName.lowercase() }
+        }.sortedWith(librarySort)
     }
 
     fun replace(items: List<LibraryRom>) {
         val existing = list().associateBy { it.uri }
         val array = JSONArray()
-        items.distinctBy { it.uri }.sortedBy { it.displayName.lowercase() }.forEach { item ->
-            val merged = item.copy(lastPlayedAt = existing[item.uri]?.lastPlayedAt ?: item.lastPlayedAt)
+        items.distinctBy { it.uri }.sortedWith(librarySort).forEach { item ->
+            val previous = existing[item.uri]
+            val merged = item.copy(
+                lastPlayedAt = previous?.lastPlayedAt ?: item.lastPlayedAt,
+                favorite = previous?.favorite ?: item.favorite,
+            )
             array.put(
-                JSONObject()
-                    .put("uri", merged.uri.toString())
-                    .put("displayName", merged.displayName)
-                    .put("lastPlayedAt", merged.lastPlayedAt),
+                toJson(merged),
             )
         }
         preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
@@ -51,17 +54,30 @@ class RomLibraryStore(context: Context) {
         val array = JSONArray()
         list().forEach { item ->
             val updated = if (item.uri == uri) item.copy(lastPlayedAt = playedAt) else item
-            array.put(
-                JSONObject()
-                    .put("uri", updated.uri.toString())
-                    .put("displayName", updated.displayName)
-                    .put("lastPlayedAt", updated.lastPlayedAt),
-            )
+            array.put(toJson(updated))
         }
         preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
     }
 
+    fun toggleFavorite(uri: Uri) {
+        val array = JSONArray()
+        list().forEach { item ->
+            val updated = if (item.uri == uri) item.copy(favorite = !item.favorite) else item
+            array.put(toJson(updated))
+        }
+        preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
+    }
+
+    private fun toJson(item: LibraryRom): JSONObject {
+        return JSONObject()
+            .put("uri", item.uri.toString())
+            .put("displayName", item.displayName)
+            .put("lastPlayedAt", item.lastPlayedAt)
+            .put("favorite", item.favorite)
+    }
+
     private companion object {
         const val KEY_ITEMS = "items"
+        val librarySort = compareByDescending<LibraryRom> { it.favorite }.thenBy { it.displayName.lowercase() }
     }
 }

@@ -66,6 +66,7 @@
 - [x] 已将 ROM 文件夹扫描移到后台线程，扫描期间禁用重复触发并在完成后刷新库。
 - [x] 已实现 ROM 文件夹扫描取消，避免旧扫描结果覆盖新库状态。
 - [x] 已为 ROM 库记录并显示 last played 时间，重新扫描时保留已有游玩元数据。
+- [x] 已为 ROM 库新增收藏标记，收藏项优先排序并随重新扫描保留。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -655,7 +656,7 @@ object NativeBridge {
   - [ ] file size。
   - [x] lastPlayedAt。
   - [ ] playTimeSeconds。
-  - [ ] favorite。
+  - [x] favorite。
   - [ ] coverPath 或 screenshot thumbnail。
 - [ ] 数据存储：
   - [ ] 首选 Room。
@@ -682,7 +683,7 @@ object NativeBridge {
 - [ ] 空状态提供“打开 ROM”和“添加文件夹”两个动作。
 - [ ] ROM 列表支持：
   - [x] 最近。
-  - [ ] 收藏。
+  - [x] 收藏。
   - [ ] GBA / GB / GBC 筛选。
   - [x] 搜索。
   - [ ] 网格/列表切换。

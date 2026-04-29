@@ -291,11 +291,22 @@ class MainActivity : Activity() {
             return
         }
         roms.take(MAX_LIBRARY_ITEMS).forEach { rom ->
-            libraryContainer.addView(Button(this).apply {
-                text = libraryButtonLabel(rom)
-                setOnClickListener {
-                    openRomUri(rom.uri, rom.displayName, shouldStoreRecent = true)
-                }
+            libraryContainer.addView(LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                addView(Button(context).apply {
+                    text = libraryButtonLabel(rom)
+                    setOnClickListener {
+                        openRomUri(rom.uri, rom.displayName, shouldStoreRecent = true)
+                    }
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                })
+                addView(Button(context).apply {
+                    text = if (rom.favorite) "Fav*" else "Fav"
+                    setOnClickListener {
+                        libraryStore.toggleFavorite(rom.uri)
+                        renderLibrary()
+                    }
+                })
             })
         }
         if (roms.size > MAX_LIBRARY_ITEMS) {
@@ -310,14 +321,15 @@ class MainActivity : Activity() {
 
     private fun libraryButtonLabel(rom: LibraryRom): String {
         if (rom.lastPlayedAt <= 0L) {
-            return rom.displayName
+            return if (rom.favorite) "[*] ${rom.displayName}" else rom.displayName
         }
         val relative = DateUtils.getRelativeTimeSpanString(
             rom.lastPlayedAt,
             System.currentTimeMillis(),
             DateUtils.MINUTE_IN_MILLIS,
         )
-        return "${rom.displayName}\nLast played $relative"
+        val title = if (rom.favorite) "[*] ${rom.displayName}" else rom.displayName
+        return "$title\nLast played $relative"
     }
 
     private fun scanLibraryInBackground(uri: Uri) {
