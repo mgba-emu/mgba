@@ -1535,7 +1535,7 @@ class MainActivity : Activity() {
             addView(Button(context).apply {
                 text = libraryButtonLabel(rom)
                 setOnClickListener {
-                    openRomUri(rom.uri, rom.displayName, shouldStoreRecent = true)
+                    launchLibraryRom(rom)
                 }
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             })
@@ -1572,7 +1572,7 @@ class MainActivity : Activity() {
                 text = libraryButtonLabel(rom)
                 maxLines = 4
                 setOnClickListener {
-                    openRomUri(rom.uri, rom.displayName, shouldStoreRecent = true)
+                    launchLibraryRom(rom)
                 }
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -1621,7 +1621,22 @@ class MainActivity : Activity() {
     }
 
     private fun launchLibraryRom(rom: LibraryRom) {
+        if (!canOpenStoredRecent(rom.uri)) {
+            removeUnavailableLibraryRom(rom)
+            return
+        }
         openRomUri(rom.uri, rom.displayName, shouldStoreRecent = true)
+    }
+
+    private fun removeUnavailableLibraryRom(rom: LibraryRom) {
+        libraryStore.remove(rom.uri)?.let { removed ->
+            deleteCoverPath(removed.coverPath)
+            coverThumbnailCache.evictAll()
+        }
+        renderLibrary()
+        val message = "Library item unavailable: ${rom.displayName}"
+        nativeStatus.text = "${getString(R.string.native_version_label)}: $message"
+        AppLogStore.append(this, message)
     }
 
     private fun showLibraryRomSettings(rom: LibraryRom) {
