@@ -3,9 +3,11 @@
 #include <mgba/core/config.h>
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
+#include <mgba/core/serialize.h>
 #include <mgba-util/image.h>
 #include <mgba-util/vfs.h>
 
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -282,6 +284,40 @@ void AndroidCoreRunner::setKeys(uint32_t keys) {
 	}
 }
 
+bool AndroidCoreRunner::saveStateSlot(int slot) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	const std::string path = statePathForSlot(slot);
+	if (!m_core || path.empty()) {
+		return false;
+	}
+	struct VFile* vf = VFileOpen(path.c_str(), O_CREAT | O_TRUNC | O_RDWR);
+	if (!vf) {
+		return false;
+	}
+	const bool ok = mCoreSaveStateNamed(m_core, vf, SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
+	vf->close(vf);
+	return ok;
+}
+
+bool AndroidCoreRunner::loadStateSlot(int slot) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	const std::string path = statePathForSlot(slot);
+	if (!m_core || path.empty()) {
+		return false;
+	}
+	struct VFile* vf = VFileOpen(path.c_str(), O_RDONLY);
+	if (!vf) {
+		return false;
+	}
+	const bool ok = mCoreLoadStateNamed(m_core, vf, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
+	vf->close(vf);
+	if (ok) {
+		m_core->currentVideoSize(m_core, &m_videoWidth, &m_videoHeight);
+		m_audioOutput.clear();
+	}
+	return ok;
+}
+
 void AndroidCoreRunner::start() {
 	if (m_running.exchange(true)) {
 		m_paused = false;
@@ -509,6 +545,26 @@ void AndroidCoreRunner::runLoop() {
 	destroyEglLocked();
 }
 
+std::string AndroidCoreRunner::statePathForSlot(int slot) {
+	if (slot < 1 || slot > 9 || m_savePath.empty()) {
+		return "";
+	}
+	const std::string statesPath = m_basePath + "/states";
+	if (!EnsureDirectory(statesPath)) {
+		return "";
+	}
+
+	size_t nameStart = m_savePath.find_last_of('/');
+	nameStart = nameStart == std::string::npos ? 0 : nameStart + 1;
+	size_t nameEnd = m_savePath.rfind(".sav");
+	if (nameEnd == std::string::npos || nameEnd < nameStart) {
+		nameEnd = m_savePath.size();
+	}
+	std::ostringstream path;
+	path << statesPath << "/" << m_savePath.substr(nameStart, nameEnd - nameStart) << "-slot" << slot << ".ss";
+	return path.str();
+}
+
 void AndroidCoreRunner::unloadCore() {
 	stop();
 	if (!m_core) {
@@ -517,6 +573,7 @@ void AndroidCoreRunner::unloadCore() {
 	m_core->unloadROM(m_core);
 	m_core->deinit(m_core);
 	m_core = nullptr;
+	m_savePath.clear();
 }
 
 } // namespace mgba::android

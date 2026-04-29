@@ -26,6 +26,12 @@ object NativeBridge {
     external fun nativeSetKeys(handle: Long, keys: Int)
 
     @JvmStatic
+    external fun nativeSaveStateSlot(handle: Long, slot: Int): Boolean
+
+    @JvmStatic
+    external fun nativeLoadStateSlot(handle: Long, slot: Int): Boolean
+
+    @JvmStatic
     external fun nativeStart(handle: Long)
 
     @JvmStatic

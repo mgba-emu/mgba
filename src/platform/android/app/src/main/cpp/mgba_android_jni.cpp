@@ -81,6 +81,22 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetKeys(JNIEnv*, jclass, jlong ha
 	}
 }
 
+extern "C" JNIEXPORT jboolean JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSaveStateSlot(JNIEnv*, jclass, jlong handle, jint slot) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		return runner->saveStateSlot(slot) ? JNI_TRUE : JNI_FALSE;
+	}
+	return JNI_FALSE;
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeLoadStateSlot(JNIEnv*, jclass, jlong handle, jint slot) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		return runner->loadStateSlot(slot) ? JNI_TRUE : JNI_FALSE;
+	}
+	return JNI_FALSE;
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeStart(JNIEnv*, jclass, jlong handle) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {

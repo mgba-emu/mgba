@@ -29,6 +29,8 @@ public:
 	std::string loadRomFd(int fd, const std::string& displayName);
 	void setSurface(ANativeWindow* window);
 	void setKeys(uint32_t keys);
+	bool saveStateSlot(int slot);
+	bool loadStateSlot(int slot);
 	void start();
 	void pause();
 	void resume();
@@ -40,6 +42,7 @@ private:
 	void destroyEglLocked();
 	void renderFrameLocked();
 	void runLoop();
+	std::string statePathForSlot(int slot);
 	void unloadCore();
 
 	std::string m_basePath;

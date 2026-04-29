@@ -35,8 +35,9 @@
 - [x] 已实现 OpenSL ES 音频输出器，从 mGBA audio buffer 拉取样本并重采样到 Android 48 kHz stereo PCM。
 - [x] 已实现实体键盘、D-pad、gamepad buttons 和 joystick axes 到 mGBA key bitmask 的基础映射。
 - [x] 已实现基础电池存档链路：按 ROM CRC32 在 app 私有 `saves/` 目录创建 `.sav` 并交给 core 读写。
+- [x] 已实现 1-9 槽即时存档/读档 native 链路，并在 emulator 画面提供基础槽位工具条。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
-- [ ] 可配置重映射、震动和传感器输入仍待后续阶段实现。
+- [ ] 即时存档缩略图、覆盖确认、可配置重映射、震动和传感器输入仍待后续阶段实现。
 
 ## 1. 产品目标和范围
 

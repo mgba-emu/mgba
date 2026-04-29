@@ -6,7 +6,10 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.Toast
 import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.input.AndroidInputMapper
@@ -18,6 +21,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var virtualKeys = 0
     private var hardwareButtonKeys = 0
     private var hardwareAxisKeys = 0
+    private var stateSlot = 1
+    private var slotButton: Button? = null
     private var hasSurface = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,6 +61,16 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT,
             ),
+        )
+        root.addView(
+            createStateToolbar(),
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                android.view.Gravity.TOP or android.view.Gravity.CENTER_HORIZONTAL,
+            ).apply {
+                topMargin = dp(12)
+            },
         )
 
         setContentView(root)
@@ -141,5 +156,53 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
     private fun syncKeys() {
         controller?.setKeys(virtualKeys or hardwareButtonKeys or hardwareAxisKeys)
+    }
+
+    private fun createStateToolbar(): LinearLayout {
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            alpha = 0.86f
+            addView(Button(context).apply {
+                text = "-"
+                setOnClickListener {
+                    stateSlot = if (stateSlot == 1) 9 else stateSlot - 1
+                    updateSlotButton()
+                }
+            })
+            slotButton = Button(context).apply {
+                isEnabled = false
+            }
+            addView(slotButton)
+            addView(Button(context).apply {
+                text = "+"
+                setOnClickListener {
+                    stateSlot = if (stateSlot == 9) 1 else stateSlot + 1
+                    updateSlotButton()
+                }
+            })
+            addView(Button(context).apply {
+                text = "Save"
+                setOnClickListener {
+                    val ok = controller?.saveStateSlot(stateSlot) == true
+                    Toast.makeText(context, if (ok) "State saved" else "Save failed", Toast.LENGTH_SHORT).show()
+                }
+            })
+            addView(Button(context).apply {
+                text = "Load"
+                setOnClickListener {
+                    val ok = controller?.loadStateSlot(stateSlot) == true
+                    Toast.makeText(context, if (ok) "State loaded" else "Load failed", Toast.LENGTH_SHORT).show()
+                }
+            })
+            updateSlotButton()
+        }
+    }
+
+    private fun updateSlotButton() {
+        slotButton?.text = "Slot $stateSlot"
+    }
+
+    private fun dp(value: Int): Int {
+        return (value * resources.displayMetrics.density).toInt()
     }
 }
