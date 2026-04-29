@@ -197,6 +197,7 @@
 - [x] 已收紧 Android 快进音频策略：快进期间丢弃 core audio/output queue，避免旧样本积压或音频队列拖住快进，并加入 instrumented smoke 覆盖。
 - [x] 已补齐 Android 虚拟手柄编辑模式双指缩放：编辑时 pinch 可实时调整按钮大小并保存。
 - [x] 已新增 Android 输入同步延迟诊断：虚拟/实体输入到 `nativeSetKeys` 的事件年龄、JNI 调用耗时、最大耗时和 slow sample 计数会进入 Input debug 与诊断导出，并用 instrumented test 锁定虚拟触摸事件时间传递。
+- [x] 已完成 Android link cable 首轮调研：Qt MultiplayerController 依赖 `mCoreThread` wait/wake、GBA/GB lockstep driver、save player id 分配和多实例 CoreController 编排；Android 首版不接联机，后续需先抽象多 runner lockstep 调度层。
 
 ## 1. 产品目标和范围
 
@@ -1012,8 +1013,12 @@ object NativeBridge {
 
 ### 13.5 Link cable
 
-- [ ] 调研当前 `src/gba/sio` 和 Qt MultiplayerController 的耦合点。
-- [ ] 第一阶段不做。
+- [x] 调研当前 `src/gba/sio` 和 Qt MultiplayerController 的耦合点：
+  - [x] GBA 侧核心入口是 `GBASIOLockstepCoordinator` / `GBASIOLockstepDriver`，通过 `core->setPeripheral(core, mPERIPH_GBA_LINK_PORT, &driver->d)` 接进 SIO。
+  - [x] GB 侧核心入口是 `GBSIOLockstep` / `GBSIOLockstepNode`，通过 `GBSIOSetDriver(&gb->sio, &node->d)` 接入。
+  - [x] Qt `MultiplayerController` 深度依赖 `CoreController::Interrupter`、`mCoreThreadWaitFromThread`、`mCoreThreadStopWaiting`、`setSync`、player/save id 分配和同平台多 CoreController 生命周期。
+  - [x] Android 当前 `AndroidCoreRunner` 使用自管 `std::thread` + `core->runFrame`，没有直接复用 `mCoreThread` wait/wake 语义；不能只搬 Qt controller，需要先做 Android 多 runner lockstep 调度抽象。
+- [x] 第一阶段不做：首版仅保留单实例本地游玩，避免联机同步把当前已经稳定的帧 pacing、音频队列、存档路径和生命周期模型全部拉入高风险重构。
 - [ ] 第二阶段实现同设备多实例本地联机：
   - [ ] 同一 Activity 管理 2-4 个 `AndroidCoreRunner`。
   - [ ] 分屏渲染。
