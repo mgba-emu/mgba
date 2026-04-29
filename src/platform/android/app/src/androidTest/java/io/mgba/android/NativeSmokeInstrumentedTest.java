@@ -25,6 +25,7 @@ public final class NativeSmokeInstrumentedTest {
     private static final String ROM_ASSET_NAME = "native-smoke-dmg-acid2.gb";
     private static final int SMOKE_STATE_SLOT = 9;
     private static final long RUN_LOOP_SMOKE_MS = 1200L;
+    private static final long FAST_FORWARD_SMOKE_MS = 250L;
 
     @Test
     public void testNativeCoreLoadsRunsAndRestoresPublicDomainRom() throws Exception {
@@ -64,6 +65,21 @@ public final class NativeSmokeInstrumentedTest {
             assertTrue(
                 "Frame pacing jitter should stay within one frame",
                 Math.abs(pacingStats.getFrameActualUs() - pacingStats.getFrameTargetUs()) < pacingStats.getFrameTargetUs()
+            );
+
+            long readFramesBeforeFastForward = pacingStats.getAudioReadFrames();
+            long framesBeforeFastForward = pacingStats.getFrames();
+            NativeBridge.nativeSetFastForward(handle, true);
+            NativeBridge.nativeStart(handle);
+            Thread.sleep(FAST_FORWARD_SMOKE_MS);
+            NativeBridge.nativePause(handle);
+            NativeBridge.nativeSetFastForward(handle, false);
+            NativeStats fastForwardStats = NativeBridge.INSTANCE.stats(handle);
+            assertTrue("Fast-forward should advance frames", fastForwardStats.getFrames() > framesBeforeFastForward);
+            assertEquals(
+                "Fast-forward should discard audio instead of queueing stale samples",
+                readFramesBeforeFastForward,
+                fastForwardStats.getAudioReadFrames()
             );
 
             for (int frame = 0; frame < 300; ++frame) {

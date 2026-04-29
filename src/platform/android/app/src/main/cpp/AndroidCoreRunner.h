@@ -124,6 +124,7 @@ private:
 	void destroyEglLocked();
 	void renderFrameLocked();
 	bool flushBatterySave();
+	void dropAudioLocked();
 	void resetRewindContextLocked();
 	std::chrono::microseconds frameDurationLocked() const;
 	void runLoop();

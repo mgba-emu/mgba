@@ -194,6 +194,7 @@
 - [x] 已收紧 Android 游戏内工具条：常用运行/存档动作保留在顶部，低频设置和数据操作收进双列 More 面板，减少首屏按钮挤压。
 - [x] 已增强 Android instrumented native smoke：覆盖 run-loop frame pacing stats、GB 视频尺寸和 RGB565 上传格式。
 - [x] 已用 `~/game` 三个真实 ZIP ROM 完成模拟器画面 smoke：GBA/GBC 均可进入游戏画面，无 fatal log，颜色/方向/stride 目视正常。
+- [x] 已收紧 Android 快进音频策略：快进期间丢弃 core audio/output queue，避免旧样本积压或音频队列拖住快进，并加入 instrumented smoke 覆盖。
 
 ## 1. 产品目标和范围
 
@@ -589,9 +590,9 @@ object NativeBridge {
 
 - [ ] 使用 `mCoreSyncLockAudio` / `mCoreSyncConsumeAudio`，让音频 high water mark 控制核心速度。
 - [ ] 快进时：
-  - [ ] 可选择静音或降低音量。
+  - [x] 可选择静音或降低音量。
   - [ ] 调整 resampler source rate。
-  - [ ] 禁用过度等待，避免快进被音频拖住。
+  - [x] 禁用过度等待，避免快进被音频拖住。
 - [x] 倒带时：
   - [x] 清空音频输出 buffer。
   - [x] 避免倒带后的旧样本继续播放。

@@ -5,6 +5,7 @@
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
 #include <mgba/core/serialize.h>
+#include <mgba-util/audio-buffer.h>
 #include <mgba-util/image.h>
 #include <mgba-util/vfs.h>
 
@@ -966,7 +967,12 @@ bool AndroidCoreRunner::stepFrame() {
 }
 
 void AndroidCoreRunner::setFastForward(bool enabled) {
+	if (m_fastForward.load() == enabled) {
+		return;
+	}
 	m_fastForward = enabled;
+	std::lock_guard<std::mutex> lock(m_mutex);
+	dropAudioLocked();
 }
 
 void AndroidCoreRunner::setFastForwardMultiplier(int multiplier) {
@@ -1760,6 +1766,17 @@ bool AndroidCoreRunner::flushBatterySave() {
 	return true;
 }
 
+void AndroidCoreRunner::dropAudioLocked() {
+	m_audioOutput.clear();
+	if (!m_core || !m_core->getAudioBuffer) {
+		return;
+	}
+	struct mAudioBuffer* buffer = m_core->getAudioBuffer(m_core);
+	if (buffer) {
+		mAudioBufferClear(buffer);
+	}
+}
+
 void AndroidCoreRunner::resetRewindContextLocked() {
 	if (m_rewindReady) {
 		mCoreRewindContextDeinit(&m_rewind);
@@ -1826,8 +1843,8 @@ void AndroidCoreRunner::runLoop() {
 					}
 				}
 				m_core->runFrame(m_core);
-				if (rewinding) {
-					m_audioOutput.clear();
+				if (rewinding || m_fastForward.load()) {
+					dropAudioLocked();
 				} else {
 					m_audioOutput.enqueueFromCore(m_core);
 				}
