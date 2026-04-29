@@ -13,6 +13,10 @@ class PerGameOverrideStore(context: Context) {
         return intOverride(gameId, KEY_FILTER_MODE, fallback).coerceIn(0, 1)
     }
 
+    fun orientationMode(gameId: String?, fallback: Int): Int {
+        return intOverride(gameId, KEY_ORIENTATION_MODE, fallback).coerceIn(0, 2)
+    }
+
     fun muted(gameId: String?, fallback: Boolean): Boolean {
         return booleanOverride(gameId, KEY_MUTED, fallback)
     }
@@ -55,6 +59,10 @@ class PerGameOverrideStore(context: Context) {
 
     fun setFilterMode(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_FILTER_MODE, value.coerceIn(0, 1))
+    }
+
+    fun setOrientationMode(gameId: String?, value: Int): Boolean {
+        return putIntOverride(gameId, KEY_ORIENTATION_MODE, value.coerceIn(0, 2))
     }
 
     fun setMuted(gameId: String?, value: Boolean): Boolean {
@@ -125,6 +133,7 @@ class PerGameOverrideStore(context: Context) {
     private companion object {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_FILTER_MODE = "filterMode"
+        const val KEY_ORIENTATION_MODE = "orientationMode"
         const val KEY_MUTED = "muted"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_FRAME_SKIP = "frameSkip"

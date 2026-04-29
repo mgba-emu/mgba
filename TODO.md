@@ -103,6 +103,7 @@
 - [x] 已用单测锁定 Android `GbaKeyMask` 与 native `GBA_KEY_*` bit position 的对应关系。
 - [x] 已为虚拟手柄 PadCfg 新增 Reset，一键恢复默认布局样式。
 - [x] 已补齐 Android 画面比例模式：Fit / Fill / Integer / Original / Stretch，并保持旧 Fit 设置兼容。
+- [x] 已新增 Android 旋转模式切换：Follow / Landscape / Portrait，并按游戏持久化。
 - [x] 已新增 Android 画面 Pix/Smooth 过滤切换，JNI 透传到 GLES texture filtering 并按游戏持久化。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
@@ -459,10 +460,10 @@ object NativeBridge {
   - [x] Nearest。
   - [x] Linear。
   - [ ] mGBA shader preset，后续阶段。
-- [ ] 旋转：
-  - [ ] 跟随系统。
-  - [ ] 锁定横屏。
-  - [ ] 锁定竖屏。
+- [x] 旋转：
+  - [x] 跟随系统。
+  - [x] 锁定横屏。
+  - [x] 锁定竖屏。
 - [ ] 遮挡处理：
   - [ ] 虚拟手柄覆盖层不改变渲染比例。
   - [ ] 竖屏下画面在上，手柄在下。

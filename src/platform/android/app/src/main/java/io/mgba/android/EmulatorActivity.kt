@@ -2,6 +2,7 @@ package io.mgba.android
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.pm.ActivityInfo
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.hardware.Sensor
@@ -84,6 +85,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var muteButton: Button? = null
     private var scaleButton: Button? = null
     private var filterButton: Button? = null
+    private var orientationButton: Button? = null
     private var padButton: Button? = null
     private var padSettingsButton: Button? = null
     private var deadzoneButton: Button? = null
@@ -119,6 +121,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var playAccountingStartedAtMs = 0L
     private var scaleMode = 0
     private var filterMode = 0
+    private var orientationMode = 0
     private var hasSurface = false
     private var inputMappingDialog: AlertDialog? = null
     private var keyCaptureDialog: AlertDialog? = null
@@ -153,6 +156,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         currentGameId = EmulatorSession.currentGame()?.uri
         scaleMode = perGameOverrides.scaleMode(currentGameId, preferences.scaleMode)
         filterMode = perGameOverrides.filterMode(currentGameId, preferences.filterMode)
+        orientationMode = perGameOverrides.orientationMode(currentGameId, preferences.orientationMode)
         frameSkip = perGameOverrides.frameSkip(currentGameId, 0)
         muted = perGameOverrides.muted(currentGameId, preferences.muted)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
@@ -181,6 +185,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             AndroidInputMapper.DefaultAxisThresholdPercent,
         )
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        applyOrientationMode()
         enterImmersiveMode()
         controller = EmulatorSession.current()
         if (controller == null) {
@@ -442,6 +447,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
+    private fun saveOrientationModePreference() {
+        if (!perGameOverrides.setOrientationMode(currentGameId, orientationMode)) {
+            preferences.orientationMode = orientationMode
+        }
+    }
+
     private fun saveMutedPreference() {
         if (!perGameOverrides.setMuted(currentGameId, muted)) {
             preferences.muted = muted
@@ -583,6 +594,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(filterButton)
+            orientationButton = Button(context).apply {
+                setOnClickListener {
+                    orientationMode = (orientationMode + 1) % ORIENTATION_LABELS.size
+                    applyOrientationMode()
+                    saveOrientationModePreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(orientationButton)
             padButton = Button(context).apply {
                 setOnClickListener {
                     showVirtualGamepad = !showVirtualGamepad
@@ -799,6 +819,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         muteButton?.text = if (muted) "Sound" else "Mute"
         scaleButton?.text = SCALE_LABELS[scaleMode]
         filterButton?.text = FILTER_LABELS[filterMode]
+        orientationButton?.text = ORIENTATION_LABELS[orientationMode]
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
         padSettingsButton?.text = "PadCfg"
         deadzoneButton?.text = "DZ$deadzonePercent"
@@ -1557,6 +1578,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         return (value * resources.displayMetrics.density).toInt()
     }
 
+    private fun applyOrientationMode() {
+        requestedOrientation = when (orientationMode) {
+            1 -> ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+            2 -> ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT
+            else -> ActivityInfo.SCREEN_ORIENTATION_USER
+        }
+    }
+
     private fun enterImmersiveMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.insetsController?.let { controller ->
@@ -1601,5 +1630,6 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private val FRAME_SKIP_LABELS = arrayOf("Skip0", "Skip1", "Skip2", "Skip3")
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int", "Orig", "Str")
         private val FILTER_LABELS = arrayOf("Pix", "Smooth")
+        private val ORIENTATION_LABELS = arrayOf("Rot", "Land", "Port")
     }
 }
