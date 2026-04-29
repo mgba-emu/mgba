@@ -13,12 +13,16 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import io.mgba.android.bridge.NativeBridge
 import io.mgba.android.emulator.EmulatorSession
+import io.mgba.android.library.RecentGameStore
 
 class MainActivity : Activity() {
     private lateinit var nativeStatus: TextView
+    private lateinit var recentStore: RecentGameStore
+    private lateinit var recentContainer: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        recentStore = RecentGameStore(this)
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -58,11 +62,18 @@ class MainActivity : Activity() {
             }
         }
 
+        recentContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, dp(24), 0, 0)
+        }
+
         root.addView(title)
         root.addView(subtitle)
         root.addView(nativeStatus)
         root.addView(openButton)
+        root.addView(recentContainer)
         setContentView(root)
+        renderRecentGames()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -76,17 +87,50 @@ class MainActivity : Activity() {
             contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         val name = displayName(uri)
-        val result = contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
-            val emulator = EmulatorSession.controller(this)
-            emulator.loadRomFd(descriptor.fd, name)
-        }
+        openRomUri(uri, name, shouldStoreRecent = true)
+    }
+
+    private fun openRomUri(uri: Uri, name: String, shouldStoreRecent: Boolean) {
+        val result = runCatching {
+            contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
+                val emulator = EmulatorSession.controller(this)
+                emulator.loadRomFd(descriptor.fd, name)
+            }
+        }.getOrNull()
         nativeStatus.text = if (result?.ok == true) {
             "${getString(R.string.native_version_label)}: ${result.platform} ${result.title}"
         } else {
             "${getString(R.string.native_version_label)}: ${result?.message ?: "Unable to open ROM"}"
         }
         if (result?.ok == true) {
+            if (shouldStoreRecent) {
+                recentStore.add(uri, name)
+                renderRecentGames()
+            }
             startActivity(Intent(this, EmulatorActivity::class.java))
+        }
+    }
+
+    private fun renderRecentGames() {
+        recentContainer.removeAllViews()
+        val recentGames = recentStore.list()
+        if (recentGames.isEmpty()) {
+            return
+        }
+
+        recentContainer.addView(TextView(this).apply {
+            text = "Recent"
+            textSize = 14f
+            setTextColor(getColor(R.color.mgba_text_secondary))
+            setPadding(0, 0, 0, dp(8))
+        })
+        recentGames.forEach { game ->
+            recentContainer.addView(Button(this).apply {
+                text = game.displayName
+                setOnClickListener {
+                    openRomUri(game.uri, game.displayName, shouldStoreRecent = true)
+                }
+            })
         }
     }
 
