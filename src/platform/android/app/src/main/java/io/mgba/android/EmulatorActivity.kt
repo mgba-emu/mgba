@@ -14,9 +14,11 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.provider.OpenableColumns
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.SurfaceHolder
@@ -45,6 +47,7 @@ import io.mgba.android.settings.AudioLowPassModes
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.InputMappingStore
 import io.mgba.android.settings.PerGameOverrideStore
+import io.mgba.android.storage.PatchStore
 import io.mgba.android.storage.ScreenshotExporter
 import io.mgba.android.storage.ScreenshotShareProvider
 import io.mgba.android.storage.SaveExporter
@@ -60,6 +63,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private lateinit var preferences: EmulatorPreferences
     private lateinit var perGameOverrides: PerGameOverrideStore
     private lateinit var inputMappingStore: InputMappingStore
+    private lateinit var patchStore: PatchStore
     private var currentGameId: String? = null
     private var activeInputDeviceDescriptor: String? = null
     private var activeInputDeviceName: String? = null
@@ -163,6 +167,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         preferences = EmulatorPreferences(this)
         perGameOverrides = PerGameOverrideStore(this)
         inputMappingStore = InputMappingStore(this)
+        patchStore = PatchStore(this)
         currentGameId = EmulatorSession.currentGame()?.uri
         scaleMode = perGameOverrides.scaleMode(currentGameId, preferences.scaleMode)
         filterMode = perGameOverrides.filterMode(currentGameId, preferences.filterMode)
@@ -315,6 +320,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             REQUEST_IMPORT_STATE -> importStateSlot(uri, pendingImportStateSlot)
             REQUEST_EXPORT_INPUT_PROFILE -> exportInputProfile(uri)
             REQUEST_IMPORT_INPUT_PROFILE -> importInputProfile(uri)
+            REQUEST_IMPORT_PATCH -> importPatch(uri)
         }
     }
 
@@ -854,6 +860,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 text = "Cheats"
                 setOnClickListener {
                     openCheatImportPicker()
+                }
+            })
+            stateRow.addView(Button(context).apply {
+                text = "Patch"
+                setOnClickListener {
+                    openPatchImportPicker()
                 }
             })
             addView(runRow)
@@ -1657,6 +1669,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         startActivityForResult(intent, REQUEST_IMPORT_CHEATS)
     }
 
+    private fun openPatchImportPicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_IMPORT_PATCH)
+    }
+
     private fun importBatterySave(uri: Uri) {
         val ok = runCatching {
             contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
@@ -1666,6 +1687,28 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         Toast.makeText(this, if (ok) "Save imported" else "Import failed", Toast.LENGTH_SHORT).show()
     }
 
+    private fun importPatch(uri: Uri) {
+        val name = displayName(uri, "patch")
+        val stored = patchStore.importForGame(currentGameId, uri, name)
+        val applied = if (stored) {
+            patchStore.fileForGame(currentGameId)?.let { file ->
+                runCatching {
+                    ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                        controller?.importPatchFd(descriptor.fd) == true
+                    }
+                }.getOrDefault(false)
+            } ?: false
+        } else {
+            false
+        }
+        val message = when {
+            applied -> "Patch imported"
+            stored -> "Patch saved; apply failed"
+            else -> "Patch import failed"
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
     private fun importCheats(uri: Uri) {
         val ok = runCatching {
             contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
@@ -1673,6 +1716,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             } == true
         }.getOrDefault(false)
         Toast.makeText(this, if (ok) "Cheats imported" else "Cheat import failed", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun displayName(uri: Uri, fallback: String): String {
+        contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                return cursor.getString(0) ?: uri.lastPathSegment ?: fallback
+            }
+        }
+        return uri.lastPathSegment ?: fallback
     }
 
     private fun dp(value: Int): Int {
@@ -1713,6 +1765,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val REQUEST_IMPORT_STATE = 2004
         private const val REQUEST_EXPORT_INPUT_PROFILE = 2005
         private const val REQUEST_IMPORT_INPUT_PROFILE = 2006
+        private const val REQUEST_IMPORT_PATCH = 2007
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L

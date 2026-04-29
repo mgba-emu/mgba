@@ -886,6 +886,30 @@ bool AndroidCoreRunner::importBatterySaveFd(int fd) {
 	return m_core->savedataRestore(m_core, savedata.data(), savedata.size(), true);
 }
 
+bool AndroidCoreRunner::importPatchFd(int fd) {
+	if (fd < 0) {
+		return false;
+	}
+
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (!m_core || !m_core->loadPatch) {
+		return false;
+	}
+
+	int ownedFd = dup(fd);
+	if (ownedFd < 0) {
+		return false;
+	}
+
+	struct VFile* vf = VFileFromFD(ownedFd);
+	if (!vf) {
+		return false;
+	}
+	const bool ok = m_core->loadPatch(m_core, vf);
+	vf->close(vf);
+	return ok;
+}
+
 bool AndroidCoreRunner::importCheatsFd(int fd) {
 	if (fd < 0) {
 		return false;

@@ -72,6 +72,7 @@ public:
 	std::string takeScreenshot();
 	std::string exportBatterySave();
 	bool importBatterySaveFd(int fd);
+	bool importPatchFd(int fd);
 	bool importCheatsFd(int fd);
 	bool pollRumble() const;
 	void setRumbleActive(bool active);

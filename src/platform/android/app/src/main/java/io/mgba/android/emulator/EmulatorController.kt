@@ -151,6 +151,10 @@ class EmulatorController(context: Context) : AutoCloseable {
         return handle.isValid && NativeBridge.nativeImportBatterySaveFd(handle.value, fd)
     }
 
+    fun importPatchFd(fd: Int): Boolean {
+        return handle.isValid && NativeBridge.nativeImportPatchFd(handle.value, fd)
+    }
+
     fun importCheatsFd(fd: Int): Boolean {
         return handle.isValid && NativeBridge.nativeImportCheatsFd(handle.value, fd)
     }

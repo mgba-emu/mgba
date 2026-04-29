@@ -92,6 +92,9 @@ object NativeBridge {
     external fun nativeImportBatterySaveFd(handle: Long, fd: Int): Boolean
 
     @JvmStatic
+    external fun nativeImportPatchFd(handle: Long, fd: Int): Boolean
+
+    @JvmStatic
     external fun nativeImportCheatsFd(handle: Long, fd: Int): Boolean
 
     @JvmStatic

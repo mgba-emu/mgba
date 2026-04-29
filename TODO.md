@@ -119,6 +119,7 @@
 - [x] 已新增 Android 音频 underrun 计数，OpenSL 输出补零时累计并在 debug stats overlay 展示。
 - [x] 已扩展 Android debug stats overlay：展示 FPS、frame time、core frame counter、ROM platform/title、音频 buffer 和 underrun。
 - [x] 已新增 Android 音频低通滤波：复用 libretro 风格单极滤波，支持 Off/40/60/80 全局和 per-game 切换。
+- [x] 已新增 Android per-game patch 导入：模拟器内选择 patch 后保存到私有目录，立即调用 `core->loadPatch` 并在下次启动同一 ROM 时自动应用。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -867,14 +868,14 @@ object NativeBridge {
 
 ### 12.2 Patch
 
-- [ ] 支持手动给当前 ROM 选择 `.ips` / `.ups` / `.bps`。
+- [x] 支持手动给当前 ROM 选择 `.ips` / `.ups` / `.bps`。
 - [ ] 自动 patch 搜索：
   - [ ] `<romName>.ips`
   - [ ] `<romName>.ups`
   - [ ] `<romName>.bps`
   - [ ] `<romHash>.<ext>`
 - [ ] 加载 ROM 后调用 `mCoreAutoloadPatch(core)`。
-- [ ] 手动 patch 则直接 `core->loadPatch(core, vf)`。
+- [x] 手动 patch 则直接 `core->loadPatch(core, vf)`。
 
 ### 12.3 Archive
 

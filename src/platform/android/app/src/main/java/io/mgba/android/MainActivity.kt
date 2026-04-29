@@ -24,6 +24,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import io.mgba.android.bridge.NativeBridge
+import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.library.LibraryRom
 import io.mgba.android.library.RomLibraryStore
@@ -349,6 +350,7 @@ class MainActivity : Activity() {
         openDescriptor: () -> ParcelFileDescriptor?,
     ) {
         val gameId = uri.toString()
+        var patchApplied: Boolean? = null
         val result = runCatching {
             openDescriptor()?.use { descriptor ->
                 val emulator = EmulatorSession.controller(this)
@@ -363,11 +365,20 @@ class MainActivity : Activity() {
                         perGameOverrides.audioLowPassMode(gameId, preferences.audioLowPassMode),
                     ),
                 )
-                emulator.loadRomFd(descriptor.fd, name)
+                emulator.loadRomFd(descriptor.fd, name).also { loadResult ->
+                    if (loadResult.ok) {
+                        patchApplied = applyStoredPatch(emulator, gameId)
+                    }
+                }
             }
         }.getOrNull()
         nativeStatus.text = if (result?.ok == true) {
-            "${getString(R.string.native_version_label)}: ${result.platform} ${result.title}"
+            val patchStatus = when (patchApplied) {
+                true -> " + patch"
+                false -> " + patch failed"
+                null -> ""
+            }
+            "${getString(R.string.native_version_label)}: ${result.platform} ${result.title}$patchStatus"
         } else {
             "${getString(R.string.native_version_label)}: ${result?.message ?: "Unable to open ROM"}"
         }
@@ -381,6 +392,15 @@ class MainActivity : Activity() {
             renderLibrary()
             startActivity(Intent(this, EmulatorActivity::class.java))
         }
+    }
+
+    private fun applyStoredPatch(emulator: EmulatorController, gameId: String): Boolean? {
+        val file = patchStore.fileForGame(gameId) ?: return null
+        return runCatching {
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                emulator.importPatchFd(descriptor.fd)
+            }
+        }.getOrDefault(false)
     }
 
     private fun zipRomEntries(uri: Uri): List<String> {
