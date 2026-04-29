@@ -26,6 +26,7 @@ import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.input.AndroidInputMapper
 import io.mgba.android.input.VirtualGamepadView
+import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.storage.ScreenshotExporter
@@ -361,6 +362,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                     if (path == null) {
                         Toast.makeText(context, "Screenshot failed", Toast.LENGTH_SHORT).show()
                     } else {
+                        recordScreenshotCover(path)
                         shareScreenshot(path)
                     }
                 }
@@ -369,6 +371,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 text = "Export"
                 setOnClickListener {
                     val path = controller?.takeScreenshot()
+                    if (path != null) {
+                        recordScreenshotCover(path)
+                    }
                     val uri = path?.let { ScreenshotExporter.exportToPictures(context, it) }
                     Toast.makeText(
                         context,
@@ -516,6 +521,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         startActivity(Intent.createChooser(intent, "Share screenshot"))
+    }
+
+    private fun recordScreenshotCover(path: String) {
+        val gameId = currentGameId ?: return
+        runCatching {
+            RomLibraryStore(this).setCoverPath(Uri.parse(gameId), path)
+        }
     }
 
     private fun openSaveImportPicker() {

@@ -15,6 +15,7 @@ data class LibraryRom(
     val fileSize: Long = 0L,
     val lastPlayedAt: Long = 0L,
     val favorite: Boolean = false,
+    val coverPath: String = "",
 )
 
 class RomLibraryStore(context: Context) {
@@ -38,6 +39,7 @@ class RomLibraryStore(context: Context) {
                         fileSize = item.optLong("fileSize", 0L),
                         lastPlayedAt = item.optLong("lastPlayedAt", 0L),
                         favorite = item.optBoolean("favorite", false),
+                        coverPath = item.optString("coverPath"),
                     ),
                 )
             }
@@ -57,6 +59,7 @@ class RomLibraryStore(context: Context) {
                 fileSize = if (item.fileSize > 0L) item.fileSize else previous?.fileSize ?: 0L,
                 lastPlayedAt = previous?.lastPlayedAt ?: item.lastPlayedAt,
                 favorite = previous?.favorite ?: item.favorite,
+                coverPath = item.coverPath.ifBlank { previous?.coverPath.orEmpty() },
             )
             array.put(
                 toJson(merged),
@@ -91,6 +94,15 @@ class RomLibraryStore(context: Context) {
         preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
     }
 
+    fun setCoverPath(uri: Uri, coverPath: String) {
+        val array = JSONArray()
+        list().forEach { item ->
+            val updated = if (item.uri == uri) item.copy(coverPath = coverPath) else item
+            array.put(toJson(updated))
+        }
+        preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
+    }
+
     private fun toJson(item: LibraryRom): JSONObject {
         return JSONObject()
             .put("uri", item.uri.toString())
@@ -102,6 +114,7 @@ class RomLibraryStore(context: Context) {
             .put("fileSize", item.fileSize)
             .put("lastPlayedAt", item.lastPlayedAt)
             .put("favorite", item.favorite)
+            .put("coverPath", item.coverPath)
     }
 
     private companion object {

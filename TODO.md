@@ -76,6 +76,7 @@
 - [x] 已为 ROM 库记录并显示 DocumentsProvider 文件大小。
 - [x] 已为 ROM 库扫描计算 SHA1，并支持按 SHA1 搜索。
 - [x] 已新增 ROM 库筛选按钮，支持 All / Favorites / GBA / GB 并与搜索叠加。
+- [x] 已将截图回写为 ROM 库 coverPath，并在首页显示截图缩略图。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -667,7 +668,7 @@ object NativeBridge {
   - [x] lastPlayedAt。
   - [ ] playTimeSeconds。
   - [x] favorite。
-  - [ ] coverPath 或 screenshot thumbnail。
+  - [x] coverPath 或 screenshot thumbnail。
 - [ ] 数据存储：
   - [ ] 首选 Room。
   - [ ] 若不想引 AndroidX Room，初期用 DataStore/JSON，后期迁移。
@@ -703,7 +704,7 @@ object NativeBridge {
   - [x] 标题。
   - [x] 平台。
   - [x] 最近游玩。
-  - [ ] 缩略图。
+  - [x] 缩略图。
   - [ ] 菜单：
     - [x] 启动。
     - [ ] 设置。

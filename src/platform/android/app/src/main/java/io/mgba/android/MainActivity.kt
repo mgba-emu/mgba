@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.database.Cursor
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -16,6 +17,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -28,6 +30,7 @@ import io.mgba.android.library.RecentGameStore
 import io.mgba.android.storage.BiosStore
 import io.mgba.android.storage.LogExporter
 import io.mgba.android.storage.PatchStore
+import java.io.File
 
 class MainActivity : Activity() {
     private lateinit var nativeStatus: TextView
@@ -326,6 +329,9 @@ class MainActivity : Activity() {
         roms.take(MAX_LIBRARY_ITEMS).forEach { rom ->
             libraryContainer.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
+                thumbnailView(rom)?.let { thumbnail ->
+                    addView(thumbnail)
+                }
                 addView(Button(context).apply {
                     text = libraryButtonLabel(rom)
                     setOnClickListener {
@@ -355,6 +361,21 @@ class MainActivity : Activity() {
                 setTextColor(getColor(R.color.mgba_text_secondary))
                 setPadding(0, dp(6), 0, 0)
             })
+        }
+    }
+
+    private fun thumbnailView(rom: LibraryRom): ImageView? {
+        val path = rom.coverPath.takeIf { it.isNotBlank() } ?: return null
+        if (!File(path).isFile) {
+            return null
+        }
+        val bitmap = BitmapFactory.decodeFile(path) ?: return null
+        return ImageView(this).apply {
+            setImageBitmap(bitmap)
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            layoutParams = LinearLayout.LayoutParams(dp(64), dp(48)).apply {
+                rightMargin = dp(8)
+            }
         }
     }
 
