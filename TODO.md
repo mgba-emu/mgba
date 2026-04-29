@@ -150,6 +150,7 @@
 - [x] 已增强 Android 截图导出：Android 6-9 通过 SAF 创建 PNG fallback 导出。
 - [x] 已优化 Android 虚拟手柄和运行工具条布局：竖屏肩键避让方向/AB 区，横屏肩键避让顶部工具条，工具条按钮改为紧凑单行样式，并用真实 ZIP ROM 截图确认按键不重叠。
 - [x] 已优化 Android 首页顶部操作：新增 Search / Add / Settings 操作条，并把全局/库管理设置折叠进 Settings 区域，减少首页按钮堆叠。
+- [x] 已补齐 Android ROM item More 菜单：支持启动、游戏设置摘要/重置、存档摘要/删除、作弊摘要/手动新增/清除、封面和删除记录。
 - [x] 已新增 Android 最近打开管理：首页可清空 Recent 列表。
 - [x] 已新增 Android CI 合规检查：禁止在 App 源码中捆绑 ROM、save、savestate 或 BIOS 文件。
 - [x] 已新增 Android Storage 管理摘要：展示 saves/states/screenshots/covers/logs/cache 占用并可清日志或 cache。
@@ -820,11 +821,11 @@ object NativeBridge {
   - [x] 平台。
   - [x] 最近游玩。
   - [x] 缩略图。
-  - [ ] 菜单：
+  - [x] 菜单：
     - [x] 启动。
-    - [ ] 设置。
-    - [ ] 存档。
-    - [ ] 作弊。
+    - [x] 设置。
+    - [x] 存档。
+    - [x] 作弊。
     - [x] 导出。
     - [x] 删除记录。
 

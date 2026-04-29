@@ -363,6 +363,22 @@ class PerGameOverrideStore(context: Context) {
         return true
     }
 
+    fun clearForGame(gameId: String?): Boolean {
+        val prefix = key(gameId, "") ?: return false
+        val editor = preferences.edit()
+        var changed = false
+        preferences.all.keys.forEach { storedKey ->
+            if (storedKey.startsWith(prefix)) {
+                editor.remove(storedKey)
+                changed = true
+            }
+        }
+        if (changed) {
+            editor.apply()
+        }
+        return changed
+    }
+
     private fun intOverride(gameId: String?, name: String, fallback: Int): Int {
         val key = key(gameId, name) ?: return fallback
         return if (preferences.contains(key)) preferences.getInt(key, fallback) else fallback

@@ -57,6 +57,7 @@ import io.mgba.android.storage.LogExporter
 import io.mgba.android.storage.PatchStore
 import java.io.File
 import java.security.MessageDigest
+import java.util.Locale
 import org.json.JSONObject
 import java.util.zip.ZipInputStream
 
@@ -1515,17 +1516,276 @@ class MainActivity : Activity() {
             }
         })
         container.addView(Button(container.context).apply {
-            text = "Cover"
+            text = "More"
             setOnClickListener {
-                showCoverActions(rom)
+                showLibraryRomMenu(rom)
             }
         })
-        container.addView(Button(container.context).apply {
-            text = "Del"
-            setOnClickListener {
-                confirmRemoveLibraryRom(rom)
+    }
+
+    private fun showLibraryRomMenu(rom: LibraryRom) {
+        val actions = listOf<Pair<String, () -> Unit>>(
+            "Launch" to { launchLibraryRom(rom) },
+            "Settings" to { showLibraryRomSettings(rom) },
+            "Saves" to { showLibraryRomSaves(rom) },
+            "Cheats" to { showLibraryRomCheats(rom) },
+            "Cover" to { showCoverActions(rom) },
+            "Delete Record" to { confirmRemoveLibraryRom(rom) },
+        )
+        AlertDialog.Builder(this)
+            .setTitle(rom.displayName)
+            .setItems(actions.map { it.first }.toTypedArray()) { _, which ->
+                actions[which].second.invoke()
             }
-        })
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun launchLibraryRom(rom: LibraryRom) {
+        openRomUri(rom.uri, rom.displayName, shouldStoreRecent = true)
+    }
+
+    private fun showLibraryRomSettings(rom: LibraryRom) {
+        val ids = artifactGameIdsForRom(rom)
+        val overrideCount = ids.sumOf { perGameOverrides.exportGameJson(it).length() }
+        val mappingCount = ids.sumOf { inputMappingStore.exportGameJson(it).length() }
+        val patchName = ids.asSequence().mapNotNull { patchStore.displayNameForGame(it) }.firstOrNull()
+        val biosInfos = ids.flatMap { biosStore.infosForGame(it) }.distinctBy { it.slot }
+        val message = buildList {
+            add("Game: ${rom.title.ifBlank { rom.displayName }}")
+            add("Platform: ${rom.hardwareLabel()}")
+            add("CRC32: ${rom.crc32.ifBlank { "unknown" }}")
+            add("Overrides: $overrideCount")
+            add("Input mappings: $mappingCount")
+            add("Patch: ${patchName ?: "none"}")
+            add("BIOS: ${biosInfos.joinToString { "${it.slot.label}:${it.sha1.take(8)}" }.ifBlank { "none" }}")
+        }.joinToString("\n")
+        AlertDialog.Builder(this)
+            .setTitle("Settings")
+            .setMessage(message)
+            .setPositiveButton("Launch") { _, _ -> launchLibraryRom(rom) }
+            .setNeutralButton("Reset") { _, _ -> confirmResetLibraryRomSettings(rom) }
+            .setNegativeButton("Close", null)
+            .show()
+    }
+
+    private fun confirmResetLibraryRomSettings(rom: LibraryRom) {
+        AlertDialog.Builder(this)
+            .setTitle("Reset game settings?")
+            .setMessage("Remove per-game overrides and hardware input mappings for ${rom.displayName}.")
+            .setPositiveButton("Reset") { _, _ ->
+                val ids = artifactGameIdsForRom(rom)
+                val overrideCleared = ids.count { perGameOverrides.clearForGame(it) }
+                ids.forEach { inputMappingStore.reset(it) }
+                nativeStatus.text = "${getString(R.string.native_version_label)}: Reset settings for ${rom.displayName}"
+                Toast.makeText(this, "Settings reset ($overrideCleared overrides)", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showLibraryRomSaves(rom: LibraryRom) {
+        val saveFile = saveFileForRom(rom)
+        val stateFiles = stateSlotFilesForRom(rom)
+        val autoStateFile = autoStateFileForRom(rom)
+        val thumbnailFiles = stateThumbnailFilesForRom(rom)
+        val saveSummary = saveFile?.takeIf { it.isFile }?.let {
+            "${formatBytes(it.length())}, ${DateUtils.formatDateTime(this, it.lastModified(), DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)}"
+        } ?: "none"
+        val slots = stateFiles.filter { it.second.isFile }.map { it.first }
+        val autoState = autoStateFile?.isFile == true
+        val message = buildList {
+            add("Battery save: $saveSummary")
+            add("State slots: ${slots.takeIf { it.isNotEmpty() }?.joinToString().orEmpty().ifBlank { "none" }}")
+            add("Auto state: ${if (autoState) "present" else "none"}")
+            add("Thumbnails: ${thumbnailFiles.size}")
+        }.joinToString("\n")
+        AlertDialog.Builder(this)
+            .setTitle("Saves")
+            .setMessage(message)
+            .setPositiveButton("Launch") { _, _ -> launchLibraryRom(rom) }
+            .setNeutralButton("Delete") { _, _ -> showLibraryRomSaveDeleteDialog(rom) }
+            .setNegativeButton("Close", null)
+            .show()
+    }
+
+    private fun showLibraryRomSaveDeleteDialog(rom: LibraryRom) {
+        val saveFile = saveFileForRom(rom)?.takeIf { it.isFile }
+        val stateFiles = stateSlotFilesForRom(rom).map { it.second }.filter { it.isFile }
+        val autoStateFile = autoStateFileForRom(rom)?.takeIf { it.isFile }
+        val thumbnailFiles = stateThumbnailFilesForRom(rom)
+        val actions = mutableListOf<Pair<String, () -> Unit>>()
+        if (saveFile != null) {
+            actions += "Delete Battery Save" to { confirmDeleteLibraryRomFiles(rom, listOf(saveFile), "battery save") }
+        }
+        if (stateFiles.isNotEmpty() || autoStateFile != null || thumbnailFiles.isNotEmpty()) {
+            val files = stateFiles + listOfNotNull(autoStateFile) + thumbnailFiles
+            actions += "Delete States" to { confirmDeleteLibraryRomFiles(rom, files, "save states") }
+        }
+        if (actions.isEmpty()) {
+            Toast.makeText(this, "No save data for this ROM", Toast.LENGTH_SHORT).show()
+            return
+        }
+        actions += "Delete All Save Data" to {
+            confirmDeleteLibraryRomFiles(
+                rom,
+                listOfNotNull(saveFile, autoStateFile) + stateFiles + thumbnailFiles,
+                "all save data",
+            )
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Delete Saves")
+            .setItems(actions.map { it.first }.toTypedArray()) { _, which ->
+                actions[which].second.invoke()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun confirmDeleteLibraryRomFiles(rom: LibraryRom, files: List<File>, label: String) {
+        AlertDialog.Builder(this)
+            .setTitle("Delete $label?")
+            .setMessage("This removes local $label for ${rom.displayName}.")
+            .setPositiveButton("Delete") { _, _ ->
+                val deleted = files.distinctBy { it.absolutePath }.count { !it.exists() || it.delete() }
+                nativeStatus.text = "${getString(R.string.native_version_label)}: Deleted $deleted files for ${rom.displayName}"
+                Toast.makeText(this, "Deleted $deleted files", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showLibraryRomCheats(rom: LibraryRom) {
+        val ids = artifactGameIdsForRom(rom)
+        val cheatGameId = ids.firstOrNull { cheatStore.fileForGame(it) != null } ?: primaryGameIdForRom(rom)
+        val entries = cheatStore.entriesForGame(cheatGameId)
+        val file = cheatStore.fileForGame(cheatGameId)
+        val enabledCount = entries.count { it.enabled }
+        val preview = entries.take(4).joinToString("\n") { entry ->
+            "${if (entry.enabled) "On" else "Off"}: ${entry.name}"
+        }
+        val message = buildList {
+            add("Cheat file: ${file?.name ?: "none"}")
+            add("Entries: ${entries.size} ($enabledCount enabled)")
+            if (preview.isNotBlank()) {
+                add("")
+                add(preview)
+                if (entries.size > 4) {
+                    add("...")
+                }
+            }
+        }.joinToString("\n")
+        AlertDialog.Builder(this)
+            .setTitle("Cheats")
+            .setMessage(message)
+            .setPositiveButton("Add Manual") { _, _ -> showManualCheatDialog(rom) }
+            .setNeutralButton("Launch") { _, _ -> launchLibraryRom(rom) }
+            .setNegativeButton(if (file != null) "Clear" else "Close") { _, _ ->
+                if (file != null) {
+                    confirmClearLibraryRomCheats(rom)
+                }
+            }
+            .show()
+    }
+
+    private fun showManualCheatDialog(rom: LibraryRom) {
+        val nameInput = EditText(this).apply {
+            hint = "Name"
+            setSingleLine(true)
+            setTextColor(getColor(R.color.mgba_text_primary))
+            setHintTextColor(getColor(R.color.mgba_text_secondary))
+        }
+        val codeInput = EditText(this).apply {
+            hint = "Code lines"
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            minLines = 4
+            setTextColor(getColor(R.color.mgba_text_primary))
+            setHintTextColor(getColor(R.color.mgba_text_secondary))
+        }
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), 0, dp(20), 0)
+            addView(nameInput)
+            addView(codeInput)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Add Cheat")
+            .setView(content)
+            .setPositiveButton("Save") { _, _ ->
+                val ok = cheatStore.addManual(primaryGameIdForRom(rom), nameInput.text.toString(), codeInput.text.toString())
+                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "Cheat saved" else "Cheat save failed"}"
+                Toast.makeText(this, if (ok) "Cheat saved" else "Enter at least one code line", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun confirmClearLibraryRomCheats(rom: LibraryRom) {
+        AlertDialog.Builder(this)
+            .setTitle("Clear cheats?")
+            .setMessage("Remove stored cheats for ${rom.displayName}.")
+            .setPositiveButton("Clear") { _, _ ->
+                val cleared = artifactGameIdsForRom(rom).map { cheatStore.clearForGame(it) }.all { it }
+                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (cleared) "Cheats cleared" else "Cheat clear failed"}"
+                Toast.makeText(this, if (cleared) "Cheats cleared" else "Clear failed", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun primaryGameIdForRom(rom: LibraryRom): String {
+        return RomIdentity.stableGameId(rom.uri.toString(), rom.crc32, rom.sha1)
+    }
+
+    private fun artifactGameIdsForRom(rom: LibraryRom): List<String> {
+        val uriGameId = rom.uri.toString()
+        return listOf(
+            primaryGameIdForRom(rom),
+            RomIdentity.crc32GameId(uriGameId, rom.crc32),
+            uriGameId,
+        ).filter { it.isNotBlank() }.distinct()
+    }
+
+    private fun saveBaseNameForRom(rom: LibraryRom): String? {
+        val crc32 = RomIdentity.normalizedCrc32(rom.crc32).takeIf { it.isNotBlank() } ?: return null
+        val platform = when (rom.platform.uppercase(Locale.US)) {
+            "GBA" -> "GBA"
+            "GB" -> "GB"
+            else -> when (rom.hardwareLabel()) {
+                "GBA" -> "GBA"
+                "GB", "GBC" -> "GB"
+                else -> return null
+            }
+        }
+        return "$platform-$crc32"
+    }
+
+    private fun saveFileForRom(rom: LibraryRom): File? {
+        val baseName = saveBaseNameForRom(rom) ?: return null
+        return File(File(filesDir, "saves"), "$baseName.sav")
+    }
+
+    private fun stateSlotFilesForRom(rom: LibraryRom): List<Pair<Int, File>> {
+        val baseName = saveBaseNameForRom(rom) ?: return emptyList()
+        val directory = File(filesDir, "states")
+        return (1..9).map { slot ->
+            slot to File(directory, "$baseName-slot$slot.ss")
+        }
+    }
+
+    private fun autoStateFileForRom(rom: LibraryRom): File? {
+        val baseName = saveBaseNameForRom(rom) ?: return null
+        return File(File(filesDir, "states"), "$baseName-auto.ss")
+    }
+
+    private fun stateThumbnailFilesForRom(rom: LibraryRom): List<File> {
+        val directory = File(filesDir, "state-thumbnails")
+        return artifactGameIdsForRom(rom)
+            .flatMap { gameId ->
+                (1..9).map { slot -> File(directory, "${sha1(gameId)}-slot-$slot.png") }
+            }
+            .distinctBy { it.absolutePath }
+            .filter { it.isFile }
     }
 
     private fun showCoverActions(rom: LibraryRom) {
