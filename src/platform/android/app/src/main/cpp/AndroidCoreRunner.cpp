@@ -498,6 +498,15 @@ bool AndroidCoreRunner::hasStateSlot(int slot) {
 	return stat(path.c_str(), &info) == 0 && S_ISREG(info.st_mode);
 }
 
+bool AndroidCoreRunner::deleteStateSlot(int slot) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	const std::string path = statePathForSlot(slot);
+	if (path.empty()) {
+		return false;
+	}
+	return unlink(path.c_str()) == 0 || errno == ENOENT;
+}
+
 void AndroidCoreRunner::reset() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (m_core) {

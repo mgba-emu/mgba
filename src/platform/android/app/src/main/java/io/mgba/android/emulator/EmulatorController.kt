@@ -50,6 +50,10 @@ class EmulatorController(context: Context) : AutoCloseable {
         return handle.isValid && NativeBridge.nativeHasStateSlot(handle.value, slot)
     }
 
+    fun deleteStateSlot(slot: Int): Boolean {
+        return handle.isValid && NativeBridge.nativeDeleteStateSlot(handle.value, slot)
+    }
+
     fun reset() {
         if (handle.isValid) {
             NativeBridge.nativeReset(handle.value)

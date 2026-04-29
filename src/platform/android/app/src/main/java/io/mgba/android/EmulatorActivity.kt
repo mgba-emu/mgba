@@ -414,6 +414,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 }
             })
             stateRow.addView(Button(context).apply {
+                text = "Del"
+                setOnClickListener {
+                    deleteStateWithConfirmation()
+                }
+            })
+            stateRow.addView(Button(context).apply {
                 text = "Backup"
                 setOnClickListener {
                     val path = controller?.exportBatterySave()
@@ -504,6 +510,22 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             .setTitle("Overwrite state?")
             .setMessage("Slot $stateSlot already has a save state.")
             .setPositiveButton("Overwrite") { _, _ -> saveStateNow() }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun deleteStateWithConfirmation() {
+        if (controller?.hasStateSlot(stateSlot) != true) {
+            Toast.makeText(this, "No state in slot", Toast.LENGTH_SHORT).show()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Delete state?")
+            .setMessage("Slot $stateSlot will be removed.")
+            .setPositiveButton("Delete") { _, _ ->
+                val ok = controller?.deleteStateSlot(stateSlot) == true
+                Toast.makeText(this, if (ok) "State deleted" else "Delete failed", Toast.LENGTH_SHORT).show()
+            }
             .setNegativeButton("Cancel", null)
             .show()
     }
