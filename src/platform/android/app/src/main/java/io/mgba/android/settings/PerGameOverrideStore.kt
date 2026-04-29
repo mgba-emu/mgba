@@ -94,6 +94,10 @@ class PerGameOverrideStore(context: Context) {
         return booleanOverride(gameId, KEY_VIRTUAL_GAMEPAD_LEFT_HANDED, fallback)
     }
 
+    fun virtualGamepadLayout(gameId: String?): String {
+        return stringOverride(gameId, KEY_VIRTUAL_GAMEPAD_LAYOUT, "")
+    }
+
     fun allowOpposingDirections(gameId: String?, fallback: Boolean): Boolean {
         return booleanOverride(gameId, KEY_ALLOW_OPPOSING_DIRECTIONS, fallback)
     }
@@ -212,6 +216,10 @@ class PerGameOverrideStore(context: Context) {
 
     fun setVirtualGamepadLeftHanded(gameId: String?, value: Boolean): Boolean {
         return putBooleanOverride(gameId, KEY_VIRTUAL_GAMEPAD_LEFT_HANDED, value)
+    }
+
+    fun setVirtualGamepadLayout(gameId: String?, value: String): Boolean {
+        return putStringOverride(gameId, KEY_VIRTUAL_GAMEPAD_LAYOUT, value)
     }
 
     fun setAllowOpposingDirections(gameId: String?, value: Boolean): Boolean {
@@ -391,6 +399,7 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_VIRTUAL_GAMEPAD_SPACING_PERCENT = "virtualGamepadSpacingPercent"
         const val KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED = "virtualGamepadHapticsEnabled"
         const val KEY_VIRTUAL_GAMEPAD_LEFT_HANDED = "virtualGamepadLeftHanded"
+        const val KEY_VIRTUAL_GAMEPAD_LAYOUT = "virtualGamepadLayout"
         const val KEY_ALLOW_OPPOSING_DIRECTIONS = "allowOpposingDirections"
         const val KEY_RUMBLE_ENABLED = "rumbleEnabled"
         const val KEY_TILT_ENABLED = "tiltEnabled"

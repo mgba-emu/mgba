@@ -125,6 +125,7 @@
 - [x] 已将当前 ROM 会话扩展为 URI + CRC32 stable id，并让 patch/cheat/state thumbnail/Camera 静态图 artifact 优先按 stable id 存取，同时兼容旧 URI 记录。
 - [x] 已将 per-game override 读写迁移到 ROM CRC32 stable id，并在首次进入游戏时从旧 SAF URI key 复制已有配置。
 - [x] 已将硬件输入映射的 per-game scope 迁移到 ROM CRC32 stable id，并兼容旧 URI scope。
+- [x] 已新增虚拟手柄布局编辑模式，可拖动 D-pad、A/B、Start/Select 和肩键分区，并按 per-game stable id 持久化。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -790,7 +791,7 @@ object NativeBridge {
   - [x] RTC 策略。
 - [ ] Input：
   - [x] 触屏显示。
-  - [ ] 触屏布局编辑。
+  - [x] 触屏布局编辑。
   - [x] 手柄映射。
   - [x] 震动。
   - [x] 允许相反方向。
@@ -813,7 +814,7 @@ object NativeBridge {
   - [x] 视频缩放。
   - [x] 视频滤镜。
   - [x] 虚拟手柄显示。
-  - [ ] 输入布局编辑。
+  - [x] 输入布局编辑。
   - [x] 传感器校准。
   - [x] 快进/倒带。
 - [x] 覆盖层写入 `PerGameOverrideStore`。

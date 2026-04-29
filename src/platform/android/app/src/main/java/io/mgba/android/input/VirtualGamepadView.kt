@@ -9,8 +9,66 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.HapticFeedbackConstants
 import kotlin.math.min
+import kotlin.math.roundToInt
+
+data class VirtualGamepadLayoutOffsets(
+    val dpadXPercent: Int = 0,
+    val dpadYPercent: Int = 0,
+    val faceXPercent: Int = 0,
+    val faceYPercent: Int = 0,
+    val centerXPercent: Int = 0,
+    val centerYPercent: Int = 0,
+    val leftShoulderXPercent: Int = 0,
+    val leftShoulderYPercent: Int = 0,
+    val rightShoulderXPercent: Int = 0,
+    val rightShoulderYPercent: Int = 0,
+) {
+    fun serialize(): String {
+        return listOf(
+            dpadXPercent,
+            dpadYPercent,
+            faceXPercent,
+            faceYPercent,
+            centerXPercent,
+            centerYPercent,
+            leftShoulderXPercent,
+            leftShoulderYPercent,
+            rightShoulderXPercent,
+            rightShoulderYPercent,
+        ).joinToString(",")
+    }
+
+    companion object {
+        fun parse(value: String): VirtualGamepadLayoutOffsets {
+            val values = value.split(',').map { it.trim().toIntOrNull()?.coerceIn(MinOffset, MaxOffset) ?: 0 }
+            return VirtualGamepadLayoutOffsets(
+                dpadXPercent = values.getOrElse(0) { 0 },
+                dpadYPercent = values.getOrElse(1) { 0 },
+                faceXPercent = values.getOrElse(2) { 0 },
+                faceYPercent = values.getOrElse(3) { 0 },
+                centerXPercent = values.getOrElse(4) { 0 },
+                centerYPercent = values.getOrElse(5) { 0 },
+                leftShoulderXPercent = values.getOrElse(6) { 0 },
+                leftShoulderYPercent = values.getOrElse(7) { 0 },
+                rightShoulderXPercent = values.getOrElse(8) { 0 },
+                rightShoulderYPercent = values.getOrElse(9) { 0 },
+            )
+        }
+
+        const val MinOffset = -35
+        const val MaxOffset = 35
+    }
+}
 
 class VirtualGamepadView(context: Context) : View(context) {
+    private enum class Cluster {
+        Dpad,
+        Face,
+        Center,
+        LeftShoulder,
+        RightShoulder,
+    }
+
     private enum class Shape {
         Circle,
         RoundRect,
@@ -21,6 +79,7 @@ class VirtualGamepadView(context: Context) : View(context) {
         val mask: Int,
         val bounds: RectF,
         val shape: Shape,
+        val cluster: Cluster,
     )
 
     private val regions = mutableListOf<Region>()
@@ -42,6 +101,12 @@ class VirtualGamepadView(context: Context) : View(context) {
     private var spacingPercent = 100
     private var hapticsEnabled = true
     private var leftHanded = false
+    private var layoutOffsets = VirtualGamepadLayoutOffsets()
+    private var layoutEditMode = false
+    private var activeEditCluster: Cluster? = null
+    private var lastEditX = 0f
+    private var lastEditY = 0f
+    private var onLayoutOffsetsChanged: ((VirtualGamepadLayoutOffsets) -> Unit)? = null
 
     init {
         isFocusable = true
@@ -53,8 +118,31 @@ class VirtualGamepadView(context: Context) : View(context) {
         onKeysChanged = listener
     }
 
+    fun setOnLayoutOffsetsChangedListener(listener: (VirtualGamepadLayoutOffsets) -> Unit) {
+        onLayoutOffsetsChanged = listener
+    }
+
     fun clearKeys() {
         updateKeys(0)
+    }
+
+    fun setLayoutOffsets(offsets: VirtualGamepadLayoutOffsets) {
+        if (layoutOffsets == offsets) {
+            return
+        }
+        layoutOffsets = offsets
+        rebuildRegions(width, height)
+        invalidate()
+    }
+
+    fun setLayoutEditMode(enabled: Boolean) {
+        if (layoutEditMode == enabled) {
+            return
+        }
+        layoutEditMode = enabled
+        activeEditCluster = null
+        updateKeys(0)
+        invalidate()
     }
 
     fun setStyle(
@@ -89,6 +177,9 @@ class VirtualGamepadView(context: Context) : View(context) {
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (layoutEditMode) {
+            return handleLayoutEditTouch(event)
+        }
         if (event.actionMasked == MotionEvent.ACTION_CANCEL) {
             performClick()
             updateKeys(0)
@@ -117,6 +208,38 @@ class VirtualGamepadView(context: Context) : View(context) {
         return true
     }
 
+    private fun handleLayoutEditTouch(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                activeEditCluster = regionAt(event.x, event.y)?.cluster
+                lastEditX = event.x
+                lastEditY = event.y
+                return true
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val cluster = activeEditCluster ?: return true
+                val dxPercent = ((event.x - lastEditX) / width.coerceAtLeast(1).toFloat() * 100f).roundToInt()
+                val dyPercent = ((event.y - lastEditY) / height.coerceAtLeast(1).toFloat() * 100f).roundToInt()
+                if (dxPercent != 0 || dyPercent != 0) {
+                    layoutOffsets = layoutOffsets.moved(cluster, dxPercent, dyPercent)
+                    lastEditX = event.x
+                    lastEditY = event.y
+                    rebuildRegions(width, height)
+                    onLayoutOffsetsChanged?.invoke(layoutOffsets)
+                    invalidate()
+                }
+                return true
+            }
+            MotionEvent.ACTION_UP,
+            MotionEvent.ACTION_CANCEL -> {
+                activeEditCluster = null
+                performClick()
+                return true
+            }
+        }
+        return true
+    }
+
     override fun performClick(): Boolean {
         super.performClick()
         return true
@@ -137,7 +260,11 @@ class VirtualGamepadView(context: Context) : View(context) {
             } else {
                 Color.argb((92 * opacity).toInt().coerceIn(24, 255), 255, 255, 255)
             }
-            strokePaint.color = Color.argb((170 * opacity).toInt().coerceIn(40, 255), 255, 255, 255)
+            strokePaint.color = if (layoutEditMode) {
+                Color.argb((230 * opacity).toInt().coerceIn(80, 255), 255, 214, 102)
+            } else {
+                Color.argb((170 * opacity).toInt().coerceIn(40, 255), 255, 255, 255)
+            }
             textPaint.color = Color.argb((255 * opacity).toInt().coerceIn(90, 255), 255, 255, 255)
             drawRegion(canvas, region, fillPaint)
             drawRegion(canvas, region, strokePaint)
@@ -183,18 +310,23 @@ class VirtualGamepadView(context: Context) : View(context) {
         val dpadGap = button * spacing
         val faceGap = button * (0.85f + 0.2f * spacing)
         val centerGap = button * (1.45f + 0.3f * spacing)
+        val dpad = offsetFor(Cluster.Dpad, width, height)
+        val face = offsetFor(Cluster.Face, width, height)
+        val center = offsetFor(Cluster.Center, width, height)
+        val leftShoulder = offsetFor(Cluster.LeftShoulder, width, height)
+        val rightShoulder = offsetFor(Cluster.RightShoulder, width, height)
 
-        addCircle("UP", GbaKeyMask.Up, dpadX, controlsY - dpadGap, smallButton)
-        addCircle("DOWN", GbaKeyMask.Down, dpadX, controlsY + dpadGap, smallButton)
-        addCircle("LEFT", GbaKeyMask.Left, dpadX - dpadGap, controlsY, smallButton)
-        addCircle("RIGHT", GbaKeyMask.Right, dpadX + dpadGap, controlsY, smallButton)
+        addCircle("UP", GbaKeyMask.Up, dpadX + dpad.first, controlsY - dpadGap + dpad.second, smallButton, Cluster.Dpad)
+        addCircle("DOWN", GbaKeyMask.Down, dpadX + dpad.first, controlsY + dpadGap + dpad.second, smallButton, Cluster.Dpad)
+        addCircle("LEFT", GbaKeyMask.Left, dpadX - dpadGap + dpad.first, controlsY + dpad.second, smallButton, Cluster.Dpad)
+        addCircle("RIGHT", GbaKeyMask.Right, dpadX + dpadGap + dpad.first, controlsY + dpad.second, smallButton, Cluster.Dpad)
 
-        addCircle("B", GbaKeyMask.B, faceX - faceGap, controlsY + button * 0.35f * spacing, button)
-        addCircle("A", GbaKeyMask.A, faceX, controlsY - button * 0.45f * spacing, button)
-        addRoundRect("SELECT", GbaKeyMask.Select, width / 2f - centerGap, controlsY + button * 1.05f * spacing, button * 1.55f, button * 0.58f)
-        addRoundRect("START", GbaKeyMask.Start, width / 2f + button * 0.2f * spacing, controlsY + button * 1.05f * spacing, button * 1.55f, button * 0.58f)
-        addRoundRect("L", GbaKeyMask.L, padding, padding, button * 1.7f, button * 0.7f)
-        addRoundRect("R", GbaKeyMask.R, width - padding - button * 1.7f, padding, button * 1.7f, button * 0.7f)
+        addCircle("B", GbaKeyMask.B, faceX - faceGap + face.first, controlsY + button * 0.35f * spacing + face.second, button, Cluster.Face)
+        addCircle("A", GbaKeyMask.A, faceX + face.first, controlsY - button * 0.45f * spacing + face.second, button, Cluster.Face)
+        addRoundRect("SELECT", GbaKeyMask.Select, width / 2f - centerGap + center.first, controlsY + button * 1.05f * spacing + center.second, button * 1.55f, button * 0.58f, Cluster.Center)
+        addRoundRect("START", GbaKeyMask.Start, width / 2f + button * 0.2f * spacing + center.first, controlsY + button * 1.05f * spacing + center.second, button * 1.55f, button * 0.58f, Cluster.Center)
+        addRoundRect("L", GbaKeyMask.L, padding + leftShoulder.first, padding + leftShoulder.second, button * 1.7f, button * 0.7f, Cluster.LeftShoulder)
+        addRoundRect("R", GbaKeyMask.R, width - padding - button * 1.7f + rightShoulder.first, padding + rightShoulder.second, button * 1.7f, button * 0.7f, Cluster.RightShoulder)
     }
 
     private fun rebuildPortraitRegions(
@@ -214,36 +346,43 @@ class VirtualGamepadView(context: Context) : View(context) {
         val faceGap = button * (0.75f + 0.18f * spacing)
         val centerY = height - padding - button * 0.72f
         val shoulderTop = controlsY - button * (1.55f + 0.2f * spacing)
+        val dpad = offsetFor(Cluster.Dpad, width, height)
+        val face = offsetFor(Cluster.Face, width, height)
+        val center = offsetFor(Cluster.Center, width, height)
+        val leftShoulder = offsetFor(Cluster.LeftShoulder, width, height)
+        val rightShoulder = offsetFor(Cluster.RightShoulder, width, height)
 
-        addCircle("UP", GbaKeyMask.Up, dpadX, controlsY - dpadGap, smallButton)
-        addCircle("DOWN", GbaKeyMask.Down, dpadX, controlsY + dpadGap, smallButton)
-        addCircle("LEFT", GbaKeyMask.Left, dpadX - dpadGap, controlsY, smallButton)
-        addCircle("RIGHT", GbaKeyMask.Right, dpadX + dpadGap, controlsY, smallButton)
+        addCircle("UP", GbaKeyMask.Up, dpadX + dpad.first, controlsY - dpadGap + dpad.second, smallButton, Cluster.Dpad)
+        addCircle("DOWN", GbaKeyMask.Down, dpadX + dpad.first, controlsY + dpadGap + dpad.second, smallButton, Cluster.Dpad)
+        addCircle("LEFT", GbaKeyMask.Left, dpadX - dpadGap + dpad.first, controlsY + dpad.second, smallButton, Cluster.Dpad)
+        addCircle("RIGHT", GbaKeyMask.Right, dpadX + dpadGap + dpad.first, controlsY + dpad.second, smallButton, Cluster.Dpad)
 
-        addCircle("B", GbaKeyMask.B, faceX - faceGap, controlsY + button * 0.3f * spacing, button)
-        addCircle("A", GbaKeyMask.A, faceX, controlsY - button * 0.42f * spacing, button)
-        addRoundRect("SELECT", GbaKeyMask.Select, width / 2f - button * 1.75f, centerY, button * 1.55f, button * 0.58f)
-        addRoundRect("START", GbaKeyMask.Start, width / 2f + button * 0.2f, centerY, button * 1.55f, button * 0.58f)
-        addRoundRect("L", GbaKeyMask.L, padding, shoulderTop, button * 1.7f, button * 0.7f)
-        addRoundRect("R", GbaKeyMask.R, width - padding - button * 1.7f, shoulderTop, button * 1.7f, button * 0.7f)
+        addCircle("B", GbaKeyMask.B, faceX - faceGap + face.first, controlsY + button * 0.3f * spacing + face.second, button, Cluster.Face)
+        addCircle("A", GbaKeyMask.A, faceX + face.first, controlsY - button * 0.42f * spacing + face.second, button, Cluster.Face)
+        addRoundRect("SELECT", GbaKeyMask.Select, width / 2f - button * 1.75f + center.first, centerY + center.second, button * 1.55f, button * 0.58f, Cluster.Center)
+        addRoundRect("START", GbaKeyMask.Start, width / 2f + button * 0.2f + center.first, centerY + center.second, button * 1.55f, button * 0.58f, Cluster.Center)
+        addRoundRect("L", GbaKeyMask.L, padding + leftShoulder.first, shoulderTop + leftShoulder.second, button * 1.7f, button * 0.7f, Cluster.LeftShoulder)
+        addRoundRect("R", GbaKeyMask.R, width - padding - button * 1.7f + rightShoulder.first, shoulderTop + rightShoulder.second, button * 1.7f, button * 0.7f, Cluster.RightShoulder)
     }
 
-    private fun addCircle(label: String, mask: Int, centerX: Float, centerY: Float, size: Float) {
+    private fun addCircle(label: String, mask: Int, centerX: Float, centerY: Float, size: Float, cluster: Cluster) {
         val radius = size / 2f
         regions += Region(
             label = label,
             mask = mask,
             bounds = RectF(centerX - radius, centerY - radius, centerX + radius, centerY + radius),
             shape = Shape.Circle,
+            cluster = cluster,
         )
     }
 
-    private fun addRoundRect(label: String, mask: Int, left: Float, top: Float, width: Float, height: Float) {
+    private fun addRoundRect(label: String, mask: Int, left: Float, top: Float, width: Float, height: Float, cluster: Cluster) {
         regions += Region(
             label = label,
             mask = mask,
             bounds = RectF(left, top, left + width, top + height),
             shape = Shape.RoundRect,
+            cluster = cluster,
         )
     }
 
@@ -255,6 +394,70 @@ class VirtualGamepadView(context: Context) : View(context) {
             }
         }
         return keys
+    }
+
+    private fun regionAt(x: Float, y: Float): Region? {
+        return regions.lastOrNull { contains(it, x, y) }
+    }
+
+    private fun offsetFor(cluster: Cluster, width: Int, height: Int): Pair<Float, Float> {
+        val xPercent: Int
+        val yPercent: Int
+        when (cluster) {
+            Cluster.Dpad -> {
+                xPercent = layoutOffsets.dpadXPercent
+                yPercent = layoutOffsets.dpadYPercent
+            }
+            Cluster.Face -> {
+                xPercent = layoutOffsets.faceXPercent
+                yPercent = layoutOffsets.faceYPercent
+            }
+            Cluster.Center -> {
+                xPercent = layoutOffsets.centerXPercent
+                yPercent = layoutOffsets.centerYPercent
+            }
+            Cluster.LeftShoulder -> {
+                xPercent = layoutOffsets.leftShoulderXPercent
+                yPercent = layoutOffsets.leftShoulderYPercent
+            }
+            Cluster.RightShoulder -> {
+                xPercent = layoutOffsets.rightShoulderXPercent
+                yPercent = layoutOffsets.rightShoulderYPercent
+            }
+        }
+        return Pair(width * xPercent / 100f, height * yPercent / 100f)
+    }
+
+    private fun VirtualGamepadLayoutOffsets.moved(
+        cluster: Cluster,
+        dxPercent: Int,
+        dyPercent: Int,
+    ): VirtualGamepadLayoutOffsets {
+        fun next(value: Int, delta: Int): Int {
+            return (value + delta).coerceIn(VirtualGamepadLayoutOffsets.MinOffset, VirtualGamepadLayoutOffsets.MaxOffset)
+        }
+        return when (cluster) {
+            Cluster.Dpad -> copy(
+                dpadXPercent = next(dpadXPercent, dxPercent),
+                dpadYPercent = next(dpadYPercent, dyPercent),
+            )
+            Cluster.Face -> copy(
+                faceXPercent = next(faceXPercent, dxPercent),
+                faceYPercent = next(faceYPercent, dyPercent),
+            )
+            Cluster.Center -> copy(
+                centerXPercent = next(centerXPercent, dxPercent),
+                centerYPercent = next(centerYPercent, dyPercent),
+            )
+            Cluster.LeftShoulder -> copy(
+                leftShoulderXPercent = next(leftShoulderXPercent, dxPercent),
+                leftShoulderYPercent = next(leftShoulderYPercent, dyPercent),
+            )
+            Cluster.RightShoulder -> copy(
+                rightShoulderXPercent = next(rightShoulderXPercent, dxPercent),
+                rightShoulderYPercent = next(rightShoulderYPercent, dyPercent),
+            )
+        }
     }
 
     private fun contains(region: Region, x: Float, y: Float): Boolean {

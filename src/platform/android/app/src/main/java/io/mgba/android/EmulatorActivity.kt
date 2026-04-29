@@ -45,6 +45,7 @@ import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.input.AndroidInputMapper
 import io.mgba.android.input.GbaButtons
 import io.mgba.android.input.GbaKeyMask
+import io.mgba.android.input.VirtualGamepadLayoutOffsets
 import io.mgba.android.input.VirtualGamepadView
 import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.settings.AudioBufferModes
@@ -145,6 +146,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var virtualGamepadSpacingPercent = 100
     private var virtualGamepadHapticsEnabled = true
     private var virtualGamepadLeftHanded = false
+    private var virtualGamepadLayoutOffsets = VirtualGamepadLayoutOffsets()
+    private var gamepadLayoutEditing = false
     private var deadzonePercent = AndroidInputMapper.DefaultAxisThresholdPercent
     private var allowOpposingDirections = true
     private var rumbleEnabled = true
@@ -245,6 +248,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             currentOverrideGameId,
             preferences.virtualGamepadLeftHanded,
         )
+        virtualGamepadLayoutOffsets = VirtualGamepadLayoutOffsets.parse(
+            perGameOverrides.virtualGamepadLayout(currentOverrideGameId),
+        )
         deadzonePercent = perGameOverrides.deadzonePercent(
             currentOverrideGameId,
             AndroidInputMapper.DefaultAxisThresholdPercent,
@@ -309,9 +315,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 virtualGamepadHapticsEnabled,
                 virtualGamepadLeftHanded,
             )
+            setLayoutOffsets(virtualGamepadLayoutOffsets)
             setOnKeysChangedListener { keys ->
                 virtualKeys = keys
                 syncKeys()
+            }
+            setOnLayoutOffsetsChangedListener { offsets ->
+                virtualGamepadLayoutOffsets = offsets
+                saveGamepadLayoutPreference()
             }
         }
         root.addView(
@@ -643,6 +654,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
+    private fun saveGamepadLayoutPreference() {
+        perGameOverrides.setVirtualGamepadLayout(currentOverrideGameId, virtualGamepadLayoutOffsets.serialize())
+    }
+
     private fun saveFrameSkipPreference() {
         if (!perGameOverrides.setFrameSkip(currentOverrideGameId, frameSkip)) {
             preferences.frameSkip = frameSkip
@@ -949,6 +964,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     saveGamepadPreference()
                     gamepadView?.visibility = if (showVirtualGamepad) View.VISIBLE else View.GONE
                     if (!showVirtualGamepad) {
+                        setGamepadLayoutEditing(false)
                         gamepadView?.clearKeys()
                     }
                     updateRunButtons()
@@ -1287,7 +1303,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         orientationButton?.text = ORIENTATION_LABELS[orientationMode]
         skipBiosButton?.text = if (skipBios) "SkipBIOS" else "BIOS"
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
-        padSettingsButton?.text = "PadCfg"
+        padSettingsButton?.text = if (gamepadLayoutEditing) "PadEdit*" else "PadCfg"
         deadzoneButton?.text = "DZ$deadzonePercent"
         opposingDirectionsButton?.text = if (allowOpposingDirections) "OppOn" else "OppOff"
         rumbleButton?.text = if (rumbleEnabled) "Rumble" else "NoRumble"
@@ -1627,6 +1643,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 saveGamepadStylePreference()
             }
         }
+        lateinit var dialog: AlertDialog
+        val editLayoutButton = Button(this).apply {
+            text = if (gamepadLayoutEditing) "Stop Layout Edit" else "Edit Layout"
+            setOnClickListener {
+                setGamepadLayoutEditing(!gamepadLayoutEditing)
+                dialog.dismiss()
+            }
+        }
         fun updateLabels() {
             sizeLabel.text = "Size: $virtualGamepadSizePercent%"
             opacityLabel.text = "Opacity: $virtualGamepadOpacityPercent%"
@@ -1666,8 +1690,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             addView(spacingSeek)
             addView(hapticsCheck)
             addView(leftHandedCheck)
+            addView(editLayoutButton)
         }
-        AlertDialog.Builder(this)
+        dialog = AlertDialog.Builder(this)
             .setTitle("Virtual gamepad")
             .setView(content)
             .setNeutralButton("Reset") { _, _ -> resetGamepadStyle() }
@@ -1681,8 +1706,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         virtualGamepadSpacingPercent = DEFAULT_GAMEPAD_SPACING_PERCENT
         virtualGamepadHapticsEnabled = true
         virtualGamepadLeftHanded = false
+        virtualGamepadLayoutOffsets = VirtualGamepadLayoutOffsets()
+        setGamepadLayoutEditing(false)
         applyGamepadStyle()
         saveGamepadStylePreference()
+        saveGamepadLayoutPreference()
         Toast.makeText(this, "Virtual gamepad reset", Toast.LENGTH_SHORT).show()
     }
 
@@ -1694,6 +1722,21 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             virtualGamepadHapticsEnabled,
             virtualGamepadLeftHanded,
         )
+        gamepadView?.setLayoutOffsets(virtualGamepadLayoutOffsets)
+    }
+
+    private fun setGamepadLayoutEditing(enabled: Boolean) {
+        gamepadLayoutEditing = enabled
+        if (enabled && !showVirtualGamepad) {
+            showVirtualGamepad = true
+            saveGamepadPreference()
+            gamepadView?.visibility = View.VISIBLE
+        }
+        gamepadView?.setLayoutEditMode(enabled)
+        if (!enabled) {
+            gamepadView?.clearKeys()
+        }
+        updateRunButtons()
     }
 
     private fun showInputMappingDialog() {
