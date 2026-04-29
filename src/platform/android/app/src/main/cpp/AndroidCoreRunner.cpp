@@ -90,7 +90,8 @@ std::string BoundedString(const char* value, size_t maxLength) {
 }
 
 std::string LoadResult(bool ok, const std::string& message, const std::string& platform, const std::string& title,
-                       const std::string& displayName, uint32_t crc32 = 0) {
+                       const std::string& displayName, uint32_t crc32 = 0, const std::string& code = "",
+                       const std::string& maker = "", int version = -1) {
 	std::ostringstream out;
 	std::ostringstream checksum;
 	if (crc32) {
@@ -102,7 +103,10 @@ std::string LoadResult(bool ok, const std::string& message, const std::string& p
 	    << "\",\"title\":\"" << JsonEscape(title)
 	    << "\",\"displayName\":\"" << JsonEscape(displayName)
 	    << "\",\"crc32\":\"" << checksum.str()
-	    << "\"}";
+	    << "\",\"gameCode\":\"" << JsonEscape(code)
+	    << "\",\"maker\":\"" << JsonEscape(maker)
+	    << "\",\"version\":" << version
+	    << "}";
 	return out.str();
 }
 
@@ -321,13 +325,15 @@ std::string ProbeRomFd(int fd, const std::string& displayName) {
 	if (title.empty()) {
 		title = displayName;
 	}
+	const std::string code = BoundedString(info.code, sizeof(info.code));
+	const std::string maker = BoundedString(info.maker, sizeof(info.maker));
 	uint32_t crc32 = 0;
 	if (core->checksum) {
 		core->checksum(core, &crc32, mCHECKSUM_CRC32);
 	}
 	const std::string platform = PlatformName(core);
 	core->deinit(core);
-	return LoadResult(true, "Probed", platform, title, displayName, crc32);
+	return LoadResult(true, "Probed", platform, title, displayName, crc32, code, maker, info.version);
 }
 
 AndroidCoreRunner::~AndroidCoreRunner() {
@@ -472,6 +478,8 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	if (title.empty()) {
 		title = displayName;
 	}
+	const std::string code = BoundedString(info.code, sizeof(info.code));
+	const std::string maker = BoundedString(info.maker, sizeof(info.maker));
 	uint32_t crc32 = 0;
 	if (m_core->checksum) {
 		m_core->checksum(m_core, &crc32, mCHECKSUM_CRC32);
@@ -479,7 +487,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	m_platformName = PlatformName(m_core);
 	m_gameTitle = title;
 
-	return LoadResult(true, "Loaded", m_platformName, title, displayName, crc32);
+	return LoadResult(true, "Loaded", m_platformName, title, displayName, crc32, code, maker, info.version);
 }
 
 void AndroidCoreRunner::setSurface(ANativeWindow* window) {

@@ -842,8 +842,11 @@ class MainActivity : Activity() {
         val marker = if (rom.favorite) "[*] " else ""
         val title = rom.title.ifBlank { rom.displayName }
         val platform = rom.platform.takeIf { it.isNotBlank() }?.let { " [$it]" }.orEmpty()
+        val code = rom.gameCode.takeIf { it.isNotBlank() }?.let { " $it" }.orEmpty()
+        val maker = rom.maker.takeIf { it.isNotBlank() }?.let { "/$it" }.orEmpty()
+        val version = rom.version.takeIf { it >= 0 }?.let { " v$it" }.orEmpty()
         val size = rom.fileSize.takeIf { it > 0L }?.let { " ${formatBytes(it)}" }.orEmpty()
-        return "$marker$title$platform$size"
+        return "$marker$title$platform$code$maker$version$size"
     }
 
     private fun formatBytes(bytes: Long): String {

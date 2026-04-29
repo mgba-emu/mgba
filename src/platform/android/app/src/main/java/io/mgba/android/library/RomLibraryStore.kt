@@ -10,6 +10,9 @@ data class LibraryRom(
     val displayName: String,
     val title: String = "",
     val platform: String = "",
+    val gameCode: String = "",
+    val maker: String = "",
+    val version: Int = -1,
     val crc32: String = "",
     val sha1: String = "",
     val fileSize: Long = 0L,
@@ -36,6 +39,9 @@ class RomLibraryStore(context: Context) {
                         displayName = item.optString("displayName", uri),
                         title = item.optString("title"),
                         platform = item.optString("platform"),
+                        gameCode = item.optString("gameCode"),
+                        maker = item.optString("maker"),
+                        version = item.optInt("version", -1),
                         crc32 = item.optString("crc32"),
                         sha1 = item.optString("sha1"),
                         fileSize = item.optLong("fileSize", 0L),
@@ -135,6 +141,9 @@ class RomLibraryStore(context: Context) {
             .put("displayName", item.displayName)
             .put("title", item.title)
             .put("platform", item.platform)
+            .put("gameCode", item.gameCode)
+            .put("maker", item.maker)
+            .put("version", item.version)
             .put("crc32", item.crc32)
             .put("sha1", item.sha1)
             .put("fileSize", item.fileSize)
@@ -149,6 +158,9 @@ class RomLibraryStore(context: Context) {
         return item.copy(
             title = item.title.ifBlank { previous?.title.orEmpty() },
             platform = item.platform.ifBlank { previous?.platform.orEmpty() },
+            gameCode = item.gameCode.ifBlank { previous?.gameCode.orEmpty() },
+            maker = item.maker.ifBlank { previous?.maker.orEmpty() },
+            version = if (item.version >= 0) item.version else previous?.version ?: -1,
             crc32 = item.crc32.ifBlank { previous?.crc32.orEmpty() },
             sha1 = item.sha1.ifBlank { previous?.sha1.orEmpty() },
             fileSize = if (item.fileSize > 0L) item.fileSize else previous?.fileSize ?: 0L,

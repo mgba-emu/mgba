@@ -703,9 +703,9 @@ object NativeBridge {
   - [ ] displayName。
   - [x] platform: GBA / GB（GBC 细分待 native metadata 扩展）。
   - [x] title from `mGameInfo`。
-  - [ ] game code。
-  - [ ] maker。
-  - [ ] version。
+  - [x] game code。
+  - [x] maker。
+  - [x] version。
   - [x] crc32。
   - [x] sha1。
   - [x] file size。

@@ -21,7 +21,7 @@ class EmulatorController(context: Context) : AutoCloseable {
 
     fun loadRomFd(fd: Int, displayName: String): NativeLoadResult {
         if (!handle.isValid) {
-            return NativeLoadResult(false, "Native runner is unavailable", "", "", displayName, "")
+            return NativeLoadResult(false, "Native runner is unavailable", "", "", displayName, "", "", "", -1)
         }
         return NativeBridge.loadRomFd(handle.value, fd, displayName)
     }
