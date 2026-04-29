@@ -2528,12 +2528,20 @@ class MainActivity : Activity() {
             }
         }.getOrNull()
         val ok = raw?.let { importSettingsBackup(it) } == true
+        val pruned = if (ok) pruneUnavailableStoredRomReferences() else PrunedStoredRomReferences()
         if (ok) {
             updatePreferenceButtons()
             renderRecentGames()
             renderLibrary()
         }
-        nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "Settings imported" else "Settings import failed"}"
+        val pruneStatus = if (pruned.total > 0) " (${pruned.total} unavailable removed)" else ""
+        nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "Settings imported$pruneStatus" else "Settings import failed"}"
+        if (pruned.total > 0) {
+            AppLogStore.append(
+                this,
+                "Settings import pruned unavailable ROM references: recent=${pruned.recent}, library=${pruned.library}, sources=${pruned.sources}",
+            )
+        }
     }
 
     private fun settingsBackupJson(): String {
@@ -2559,6 +2567,53 @@ class MainActivity : Activity() {
         val recentGames = root.optJSONArray("recentGames")
         val importedRecentGames = recentGames?.let { recentStore.importJson(it) } ?: true
         return importedPreferences && importedOverrides && importedMappings && importedLibrary && importedRecentGames
+    }
+
+    private fun pruneUnavailableStoredRomReferences(): PrunedStoredRomReferences {
+        var removedRecent = 0
+        recentStore.list().forEach { game ->
+            if (!canOpenStoredRecent(game.uri) && recentStore.remove(game.uri)) {
+                removedRecent += 1
+            }
+        }
+
+        var removedSources = 0
+        var removedLibrary = 0
+        var removedCover = false
+        libraryStore.sourceFolders().forEach { source ->
+            if (!canOpenStoredRecent(source)) {
+                val removedItems = libraryStore.removeSourceFolder(source)
+                removedItems.forEach { removed ->
+                    deleteCoverPath(removed.coverPath)
+                }
+                removedLibrary += removedItems.size
+                removedSources += 1
+                removedCover = removedCover || removedItems.any { it.coverPath.isNotBlank() }
+            }
+        }
+
+        libraryStore.list().forEach { rom ->
+            if (!canOpenStoredRecent(rom.uri)) {
+                libraryStore.remove(rom.uri)?.let { removed ->
+                    deleteCoverPath(removed.coverPath)
+                    removedLibrary += 1
+                    removedCover = removedCover || removed.coverPath.isNotBlank()
+                }
+            }
+        }
+        if (removedCover) {
+            coverThumbnailCache.evictAll()
+        }
+        return PrunedStoredRomReferences(removedRecent, removedLibrary, removedSources)
+    }
+
+    private data class PrunedStoredRomReferences(
+        val recent: Int = 0,
+        val library: Int = 0,
+        val sources: Int = 0,
+    ) {
+        val total: Int
+            get() = recent + library + sources
     }
 
     private fun clearArchiveCache() {
