@@ -42,6 +42,7 @@
 - [x] 已实现 Android 10+ MediaStore 截图导出到 `Pictures/mGBA`。
 - [x] 已实现 SAF URI 最近打开列表，可从首页直接重新打开已授权 ROM。
 - [x] 已实现 BIOS SAF 导入到 app 私有目录，并在 native ROM 加载时尝试交给 core。
+- [x] 已实现 patch SAF 导入到 app 私有目录，并在 native ROM 加载后尝试应用。
 - [x] 已实现 emulator 画面沉浸全屏与游玩时保持屏幕常亮。
 - [x] 已实现虚拟按键按下时的系统 haptic feedback。
 - [x] 已提交 Gradle wrapper，Android 工程可直接使用 `./gradlew :app:assembleDebug` 构建。

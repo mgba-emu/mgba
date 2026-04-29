@@ -15,18 +15,22 @@ import io.mgba.android.bridge.NativeBridge
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.library.RecentGameStore
 import io.mgba.android.storage.BiosStore
+import io.mgba.android.storage.PatchStore
 
 class MainActivity : Activity() {
     private lateinit var nativeStatus: TextView
     private lateinit var recentStore: RecentGameStore
     private lateinit var biosStore: BiosStore
+    private lateinit var patchStore: PatchStore
     private lateinit var biosButton: Button
+    private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         recentStore = RecentGameStore(this)
         biosStore = BiosStore(this)
+        patchStore = PatchStore(this)
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -73,6 +77,13 @@ class MainActivity : Activity() {
             }
         }
 
+        patchButton = Button(this).apply {
+            text = patchStore.displayName?.let { "Patch: $it" } ?: "Import Patch"
+            setOnClickListener {
+                openPatchPicker()
+            }
+        }
+
         recentContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(0, dp(24), 0, 0)
@@ -83,6 +94,7 @@ class MainActivity : Activity() {
         root.addView(nativeStatus)
         root.addView(openButton)
         root.addView(biosButton)
+        root.addView(patchButton)
         root.addView(recentContainer)
         setContentView(root)
         renderRecentGames()
@@ -110,6 +122,14 @@ class MainActivity : Activity() {
                     biosButton.text = "BIOS: $name"
                 }
                 nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "BIOS imported" else "BIOS import failed"}"
+            }
+            REQUEST_IMPORT_PATCH -> {
+                val name = displayName(uri)
+                val ok = patchStore.importDefault(uri, name)
+                if (ok) {
+                    patchButton.text = "Patch: $name"
+                }
+                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "Patch imported" else "Patch import failed"}"
             }
         }
     }
@@ -181,6 +201,15 @@ class MainActivity : Activity() {
         startActivityForResult(intent, REQUEST_IMPORT_BIOS)
     }
 
+    private fun openPatchPicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_IMPORT_PATCH)
+    }
+
     private fun displayName(uri: Uri): String {
         var cursor: Cursor? = null
         return try {
@@ -198,5 +227,6 @@ class MainActivity : Activity() {
     companion object {
         private const val REQUEST_OPEN_ROM = 1001
         private const val REQUEST_IMPORT_BIOS = 1002
+        private const val REQUEST_IMPORT_PATCH = 1003
     }
 }

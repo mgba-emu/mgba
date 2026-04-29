@@ -142,6 +142,20 @@ bool LoadDefaultBios(mCore* core, const std::string& basePath) {
 	return true;
 }
 
+bool LoadDefaultPatch(mCore* core, const std::string& basePath) {
+	if (!core || !core->loadPatch) {
+		return false;
+	}
+	const std::string patchPath = basePath + "/patches/default.patch";
+	struct VFile* vf = VFileOpen(patchPath.c_str(), O_RDONLY);
+	if (!vf) {
+		return false;
+	}
+	const bool ok = core->loadPatch(core, vf);
+	vf->close(vf);
+	return ok;
+}
+
 void WriteLe16(std::ostream& out, uint16_t value) {
 	const char bytes[] = {
 		static_cast<char>(value & 0xFF),
@@ -321,6 +335,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 		core->deinit(core);
 		return LoadResult(false, "Could not load ROM", "", "", displayName);
 	}
+	LoadDefaultPatch(core, m_basePath);
 
 	const std::string savePath = SavePathForCore(core, m_basePath);
 	if (!savePath.empty()) {
