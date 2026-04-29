@@ -57,6 +57,8 @@ class MainActivity : Activity() {
     private lateinit var biosButton: Button
     private lateinit var clearBiosButton: Button
     private lateinit var skipBiosButton: Button
+    private lateinit var scaleButton: Button
+    private lateinit var filterButton: Button
     private lateinit var audioBufferButton: Button
     private lateinit var audioLowPassButton: Button
     private lateinit var fastForwardModeButton: Button
@@ -165,6 +167,20 @@ class MainActivity : Activity() {
             }
         }
         updateSkipBiosButton()
+
+        scaleButton = Button(this).apply {
+            setOnClickListener {
+                preferences.scaleMode = (preferences.scaleMode + 1) % SCALE_LABELS.size
+                updateVideoButtons()
+            }
+        }
+        filterButton = Button(this).apply {
+            setOnClickListener {
+                preferences.filterMode = (preferences.filterMode + 1) % FILTER_LABELS.size
+                updateVideoButtons()
+            }
+        }
+        updateVideoButtons()
 
         audioBufferButton = Button(this).apply {
             setOnClickListener {
@@ -298,6 +314,8 @@ class MainActivity : Activity() {
         root.addView(biosButton)
         root.addView(clearBiosButton)
         root.addView(skipBiosButton)
+        root.addView(scaleButton)
+        root.addView(filterButton)
         root.addView(audioBufferButton)
         root.addView(audioLowPassButton)
         root.addView(fastForwardModeButton)
@@ -594,6 +612,11 @@ class MainActivity : Activity() {
             clearBiosButton.text = "Clear BIOS"
             clearBiosButton.isEnabled = true
         }
+    }
+
+    private fun updateVideoButtons() {
+        scaleButton.text = "Scale: ${SCALE_LABELS[preferences.scaleMode]}"
+        filterButton.text = "Filter: ${FILTER_LABELS[preferences.filterMode]}"
     }
 
     private fun updateAudioBufferButton() {
@@ -1001,6 +1024,8 @@ class MainActivity : Activity() {
         private const val TRIM_MEMORY_RUNNING_LOW_LEVEL = 10
         private const val ARCHIVE_CACHE_MAX_BYTES = 256L * 1024L * 1024L
         private const val ARCHIVE_CACHE_TRIM_BYTES = 64L * 1024L * 1024L
+        private val SCALE_LABELS = arrayOf("Fit", "Fill", "Integer", "Original", "Stretch")
+        private val FILTER_LABELS = arrayOf("Pixel", "Smooth")
         private val FRAME_SKIP_LABELS = arrayOf("0", "1", "2", "3")
         private val ROM_ENTRY_EXTENSIONS = arrayOf(".gba", ".agb", ".gb", ".gbc", ".sgb")
     }
