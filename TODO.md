@@ -163,6 +163,7 @@
 - [x] 已修复 Android 竖屏游戏内工具栏溢出：运行/存档两行可横向滚动，Save/Load 等按钮在 OnePlus7 上可访问。
 - [x] 已完成 OnePlus7 真机即时存档验证：Slot 1 可保存 `.ss` 与缩略图，随后 Load 恢复画面且 crash buffer 为空。
 - [x] 已新增 Android native 输入诊断：`NativeStats` 导出 current/seen GBA key mask，OnePlus7 虚拟 A/B/方向输入已确认进入 native。
+- [x] 已完成 OnePlus7 真机旋转/后台恢复验证：横竖屏均渲染非黑帧，HOME 后从 Recents 恢复 EmulatorActivity 且 crash buffer 为空。
 - [x] 首帧真机截图验证已在 OnePlus7 上执行；模拟器因性能过慢已停用。
 
 ## 1. 产品目标和范围
@@ -1088,8 +1089,8 @@ object NativeBridge {
 - [x] 点击虚拟 A/B/方向，确认 native 收到 key bit。
 - [x] 保存 state。
 - [x] 读 state。
-- [ ] 旋转屏幕。
-- [ ] 切后台/恢复。
+- [x] 旋转屏幕。
+- [x] 切后台/恢复。
 
 ### 16.3 手工设备矩阵
 
