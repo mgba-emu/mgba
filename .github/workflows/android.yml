@@ -20,8 +20,8 @@ permissions:
   contents: read
 
 jobs:
-  debug-apk:
-    name: Debug APK
+  android-build:
+    name: Android Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -51,8 +51,35 @@ jobs:
         working-directory: src/platform/android
         run: ./gradlew :app:assembleDebug --no-daemon
 
+      - name: Build release APK
+        working-directory: src/platform/android
+        run: ./gradlew :app:assembleRelease --no-daemon
+
+      - name: Build release AAB
+        working-directory: src/platform/android
+        run: ./gradlew :app:bundleRelease --no-daemon
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: mgba-android-debug-apk
           path: src/platform/android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mgba-android-release-apk
+          path: src/platform/android/app/build/outputs/apk/release/*.apk
+
+      - name: Upload release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: mgba-android-release-aab
+          path: src/platform/android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Upload release native symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: mgba-android-release-native-symbols
+          path: src/platform/android/app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
+          if-no-files-found: ignore

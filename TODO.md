@@ -58,6 +58,7 @@
 - [x] 已提交 Gradle wrapper，Android 工程可直接使用 `./gradlew :app:assembleDebug` 构建。
 - [x] 已新增 GitHub Actions Android debug APK 构建 workflow。
 - [x] 已修复 Android backup/data-extraction XML 规则，并验证 `:app:bundleRelease` 可生成 release AAB。
+- [x] 已扩展 GitHub Actions Android build：debug APK、release APK、release AAB 和 native symbols artifacts。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/搜索/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -1004,8 +1005,10 @@ object NativeBridge {
   - [x] setup Android SDK / NDK。
   - [x] Gradle cache。
   - [x] `./gradlew :app:assembleDebug`。
+  - [x] `./gradlew :app:assembleRelease`。
+  - [x] `./gradlew :app:bundleRelease`。
   - [ ] `./gradlew :app:testDebugUnitTest`。
-  - [x] 上传 APK artifact。
+  - [x] 上传 debug APK、release APK、release AAB 和 native symbols artifacts。
 - [ ] 可选 matrix：
   - [ ] arm64-v8a。
   - [ ] x86_64。
@@ -1014,12 +1017,13 @@ object NativeBridge {
 ### 17.2 Release
 
 - [x] Debug APK。
-- [ ] Internal Release APK。
+- [x] Release APK 构建输出（当前为 unsigned）。
+- [ ] Internal Release APK 签名配置。
 - [x] AAB。
 - [x] Proguard/R8 验证。
-- [ ] Native symbols 输出：
-  - [ ] `app/build/intermediates/merged_native_libs/**`
-  - [ ] `app/build/outputs/native-debug-symbols/**`
+- [x] Native symbols 输出：
+  - [x] `app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip`
+  - [x] CI artifact：`mgba-android-release-native-symbols`
 - [ ] Crash 符号化流程文档。
 - [ ] MPL 2.0 和第三方 license 页面。
 
@@ -1155,7 +1159,7 @@ object NativeBridge {
 - [ ] Proguard/R8。
 - [ ] Native symbols。
 - [ ] License 页面。
-- [ ] Release APK/AAB。
+- [x] Release APK/AAB 构建输出。
 - [ ] 验收：
   - [ ] 设备矩阵通过。
   - [ ] 30 分钟稳定性测试通过。
@@ -1189,7 +1193,7 @@ object NativeBridge {
 - [ ] ROM 库和最近游戏可用。
 - [ ] 全局设置和 per-game override 可用。
 - [ ] 横竖屏、切后台、锁屏、外设变化稳定。
-- [ ] Debug APK、Release APK/AAB 可构建。
+- [x] Debug APK、Release APK/AAB 可构建。
 - [ ] CI 自动构建 Android。
 - [ ] License / 第三方声明完整。
 - [ ] 没有提交商业 ROM、BIOS 或不可分发资源。
