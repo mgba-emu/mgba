@@ -320,7 +320,7 @@ src/platform/android/
 - [x] 包名暂定 `io.mgba.android`。
 - [x] App 名称暂定 `mGBA` 或 `mGBA Android`。
 - [x] `minSdk` 建议先定 23；如果 AAudio/现代存储策略压力过大，再评估提升到 26。
-- [ ] `targetSdk` / Android Gradle Plugin / Kotlin 版本在真正实现前用官方文档确认一次，避免 2026 年工具链细节过期。
+- [x] `targetSdk` / Android Gradle Plugin / Kotlin 版本已在 2026-04-29 用官方文档复核：AGP 9.1.0 支持 Gradle 9.3.1、API 36.1、Build Tools 36.0.0、NDK 28.2.13676358、JDK 17；Android 16 SDK 文档要求 `compileSdk = 36` / `targetSdk = 36`；Kotlin 官方 AGP 9 migration 文档说明 AGP 9 已内置 Kotlin Android 支持，无需单独 Kotlin Android plugin。
 - [x] Debug ABI：`arm64-v8a`、`armeabi-v7a`、`x86_64`。
 - [x] Release ABI：至少 `arm64-v8a`，建议保留 `armeabi-v7a` 和 `x86_64` 用于老设备/模拟器。
 - [x] 开启 `externalNativeBuild.cmake`，CMake 入口先放在 `app/src/main/cpp/CMakeLists.txt`。
