@@ -3,6 +3,7 @@ package io.mgba.android.settings
 import android.content.Context
 import io.mgba.android.input.GbaButtons
 import io.mgba.android.input.HardwareKeyProfile
+import org.json.JSONObject
 
 class InputMappingStore(context: Context) {
     private val preferences = context.applicationContext.getSharedPreferences("input_mappings", Context.MODE_PRIVATE)
@@ -57,6 +58,39 @@ class InputMappingStore(context: Context) {
             }
         }
         editor.apply()
+    }
+
+    fun exportProfileJson(gameId: String?, deviceDescriptor: String?, deviceName: String?): String {
+        val profile = profile(gameId, deviceDescriptor)
+        val mappings = JSONObject()
+        GbaButtons.All.forEach { button ->
+            mappings.put(button.label, profile.keyCodeForMask(button.mask) ?: 0)
+        }
+        return JSONObject()
+            .put("version", 1)
+            .put("scope", writeScope(gameId, deviceDescriptor))
+            .put("deviceDescriptor", deviceDescriptor.orEmpty())
+            .put("deviceName", deviceName.orEmpty())
+            .put("mappings", mappings)
+            .toString(2)
+    }
+
+    fun importProfileJson(gameId: String?, deviceDescriptor: String?, json: String): Boolean {
+        val mappings = runCatching {
+            JSONObject(json).optJSONObject("mappings")
+        }.getOrNull() ?: return false
+
+        reset(gameId, deviceDescriptor)
+        var imported = 0
+        GbaButtons.All.forEach { button ->
+            if (mappings.has(button.label)) {
+                val keyCode = mappings.optInt(button.label, 0)
+                if (keyCode > 0 && setKeyCode(gameId, deviceDescriptor, button.mask, keyCode)) {
+                    imported += 1
+                }
+            }
+        }
+        return imported > 0
     }
 
     private fun readScopes(gameId: String?, deviceDescriptor: String?): List<String> {

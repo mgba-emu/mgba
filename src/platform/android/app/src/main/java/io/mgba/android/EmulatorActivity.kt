@@ -231,6 +231,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             REQUEST_IMPORT_CHEATS -> importCheats(uri)
             REQUEST_EXPORT_STATE -> exportStateSlot(uri, pendingExportStateSlot)
             REQUEST_IMPORT_STATE -> importStateSlot(uri, pendingImportStateSlot)
+            REQUEST_EXPORT_INPUT_PROFILE -> exportInputProfile(uri)
+            REQUEST_IMPORT_INPUT_PROFILE -> importInputProfile(uri)
         }
     }
 
@@ -779,6 +781,20 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             })
         }
+        rows.addView(Button(this).apply {
+            text = "Export Profile"
+            setOnClickListener {
+                inputMappingDialog?.dismiss()
+                openInputProfileExportPicker()
+            }
+        })
+        rows.addView(Button(this).apply {
+            text = "Import Profile"
+            setOnClickListener {
+                inputMappingDialog?.dismiss()
+                openInputProfileImportPicker()
+            }
+        })
         val dialog = AlertDialog.Builder(this)
             .setTitle("Hardware keys")
             .setMessage(inputMappingScopeLabel())
@@ -851,6 +867,48 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         inputMappingStore.reset(currentGameId, activeInputDeviceDescriptor)
         clearInput()
         Toast.makeText(this, "Hardware keys reset", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun openInputProfileExportPicker() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+            putExtra(Intent.EXTRA_TITLE, "mgba-input-profile.json")
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_EXPORT_INPUT_PROFILE)
+    }
+
+    private fun openInputProfileImportPicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_IMPORT_INPUT_PROFILE)
+    }
+
+    private fun exportInputProfile(uri: Uri) {
+        val json = inputMappingStore.exportProfileJson(
+            currentGameId,
+            activeInputDeviceDescriptor,
+            activeInputDeviceName,
+        )
+        val ok = runCatching {
+            contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
+                writer.write(json)
+            } != null
+        }.getOrDefault(false)
+        Toast.makeText(this, if (ok) "Input profile exported" else "Input profile export failed", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun importInputProfile(uri: Uri) {
+        val ok = runCatching {
+            val json = contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } ?: return@runCatching false
+            inputMappingStore.importProfileJson(currentGameId, activeInputDeviceDescriptor, json)
+        }.getOrDefault(false)
+        clearInput()
+        Toast.makeText(this, if (ok) "Input profile imported" else "Input profile import failed", Toast.LENGTH_SHORT).show()
     }
 
     private fun rememberInputDevice(event: KeyEvent) {
@@ -1154,6 +1212,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val REQUEST_IMPORT_CHEATS = 2002
         private const val REQUEST_EXPORT_STATE = 2003
         private const val REQUEST_IMPORT_STATE = 2004
+        private const val REQUEST_EXPORT_INPUT_PROFILE = 2005
+        private const val REQUEST_IMPORT_INPUT_PROFILE = 2006
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L

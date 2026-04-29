@@ -88,8 +88,9 @@
 - [x] 已接入 native `mPERIPH_RUMBLE` 到 Android `Vibrator` 的运行时震动反馈。
 - [x] 已接入 Android accelerometer/gyroscope 到 native `mPERIPH_ROTATION`，并提供 Tilt 开关和 Cal 校准。
 - [x] 已接入 GBA solar luminance 外设，提供手动 Solar 滑条和可选 Android light sensor。
+- [x] 已新增硬件输入 profile JSON 导入/导出，支持通过 SAF 备份/迁移当前映射。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
-- [ ] ROM 库封面和 profile 导入/导出仍待后续阶段实现。
+- [ ] ROM 库封面仍待后续阶段实现。
 
 ## 1. 产品目标和范围
 
@@ -567,7 +568,7 @@ object NativeBridge {
 - [ ] 支持每个设备独立 profile：
   - [x] 使用 `InputDevice.descriptor` 作为稳定 key。
   - [x] 允许手动绑定。
-  - [ ] 支持导入/导出 profile。
+  - [x] 支持导入/导出 profile。
 - [ ] Debug 页面显示当前输入设备、轴值、按键码。
 
 ### 7.4 特殊输入/外设
