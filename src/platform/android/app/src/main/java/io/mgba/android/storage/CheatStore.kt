@@ -76,14 +76,7 @@ class CheatStore(context: Context) {
         val id = cheatId(gameId) ?: return false
         val directory = cheatDirectory() ?: return false
         val target = File(directory, "$id.cheats")
-        val lines = codeText
-            .lineSequence()
-            .map { it.trim() }
-            .filter { it.isNotBlank() }
-            .toList()
-        if (lines.isEmpty()) {
-            return false
-        }
+        val lines = codeLines(codeText).takeIf { it.isNotEmpty() } ?: return false
         val entries = entriesForGame(gameId).toMutableList()
         entries += CheatEntry(
             name = name.ifBlank { "Manual cheat ${entries.size + 1}" },
@@ -98,6 +91,31 @@ class CheatStore(context: Context) {
                 .apply()
             true
         }.getOrDefault(false)
+    }
+
+    fun updateEntry(gameId: String?, index: Int, name: String, codeText: String): Boolean {
+        val file = fileForGame(gameId) ?: return false
+        val lines = codeLines(codeText).takeIf { it.isNotEmpty() } ?: return false
+        val entries = entriesForGame(gameId).toMutableList()
+        if (index !in entries.indices) {
+            return false
+        }
+        val current = entries[index]
+        entries[index] = current.copy(
+            name = name.ifBlank { current.name },
+            lines = lines,
+        )
+        return writeEntries(file, entries)
+    }
+
+    fun removeEntry(gameId: String?, index: Int): Boolean {
+        val file = fileForGame(gameId) ?: return false
+        val entries = entriesForGame(gameId).toMutableList()
+        if (index !in entries.indices) {
+            return false
+        }
+        entries.removeAt(index)
+        return writeEntries(file, entries)
     }
 
     fun clearForGame(gameId: String?): Boolean {
@@ -123,6 +141,21 @@ class CheatStore(context: Context) {
     private fun cheatDirectory(): File? {
         val directory = File(appContext.filesDir, CHEAT_DIRECTORY)
         return if (directory.exists() || directory.mkdirs()) directory else null
+    }
+
+    private fun codeLines(codeText: String): List<String> {
+        return codeText
+            .lineSequence()
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .toList()
+    }
+
+    private fun writeEntries(file: File, entries: List<CheatEntry>): Boolean {
+        return runCatching {
+            file.writeText(serializeEntries(entries))
+            true
+        }.getOrDefault(false)
     }
 
     private fun parseEntries(lines: List<String>): List<CheatEntry> {

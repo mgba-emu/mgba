@@ -55,6 +55,7 @@ import io.mgba.android.settings.FastForwardModes
 import io.mgba.android.settings.InputMappingStore
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.settings.RewindSettings
+import io.mgba.android.storage.CheatEntry
 import io.mgba.android.storage.CheatStore
 import io.mgba.android.storage.PatchStore
 import io.mgba.android.storage.ScreenshotExporter
@@ -2329,7 +2330,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             .setTitle("Cheats")
             .setItems(labels) { _, which ->
                 when {
-                    which < entries.size -> toggleCheat(which, !entries[which].enabled)
+                    which < entries.size -> showCheatEntryActionsDialog(which, entries[which])
                     which == entries.size -> showAddCheatDialog()
                     else -> openCheatImportPicker()
                 }
@@ -2338,14 +2339,67 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             .show()
     }
 
+    private fun showCheatEntryActionsDialog(index: Int, entry: CheatEntry) {
+        val toggleLabel = if (entry.enabled) "Disable" else "Enable"
+        AlertDialog.Builder(this)
+            .setTitle(entry.name)
+            .setItems(arrayOf(toggleLabel, "Edit", "Delete")) { _, which ->
+                when (which) {
+                    0 -> toggleCheat(index, !entry.enabled)
+                    1 -> showEditCheatDialog(index, entry)
+                    2 -> deleteCheat(index)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
     private fun showAddCheatDialog() {
+        showCheatEditorDialog(
+            title = "Add cheat",
+            entry = CheatEntry(name = "", enabled = true, lines = emptyList()),
+        ) { name, code ->
+            val stored = cheatStore.addManual(cheatGameId(), name, code)
+            val applied = stored && applyStoredCheats()
+            val message = when {
+                applied -> "Cheat saved"
+                stored -> "Cheat saved; apply failed"
+                else -> "Cheat save failed"
+            }
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showEditCheatDialog(index: Int, entry: CheatEntry) {
+        showCheatEditorDialog(
+            title = "Edit cheat",
+            entry = entry,
+        ) { name, code ->
+            val stored = cheatStore.updateEntry(cheatGameId(), index, name, code)
+            val applied = stored && applyStoredCheats()
+            val message = when {
+                applied -> "Cheat updated"
+                stored -> "Cheat saved; apply failed"
+                else -> "Cheat update failed"
+            }
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showCheatEditorDialog(
+        title: String,
+        entry: CheatEntry,
+        onSave: (String, String) -> Unit,
+    ) {
         val nameInput = EditText(this).apply {
             hint = "Name"
+            setText(entry.name)
             setSingleLine(true)
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
         }
         val codeInput = EditText(this).apply {
             hint = "Code lines"
+            setText(entry.lines.joinToString("\n"))
             minLines = 4
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
         }
@@ -2356,17 +2410,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             addView(codeInput)
         }
         AlertDialog.Builder(this)
-            .setTitle("Add cheat")
+            .setTitle(title)
             .setView(body)
             .setPositiveButton("Save") { _, _ ->
-                val stored = cheatStore.addManual(cheatGameId(), nameInput.text.toString(), codeInput.text.toString())
-                val applied = stored && applyStoredCheats()
-                val message = when {
-                    applied -> "Cheat saved"
-                    stored -> "Cheat saved; apply failed"
-                    else -> "Cheat save failed"
-                }
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                onSave(nameInput.text.toString(), codeInput.text.toString())
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -2379,6 +2426,18 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             applied -> if (enabled) "Cheat enabled" else "Cheat disabled"
             stored -> "Cheat saved; apply failed"
             else -> "Cheat update failed"
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun deleteCheat(index: Int) {
+        val gameId = cheatGameId()
+        val stored = cheatStore.removeEntry(gameId, index)
+        val applied = stored && (applyStoredCheats() || cheatStore.entriesForGame(gameId).isEmpty())
+        val message = when {
+            applied -> "Cheat deleted"
+            stored -> "Cheat deleted; apply failed"
+            else -> "Cheat delete failed"
         }
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
