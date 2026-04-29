@@ -93,6 +93,31 @@ class InputMappingStore(context: Context) {
         return imported > 0
     }
 
+    fun migrateGameId(primaryGameId: String?, legacyGameId: String?): Boolean {
+        val primaryScope = gameScope(primaryGameId) ?: return false
+        val legacy = legacyGameId?.takeIf { it.isNotBlank() } ?: return false
+        if (primaryGameId == legacy) {
+            return false
+        }
+        val sourceScopes = listOfNotNull(legacyGameScope(legacy), gameScope(legacy)).distinct()
+        val editor = preferences.edit()
+        var changed = false
+        sourceScopes.forEach { sourceScope ->
+            GbaButtons.All.forEach { button ->
+                val sourceKey = keyForScope(sourceScope, button.mask)
+                val targetKey = keyForScope(primaryScope, button.mask)
+                if (preferences.contains(sourceKey) && !preferences.contains(targetKey)) {
+                    editor.putInt(targetKey, preferences.getInt(sourceKey, 0))
+                    changed = true
+                }
+            }
+        }
+        if (changed) {
+            editor.apply()
+        }
+        return changed
+    }
+
     private fun readScopes(gameId: String?, deviceDescriptor: String?): List<String> {
         return buildList {
             add(GLOBAL_SCOPE)

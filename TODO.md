@@ -124,6 +124,7 @@
 - [x] 已新增 Android per-game cheat 持久化：模拟器内导入 cheat 后保存到 `files/cheats`，并在下次启动同一 ROM 时自动应用。
 - [x] 已将当前 ROM 会话扩展为 URI + CRC32 stable id，并让 patch/cheat/state thumbnail/Camera 静态图 artifact 优先按 stable id 存取，同时兼容旧 URI 记录。
 - [x] 已将 per-game override 读写迁移到 ROM CRC32 stable id，并在首次进入游戏时从旧 SAF URI key 复制已有配置。
+- [x] 已将硬件输入映射的 per-game scope 迁移到 ROM CRC32 stable id，并兼容旧 URI scope。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -790,7 +791,7 @@ object NativeBridge {
 - [ ] Input：
   - [x] 触屏显示。
   - [ ] 触屏布局编辑。
-  - [ ] 手柄映射。
+  - [x] 手柄映射。
   - [x] 震动。
   - [x] 允许相反方向。
 - [ ] Storage：

@@ -207,6 +207,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         currentStableGameId = currentGame?.stableId?.takeIf { it.isNotBlank() }
         currentOverrideGameId = currentStableGameId ?: currentGameId
         perGameOverrides.migrateGameId(currentOverrideGameId, currentGameId)
+        inputMappingStore.migrateGameId(currentOverrideGameId, currentGameId)
         scaleMode = perGameOverrides.scaleMode(currentOverrideGameId, preferences.scaleMode)
         filterMode = perGameOverrides.filterMode(currentOverrideGameId, preferences.filterMode)
         interframeBlending = perGameOverrides.interframeBlending(currentOverrideGameId, preferences.interframeBlending)
@@ -480,7 +481,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
         val mask = AndroidInputMapper.keyMaskForKeyCode(
             event.keyCode,
-            inputMappingStore.profile(currentGameId, event.deviceDescriptor()),
+            inputMappingStore.profile(currentOverrideGameId, event.deviceDescriptor()),
         )
         if (mask == 0) {
             return super.dispatchKeyEvent(event)
@@ -1696,7 +1697,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun showInputMappingDialog() {
-        val profile = inputMappingStore.profile(currentGameId, activeInputDeviceDescriptor)
+        val profile = inputMappingStore.profile(currentOverrideGameId, activeInputDeviceDescriptor)
         val rows = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(8), dp(4), dp(8), dp(4))
@@ -1777,7 +1778,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
         rememberInputDevice(event)
         val mask = pendingHardwareMappingMask
-        if (inputMappingStore.setKeyCode(currentGameId, activeInputDeviceDescriptor, mask, keyCode)) {
+        if (inputMappingStore.setKeyCode(currentOverrideGameId, activeInputDeviceDescriptor, mask, keyCode)) {
             clearInput()
             Toast.makeText(
                 this,
@@ -1799,7 +1800,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun resetHardwareKeyMappings() {
-        inputMappingStore.reset(currentGameId, activeInputDeviceDescriptor)
+        inputMappingStore.reset(currentOverrideGameId, activeInputDeviceDescriptor)
         clearInput()
         Toast.makeText(this, "Hardware keys reset", Toast.LENGTH_SHORT).show()
     }
@@ -1825,7 +1826,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun exportInputProfile(uri: Uri) {
         val json = inputMappingStore.exportProfileJson(
-            currentGameId,
+            currentOverrideGameId,
             activeInputDeviceDescriptor,
             activeInputDeviceName,
         )
@@ -1840,7 +1841,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun importInputProfile(uri: Uri) {
         val ok = runCatching {
             val json = contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } ?: return@runCatching false
-            inputMappingStore.importProfileJson(currentGameId, activeInputDeviceDescriptor, json)
+            inputMappingStore.importProfileJson(currentOverrideGameId, activeInputDeviceDescriptor, json)
         }.getOrDefault(false)
         clearInput()
         Toast.makeText(this, if (ok) "Input profile imported" else "Input profile import failed", Toast.LENGTH_SHORT).show()
@@ -1939,7 +1940,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun inputMappingScopeLabel(): String {
         activeInputDeviceName?.let { return "Bindings apply to $it." }
-        return if (currentGameId == null) "Bindings apply globally." else "Bindings apply to this game."
+        return if (currentOverrideGameId == null) "Bindings apply globally." else "Bindings apply to this game."
     }
 
     private fun formatKeyCode(keyCode: Int?): String {
