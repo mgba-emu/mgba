@@ -196,6 +196,7 @@
 - [x] 已用 `~/game` 三个真实 ZIP ROM 完成模拟器画面 smoke：GBA/GBC 均可进入游戏画面，无 fatal log，颜色/方向/stride 目视正常。
 - [x] 已收紧 Android 快进音频策略：快进期间丢弃 core audio/output queue，避免旧样本积压或音频队列拖住快进，并加入 instrumented smoke 覆盖。
 - [x] 已补齐 Android 虚拟手柄编辑模式双指缩放：编辑时 pinch 可实时调整按钮大小并保存。
+- [x] 已新增 Android 输入同步延迟诊断：虚拟/实体输入到 `nativeSetKeys` 的事件年龄、JNI 调用耗时、最大耗时和 slow sample 计数会进入 Input debug 与诊断导出，并用 instrumented test 锁定虚拟触摸事件时间传递。
 
 ## 1. 产品目标和范围
 

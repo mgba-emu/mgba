@@ -107,6 +107,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var lastHatY = 0f
     private var lastLeftTrigger = 0f
     private var lastRightTrigger = 0f
+    private var lastInputSyncSource = "None"
+    private var lastInputSyncEventAgeUs = 0L
+    private var lastInputSyncDurationUs = 0L
+    private var maxInputSyncDurationUs = 0L
+    private var inputSyncSamples = 0L
+    private var slowInputSyncSamples = 0L
+    private var lastInputSyncKeys = 0
+    private var lastInputSyncAtMs = 0L
     private var virtualKeys = 0
     private var hardwareButtonKeys = 0
     private var hardwareAxisKeys = 0
@@ -291,9 +299,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 virtualGamepadLeftHanded,
             )
             setLayoutOffsets(virtualGamepadLayoutOffsets)
-            setOnKeysChangedListener { keys ->
+            setOnKeysChangedListener { keys, eventTimeMs ->
                 virtualKeys = keys
-                syncKeys()
+                syncKeys(eventTimeMs, "Virtual")
             }
             setOnLayoutOffsetsChangedListener { offsets ->
                 virtualGamepadLayoutOffsets = offsets
@@ -625,12 +633,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             KeyEvent.ACTION_DOWN -> {
                 rememberInputDevice(event)
                 hardwareButtonKeys = hardwareButtonKeys or mask
-                syncKeys()
+                syncKeys(event.eventTime, "Key")
                 return true
             }
             KeyEvent.ACTION_UP -> {
                 hardwareButtonKeys = hardwareButtonKeys and mask.inv()
-                syncKeys()
+                syncKeys(event.eventTime, "Key")
                 return true
             }
         }
@@ -650,7 +658,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             return super.onGenericMotionEvent(event)
         }
         hardwareAxisKeys = keys
-        syncKeys()
+        syncKeys(event.eventTime, "Motion")
         return true
     }
 
@@ -659,16 +667,34 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         hardwareButtonKeys = 0
         hardwareAxisKeys = 0
         gamepadView?.clearKeys()
-        syncKeys()
+        syncKeys(source = "Clear")
         if (fastForwardMode == FastForwardModes.ModeHold) {
             setFastForwardActive(false)
         }
         setRewindingActive(false)
     }
 
-    private fun syncKeys() {
+    private fun syncKeys(eventTimeMs: Long = SystemClock.uptimeMillis(), source: String = "Internal") {
         val keys = virtualKeys or hardwareButtonKeys or hardwareAxisKeys
-        controller?.setKeys(if (allowOpposingDirections) keys else filterOpposingDirections(keys))
+        val filteredKeys = if (allowOpposingDirections) keys else filterOpposingDirections(keys)
+        val nowMs = SystemClock.uptimeMillis()
+        val startNs = SystemClock.elapsedRealtimeNanos()
+        controller?.setKeys(filteredKeys)
+        val durationUs = (SystemClock.elapsedRealtimeNanos() - startNs).coerceAtLeast(0L) / 1000L
+        recordInputSync(source, eventTimeMs, nowMs, durationUs, filteredKeys)
+    }
+
+    private fun recordInputSync(source: String, eventTimeMs: Long, nowMs: Long, durationUs: Long, keys: Int) {
+        lastInputSyncSource = source
+        lastInputSyncEventAgeUs = (nowMs - eventTimeMs).coerceAtLeast(0L) * 1000L
+        lastInputSyncDurationUs = durationUs
+        maxInputSyncDurationUs = max(maxInputSyncDurationUs, durationUs)
+        inputSyncSamples += 1
+        if (durationUs > INPUT_SYNC_SLOW_THRESHOLD_US) {
+            slowInputSyncSamples += 1
+        }
+        lastInputSyncKeys = keys
+        lastInputSyncAtMs = SystemClock.elapsedRealtime()
     }
 
     private fun reloadPerGameOverridesFromStore() {
@@ -2412,7 +2438,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun inputDebugSummary(): String {
         return String.format(
             Locale.US,
-            "Device\nName: %s\nDescriptor: %s\n\nLast key\nAction: %s\nCode: %s\n\nLast axes\nSource: 0x%08X\nX: %.3f\nY: %.3f\nHat X: %.3f\nHat Y: %.3f\nLeft trigger: %.3f\nRight trigger: %.3f\nMapped keys: %s\nDeadzone: %d%%",
+            "Device\nName: %s\nDescriptor: %s\n\nLast key\nAction: %s\nCode: %s\n\nLast axes\nSource: 0x%08X\nX: %.3f\nY: %.3f\nHat X: %.3f\nHat Y: %.3f\nLeft trigger: %.3f\nRight trigger: %.3f\nMapped keys: %s\nDeadzone: %d%%\n\nNative sync\nSource: %s\nMask: %s\nEvent age: %.3f ms\nCall: %.3f ms\nMax call: %.3f ms\nSamples: %d\nSlow samples: %d",
             lastInputDeviceName ?: "(none)",
             lastInputDeviceDescriptor ?: "(none)",
             lastInputKeyAction,
@@ -2426,6 +2452,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             lastRightTrigger,
             formatGbaMask(lastMotionKeys),
             deadzonePercent,
+            lastInputSyncSource,
+            formatGbaMask(lastInputSyncKeys),
+            lastInputSyncEventAgeUs / 1000.0,
+            lastInputSyncDurationUs / 1000.0,
+            maxInputSyncDurationUs / 1000.0,
+            inputSyncSamples,
+            slowInputSyncSamples,
         )
     }
 
@@ -2646,6 +2679,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             appendLine("video scale=${SCALE_LABELS.getOrElse(scaleMode) { SCALE_LABELS[0] }} filter=${FILTER_LABELS.getOrElse(filterMode) { FILTER_LABELS[0] }} interframe=$interframeBlending")
             appendLine("audio muted=$muted volume=$volumePercent buffer=${AudioBufferModes.nameFor(audioBufferMode)} lowPass=${AudioLowPassModes.nameFor(audioLowPassMode)}")
             appendLine("input virtual=$showVirtualGamepad deadzone=$deadzonePercent opposing=$allowOpposingDirections activeDevice=${activeInputDeviceName.orEmpty()}")
+            appendLine("inputSync source=$lastInputSyncSource keys=${formatGbaMask(lastInputSyncKeys)} eventAgeUs=$lastInputSyncEventAgeUs nativeCallUs=$lastInputSyncDurationUs maxNativeCallUs=$maxInputSyncDurationUs samples=$inputSyncSamples slowSamples=$slowInputSyncSamples lastAtMs=$lastInputSyncAtMs")
             appendLine("sensors rumble=$rumbleEnabled tilt=$tiltEnabled solar=$solarLevel camera=${cameraImagePath.isNotBlank()}")
             if (stats == null) {
                 appendLine("nativeStats=unavailable")
@@ -3681,6 +3715,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val FIRST_FRAME_POLL_MS = 16L
         private const val FIRST_FRAME_TIMEOUT_MS = 5000L
         private const val AUDIO_ROUTE_RESTART_DELAY_MS = 250L
+        private const val INPUT_SYNC_SLOW_THRESHOLD_US = 2000L
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L

@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.View
 import android.view.HapticFeedbackConstants
@@ -96,7 +97,7 @@ class VirtualGamepadView(context: Context) : View(context) {
         typeface = android.graphics.Typeface.DEFAULT_BOLD
     }
     private var pressedKeys = 0
-    private var onKeysChanged: ((Int) -> Unit)? = null
+    private var onKeysChanged: ((Int, Long) -> Unit)? = null
     private var sizePercent = 100
     private var opacityPercent = 100
     private var spacingPercent = 100
@@ -118,7 +119,7 @@ class VirtualGamepadView(context: Context) : View(context) {
         setWillNotDraw(false)
     }
 
-    fun setOnKeysChangedListener(listener: (Int) -> Unit) {
+    fun setOnKeysChangedListener(listener: (Int, Long) -> Unit) {
         onKeysChanged = listener
     }
 
@@ -131,7 +132,7 @@ class VirtualGamepadView(context: Context) : View(context) {
     }
 
     fun clearKeys() {
-        updateKeys(0)
+        updateKeys(0, SystemClock.uptimeMillis())
     }
 
     fun setLayoutOffsets(offsets: VirtualGamepadLayoutOffsets) {
@@ -150,7 +151,7 @@ class VirtualGamepadView(context: Context) : View(context) {
         layoutEditMode = enabled
         activeEditCluster = null
         activePinchStartDistance = 0f
-        updateKeys(0)
+        updateKeys(0, SystemClock.uptimeMillis())
         invalidate()
     }
 
@@ -191,7 +192,7 @@ class VirtualGamepadView(context: Context) : View(context) {
         }
         if (event.actionMasked == MotionEvent.ACTION_CANCEL) {
             performClick()
-            updateKeys(0)
+            updateKeys(0, event.eventTime)
             return true
         }
 
@@ -213,7 +214,7 @@ class VirtualGamepadView(context: Context) : View(context) {
             performClick()
         }
 
-        updateKeys(keys)
+        updateKeys(keys, event.eventTime)
         return true
     }
 
@@ -582,7 +583,7 @@ class VirtualGamepadView(context: Context) : View(context) {
         return minTextSize
     }
 
-    private fun updateKeys(keys: Int) {
+    private fun updateKeys(keys: Int, eventTimeMs: Long) {
         if (pressedKeys == keys) {
             return
         }
@@ -590,7 +591,7 @@ class VirtualGamepadView(context: Context) : View(context) {
             performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
         }
         pressedKeys = keys
-        onKeysChanged?.invoke(keys)
+        onKeysChanged?.invoke(keys, eventTimeMs)
         invalidate()
     }
 
