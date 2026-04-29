@@ -317,6 +317,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         unregisterSensors()
         stopStatsOverlay()
         controller?.setSurface(null)
+        if (isFinishing) {
+            EmulatorSession.close()
+        }
         super.onDestroy()
     }
 

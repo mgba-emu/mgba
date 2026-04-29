@@ -106,6 +106,7 @@
 - [x] 已新增 Android 旋转模式切换：Follow / Landscape / Portrait，并按游戏持久化。
 - [x] 已新增 Android pause/unload 电池存档显式 flush，使用临时文件替换降低写坏风险。
 - [x] 已修复 Surface 重建后非用户暂停状态不会自动 resume 的生命周期问题。
+- [x] 已在 EmulatorActivity 真正 finish 时关闭 EmulatorSession，释放 native runner/thread/audio。
 - [x] 已新增 Android 画面 Pix/Smooth 过滤切换，JNI 透传到 GLES texture filtering 并按游戏持久化。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
