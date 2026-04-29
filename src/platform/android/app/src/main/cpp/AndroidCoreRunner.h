@@ -10,6 +10,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <memory>
 #include <mgba/core/interface.h>
 #include <mgba/core/rewind.h>
 #include <mgba/gba/interface.h>
@@ -40,6 +41,17 @@ struct AndroidRotationState {
 struct AndroidLuminanceState {
 	GBALuminanceSource d = {};
 	AndroidCoreRunner* runner = nullptr;
+};
+
+struct AndroidImageSourceState {
+	mImageSource d = {};
+	AndroidCoreRunner* runner = nullptr;
+};
+
+struct AndroidCameraFrame {
+	std::vector<uint16_t> pixels;
+	unsigned width = 0;
+	unsigned height = 0;
 };
 
 class AndroidCoreRunner {
@@ -87,6 +99,11 @@ public:
 	int32_t readGyroZ() const;
 	void setSolarLevel(int level);
 	uint8_t readSolarLevel() const;
+	bool setCameraImage(const uint32_t* argbPixels, size_t pixelCount, int width, int height);
+	void clearCameraImage();
+	void startCameraImageRequest(unsigned width, unsigned height);
+	void stopCameraImageRequest();
+	void requestCameraImage(const void** buffer, size_t* stride, enum mColorFormat* colorFormat);
 	void start();
 	void pause();
 	void resume();
@@ -145,6 +162,12 @@ private:
 	AndroidRumbleState m_rumble;
 	AndroidRotationState m_rotation;
 	AndroidLuminanceState m_luminance;
+	AndroidImageSourceState m_imageSource;
+	std::mutex m_cameraMutex;
+	std::shared_ptr<const AndroidCameraFrame> m_cameraFrame;
+	std::shared_ptr<const AndroidCameraFrame> m_requestedCameraFrame;
+	unsigned m_cameraRequestWidth = 128;
+	unsigned m_cameraRequestHeight = 112;
 	mCoreRewindContext m_rewind = {};
 	bool m_rewindReady = false;
 

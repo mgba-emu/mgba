@@ -197,6 +197,16 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setCameraImage(pixels: IntArray, width: Int, height: Int): Boolean {
+        return handle.isValid && NativeBridge.nativeSetCameraImage(handle.value, pixels, width, height)
+    }
+
+    fun clearCameraImage() {
+        if (handle.isValid) {
+            NativeBridge.nativeClearCameraImage(handle.value)
+        }
+    }
+
     fun start() {
         if (handle.isValid) {
             NativeBridge.nativeStart(handle.value)

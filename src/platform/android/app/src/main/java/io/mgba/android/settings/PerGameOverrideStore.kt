@@ -117,6 +117,10 @@ class PerGameOverrideStore(context: Context) {
         return booleanOverride(gameId, KEY_USE_LIGHT_SENSOR, fallback)
     }
 
+    fun cameraImagePath(gameId: String?): String {
+        return stringOverride(gameId, KEY_CAMERA_IMAGE_PATH, "")
+    }
+
     fun setScaleMode(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_SCALE_MODE, value.coerceIn(0, 4))
     }
@@ -231,6 +235,16 @@ class PerGameOverrideStore(context: Context) {
         return putBooleanOverride(gameId, KEY_USE_LIGHT_SENSOR, value)
     }
 
+    fun setCameraImagePath(gameId: String?, value: String): Boolean {
+        return putStringOverride(gameId, KEY_CAMERA_IMAGE_PATH, value)
+    }
+
+    fun clearCameraImagePath(gameId: String?): Boolean {
+        val key = key(gameId, KEY_CAMERA_IMAGE_PATH) ?: return false
+        preferences.edit().remove(key).apply()
+        return true
+    }
+
     private fun intOverride(gameId: String?, name: String, fallback: Int): Int {
         val key = key(gameId, name) ?: return fallback
         return if (preferences.contains(key)) preferences.getInt(key, fallback) else fallback
@@ -246,6 +260,11 @@ class PerGameOverrideStore(context: Context) {
         return if (preferences.contains(key)) preferences.getFloat(key, fallback) else fallback
     }
 
+    private fun stringOverride(gameId: String?, name: String, fallback: String): String {
+        val key = key(gameId, name) ?: return fallback
+        return if (preferences.contains(key)) preferences.getString(key, fallback) ?: fallback else fallback
+    }
+
     private fun putIntOverride(gameId: String?, name: String, value: Int): Boolean {
         val key = key(gameId, name) ?: return false
         preferences.edit().putInt(key, value).apply()
@@ -255,6 +274,12 @@ class PerGameOverrideStore(context: Context) {
     private fun putBooleanOverride(gameId: String?, name: String, value: Boolean): Boolean {
         val key = key(gameId, name) ?: return false
         preferences.edit().putBoolean(key, value).apply()
+        return true
+    }
+
+    private fun putStringOverride(gameId: String?, name: String, value: String): Boolean {
+        val key = key(gameId, name) ?: return false
+        preferences.edit().putString(key, value).apply()
         return true
     }
 
@@ -294,5 +319,6 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_TILT_OFFSET_Y = "tiltOffsetY"
         const val KEY_SOLAR_LEVEL = "solarLevel"
         const val KEY_USE_LIGHT_SENSOR = "useLightSensor"
+        const val KEY_CAMERA_IMAGE_PATH = "cameraImagePath"
     }
 }

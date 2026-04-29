@@ -119,6 +119,12 @@ object NativeBridge {
     external fun nativeSetSolarLevel(handle: Long, level: Int)
 
     @JvmStatic
+    external fun nativeSetCameraImage(handle: Long, pixels: IntArray, width: Int, height: Int): Boolean
+
+    @JvmStatic
+    external fun nativeClearCameraImage(handle: Long)
+
+    @JvmStatic
     external fun nativeStart(handle: Long)
 
     @JvmStatic

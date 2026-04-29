@@ -250,6 +250,51 @@ uint8_t AndroidLuminanceRead(GBALuminanceSource* luminance) {
 	return state && state->runner ? state->runner->readSolarLevel() : 0xFF;
 }
 
+uint16_t ArgbToRgb565(uint32_t color) {
+	const uint8_t red = static_cast<uint8_t>((color >> 16) & 0xFF);
+	const uint8_t green = static_cast<uint8_t>((color >> 8) & 0xFF);
+	const uint8_t blue = static_cast<uint8_t>(color & 0xFF);
+	return static_cast<uint16_t>(((red >> 3) << 11) | ((green >> 2) << 5) | (blue >> 3));
+}
+
+std::shared_ptr<const AndroidCameraFrame> MakeFallbackCameraFrame(unsigned width, unsigned height) {
+	width = std::max(1U, width);
+	height = std::max(1U, height);
+	auto frame = std::make_shared<AndroidCameraFrame>();
+	frame->width = width;
+	frame->height = height;
+	frame->pixels.resize(static_cast<size_t>(width) * height);
+	for (unsigned y = 0; y < height; ++y) {
+		for (unsigned x = 0; x < width; ++x) {
+			const uint8_t shade = static_cast<uint8_t>(0x40 + ((x + y) & 0x3F));
+			frame->pixels[static_cast<size_t>(y) * width + x] = ArgbToRgb565(
+				0xFF000000U | (static_cast<uint32_t>(shade) << 16) | (static_cast<uint32_t>(shade) << 8) | shade);
+		}
+	}
+	return frame;
+}
+
+void AndroidImageStartRequest(mImageSource* source, unsigned width, unsigned height, int) {
+	auto* state = reinterpret_cast<AndroidImageSourceState*>(source);
+	if (state && state->runner) {
+		state->runner->startCameraImageRequest(width, height);
+	}
+}
+
+void AndroidImageStopRequest(mImageSource* source) {
+	auto* state = reinterpret_cast<AndroidImageSourceState*>(source);
+	if (state && state->runner) {
+		state->runner->stopCameraImageRequest();
+	}
+}
+
+void AndroidImageRequest(mImageSource* source, const void** buffer, size_t* stride, enum mColorFormat* colorFormat) {
+	auto* state = reinterpret_cast<AndroidImageSourceState*>(source);
+	if (state && state->runner) {
+		state->runner->requestCameraImage(buffer, stride, colorFormat);
+	}
+}
+
 GLuint CompileShader(GLenum type, const char* source) {
 	GLuint shader = glCreateShader(type);
 	glShaderSource(shader, 1, &source, nullptr);
@@ -528,6 +573,14 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	m_luminance.d.readLuminance = AndroidLuminanceRead;
 	if (m_core->setPeripheral) {
 		m_core->setPeripheral(m_core, mPERIPH_GBA_LUMINANCE, &m_luminance.d);
+	}
+	m_imageSource = {};
+	m_imageSource.runner = this;
+	m_imageSource.d.startRequestImage = AndroidImageStartRequest;
+	m_imageSource.d.stopRequestImage = AndroidImageStopRequest;
+	m_imageSource.d.requestImage = AndroidImageRequest;
+	if (m_core->setPeripheral) {
+		m_core->setPeripheral(m_core, mPERIPH_IMAGE_SOURCE, &m_imageSource.d);
 	}
 
 	struct mGameInfo info;
@@ -1082,6 +1135,64 @@ uint8_t AndroidCoreRunner::readSolarLevel() const {
 	return m_solarLevel.load();
 }
 
+bool AndroidCoreRunner::setCameraImage(const uint32_t* argbPixels, size_t pixelCount, int width, int height) {
+	if (!argbPixels || width <= 0 || height <= 0 || width > 4096 || height > 4096) {
+		return false;
+	}
+	const auto imageWidth = static_cast<unsigned>(width);
+	const auto imageHeight = static_cast<unsigned>(height);
+	const size_t expectedPixels = static_cast<size_t>(imageWidth) * imageHeight;
+	if (expectedPixels == 0 || expectedPixels > pixelCount) {
+		return false;
+	}
+
+	auto frame = std::make_shared<AndroidCameraFrame>();
+	frame->width = imageWidth;
+	frame->height = imageHeight;
+	frame->pixels.resize(expectedPixels);
+	for (size_t i = 0; i < expectedPixels; ++i) {
+		frame->pixels[i] = ArgbToRgb565(argbPixels[i]);
+	}
+
+	std::lock_guard<std::mutex> lock(m_cameraMutex);
+	m_cameraFrame = std::move(frame);
+	return true;
+}
+
+void AndroidCoreRunner::clearCameraImage() {
+	std::lock_guard<std::mutex> lock(m_cameraMutex);
+	m_cameraFrame.reset();
+	m_requestedCameraFrame.reset();
+}
+
+void AndroidCoreRunner::startCameraImageRequest(unsigned width, unsigned height) {
+	std::lock_guard<std::mutex> lock(m_cameraMutex);
+	m_cameraRequestWidth = std::max(1U, width);
+	m_cameraRequestHeight = std::max(1U, height);
+	if (!m_cameraFrame) {
+		m_cameraFrame = MakeFallbackCameraFrame(m_cameraRequestWidth, m_cameraRequestHeight);
+	}
+}
+
+void AndroidCoreRunner::stopCameraImageRequest() {
+	std::lock_guard<std::mutex> lock(m_cameraMutex);
+	m_requestedCameraFrame.reset();
+}
+
+void AndroidCoreRunner::requestCameraImage(const void** buffer, size_t* stride, enum mColorFormat* colorFormat) {
+	if (!buffer || !stride || !colorFormat) {
+		return;
+	}
+	std::lock_guard<std::mutex> lock(m_cameraMutex);
+	if (!m_cameraFrame) {
+		m_cameraFrame = MakeFallbackCameraFrame(m_cameraRequestWidth, m_cameraRequestHeight);
+	}
+	m_requestedCameraFrame = m_cameraFrame;
+	*buffer = m_requestedCameraFrame->pixels.data();
+	*stride = m_requestedCameraFrame->width;
+	*colorFormat = mCOLOR_RGB565;
+}
+
 void AndroidCoreRunner::start() {
 	if (m_running.exchange(true)) {
 		m_paused = false;
@@ -1472,12 +1583,14 @@ void AndroidCoreRunner::unloadCore() {
 		m_core->setPeripheral(m_core, mPERIPH_RUMBLE, nullptr);
 		m_core->setPeripheral(m_core, mPERIPH_ROTATION, nullptr);
 		m_core->setPeripheral(m_core, mPERIPH_GBA_LUMINANCE, nullptr);
+		m_core->setPeripheral(m_core, mPERIPH_IMAGE_SOURCE, nullptr);
 	}
 	m_rumbleActive = false;
 	m_rewinding = false;
 	m_tiltX = 0;
 	m_tiltY = 0;
 	m_gyroZ = 0;
+	stopCameraImageRequest();
 	m_solarLevel = 0xFF;
 	flushBatterySave();
 	if (m_rewindReady) {

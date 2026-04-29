@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.pm.ActivityInfo
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -116,6 +117,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var rumbleButton: Button? = null
     private var tiltButton: Button? = null
     private var solarButton: Button? = null
+    private var cameraButton: Button? = null
     private var statsButton: Button? = null
     private var statsOverlay: TextView? = null
     private var userPaused = false
@@ -148,6 +150,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var gyroZ = 0f
     private var solarLevel = 255
     private var useLightSensor = false
+    private var cameraImagePath = ""
     private var showStats = false
     private var lastStatsFrames = 0L
     private var lastStatsAtMs = 0L
@@ -245,6 +248,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         tiltOffsetY = perGameOverrides.tiltOffsetY(currentGameId, 0f)
         solarLevel = perGameOverrides.solarLevel(currentGameId, 255)
         useLightSensor = perGameOverrides.useLightSensor(currentGameId, false)
+        cameraImagePath = perGameOverrides.cameraImagePath(currentGameId)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         applyOrientationMode()
         enterImmersiveMode()
@@ -263,6 +267,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         controller?.setLowPassRangePercent(AudioLowPassModes.rangeFor(audioLowPassMode))
         controller?.setFastForwardMultiplier(fastForwardMultiplier)
         controller?.setRewindConfig(rewindEnabled, rewindBufferCapacity, rewindBufferInterval)
+        applyPersistedCameraImage()
 
         val root = FrameLayout(this).apply {
             setBackgroundColor(getColor(R.color.mgba_background))
@@ -365,6 +370,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             REQUEST_EXPORT_INPUT_PROFILE -> exportInputProfile(uri)
             REQUEST_IMPORT_INPUT_PROFILE -> importInputProfile(uri)
             REQUEST_IMPORT_PATCH -> importPatch(uri)
+            REQUEST_IMPORT_CAMERA_IMAGE -> importCameraImage(uri)
         }
     }
 
@@ -964,6 +970,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(solarButton)
+            cameraButton = Button(context).apply {
+                setOnClickListener {
+                    showCameraImageDialog()
+                }
+            }
+            runRow.addView(cameraButton)
             runRow.addView(Button(context).apply {
                 text = "Keys"
                 setOnClickListener {
@@ -1174,6 +1186,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         rumbleButton?.text = if (rumbleEnabled) "Rumble" else "NoRumble"
         tiltButton?.text = if (tiltEnabled) "Tilt*" else "Tilt"
         solarButton?.text = if (useLightSensor) "Solar*" else "Solar"
+        cameraButton?.text = if (cameraImagePath.isBlank()) "Camera" else "Cam*"
         statsButton?.text = if (showStats) "Stats*" else "Stats"
     }
 
@@ -1311,6 +1324,152 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             .setView(content)
             .setPositiveButton("Close", null)
             .show()
+    }
+
+    private fun showCameraImageDialog() {
+        val actions = if (cameraImagePath.isBlank()) {
+            arrayOf("Import Static Image")
+        } else {
+            arrayOf("Import Static Image", "Clear Static Image")
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Game Boy Camera")
+            .setItems(actions) { _, which ->
+                when (actions[which]) {
+                    "Import Static Image" -> openCameraImagePicker()
+                    "Clear Static Image" -> clearCameraImage()
+                }
+            }
+            .show()
+    }
+
+    private fun openCameraImagePicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "image/*"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_IMPORT_CAMERA_IMAGE)
+    }
+
+    private fun importCameraImage(imageUri: Uri) {
+        val gameId = currentGameId
+        if (gameId.isNullOrBlank()) {
+            Toast.makeText(this, "Camera image unavailable for this game", Toast.LENGTH_SHORT).show()
+            return
+        }
+        Thread {
+            val path = copyCameraImage(gameId, imageUri)
+            val appliedPath = path?.takeIf { setCameraImageFromPath(it) }
+            if (appliedPath != null) {
+                perGameOverrides.setCameraImagePath(gameId, appliedPath)
+            }
+            runOnUiThread {
+                if (appliedPath != null) {
+                    cameraImagePath = appliedPath
+                    updateRunButtons()
+                    Toast.makeText(this, "Camera image imported", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Camera image import failed", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
+    private fun applyPersistedCameraImage() {
+        val path = cameraImagePath
+        if (path.isBlank()) {
+            return
+        }
+        if (!setCameraImageFromPath(path)) {
+            perGameOverrides.clearCameraImagePath(currentGameId)
+            cameraImagePath = ""
+        }
+    }
+
+    private fun setCameraImageFromPath(path: String): Boolean {
+        val image = cameraImagePixels(path) ?: return false
+        return controller?.setCameraImage(image.pixels, image.width, image.height) == true
+    }
+
+    private fun cameraImagePixels(path: String): CameraImagePixels? {
+        val bounds = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        BitmapFactory.decodeFile(path, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+            return null
+        }
+        val sampleSize = max(
+            1,
+            min(bounds.outWidth / CAMERA_IMAGE_WIDTH, bounds.outHeight / CAMERA_IMAGE_HEIGHT),
+        )
+        val source = BitmapFactory.decodeFile(
+            path,
+            BitmapFactory.Options().apply {
+                inSampleSize = sampleSize
+            },
+        ) ?: return null
+        val targetRatio = CAMERA_IMAGE_WIDTH.toFloat() / CAMERA_IMAGE_HEIGHT.toFloat()
+        val sourceRatio = source.width.toFloat() / source.height.toFloat()
+        val cropWidth: Int
+        val cropHeight: Int
+        if (sourceRatio > targetRatio) {
+            cropHeight = source.height
+            cropWidth = (source.height * targetRatio).toInt().coerceIn(1, source.width)
+        } else {
+            cropWidth = source.width
+            cropHeight = (source.width / targetRatio).toInt().coerceIn(1, source.height)
+        }
+        val cropLeft = ((source.width - cropWidth) / 2).coerceAtLeast(0)
+        val cropTop = ((source.height - cropHeight) / 2).coerceAtLeast(0)
+        val cropped = Bitmap.createBitmap(source, cropLeft, cropTop, cropWidth, cropHeight)
+        val scaled = Bitmap.createScaledBitmap(cropped, CAMERA_IMAGE_WIDTH, CAMERA_IMAGE_HEIGHT, true)
+        val pixels = IntArray(CAMERA_IMAGE_WIDTH * CAMERA_IMAGE_HEIGHT)
+        scaled.getPixels(pixels, 0, CAMERA_IMAGE_WIDTH, 0, 0, CAMERA_IMAGE_WIDTH, CAMERA_IMAGE_HEIGHT)
+        if (scaled !== cropped) {
+            scaled.recycle()
+        }
+        if (cropped !== source) {
+            cropped.recycle()
+        }
+        source.recycle()
+        return CameraImagePixels(pixels, CAMERA_IMAGE_WIDTH, CAMERA_IMAGE_HEIGHT)
+    }
+
+    private fun copyCameraImage(gameId: String, imageUri: Uri): String? {
+        return runCatching {
+            val directory = File(filesDir, "camera-images")
+            directory.mkdirs()
+            val target = File(directory, "${sha1(gameId)}.image")
+            contentResolver.openInputStream(imageUri)?.use { input ->
+                target.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            } ?: return@runCatching null
+            val bounds = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            BitmapFactory.decodeFile(target.absolutePath, bounds)
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+                target.delete()
+                null
+            } else {
+                target.absolutePath
+            }
+        }.getOrNull()
+    }
+
+    private fun clearCameraImage() {
+        val previousPath = cameraImagePath
+        perGameOverrides.clearCameraImagePath(currentGameId)
+        cameraImagePath = ""
+        controller?.clearCameraImage()
+        if (previousPath.isNotBlank()) {
+            File(previousPath).delete()
+        }
+        updateRunButtons()
+        Toast.makeText(this, "Camera image cleared", Toast.LENGTH_SHORT).show()
     }
 
     private fun luxToSolarLevel(lux: Float): Int {
@@ -2165,6 +2324,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
+    private data class CameraImagePixels(
+        val pixels: IntArray,
+        val width: Int,
+        val height: Int,
+    )
+
     companion object {
         private const val REQUEST_IMPORT_SAVE = 2001
         private const val REQUEST_IMPORT_CHEATS = 2002
@@ -2173,9 +2338,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val REQUEST_EXPORT_INPUT_PROFILE = 2005
         private const val REQUEST_IMPORT_INPUT_PROFILE = 2006
         private const val REQUEST_IMPORT_PATCH = 2007
+        private const val REQUEST_IMPORT_CAMERA_IMAGE = 2008
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L
+        private const val CAMERA_IMAGE_WIDTH = 128
+        private const val CAMERA_IMAGE_HEIGHT = 112
         private const val MAX_GYRO_RADIANS = 8f
         private const val MAX_SOLAR_LUX = 10000f
         private const val DEFAULT_GAMEPAD_SIZE_PERCENT = 100

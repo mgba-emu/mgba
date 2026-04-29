@@ -371,6 +371,34 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetSolarLevel(JNIEnv*, jclass, jl
 	}
 }
 
+extern "C" JNIEXPORT jboolean JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetCameraImage(
+    JNIEnv* env, jclass, jlong handle, jintArray pixels, jint width, jint height) {
+	AndroidCoreRunner* runner = FromHandle(handle);
+	if (!runner || !pixels) {
+		return JNI_FALSE;
+	}
+	const jsize count = env->GetArrayLength(pixels);
+	jint* data = env->GetIntArrayElements(pixels, nullptr);
+	if (!data) {
+		return JNI_FALSE;
+	}
+	const bool ok = runner->setCameraImage(
+		reinterpret_cast<const uint32_t*>(data),
+		static_cast<size_t>(count),
+		width,
+		height);
+	env->ReleaseIntArrayElements(pixels, data, JNI_ABORT);
+	return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeClearCameraImage(JNIEnv*, jclass, jlong handle) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->clearCameraImage();
+	}
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeStart(JNIEnv*, jclass, jlong handle) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {

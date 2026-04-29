@@ -402,7 +402,7 @@ object NativeBridge {
   - [x] `core->setAudioBufferSize`。
   - [ ] `core->setAVStream` 接入音频/视频回调。
   - [x] `core->setPeripheral` 接入 rumble / rotation / luminance。
-  - [ ] `core->setPeripheral` 接入 camera。
+  - [x] `core->setPeripheral` 接入 camera。
   - [x] `core->loadROM(core, vf)`。
   - [ ] `mCoreAutoloadSave(core)`、`mCoreAutoloadPatch(core)`、`mCoreAutoloadCheats(core)`。
 - [ ] `start` 使用 `mCoreThreadStart`，不要自己裸循环 `runFrame`，除非后续证明 Android 生命周期下需要自定义 loop。
@@ -619,7 +619,7 @@ object NativeBridge {
   - [x] 可选使用 Android light sensor。
 - [ ] Game Boy Camera：
   - [ ] 后期接 CameraX。
-  - [ ] 先提供静态图片导入作为 image source。
+  - [x] 先提供静态图片导入作为 image source。
 
 ### 7.5 输入验收标准
 
@@ -1231,7 +1231,7 @@ object NativeBridge {
 - [x] Rumble。
 - [ ] Tilt / gyro。
 - [ ] Solar sensor。
-- [ ] Game Boy Camera 静态图片源。
+- [x] Game Boy Camera 静态图片源。
 - [ ] 验收：
   - [ ] 支持对应硬件特性的测试 ROM 行为正确。
 
