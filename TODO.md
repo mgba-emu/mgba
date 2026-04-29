@@ -149,6 +149,7 @@
 - [x] 已增强 Android 电池存档导出：Android 6-9 通过 SAF 创建 `.sav` fallback 导出。
 - [x] 已增强 Android 截图导出：Android 6-9 通过 SAF 创建 PNG fallback 导出。
 - [x] 已新增 Android 最近打开管理：首页可清空 Recent 列表。
+- [x] 已新增 Android CI 合规检查：禁止在 App 源码中捆绑 ROM、save、savestate 或 BIOS 文件。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -1150,8 +1151,8 @@ object NativeBridge {
   - [x] mGBA copyright。
   - [x] MPL 2.0。
   - [x] 第三方库 license：zlib、libpng、lzma、sqlite、inih 等实际启用项。
-- [ ] 不分发 BIOS。
-- [ ] 不分发商业 ROM。
+- [x] 不分发 BIOS。
+- [x] 不分发商业 ROM。
 - [ ] 如果启用 FFmpeg，明确 LGPL/GPL 组件选择和发布义务。
 - [ ] 如果使用 AndroidX / Oboe / CameraX / Room，补充各自 license。
 
@@ -1312,5 +1313,5 @@ object NativeBridge {
 - [x] Debug APK、Release APK/AAB 可构建。
 - [x] CI 自动构建 Android。
 - [x] License / 第三方声明完整。
-- [ ] 没有提交商业 ROM、BIOS 或不可分发资源。
+- [x] 没有提交商业 ROM、BIOS 或不可分发资源。
 - [ ] 有一套可重复执行的手工验收清单和至少基础自动化测试。

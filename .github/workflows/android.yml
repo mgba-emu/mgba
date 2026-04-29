@@ -47,6 +47,24 @@ jobs:
             "cmake;3.22.1" \
             "ndk;28.2.13676358"
 
+      - name: Check bundled Android assets
+        run: |
+          forbidden="$(find src/platform/android/app/src/main -type f \( \
+            -iname "*.gba" -o \
+            -iname "*.agb" -o \
+            -iname "*.gb" -o \
+            -iname "*.gbc" -o \
+            -iname "*.sgb" -o \
+            -iname "*.sav" -o \
+            -iname "*.ss" -o \
+            -iname "*.bios" \
+          \))"
+          if [ -n "$forbidden" ]; then
+            echo "Forbidden ROM/save/BIOS artifacts found in Android app sources:"
+            echo "$forbidden"
+            exit 1
+          fi
+
       - name: Build debug APK
         working-directory: src/platform/android
         run: ./gradlew :app:assembleDebug --no-daemon

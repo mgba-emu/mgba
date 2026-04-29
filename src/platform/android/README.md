@@ -42,6 +42,8 @@ This strict mode applies to the Android JNI/native wrapper target. It can also b
 
 Android-specific release notices are tracked in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Keep that file and the in-app Licenses dialog in sync whenever runtime or bundled source dependencies change.
 
+CI also rejects ROM, save-state, battery-save, and BIOS files under `app/src/main` so generated release artifacts do not accidentally bundle redistributability-sensitive game data.
+
 ## Release signing
 
 Release builds are unsigned unless signing inputs are provided. Configure either Gradle properties or matching environment variables:
