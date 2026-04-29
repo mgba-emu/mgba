@@ -35,6 +35,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -1256,8 +1257,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     exitWithConfirmation()
                 }
             })
-            addView(runRow)
-            addView(stateRow)
+            addView(scrollableToolbarRow(runRow))
+            addView(scrollableToolbarRow(stateRow))
             stateThumbnailView = ImageView(context).apply {
                 visibility = View.GONE
                 scaleType = ImageView.ScaleType.CENTER_CROP
@@ -1272,6 +1273,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             )
             updateSlotButton()
             updateRunButtons()
+        }
+    }
+
+    private fun scrollableToolbarRow(row: LinearLayout): HorizontalScrollView {
+        return HorizontalScrollView(this).apply {
+            isHorizontalScrollBarEnabled = false
+            addView(row)
         }
     }
 
