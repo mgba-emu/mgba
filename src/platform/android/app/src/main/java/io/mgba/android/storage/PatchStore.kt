@@ -18,55 +18,55 @@ class PatchStore(context: Context) {
             return false
         }
         val target = File(directory, DEFAULT_PATCH_NAME)
-        return runCatching {
-            appContext.contentResolver.openInputStream(uri)?.use { input ->
-                target.outputStream().use { output ->
-                    input.copyTo(output)
+        val imported = replaceFileAtomically(target) { temp ->
+            val input = appContext.contentResolver.openInputStream(uri) ?: error("Patch input unavailable")
+            input.use {
+                temp.outputStream().use { output ->
+                    it.copyTo(output)
                 }
-            } ?: return false
+            }
+        }
+        if (imported) {
             preferences.edit().putString(KEY_DISPLAY_NAME, displayName).apply()
-            true
-        }.getOrDefault(false)
+        }
+        return imported
     }
 
     fun importForGame(gameId: String?, uri: Uri, displayName: String): Boolean {
         val id = patchId(gameId) ?: return false
         val directory = patchDirectory() ?: return false
         val target = File(directory, "$id${patchExtension(displayName)}")
-        val tmp = File(directory, "${target.name}.tmp")
-        return runCatching {
-            appContext.contentResolver.openInputStream(uri)?.use { input ->
-                tmp.outputStream().use { output ->
-                    input.copyTo(output)
+        val imported = replaceFileAtomically(target) { temp ->
+            val input = appContext.contentResolver.openInputStream(uri) ?: error("Patch input unavailable")
+            input.use {
+                temp.outputStream().use { output ->
+                    it.copyTo(output)
                 }
-            } ?: return false
-            if (target.exists()) {
-                target.delete()
             }
-            if (!tmp.renameTo(target)) {
-                tmp.delete()
-                return false
-            }
+        }
+        if (imported) {
             preferences.edit()
                 .putString(gameDisplayNameKey(id), displayName)
                 .putString(gameFileNameKey(id), target.name)
                 .apply()
-            true
-        }.getOrDefault(false)
+        }
+        return imported
     }
 
     fun importForGameFile(gameId: String?, file: File, displayName: String): Boolean {
         val id = patchId(gameId) ?: return false
         val directory = patchDirectory() ?: return false
         val target = File(directory, "$id${patchExtension(displayName)}")
-        return runCatching {
-            file.copyTo(target, overwrite = true)
+        val imported = replaceFileAtomically(target) { temp ->
+            file.copyTo(temp, overwrite = true)
+        }
+        if (imported) {
             preferences.edit()
                 .putString(gameDisplayNameKey(id), displayName)
                 .putString(gameFileNameKey(id), target.name)
                 .apply()
-            true
-        }.getOrDefault(false)
+        }
+        return imported
     }
 
     fun fileForGame(gameId: String?): File? {

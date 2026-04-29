@@ -20,40 +20,37 @@ class CheatStore(context: Context) {
         val id = cheatId(gameId) ?: return false
         val directory = cheatDirectory() ?: return false
         val target = File(directory, "$id.cheats")
-        val tmp = File(directory, "${target.name}.tmp")
-        return runCatching {
-            appContext.contentResolver.openInputStream(uri)?.use { input ->
-                tmp.outputStream().use { output ->
-                    input.copyTo(output)
+        val imported = replaceFileAtomically(target) { temp ->
+            val input = appContext.contentResolver.openInputStream(uri) ?: error("Cheat input unavailable")
+            input.use {
+                temp.outputStream().use { output ->
+                    it.copyTo(output)
                 }
-            } ?: return false
-            if (target.exists()) {
-                target.delete()
             }
-            if (!tmp.renameTo(target)) {
-                tmp.delete()
-                return false
-            }
+        }
+        if (imported) {
             preferences.edit()
                 .putString(gameDisplayNameKey(id), displayName)
                 .putString(gameFileNameKey(id), target.name)
                 .apply()
-            true
-        }.getOrDefault(false)
+        }
+        return imported
     }
 
     fun importForGameFile(gameId: String?, file: File, displayName: String): Boolean {
         val id = cheatId(gameId) ?: return false
         val directory = cheatDirectory() ?: return false
         val target = File(directory, "$id.cheats")
-        return runCatching {
-            file.copyTo(target, overwrite = true)
+        val imported = replaceFileAtomically(target) { temp ->
+            file.copyTo(temp, overwrite = true)
+        }
+        if (imported) {
             preferences.edit()
                 .putString(gameDisplayNameKey(id), displayName)
                 .putString(gameFileNameKey(id), target.name)
                 .apply()
-            true
-        }.getOrDefault(false)
+        }
+        return imported
     }
 
     fun fileForGame(gameId: String?): File? {
@@ -97,14 +94,16 @@ class CheatStore(context: Context) {
             enabled = true,
             lines = lines,
         )
-        return runCatching {
-            target.writeText(serializeEntries(entries))
+        val saved = replaceFileAtomically(target) { temp ->
+            temp.writeText(serializeEntries(entries))
+        }
+        if (saved) {
             preferences.edit()
                 .putString(gameDisplayNameKey(id), "Manual cheats")
                 .putString(gameFileNameKey(id), target.name)
                 .apply()
-            true
-        }.getOrDefault(false)
+        }
+        return saved
     }
 
     fun updateEntry(gameId: String?, index: Int, name: String, codeText: String): Boolean {
@@ -166,10 +165,9 @@ class CheatStore(context: Context) {
     }
 
     private fun writeEntries(file: File, entries: List<CheatEntry>): Boolean {
-        return runCatching {
-            file.writeText(serializeEntries(entries))
-            true
-        }.getOrDefault(false)
+        return replaceFileAtomically(file) { temp ->
+            temp.writeText(serializeEntries(entries))
+        }
     }
 
     private fun parseEntries(lines: List<String>): List<CheatEntry> {

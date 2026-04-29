@@ -49,55 +49,47 @@ class BiosStore(context: Context) {
     fun import(slot: BiosSlot, uri: Uri, displayName: String): Boolean {
         val directory = biosDirectory() ?: return false
         val target = biosFile(slot, directory)
-        val tmp = File(directory, "${target.name}.tmp")
-        return runCatching {
-            appContext.contentResolver.openInputStream(uri)?.use { input ->
-                tmp.outputStream().use { output ->
-                    input.copyTo(output)
+        val imported = replaceFileAtomically(target) { temp ->
+            val input = appContext.contentResolver.openInputStream(uri) ?: error("BIOS input unavailable")
+            input.use {
+                temp.outputStream().use { output ->
+                    it.copyTo(output)
                 }
-            } ?: return false
-            if (target.exists()) {
-                target.delete()
             }
-            if (!tmp.renameTo(target)) {
-                tmp.delete()
-                return false
-            }
+        }
+        if (imported) {
             preferences.edit().putString(slot.displayNameKey, displayName).apply()
-            true
-        }.getOrDefault(false)
+        }
+        return imported
     }
 
     fun importForGame(gameId: String?, slot: BiosSlot, uri: Uri, displayName: String): Boolean {
         val directory = gameBiosDirectory(gameId) ?: return false
         val target = biosFile(slot, directory)
-        val tmp = File(directory, "${target.name}.tmp")
-        return runCatching {
-            appContext.contentResolver.openInputStream(uri)?.use { input ->
-                tmp.outputStream().use { output ->
-                    input.copyTo(output)
+        val imported = replaceFileAtomically(target) { temp ->
+            val input = appContext.contentResolver.openInputStream(uri) ?: error("BIOS input unavailable")
+            input.use {
+                temp.outputStream().use { output ->
+                    it.copyTo(output)
                 }
-            } ?: return false
-            if (target.exists()) {
-                target.delete()
             }
-            if (!tmp.renameTo(target)) {
-                tmp.delete()
-                return false
-            }
+        }
+        if (imported) {
             preferences.edit().putString(gameDisplayNameKey(gameId, slot), displayName).apply()
-            true
-        }.getOrDefault(false)
+        }
+        return imported
     }
 
     fun importForGameFile(gameId: String?, slot: BiosSlot, file: File, displayName: String): Boolean {
         val directory = gameBiosDirectory(gameId) ?: return false
         val target = biosFile(slot, directory)
-        return runCatching {
-            file.copyTo(target, overwrite = true)
+        val imported = replaceFileAtomically(target) { temp ->
+            file.copyTo(temp, overwrite = true)
+        }
+        if (imported) {
             preferences.edit().putString(gameDisplayNameKey(gameId, slot), displayName).apply()
-            true
-        }.getOrDefault(false)
+        }
+        return imported
     }
 
     fun clearDefault(): Boolean {
