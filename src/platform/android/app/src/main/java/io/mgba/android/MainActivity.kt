@@ -40,6 +40,7 @@ import io.mgba.android.settings.AudioBufferModes
 import io.mgba.android.settings.AudioLowPassModes
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.FastForwardModes
+import io.mgba.android.settings.InputMappingStore
 import io.mgba.android.settings.LogLevelModes
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.settings.RewindSettings
@@ -66,6 +67,7 @@ class MainActivity : Activity() {
     private lateinit var libraryStore: RomLibraryStore
     private lateinit var preferences: EmulatorPreferences
     private lateinit var perGameOverrides: PerGameOverrideStore
+    private lateinit var inputMappingStore: InputMappingStore
     private lateinit var biosStore: BiosStore
     private lateinit var cheatStore: CheatStore
     private lateinit var patchStore: PatchStore
@@ -111,6 +113,7 @@ class MainActivity : Activity() {
         libraryStore = RomLibraryStore(this)
         preferences = EmulatorPreferences(this)
         perGameOverrides = PerGameOverrideStore(this)
+        inputMappingStore = InputMappingStore(this)
         biosStore = BiosStore(this)
         cheatStore = CheatStore(this)
         patchStore = PatchStore(this)
@@ -1750,9 +1753,10 @@ class MainActivity : Activity() {
 
     private fun settingsBackupJson(): String {
         return JSONObject()
-            .put("version", 1)
+            .put("version", 2)
             .put("emulatorPreferences", JSONObject(preferences.exportJson()))
             .put("perGameOverrides", perGameOverrides.exportJson())
+            .put("inputMappings", inputMappingStore.exportJson())
             .toString(2)
     }
 
@@ -1761,7 +1765,9 @@ class MainActivity : Activity() {
         val importedPreferences = preferences.importJson(raw)
         val overrides = root.optJSONObject("perGameOverrides")
         val importedOverrides = overrides?.let { perGameOverrides.importJson(it) } ?: true
-        return importedPreferences && importedOverrides
+        val mappings = root.optJSONObject("inputMappings")
+        val importedMappings = mappings?.let { inputMappingStore.importJson(it) } ?: true
+        return importedPreferences && importedOverrides && importedMappings
     }
 
     private fun clearArchiveCache() {

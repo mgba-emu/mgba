@@ -138,6 +138,7 @@
 - [x] 已新增 Android native wrapper 警告检查：CI 使用 `mgbaAndroidWarningsAsErrors=true` 将端口层 native warning 作为失败处理。
 - [x] 已新增 Android 第三方声明文档，并同步 README 与 App 内 Licenses 文案。
 - [x] 已新增 Android per-game BIOS 覆盖：当前游戏可导入/清除专属 BIOS，启动时优先于全局 BIOS，并随游戏数据包导入导出。
+- [x] 已增强 Android Settings 备份：全局导入/导出现在包含硬件输入映射。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围

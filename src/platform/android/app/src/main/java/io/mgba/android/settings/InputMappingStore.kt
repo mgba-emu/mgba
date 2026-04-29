@@ -117,6 +117,27 @@ class InputMappingStore(context: Context) {
         return true
     }
 
+    fun exportJson(): JSONObject {
+        val json = JSONObject()
+        preferences.all.toSortedMap().forEach { (key, value) ->
+            if (value is Int) {
+                json.put(key, value)
+            }
+        }
+        return json
+    }
+
+    fun importJson(json: JSONObject): Boolean {
+        val editor = preferences.edit().clear()
+        val keys = json.keys()
+        while (keys.hasNext()) {
+            val key = keys.next()
+            editor.putInt(key, json.optInt(key, 0))
+        }
+        editor.apply()
+        return true
+    }
+
     fun migrateGameId(primaryGameId: String?, legacyGameId: String?): Boolean {
         val primaryScope = gameScope(primaryGameId) ?: return false
         val legacy = legacyGameId?.takeIf { it.isNotBlank() } ?: return false
