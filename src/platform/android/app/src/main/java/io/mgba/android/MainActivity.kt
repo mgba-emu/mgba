@@ -723,9 +723,10 @@ class MainActivity : Activity() {
             },
         )
         if (result?.ok == true) {
-            EmulatorSession.setCurrentGame(gameId, name, stableGameIdFor(gameId, result.crc32), result.crc32)
+            val stableGameId = stableGameIdFor(gameId, result.crc32)
+            EmulatorSession.setCurrentGame(gameId, name, stableGameId, result.crc32)
             if (shouldStoreRecent) {
-                recentStore.add(uri, recentDisplayName)
+                recentStore.add(uri, recentDisplayName, stableGameId, result.crc32)
                 renderRecentGames()
             }
             libraryStore.markPlayed(uri)
@@ -773,7 +774,15 @@ class MainActivity : Activity() {
     }
 
     private fun stableGameIdForLibraryUri(uri: Uri, gameId: String): String {
-        val crc32 = libraryStore.list().firstOrNull { it.uri == uri }?.crc32.orEmpty()
+        val libraryEntry = libraryStore.list().firstOrNull { it.uri == uri }
+        if (libraryEntry?.crc32?.isNotBlank() == true) {
+            return stableGameIdFor(gameId, libraryEntry.crc32)
+        }
+        val recentEntry = recentStore.list().firstOrNull { it.uri == uri }
+        if (recentEntry?.stableId?.isNotBlank() == true) {
+            return recentEntry.stableId
+        }
+        val crc32 = recentEntry?.crc32.orEmpty()
         return stableGameIdFor(gameId, crc32)
     }
 

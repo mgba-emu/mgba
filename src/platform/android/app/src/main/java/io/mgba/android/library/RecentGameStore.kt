@@ -9,6 +9,8 @@ data class RecentGame(
     val uri: Uri,
     val displayName: String,
     val lastOpened: Long,
+    val stableId: String = "",
+    val crc32: String = "",
 )
 
 class RecentGameStore(context: Context) {
@@ -27,16 +29,18 @@ class RecentGameStore(context: Context) {
                         uri = Uri.parse(uri),
                         displayName = displayName,
                         lastOpened = item.optLong("lastOpened", 0L),
+                        stableId = item.optString("stableId"),
+                        crc32 = item.optString("crc32"),
                     ),
                 )
             }
         }.sortedByDescending { it.lastOpened }
     }
 
-    fun add(uri: Uri, displayName: String) {
+    fun add(uri: Uri, displayName: String, stableId: String = "", crc32: String = "") {
         val existing = list().filterNot { it.uri == uri }
         val updated = listOf(
-            RecentGame(uri, displayName, System.currentTimeMillis()),
+            RecentGame(uri, displayName, System.currentTimeMillis(), stableId, crc32),
         ) + existing
         val array = JSONArray()
         updated.take(MAX_ITEMS).forEach { item ->
@@ -44,7 +48,9 @@ class RecentGameStore(context: Context) {
                 JSONObject()
                     .put("uri", item.uri.toString())
                     .put("displayName", item.displayName)
-                    .put("lastOpened", item.lastOpened),
+                    .put("lastOpened", item.lastOpened)
+                    .put("stableId", item.stableId)
+                    .put("crc32", item.crc32),
             )
         }
         preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
