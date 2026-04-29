@@ -101,6 +101,18 @@ Use SAF pickers, not repository files:
 - Open a multi-ROM `.zip` and choose an entry.
 - Open a single-ROM `.7z`.
 - Try an invalid file and verify a clear failure message.
+- Verify external file handlers resolve to the app:
+
+```bash
+adb shell cmd package query-activities --brief \
+  -a android.intent.action.VIEW \
+  -d file:///sdcard/Download/test.gba \
+  -t application/octet-stream
+adb shell cmd package query-activities --brief \
+  -a android.intent.action.VIEW \
+  -d content://com.example.provider/test.gba \
+  -t application/octet-stream
+```
 
 Expected result:
 
@@ -110,6 +122,7 @@ Expected result:
 - Recent list updates.
 - Library last-played metadata updates.
 - Invalid files do not crash the app.
+- `io.mgba.android/.MainActivity` appears in the external VIEW handler output.
 
 ## Video And Lifecycle
 
