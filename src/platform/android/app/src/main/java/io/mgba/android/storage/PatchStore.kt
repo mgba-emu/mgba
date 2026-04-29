@@ -55,6 +55,20 @@ class PatchStore(context: Context) {
         }.getOrDefault(false)
     }
 
+    fun importForGameFile(gameId: String?, file: File, displayName: String): Boolean {
+        val id = patchId(gameId) ?: return false
+        val directory = patchDirectory() ?: return false
+        val target = File(directory, "$id${patchExtension(displayName)}")
+        return runCatching {
+            file.copyTo(target, overwrite = true)
+            preferences.edit()
+                .putString(gameDisplayNameKey(id), displayName)
+                .putString(gameFileNameKey(id), target.name)
+                .apply()
+            true
+        }.getOrDefault(false)
+    }
+
     fun fileForGame(gameId: String?): File? {
         val id = patchId(gameId) ?: return null
         val fileName = preferences.getString(gameFileNameKey(id), null) ?: return null

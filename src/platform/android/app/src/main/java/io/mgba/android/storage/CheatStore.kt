@@ -42,6 +42,20 @@ class CheatStore(context: Context) {
         }.getOrDefault(false)
     }
 
+    fun importForGameFile(gameId: String?, file: File, displayName: String): Boolean {
+        val id = cheatId(gameId) ?: return false
+        val directory = cheatDirectory() ?: return false
+        val target = File(directory, "$id.cheats")
+        return runCatching {
+            file.copyTo(target, overwrite = true)
+            preferences.edit()
+                .putString(gameDisplayNameKey(id), displayName)
+                .putString(gameFileNameKey(id), target.name)
+                .apply()
+            true
+        }.getOrDefault(false)
+    }
+
     fun fileForGame(gameId: String?): File? {
         val id = cheatId(gameId) ?: return null
         val fileName = preferences.getString(gameFileNameKey(id), null) ?: return null

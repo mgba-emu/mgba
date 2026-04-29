@@ -133,6 +133,7 @@
 - [x] 已新增 Android crash symbolication 文档，串起 log export、CI native symbols artifact、`ndk-stack` 和 `llvm-addr2line` 排查流程。
 - [x] 已完善 Android release R8/Proguard：开启 resource shrink，保留 manifest 入口、ContentProvider 和 JNI native 方法。
 - [x] 已新增当前游戏数据包导出：zip 内包含 metadata、battery save、1-9 槽 state、state 缩略图、cheats、patch 和 per-game/input settings。
+- [x] 已新增当前游戏数据包导入：导入前校验 metadata CRC/stable id，不匹配时提示但允许继续覆盖。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -705,7 +706,7 @@ object NativeBridge {
   - [x] states。
   - [x] cheats。
   - [x] per-game settings。
-- [ ] 导入时校验 ROM hash，不匹配则提示但允许用户继续。
+- [x] 导入时校验 ROM hash，不匹配则提示但允许用户继续。
 
 ## 9. ROM 库计划
 

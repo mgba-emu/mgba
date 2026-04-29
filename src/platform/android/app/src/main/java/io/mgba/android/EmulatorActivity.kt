@@ -65,6 +65,7 @@ import java.io.File
 import java.security.MessageDigest
 import java.util.Locale
 import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import kotlin.math.max
 import kotlin.math.min
@@ -397,6 +398,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             REQUEST_IMPORT_CHEATS -> importCheats(uri)
             REQUEST_EXPORT_STATE -> exportStateSlot(uri, pendingExportStateSlot)
             REQUEST_EXPORT_GAME_DATA -> exportGameDataPackage(uri)
+            REQUEST_IMPORT_GAME_DATA -> importGameDataPackage(uri)
             REQUEST_IMPORT_STATE -> importStateSlot(uri, pendingImportStateSlot)
             REQUEST_EXPORT_INPUT_PROFILE -> exportInputProfile(uri)
             REQUEST_IMPORT_INPUT_PROFILE -> importInputProfile(uri)
@@ -1156,6 +1158,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 text = "DataOut"
                 setOnClickListener {
                     openGameDataExportPicker()
+                }
+            })
+            stateRow.addView(Button(context).apply {
+                text = "DataIn"
+                setOnClickListener {
+                    openGameDataImportPicker()
                 }
             })
             stateRow.addView(Button(context).apply {
@@ -2271,6 +2279,158 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         zip.closeEntry()
     }
 
+    private fun openGameDataImportPicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/zip"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_IMPORT_GAME_DATA)
+    }
+
+    private fun importGameDataPackage(uri: Uri) {
+        val metadata = readGameDataMetadata(uri)
+        if (metadata != null && !metadataMatchesCurrentGame(metadata)) {
+            val exported = metadata.optString("displayName").ifBlank { "another game" }
+            AlertDialog.Builder(this)
+                .setTitle("Import data anyway?")
+                .setMessage("This package appears to belong to $exported. Importing may overwrite current game data.")
+                .setPositiveButton("Import") { _, _ -> importGameDataPackageConfirmed(uri) }
+                .setNegativeButton("Cancel", null)
+                .show()
+        } else {
+            importGameDataPackageConfirmed(uri)
+        }
+    }
+
+    private fun readGameDataMetadata(uri: Uri): JSONObject? {
+        return runCatching {
+            contentResolver.openInputStream(uri)?.use { input ->
+                ZipInputStream(input.buffered()).use { zip ->
+                    while (true) {
+                        val entry = zip.nextEntry ?: break
+                        if (!entry.isDirectory && entry.name == "metadata.json") {
+                            return@runCatching JSONObject(zip.readBytes().toString(Charsets.UTF_8))
+                        }
+                    }
+                }
+            }
+            null
+        }.getOrNull()
+    }
+
+    private fun metadataMatchesCurrentGame(metadata: JSONObject): Boolean {
+        val exportedStableId = metadata.optString("stableId")
+        val exportedCrc32 = metadata.optString("crc32")
+        if (exportedStableId.isBlank() && exportedCrc32.isBlank()) {
+            return true
+        }
+        return exportedStableId == currentStableGameId ||
+            exportedCrc32.equals(EmulatorSession.currentGame()?.crc32.orEmpty(), ignoreCase = true)
+    }
+
+    private fun importGameDataPackageConfirmed(uri: Uri) {
+        val resolver = contentResolver
+        Thread {
+            val ok = runCatching {
+                resolver.openInputStream(uri)?.use { input ->
+                    ZipInputStream(input.buffered()).use { zip ->
+                        readGameDataPackageEntries(zip)
+                    }
+                } == true
+            }.getOrDefault(false)
+            runOnUiThread {
+                updateStateThumbnail()
+                Toast.makeText(this, if (ok) "Game data imported" else "Game data import failed", Toast.LENGTH_SHORT).show()
+            }
+        }.start()
+    }
+
+    private fun readGameDataPackageEntries(zip: ZipInputStream): Boolean {
+        var imported = false
+        val importDirectory = File(cacheDir, "game-data-import")
+        importDirectory.mkdirs()
+        while (true) {
+            val entry = zip.nextEntry ?: break
+            if (entry.isDirectory) {
+                continue
+            }
+            val name = entry.name
+            when {
+                name == "per-game-overrides.json" -> {
+                    imported = perGameOverrides.importGameJson(
+                        currentOverrideGameId,
+                        JSONObject(zip.readBytes().toString(Charsets.UTF_8)),
+                    ) || imported
+                }
+                name == "input-mappings.json" -> {
+                    imported = inputMappingStore.importGameJson(
+                        currentOverrideGameId,
+                        JSONObject(zip.readBytes().toString(Charsets.UTF_8)),
+                    ) || imported
+                }
+                name == "save/battery.sav" -> {
+                    val file = extractZipEntryToFile(zip, File(importDirectory, "battery.sav"))
+                    imported = importBatterySaveFile(file) || imported
+                    file.delete()
+                }
+                name.startsWith("states/slot-") && name.endsWith(".ss") -> {
+                    val slot = name.substringAfter("slot-").substringBefore(".ss").toIntOrNull()
+                    val file = extractZipEntryToFile(zip, File(importDirectory, "state-${slot ?: 0}.ss"))
+                    if (slot != null && slot in 1..9) {
+                        imported = importStateSlotFile(file, slot) || imported
+                    }
+                    file.delete()
+                }
+                name.startsWith("state-thumbnails/slot-") && name.endsWith(".png") -> {
+                    val slot = name.substringAfter("slot-").substringBefore(".png").toIntOrNull()
+                    if (slot != null && slot in 1..9) {
+                        stateThumbnailFile(slot, forWrite = true)?.let { target ->
+                            target.parentFile?.mkdirs()
+                            extractZipEntryToFile(zip, target)
+                            imported = true
+                        }
+                    }
+                }
+                name.startsWith("cheats/") -> {
+                    val file = extractZipEntryToFile(zip, File(importDirectory, name.substringAfterLast('/')))
+                    imported = cheatStore.importForGameFile(cheatGameId(), file, file.name) || imported
+                    file.delete()
+                }
+                name.startsWith("patches/") -> {
+                    val file = extractZipEntryToFile(zip, File(importDirectory, name.substringAfterLast('/')))
+                    imported = patchStore.importForGameFile(patchGameId(), file, file.name) || imported
+                    file.delete()
+                }
+            }
+        }
+        return imported
+    }
+
+    private fun extractZipEntryToFile(zip: ZipInputStream, file: File): File {
+        file.parentFile?.mkdirs()
+        file.outputStream().use { output ->
+            zip.copyTo(output)
+        }
+        return file
+    }
+
+    private fun importBatterySaveFile(file: File): Boolean {
+        return runCatching {
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                controller?.importBatterySaveFd(descriptor.fd) == true
+            }
+        }.getOrDefault(false)
+    }
+
+    private fun importStateSlotFile(file: File, slot: Int): Boolean {
+        return runCatching {
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                controller?.importStateSlotFd(slot, descriptor.fd) == true
+            }
+        }.getOrDefault(false)
+    }
+
     private fun importStateWithConfirmation() {
         if (controller?.hasStateSlot(stateSlot) != true) {
             openStateImportPicker()
@@ -2715,6 +2875,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val REQUEST_IMPORT_PATCH = 2007
         private const val REQUEST_IMPORT_CAMERA_IMAGE = 2008
         private const val REQUEST_EXPORT_GAME_DATA = 2009
+        private const val REQUEST_IMPORT_GAME_DATA = 2010
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L

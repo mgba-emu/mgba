@@ -341,6 +341,28 @@ class PerGameOverrideStore(context: Context) {
         return true
     }
 
+    fun importGameJson(gameId: String?, json: JSONObject): Boolean {
+        val prefix = key(gameId, "") ?: return false
+        val editor = preferences.edit()
+        val keys = json.keys()
+        while (keys.hasNext()) {
+            val name = keys.next()
+            when (val value = json.opt(name)) {
+                is Boolean -> editor.putBoolean("$prefix$name", value)
+                is Number -> {
+                    if (isFloatKey("$prefix$name")) {
+                        editor.putFloat("$prefix$name", value.toFloat())
+                    } else {
+                        editor.putInt("$prefix$name", value.toInt())
+                    }
+                }
+                is String -> editor.putString("$prefix$name", value)
+            }
+        }
+        editor.apply()
+        return true
+    }
+
     private fun intOverride(gameId: String?, name: String, fallback: Int): Int {
         val key = key(gameId, name) ?: return fallback
         return if (preferences.contains(key)) preferences.getInt(key, fallback) else fallback

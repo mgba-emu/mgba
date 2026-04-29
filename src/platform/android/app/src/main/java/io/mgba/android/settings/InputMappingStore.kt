@@ -105,6 +105,18 @@ class InputMappingStore(context: Context) {
         return json
     }
 
+    fun importGameJson(gameId: String?, json: JSONObject): Boolean {
+        val scope = gameScope(gameId) ?: return false
+        val editor = preferences.edit()
+        val keys = json.keys()
+        while (keys.hasNext()) {
+            val mask = keys.next()
+            editor.putInt(keyForScope(scope, mask.toIntOrNull() ?: continue), json.optInt(mask, 0))
+        }
+        editor.apply()
+        return true
+    }
+
     fun migrateGameId(primaryGameId: String?, legacyGameId: String?): Boolean {
         val primaryScope = gameScope(primaryGameId) ?: return false
         val legacy = legacyGameId?.takeIf { it.isNotBlank() } ?: return false
