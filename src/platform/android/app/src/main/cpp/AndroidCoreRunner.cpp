@@ -236,6 +236,13 @@ void AndroidCoreRunner::setSurface(ANativeWindow* window) {
 	}
 }
 
+void AndroidCoreRunner::setKeys(uint32_t keys) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (m_core) {
+		m_core->setKeys(m_core, keys & 0x3FF);
+	}
+}
+
 void AndroidCoreRunner::start() {
 	if (m_running.exchange(true)) {
 		m_paused = false;

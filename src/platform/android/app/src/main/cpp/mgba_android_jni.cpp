@@ -75,6 +75,13 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetSurface(JNIEnv* env, jclass, j
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetKeys(JNIEnv*, jclass, jlong handle, jint keys) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setKeys(static_cast<uint32_t>(keys));
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeStart(JNIEnv*, jclass, jlong handle) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
 		runner->start();

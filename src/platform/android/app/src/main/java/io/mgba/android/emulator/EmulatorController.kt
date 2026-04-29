@@ -31,6 +31,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setKeys(keys: Int) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetKeys(handle.value, keys)
+        }
+    }
+
     fun start() {
         if (handle.isValid) {
             NativeBridge.nativeStart(handle.value)

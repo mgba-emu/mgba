@@ -2,17 +2,16 @@ package io.mgba.android
 
 import android.app.Activity
 import android.os.Bundle
-import android.view.Gravity
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.TextView
 import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
+import io.mgba.android.input.VirtualGamepadView
 
 class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var controller: EmulatorController? = null
+    private var gamepadView: VirtualGamepadView? = null
     private var hasSurface = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,28 +38,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             ),
         )
 
-        val overlay = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            setPadding(dp(24), dp(24), dp(24), dp(24))
+        gamepadView = VirtualGamepadView(this).apply {
+            setOnKeysChangedListener { keys ->
+                controller?.setKeys(keys)
+            }
         }
-
-        overlay.addView(TextView(this).apply {
-            text = getString(R.string.emulator_placeholder)
-            textSize = 18f
-            gravity = Gravity.CENTER
-            setTextColor(getColor(R.color.mgba_text_primary))
-        })
-        overlay.addView(TextView(this).apply {
-            text = getString(R.string.emulator_placeholder_detail)
-            textSize = 14f
-            gravity = Gravity.CENTER
-            setTextColor(getColor(R.color.mgba_text_secondary))
-            setPadding(0, dp(10), 0, 0)
-        })
-
         root.addView(
-            overlay,
+            gamepadView,
             FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT,
@@ -78,11 +62,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     }
 
     override fun onPause() {
+        gamepadView?.clearKeys()
         controller?.pause()
         super.onPause()
     }
 
     override fun onDestroy() {
+        gamepadView?.clearKeys()
         controller?.setSurface(null)
         super.onDestroy()
     }
@@ -99,11 +85,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         hasSurface = false
+        gamepadView?.clearKeys()
         controller?.pause()
         controller?.setSurface(null)
-    }
-
-    private fun dp(value: Int): Int {
-        return (value * resources.displayMetrics.density).toInt()
     }
 }

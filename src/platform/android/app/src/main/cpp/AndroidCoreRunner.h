@@ -6,6 +6,7 @@
 #include <android/native_window.h>
 
 #include <atomic>
+#include <cstdint>
 #include <mgba-util/image.h>
 #include <mutex>
 #include <string>
@@ -25,6 +26,7 @@ public:
 	const std::string& cachePath() const;
 	std::string loadRomFd(int fd, const std::string& displayName);
 	void setSurface(ANativeWindow* window);
+	void setKeys(uint32_t keys);
 	void start();
 	void pause();
 	void resume();

@@ -23,6 +23,9 @@ object NativeBridge {
     external fun nativeSetSurface(handle: Long, surface: Surface?)
 
     @JvmStatic
+    external fun nativeSetKeys(handle: Long, keys: Int)
+
+    @JvmStatic
     external fun nativeStart(handle: Long)
 
     @JvmStatic
