@@ -135,20 +135,13 @@ std::string SavePathForCore(const mCore* core, const std::string& basePath) {
 	return name.str();
 }
 
-bool LoadDefaultBios(mCore* core, const std::string& basePath) {
-	if (!core || !core->loadBIOS) {
-		return false;
-	}
-	const std::string biosPath = basePath + "/bios/default.bios";
-	struct VFile* vf = VFileOpen(biosPath.c_str(), O_RDONLY);
-	if (!vf) {
-		return false;
-	}
-	if (!core->loadBIOS(core, vf, 0)) {
-		vf->close(vf);
-		return false;
-	}
-	return true;
+std::string DefaultBiosPath(const std::string& basePath) {
+	return basePath + "/bios/default.bios";
+}
+
+bool IsRegularFile(const std::string& path) {
+	struct stat info = {};
+	return stat(path.c_str(), &info) == 0 && S_ISREG(info.st_mode);
 }
 
 bool LoadDefaultPatch(mCore* core, const std::string& basePath) {
@@ -354,8 +347,11 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 		return LoadResult(false, "Could not initialize emulator core", "", "", displayName);
 	}
 
+	const std::string biosPath = DefaultBiosPath(m_basePath);
+
 	struct mCoreOptions options = {};
-	options.useBios = true;
+	options.bios = IsRegularFile(biosPath) ? const_cast<char*>(biosPath.c_str()) : nullptr;
+	options.useBios = options.bios != nullptr;
 	options.rewindEnable = m_rewindEnabled.load();
 	options.rewindBufferCapacity = m_rewindBufferCapacity.load();
 	options.rewindBufferInterval = m_rewindBufferInterval.load();
@@ -369,7 +365,6 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	mCoreInitConfig(core, "android");
 	mCoreConfigLoadDefaults(&core->config, &options);
 	mCoreLoadConfig(core);
-	LoadDefaultBios(core, m_basePath);
 
 	unsigned width = 0;
 	unsigned height = 0;

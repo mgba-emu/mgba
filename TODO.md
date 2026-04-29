@@ -864,8 +864,8 @@ object NativeBridge {
   - [x] 显示文件 hash 和大小。
   - [x] 删除 BIOS。
 - [x] 导入 BIOS 到 app 私有目录，不长期依赖外部 URI。
-- [ ] 设置 `mCoreOptions.bios`。
-- [ ] 设置 `mCoreOptions.useBios` / `skipBios`。
+- [x] 设置 `mCoreOptions.bios`。
+- [x] 设置 `mCoreOptions.useBios` / `skipBios`。
 - [ ] 加载失败给明确错误提示。
 
 ### 12.2 Patch
