@@ -2469,9 +2469,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         lastStatsAtMs = now
         statsOverlay?.text = String.format(
             Locale.US,
-            "FPS %.1f  Frame %.2fms\nFrames %d\nROM %s  %s\nVideo %dx%d\nRun %s  Fast %s  Rewind %s/%d/%d  Skip %d\nAudio %s/%s  Vol %d%%  Buf %d  LPF %d  Und %d  Q %d\nScale %s  Filter %s  BIOS %s",
+            "FPS %.1f  Frame %.2fms\nPace %.2f/%.2fms  Jit %.2f  Late %.2f\nFrames %d\nROM %s  %s\nVideo %dx%d\nRun %s  Fast %s  Rewind %s/%d/%d  Skip %d\nAudio %s/%s  Vol %d%%  Buf %d  LPF %d  Und %d  Q %d\nScale %s  Filter %s  BIOS %s",
             fps,
             frameTimeMs,
+            stats.frameTargetUs / 1000.0,
+            stats.frameActualUs / 1000.0,
+            stats.frameJitterUs / 1000.0,
+            stats.frameLateUs / 1000.0,
             stats.frames,
             stats.romPlatform.ifBlank { "unknown" },
             stats.gameTitle.ifBlank { "untitled" },
@@ -2560,6 +2564,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             } else {
                 appendLine("nativeFrames=${stats.frames}")
                 appendLine("nativeVideo=${stats.videoWidth}x${stats.videoHeight}")
+                appendLine("nativePacing targetUs=${stats.frameTargetUs} actualUs=${stats.frameActualUs} jitterUs=${stats.frameJitterUs} lateUs=${stats.frameLateUs} samples=${stats.framePacingSamples}")
                 appendLine("nativeRun running=${stats.running} paused=${stats.paused} fast=${stats.fastForward} rewind=${stats.rewinding}")
                 appendLine("nativeAudio backend=${stats.audioBackend} volume=${stats.volumePercent} buffer=${stats.audioBufferSamples} lowPass=${stats.audioLowPassRange} started=${stats.audioStarted} paused=${stats.audioPaused} enabled=${stats.audioEnabled} underruns=${stats.audioUnderruns} queuedBuffers=${stats.audioEnqueuedBuffers} queuedFrames=${stats.audioEnqueuedOutputFrames} readFrames=${stats.audioReadFrames} lastReadFrames=${stats.audioLastReadFrames}")
                 appendLine("nativeInput current=${formatGbaMask(stats.inputKeys)} seen=${formatGbaMask(stats.seenInputKeys)}")

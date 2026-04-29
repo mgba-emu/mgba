@@ -189,6 +189,7 @@
 - [x] 已确认 Android 输入释放策略：`onPause` / `onDestroy` / `surfaceDestroyed` 调用 `clearInput()`，虚拟和硬件 key mask 会清零，后台恢复后 DIAG 显示 current input 为 `(none)`。
 - [x] 已为 Android JNI 入口新增 native guard：native 异常会写入 logcat，并返回 JSON / false / 0 / 空字符串等可处理结果。
 - [x] 已新增 Android AAudio 输出后端：API 26+ 通过 `dlopen` 优先使用 AAudio，失败或旧系统自动回落 OpenSL ES，并在 native stats/诊断中展示后端。
+- [x] 已新增 Android frame pacing 诊断：native stats/overlay/日志导出包含目标帧时长、实际帧间隔、jitter、sleep late 和采样数。
 
 ## 1. 产品目标和范围
 

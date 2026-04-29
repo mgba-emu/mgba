@@ -45,6 +45,11 @@ public class NativeTypesTest {
         assertEquals(0L, stats.getFrames());
         assertEquals(0, stats.getVideoWidth());
         assertEquals(0, stats.getVideoHeight());
+        assertEquals(0L, stats.getFrameTargetUs());
+        assertEquals(0L, stats.getFrameActualUs());
+        assertEquals(0L, stats.getFrameJitterUs());
+        assertEquals(0L, stats.getFrameLateUs());
+        assertEquals(0L, stats.getFramePacingSamples());
         assertFalse(stats.getRunning());
         assertTrue(stats.getPaused());
         assertEquals(100, stats.getVolumePercent());
@@ -65,6 +70,11 @@ public class NativeTypesTest {
     public void statsCoercesInvalidRanges() {
         NativeStats stats = NativeStats.Companion.fromJson(
             "{"
+                + "\"frameTargetUs\":16667,"
+                + "\"frameActualUs\":16720,"
+                + "\"frameJitterUs\":53,"
+                + "\"frameLateUs\":20,"
+                + "\"framePacingSamples\":120,"
                 + "\"fastForwardMultiplier\":99,"
                 + "\"volumePercent\":200,"
                 + "\"audioBufferSamples\":64,"
@@ -82,6 +92,11 @@ public class NativeTypesTest {
                 + "}"
         );
 
+        assertEquals(16667L, stats.getFrameTargetUs());
+        assertEquals(16720L, stats.getFrameActualUs());
+        assertEquals(53L, stats.getFrameJitterUs());
+        assertEquals(20L, stats.getFrameLateUs());
+        assertEquals(120L, stats.getFramePacingSamples());
         assertEquals(0, stats.getFastForwardMultiplier());
         assertEquals(100, stats.getVolumePercent());
         assertEquals(512, stats.getAudioBufferSamples());

@@ -1102,6 +1102,11 @@ std::string AndroidCoreRunner::statsJson() {
 	out << "{\"frames\":" << m_frameCounter.load()
 	    << ",\"videoWidth\":" << m_videoWidth
 	    << ",\"videoHeight\":" << m_videoHeight
+	    << ",\"frameTargetUs\":" << m_frameTargetUs.load()
+	    << ",\"frameActualUs\":" << m_frameActualUs.load()
+	    << ",\"frameJitterUs\":" << m_frameJitterUs.load()
+	    << ",\"frameLateUs\":" << m_frameLateUs.load()
+	    << ",\"framePacingSamples\":" << m_framePacingSamples.load()
 	    << ",\"running\":" << (m_running.load() ? "true" : "false")
 	    << ",\"paused\":" << (m_paused.load() ? "true" : "false")
 	    << ",\"fastForward\":" << (m_fastForward.load() ? "true" : "false")
@@ -1733,15 +1738,25 @@ std::chrono::microseconds AndroidCoreRunner::frameDurationLocked() const {
 void AndroidCoreRunner::runLoop() {
 	using clock = std::chrono::steady_clock;
 	auto nextFrame = clock::now();
+	auto previousFrameStart = clock::time_point{};
 	while (m_running) {
 		if (m_paused) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(16));
 			nextFrame = clock::now();
+			previousFrameStart = {};
+			m_frameActualUs = 0;
+			m_frameJitterUs = 0;
+			m_frameLateUs = 0;
 			continue;
 		}
+		bool frameRan = false;
+		bool maxFastForward = false;
+		auto pacingTarget = std::chrono::microseconds(0);
+		const auto frameStart = clock::now();
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
 			if (m_core) {
+				frameRan = true;
 				bool rewinding = m_rewinding.load();
 				if (m_core->opts.rewindEnable && m_rewindReady) {
 					if (rewinding) {
@@ -1772,15 +1787,39 @@ void AndroidCoreRunner::runLoop() {
 				}
 				const int fastMultiplier = m_fastForward.load() ? m_fastForwardMultiplier.load() : 1;
 				const auto frameDuration = frameDurationLocked();
-				nextFrame += fastMultiplier > 1 ? frameDuration / fastMultiplier : frameDuration;
+				maxFastForward = m_fastForward.load() && fastMultiplier == 0;
+				pacingTarget = maxFastForward ? std::chrono::microseconds(0) :
+				    (fastMultiplier > 1 ? frameDuration / fastMultiplier : frameDuration);
+				m_frameTargetUs = pacingTarget.count();
+				if (previousFrameStart.time_since_epoch().count() > 0 && pacingTarget.count() > 0) {
+					const auto actualUs = std::chrono::duration_cast<std::chrono::microseconds>(frameStart - previousFrameStart).count();
+					m_frameActualUs = actualUs;
+					m_frameJitterUs = std::llabs(actualUs - pacingTarget.count());
+					++m_framePacingSamples;
+				} else {
+					m_frameActualUs = 0;
+					m_frameJitterUs = 0;
+				}
+				previousFrameStart = frameStart;
+				nextFrame += pacingTarget;
 			}
 		}
-		if (m_fastForward && m_fastForwardMultiplier.load() == 0) {
+		if (!frameRan) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(16));
 			nextFrame = clock::now();
+			previousFrameStart = {};
+			continue;
+		}
+		if (maxFastForward) {
+			nextFrame = clock::now();
+			m_frameLateUs = 0;
 		} else {
 			std::this_thread::sleep_until(nextFrame);
-			if (clock::now() - nextFrame > std::chrono::milliseconds(100)) {
-				nextFrame = clock::now();
+			const auto wake = clock::now();
+			const auto lateUs = std::chrono::duration_cast<std::chrono::microseconds>(wake - nextFrame).count();
+			m_frameLateUs = std::max<int64_t>(0, lateUs);
+			if (wake - nextFrame > std::chrono::milliseconds(100)) {
+				nextFrame = wake;
 			}
 		}
 	}
