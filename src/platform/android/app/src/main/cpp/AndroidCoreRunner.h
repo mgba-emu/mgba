@@ -84,6 +84,7 @@ public:
 	void setVolumePercent(int percent);
 	void setAudioBufferSamples(int samples);
 	void setLowPassRangePercent(int percent);
+	void restartAudioOutput();
 	void setScaleMode(int mode);
 	void setFilterMode(int mode);
 	void setInterframeBlending(bool enabled);

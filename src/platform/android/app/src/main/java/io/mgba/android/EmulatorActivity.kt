@@ -10,6 +10,9 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -193,10 +196,25 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private val rumbleHandler = Handler(Looper.getMainLooper())
     private val vibrator: Vibrator? by lazy { getSystemService(Vibrator::class.java) }
     private val sensorManager: SensorManager? by lazy { getSystemService(SensorManager::class.java) }
+    private val audioManager: AudioManager? by lazy { getSystemService(AudioManager::class.java) }
     private val accelerometer: Sensor? by lazy { sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
     private val gyroscope: Sensor? by lazy { sensorManager?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
     private val lightSensor: Sensor? by lazy { sensorManager?.getDefaultSensor(Sensor.TYPE_LIGHT) }
+    private var audioRouteCallbackRegistered = false
+    private var lastAudioRouteSignature: String? = null
     private var lastRumbleAtMs = 0L
+    private val audioRouteRestartRunnable = Runnable {
+        restartAudioAfterRouteChange()
+    }
+    private val audioRouteCallback = object : AudioDeviceCallback() {
+        override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>) {
+            handleAudioRouteChange("added", addedDevices)
+        }
+
+        override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
+            handleAudioRouteChange("removed", removedDevices)
+        }
+    }
     private val statsRunnable = object : Runnable {
         override fun run() {
             updateStatsOverlay()
@@ -314,6 +332,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     override fun onResume() {
         super.onResume()
         enterImmersiveMode()
+        registerAudioRouteCallback()
         if (hasSurface && !userPaused) {
             controller?.resume()
             startPlayAccounting()
@@ -360,6 +379,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     override fun onPause() {
         clearInput()
         recordPlayTime()
+        unregisterAudioRouteCallback()
         stopRumblePolling()
         unregisterSensors()
         stopStatsOverlay()
@@ -370,6 +390,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     override fun onDestroy() {
         clearInput()
         recordPlayTime()
+        statsHandler.removeCallbacks(audioRouteRestartRunnable)
         stopRumblePolling()
         unregisterSensors()
         stopStatsOverlay()
@@ -437,6 +458,94 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+
+    private fun registerAudioRouteCallback() {
+        if (audioRouteCallbackRegistered) {
+            return
+        }
+        if (audioManager == null) {
+            return
+        }
+        runCatching {
+            lastAudioRouteSignature = currentAudioRouteSignature()
+            audioManager?.registerAudioDeviceCallback(audioRouteCallback, statsHandler)
+            audioRouteCallbackRegistered = true
+        }.onFailure { error ->
+            AppLogStore.append(this, "Audio route callback registration failed: ${error.javaClass.simpleName}")
+        }
+    }
+
+    private fun unregisterAudioRouteCallback() {
+        if (!audioRouteCallbackRegistered) {
+            return
+        }
+        statsHandler.removeCallbacks(audioRouteRestartRunnable)
+        runCatching {
+            audioManager?.unregisterAudioDeviceCallback(audioRouteCallback)
+        }.onFailure { error ->
+            AppLogStore.append(this, "Audio route callback unregistration failed: ${error.javaClass.simpleName}")
+        }
+        audioRouteCallbackRegistered = false
+        lastAudioRouteSignature = null
+    }
+
+    private fun handleAudioRouteChange(action: String, devices: Array<out AudioDeviceInfo>) {
+        val outputs = devices.filter { it.isSink }
+        if (outputs.isEmpty()) {
+            return
+        }
+        val currentSignature = currentAudioRouteSignature()
+        val previousSignature = lastAudioRouteSignature
+        lastAudioRouteSignature = currentSignature
+        if (previousSignature != null && currentSignature == previousSignature) {
+            AppLogStore.append(this, "Audio route observed: ${outputs.joinToString { audioDeviceLabel(it) }}")
+            return
+        }
+        AppLogStore.append(this, "Audio route $action: ${outputs.joinToString { audioDeviceLabel(it) }}")
+        statsHandler.removeCallbacks(audioRouteRestartRunnable)
+        if (!muted) {
+            statsHandler.postDelayed(audioRouteRestartRunnable, AUDIO_ROUTE_RESTART_DELAY_MS)
+        }
+    }
+
+    private fun restartAudioAfterRouteChange() {
+        if (muted) {
+            return
+        }
+        controller?.restartAudioOutput()
+        controller?.setAudioEnabled(true)
+        controller?.setVolumePercent(volumePercent)
+        controller?.setAudioBufferSamples(AudioBufferModes.samplesFor(audioBufferMode))
+        controller?.setLowPassRangePercent(AudioLowPassModes.rangeFor(audioLowPassMode))
+        AppLogStore.append(this, "Audio output restarted after route change")
+    }
+
+    private fun audioDeviceLabel(device: AudioDeviceInfo): String {
+        val type = when (device.type) {
+            AudioDeviceInfo.TYPE_BUILTIN_EARPIECE -> "earpiece"
+            AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> "speaker"
+            AudioDeviceInfo.TYPE_WIRED_HEADPHONES -> "wired-headphones"
+            AudioDeviceInfo.TYPE_WIRED_HEADSET -> "wired-headset"
+            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP -> "bluetooth-a2dp"
+            AudioDeviceInfo.TYPE_BLUETOOTH_SCO -> "bluetooth-sco"
+            AudioDeviceInfo.TYPE_USB_DEVICE -> "usb-device"
+            AudioDeviceInfo.TYPE_USB_HEADSET -> "usb-headset"
+            AudioDeviceInfo.TYPE_HDMI -> "hdmi"
+            else -> "type-${device.type}"
+        }
+        val name = device.productName?.toString()?.takeIf { it.isNotBlank() }
+        return if (name == null) type else "$type:$name"
+    }
+
+    private fun currentAudioRouteSignature(): String {
+        return audioManager
+            ?.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+            ?.filter { it.isSink }
+            ?.map { "${it.id}:${it.type}:${it.productName}" }
+            ?.sorted()
+            ?.joinToString("|")
+            .orEmpty()
+    }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         rememberLastKeyEvent(event)
@@ -3356,6 +3465,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val REQUEST_EXPORT_SAVE = 2013
         private const val REQUEST_EXPORT_SCREENSHOT = 2014
         private const val REQUEST_CAPTURE_CAMERA_IMAGE = 2015
+        private const val AUDIO_ROUTE_RESTART_DELAY_MS = 250L
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L

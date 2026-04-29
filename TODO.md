@@ -171,6 +171,7 @@
 - [x] 已新增并通过 OnePlus7 真机 native smoke instrumentation：public-domain GB 测试 ROM 可 probe/load，`nativeStepFrame` 连跑 300 帧，state save/load/delete 成功。
 - [x] 已完成 OnePlus7 真机真实 ROM zip 回归：`~/game/[gba]木叶战记.zip`、`~/game/[GBA]决战三国.zip`、`~/game/[gbc]水浒传.zip` 均通过 ACTION_VIEW 启动并渲染，crash buffer 为空。
 - [x] 已完成 OnePlus7 真机真实 ROM 音频 smoke：Balanced 2048 buffer 下 `木叶战记` 8783 native frames、`决战三国` 4938 native frames、`水浒传` 7235 native frames，三轮诊断均为 `underruns=0`。
+- [x] 已新增 Android 音频路由变化恢复：前台监听输出设备变化，真实 route change 时重建 OpenSL 输出并重套当前音量、buffer、低通设置；初始设备快照只记录不重启。
 - [x] 已修复 Android ZIP/native archive 编码兼容：Java ZIP 未识别老编码 entry 时 fallback 到 native archive，native entry token 和 ROM header JSON 均避免非法 Modified UTF-8 崩溃。
 - [x] 首帧真机截图验证已在 OnePlus7 上执行；模拟器因性能过慢已停用。
 
@@ -587,7 +588,7 @@ object NativeBridge {
 
 - [ ] 正常设备 30 分钟无持续爆音。
 - [ ] 快进/暂停/恢复后音频不永久静音。
-- [ ] 蓝牙耳机切换后可恢复音频。
+- [x] 蓝牙/有线输出路由变化后可恢复音频；已实现 route change 自动重建音频输出，真实蓝牙耳机实体仍需设备矩阵验证。
 - [ ] 横竖屏旋转不重启音频核心。
 - [x] underrun 计数可在 debug overlay 查看。
 

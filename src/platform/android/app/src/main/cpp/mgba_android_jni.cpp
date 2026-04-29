@@ -545,6 +545,13 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetLowPassRangePercent(JNIEnv*, j
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeRestartAudioOutput(JNIEnv*, jclass, jlong handle) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->restartAudioOutput();
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeSetScaleMode(JNIEnv*, jclass, jlong handle, jint mode) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
 		runner->setScaleMode(mode);

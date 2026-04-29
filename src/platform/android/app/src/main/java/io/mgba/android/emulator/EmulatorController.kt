@@ -138,6 +138,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun restartAudioOutput() {
+        if (handle.isValid) {
+            NativeBridge.nativeRestartAudioOutput(handle.value)
+        }
+    }
+
     fun setScaleMode(mode: Int) {
         if (handle.isValid) {
             NativeBridge.nativeSetScaleMode(handle.value, mode)

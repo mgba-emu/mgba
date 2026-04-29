@@ -1017,6 +1017,18 @@ void AndroidCoreRunner::setLowPassRangePercent(int percent) {
 	m_audioOutput.setLowPassRangePercent(clamped);
 }
 
+void AndroidCoreRunner::restartAudioOutput() {
+	const bool running = m_running.load();
+	const bool paused = m_paused.load();
+	m_audioOutput.stop();
+	if (!running) {
+		return;
+	}
+	if (m_audioOutput.start() && paused) {
+		m_audioOutput.pause();
+	}
+}
+
 void AndroidCoreRunner::setScaleMode(int mode) {
 	if (mode < 0 || mode > 4) {
 		mode = 0;
