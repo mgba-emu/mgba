@@ -35,8 +35,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var slotButton: Button? = null
     private var pauseButton: Button? = null
     private var fastButton: Button? = null
+    private var scaleButton: Button? = null
     private var userPaused = false
     private var fastForward = false
+    private var scaleMode = 0
     private var hasSurface = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -234,6 +236,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 }
             }
             runRow.addView(fastButton)
+            scaleButton = Button(context).apply {
+                setOnClickListener {
+                    scaleMode = (scaleMode + 1) % SCALE_LABELS.size
+                    controller?.setScaleMode(scaleMode)
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(scaleButton)
             runRow.addView(Button(context).apply {
                 text = "Shot"
                 setOnClickListener {
@@ -327,6 +337,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private fun updateRunButtons() {
         pauseButton?.text = if (userPaused) "Resume" else "Pause"
         fastButton?.text = if (fastForward) "1x" else "Fast"
+        scaleButton?.text = SCALE_LABELS[scaleMode]
     }
 
     private fun shareScreenshot(path: String) {
@@ -401,5 +412,6 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     companion object {
         private const val REQUEST_IMPORT_SAVE = 2001
         private const val REQUEST_IMPORT_CHEATS = 2002
+        private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int")
     }
 }

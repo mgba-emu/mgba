@@ -57,6 +57,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setScaleMode(mode: Int) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetScaleMode(handle.value, mode)
+        }
+    }
+
     fun takeScreenshot(): String? {
         if (!handle.isValid) {
             return null

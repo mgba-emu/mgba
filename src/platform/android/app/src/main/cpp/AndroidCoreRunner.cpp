@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cerrno>
 #include <chrono>
+#include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <cstring>
@@ -430,6 +431,13 @@ void AndroidCoreRunner::setFastForward(bool enabled) {
 	m_fastForward = enabled;
 }
 
+void AndroidCoreRunner::setScaleMode(int mode) {
+	if (mode < 0 || mode > 2) {
+		mode = 0;
+	}
+	m_scaleMode = mode;
+}
+
 std::string AndroidCoreRunner::takeScreenshot() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (!m_core || m_savePath.empty()) {
@@ -718,11 +726,21 @@ void AndroidCoreRunner::renderFrameLocked() {
 		return;
 	}
 
-	const float scale = std::min(windowWidth / static_cast<float>(m_videoWidth), windowHeight / static_cast<float>(m_videoHeight));
-	const int viewportWidth = static_cast<int>(m_videoWidth * scale);
-	const int viewportHeight = static_cast<int>(m_videoHeight * scale);
-	const int viewportX = (windowWidth - viewportWidth) / 2;
-	const int viewportY = (windowHeight - viewportHeight) / 2;
+	int viewportWidth = windowWidth;
+	int viewportHeight = windowHeight;
+	int viewportX = 0;
+	int viewportY = 0;
+	const int scaleMode = m_scaleMode;
+	if (scaleMode != 1) {
+		float scale = std::min(windowWidth / static_cast<float>(m_videoWidth), windowHeight / static_cast<float>(m_videoHeight));
+		if (scaleMode == 2) {
+			scale = std::max(1.0f, std::floor(scale));
+		}
+		viewportWidth = static_cast<int>(m_videoWidth * scale);
+		viewportHeight = static_cast<int>(m_videoHeight * scale);
+		viewportX = (windowWidth - viewportWidth) / 2;
+		viewportY = (windowHeight - viewportHeight) / 2;
+	}
 
 	glViewport(0, 0, windowWidth, windowHeight);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

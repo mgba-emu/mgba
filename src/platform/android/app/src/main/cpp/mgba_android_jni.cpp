@@ -111,6 +111,13 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetFastForward(JNIEnv*, jclass, j
 	}
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetScaleMode(JNIEnv*, jclass, jlong handle, jint mode) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setScaleMode(mode);
+	}
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeTakeScreenshot(JNIEnv* env, jclass, jlong handle) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {

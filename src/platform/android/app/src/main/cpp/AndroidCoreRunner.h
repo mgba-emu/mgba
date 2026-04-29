@@ -33,6 +33,7 @@ public:
 	bool loadStateSlot(int slot);
 	void reset();
 	void setFastForward(bool enabled);
+	void setScaleMode(int mode);
 	std::string takeScreenshot();
 	std::string exportBatterySave();
 	bool importBatterySaveFd(int fd);
@@ -68,6 +69,7 @@ private:
 	std::atomic<bool> m_running{false};
 	std::atomic<bool> m_paused{true};
 	std::atomic<bool> m_fastForward{false};
+	std::atomic<int> m_scaleMode{0};
 
 	ANativeWindow* m_window = nullptr;
 	EGLDisplay m_display = EGL_NO_DISPLAY;

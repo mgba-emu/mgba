@@ -38,6 +38,9 @@ object NativeBridge {
     external fun nativeSetFastForward(handle: Long, enabled: Boolean)
 
     @JvmStatic
+    external fun nativeSetScaleMode(handle: Long, mode: Int)
+
+    @JvmStatic
     external fun nativeTakeScreenshot(handle: Long): String
 
     @JvmStatic
