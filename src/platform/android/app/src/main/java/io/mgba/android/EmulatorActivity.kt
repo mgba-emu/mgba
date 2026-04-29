@@ -3,6 +3,7 @@ package io.mgba.android
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -19,6 +20,7 @@ import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -36,6 +38,8 @@ import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.storage.ScreenshotExporter
 import io.mgba.android.storage.ScreenshotShareProvider
 import io.mgba.android.storage.SaveExporter
+import java.io.File
+import java.security.MessageDigest
 import java.util.Locale
 
 class EmulatorActivity : Activity(), SurfaceHolder.Callback {
@@ -51,6 +55,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var hardwareAxisKeys = 0
     private var stateSlot = 1
     private var slotButton: Button? = null
+    private var stateThumbnailView: ImageView? = null
     private var pauseButton: Button? = null
     private var fastButton: Button? = null
     private var muteButton: Button? = null
@@ -513,6 +518,18 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             })
             addView(runRow)
             addView(stateRow)
+            stateThumbnailView = ImageView(context).apply {
+                visibility = View.GONE
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                setBackgroundColor(0x99000000.toInt())
+            }
+            addView(
+                stateThumbnailView,
+                LinearLayout.LayoutParams(dp(120), dp(80)).apply {
+                    gravity = android.view.Gravity.CENTER_HORIZONTAL
+                    topMargin = dp(4)
+                },
+            )
             updateSlotButton()
             updateRunButtons()
         }
@@ -520,6 +537,24 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
     private fun updateSlotButton() {
         slotButton?.text = "Slot $stateSlot"
+        updateStateThumbnail()
+    }
+
+    private fun updateStateThumbnail() {
+        val file = stateThumbnailFile(stateSlot)
+        if (file == null || !file.isFile) {
+            stateThumbnailView?.setImageDrawable(null)
+            stateThumbnailView?.visibility = View.GONE
+            return
+        }
+        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+        if (bitmap == null) {
+            stateThumbnailView?.setImageDrawable(null)
+            stateThumbnailView?.visibility = View.GONE
+        } else {
+            stateThumbnailView?.setImageBitmap(bitmap)
+            stateThumbnailView?.visibility = View.VISIBLE
+        }
     }
 
     private fun updateRunButtons() {
@@ -685,6 +720,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             .setMessage("Slot $stateSlot will be removed.")
             .setPositiveButton("Delete") { _, _ ->
                 val ok = controller?.deleteStateSlot(stateSlot) == true
+                if (ok) {
+                    deleteStateThumbnail(stateSlot)
+                    updateStateThumbnail()
+                }
                 Toast.makeText(this, if (ok) "State deleted" else "Delete failed", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
@@ -744,12 +783,46 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 controller?.importStateSlotFd(slot, descriptor.fd) == true
             } == true
         }.getOrDefault(false)
+        if (ok) {
+            deleteStateThumbnail(slot)
+            updateStateThumbnail()
+        }
         Toast.makeText(this, if (ok) "State imported" else "State import failed", Toast.LENGTH_SHORT).show()
     }
 
     private fun saveStateNow() {
         val ok = controller?.saveStateSlot(stateSlot) == true
+        if (ok) {
+            val thumbnailUpdated = controller?.takeScreenshot()?.let { recordStateThumbnail(it, stateSlot) } == true
+            if (thumbnailUpdated) {
+                updateStateThumbnail()
+            }
+        }
         Toast.makeText(this, if (ok) "State saved" else "Save failed", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun recordStateThumbnail(sourcePath: String, slot: Int): Boolean {
+        val target = stateThumbnailFile(slot) ?: return false
+        return runCatching {
+            target.parentFile?.mkdirs()
+            File(sourcePath).copyTo(target, overwrite = true)
+            File(sourcePath).delete()
+            true
+        }.getOrDefault(false)
+    }
+
+    private fun deleteStateThumbnail(slot: Int) {
+        stateThumbnailFile(slot)?.delete()
+    }
+
+    private fun stateThumbnailFile(slot: Int): File? {
+        val gameId = currentGameId ?: return null
+        return File(File(filesDir, "state-thumbnails"), "${sha1(gameId)}-slot-$slot.bmp")
+    }
+
+    private fun sha1(value: String): String {
+        val bytes = MessageDigest.getInstance("SHA-1").digest(value.toByteArray(Charsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it.toInt() and 0xff) }
     }
 
     private fun shareScreenshot(path: String) {
