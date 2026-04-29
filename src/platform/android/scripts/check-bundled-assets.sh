@@ -17,6 +17,8 @@ forbidden="$(
 		-iname "*.gb" -o \
 		-iname "*.gbc" -o \
 		-iname "*.sgb" -o \
+		-iname "*.rom" -o \
+		-iname "*.bin" -o \
 		-iname "*.zip" -o \
 		-iname "*.7z" -o \
 		-iname "*.rar" -o \
