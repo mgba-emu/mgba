@@ -129,6 +129,12 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putBoolean(KEY_VIRTUAL_GAMEPAD_LEFT_HANDED, value).apply()
         }
 
+    var allowOpposingDirections: Boolean
+        get() = preferences.getBoolean(KEY_ALLOW_OPPOSING_DIRECTIONS, true)
+        set(value) {
+            preferences.edit().putBoolean(KEY_ALLOW_OPPOSING_DIRECTIONS, value).apply()
+        }
+
     private companion object {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_FILTER_MODE = "filterMode"
@@ -150,5 +156,6 @@ class EmulatorPreferences(context: Context) {
         const val KEY_VIRTUAL_GAMEPAD_SPACING_PERCENT = "virtualGamepadSpacingPercent"
         const val KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED = "virtualGamepadHapticsEnabled"
         const val KEY_VIRTUAL_GAMEPAD_LEFT_HANDED = "virtualGamepadLeftHanded"
+        const val KEY_ALLOW_OPPOSING_DIRECTIONS = "allowOpposingDirections"
     }
 }

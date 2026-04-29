@@ -67,6 +67,7 @@ class MainActivity : Activity() {
     private lateinit var rewindButton: Button
     private lateinit var rewindBufferButton: Button
     private lateinit var rewindIntervalButton: Button
+    private lateinit var opposingDirectionsButton: Button
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
@@ -244,6 +245,14 @@ class MainActivity : Activity() {
         }
         updateRewindButtons()
 
+        opposingDirectionsButton = Button(this).apply {
+            setOnClickListener {
+                preferences.allowOpposingDirections = !preferences.allowOpposingDirections
+                updateOpposingDirectionsButton()
+            }
+        }
+        updateOpposingDirectionsButton()
+
         patchButton = Button(this).apply {
             text = patchStore.displayName?.let { "Patch: $it" } ?: "Import Patch"
             setOnClickListener {
@@ -324,6 +333,7 @@ class MainActivity : Activity() {
         root.addView(rewindButton)
         root.addView(rewindBufferButton)
         root.addView(rewindIntervalButton)
+        root.addView(opposingDirectionsButton)
         root.addView(patchButton)
         root.addView(aboutButton)
         root.addView(logButton)
@@ -645,6 +655,14 @@ class MainActivity : Activity() {
         rewindButton.text = if (preferences.rewindEnabled) "Rewind: On" else "Rewind: Off"
         rewindBufferButton.text = "Rewind Buffer: ${preferences.rewindBufferCapacity}"
         rewindIntervalButton.text = "Rewind Speed: ${preferences.rewindBufferInterval}"
+    }
+
+    private fun updateOpposingDirectionsButton() {
+        opposingDirectionsButton.text = if (preferences.allowOpposingDirections) {
+            "Opposite Directions: On"
+        } else {
+            "Opposite Directions: Off"
+        }
     }
 
     private fun renderLibrary() {

@@ -89,6 +89,10 @@ class PerGameOverrideStore(context: Context) {
         return booleanOverride(gameId, KEY_VIRTUAL_GAMEPAD_LEFT_HANDED, fallback)
     }
 
+    fun allowOpposingDirections(gameId: String?, fallback: Boolean): Boolean {
+        return booleanOverride(gameId, KEY_ALLOW_OPPOSING_DIRECTIONS, fallback)
+    }
+
     fun setScaleMode(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_SCALE_MODE, value.coerceIn(0, 4))
     }
@@ -173,6 +177,10 @@ class PerGameOverrideStore(context: Context) {
         return putBooleanOverride(gameId, KEY_VIRTUAL_GAMEPAD_LEFT_HANDED, value)
     }
 
+    fun setAllowOpposingDirections(gameId: String?, value: Boolean): Boolean {
+        return putBooleanOverride(gameId, KEY_ALLOW_OPPOSING_DIRECTIONS, value)
+    }
+
     private fun intOverride(gameId: String?, name: String, fallback: Int): Int {
         val key = key(gameId, name) ?: return fallback
         return if (preferences.contains(key)) preferences.getInt(key, fallback) else fallback
@@ -224,5 +232,6 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_VIRTUAL_GAMEPAD_SPACING_PERCENT = "virtualGamepadSpacingPercent"
         const val KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED = "virtualGamepadHapticsEnabled"
         const val KEY_VIRTUAL_GAMEPAD_LEFT_HANDED = "virtualGamepadLeftHanded"
+        const val KEY_ALLOW_OPPOSING_DIRECTIONS = "allowOpposingDirections"
     }
 }

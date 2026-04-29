@@ -40,6 +40,7 @@ import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.input.AndroidInputMapper
 import io.mgba.android.input.GbaButtons
+import io.mgba.android.input.GbaKeyMask
 import io.mgba.android.input.VirtualGamepadView
 import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.settings.AudioBufferModes
@@ -109,6 +110,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var padButton: Button? = null
     private var padSettingsButton: Button? = null
     private var deadzoneButton: Button? = null
+    private var opposingDirectionsButton: Button? = null
     private var tiltButton: Button? = null
     private var solarButton: Button? = null
     private var statsButton: Button? = null
@@ -133,6 +135,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var virtualGamepadHapticsEnabled = true
     private var virtualGamepadLeftHanded = false
     private var deadzonePercent = AndroidInputMapper.DefaultAxisThresholdPercent
+    private var allowOpposingDirections = true
     private var tiltEnabled = false
     private var lastRawTiltX = 0f
     private var lastRawTiltY = 0f
@@ -224,6 +227,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         deadzonePercent = perGameOverrides.deadzonePercent(
             currentGameId,
             AndroidInputMapper.DefaultAxisThresholdPercent,
+        )
+        allowOpposingDirections = perGameOverrides.allowOpposingDirections(
+            currentGameId,
+            preferences.allowOpposingDirections,
         )
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         applyOrientationMode()
@@ -489,7 +496,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun syncKeys() {
-        controller?.setKeys(virtualKeys or hardwareButtonKeys or hardwareAxisKeys)
+        val keys = virtualKeys or hardwareButtonKeys or hardwareAxisKeys
+        controller?.setKeys(if (allowOpposingDirections) keys else filterOpposingDirections(keys))
     }
 
     private fun saveScaleModePreference() {
@@ -596,6 +604,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun saveDeadzonePreference() {
         perGameOverrides.setDeadzonePercent(currentGameId, deadzonePercent)
+    }
+
+    private fun saveOpposingDirectionsPreference() {
+        if (!perGameOverrides.setAllowOpposingDirections(currentGameId, allowOpposingDirections)) {
+            preferences.allowOpposingDirections = allowOpposingDirections
+        }
     }
 
     private fun startPlayAccounting() {
@@ -881,6 +895,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(deadzoneButton)
+            opposingDirectionsButton = Button(context).apply {
+                setOnClickListener {
+                    allowOpposingDirections = !allowOpposingDirections
+                    saveOpposingDirectionsPreference()
+                    syncKeys()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(opposingDirectionsButton)
             tiltButton = Button(context).apply {
                 setOnClickListener {
                     tiltEnabled = !tiltEnabled
@@ -1108,6 +1131,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
         padSettingsButton?.text = "PadCfg"
         deadzoneButton?.text = "DZ$deadzonePercent"
+        opposingDirectionsButton?.text = if (allowOpposingDirections) "OppOn" else "OppOff"
         tiltButton?.text = if (tiltEnabled) "Tilt*" else "Tilt"
         solarButton?.text = if (useLightSensor) "Solar*" else "Solar"
         statsButton?.text = if (showStats) "Stats*" else "Stats"
@@ -1137,6 +1161,17 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         rewinding = active
         controller?.setRewinding(active)
         updateRunButtons()
+    }
+
+    private fun filterOpposingDirections(keys: Int): Int {
+        var filtered = keys
+        if ((filtered and GbaKeyMask.Left) != 0 && (filtered and GbaKeyMask.Right) != 0) {
+            filtered = filtered and GbaKeyMask.Left.inv() and GbaKeyMask.Right.inv()
+        }
+        if ((filtered and GbaKeyMask.Up) != 0 && (filtered and GbaKeyMask.Down) != 0) {
+            filtered = filtered and GbaKeyMask.Up.inv() and GbaKeyMask.Down.inv()
+        }
+        return filtered
     }
 
     private fun updateSensorRegistration() {
