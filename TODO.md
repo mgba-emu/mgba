@@ -158,32 +158,32 @@
 
 ### 1.1 必须复刻的核心体验
 
-- [ ] Android 上可以选择并启动 `.gba`、`.gb`、`.gbc` ROM。
-- [ ] 支持从 `.zip` 和 `.7z` 中选择/自动识别 ROM。
-- [ ] 支持自动存档、电池存档、即时存档 1-9 槽位。
+- [x] Android 上可以选择并启动 `.gba`、`.gb`、`.gbc` ROM。
+- [x] 支持从 `.zip` 和 `.7z` 中选择/自动识别 ROM。
+- [x] 支持自动存档、电池存档、即时存档 1-9 槽位。
 - [x] 支持即时读档、即时存档缩略图、存档覆盖确认。
 - [x] 支持 BIOS 配置、内置 BIOS、跳过 BIOS。
-- [ ] 支持 IPS / UPS / BPS 补丁自动加载和手动加载。
+- [x] 支持 IPS / UPS / BPS 补丁自动加载和手动加载。
 - [x] 支持作弊码导入、启用、禁用、编辑、保存。
-- [ ] 支持截图。
-- [ ] 支持快进、暂停、重置、单帧步进、倒带、帧跳过。
-- [ ] 支持触屏虚拟手柄。
+- [x] 支持截图。
+- [x] 支持快进、暂停、重置、单帧步进、倒带、帧跳过。
+- [x] 支持触屏虚拟手柄。
 - [x] 支持实体手柄、键盘、蓝牙控制器重映射。
-- [ ] 支持震动、陀螺仪/加速度计、亮度/太阳传感器替代输入。
+- [x] 支持震动、陀螺仪/加速度计、亮度/太阳传感器替代输入。
 - [ ] 支持 Game Boy Camera 图片源的 Android 摄像头桥接。
-- [ ] 支持横屏/竖屏布局、沉浸模式、屏幕比例/整数缩放/滤镜设置。
-- [ ] 支持 ROM 库、最近打开、搜索、封面/标题信息、最后游玩时间。
+- [x] 支持横屏/竖屏布局、沉浸模式、屏幕比例/整数缩放/滤镜设置。
+- [x] 支持 ROM 库、最近打开、搜索、封面/标题信息、最后游玩时间。
 - [x] 支持 per-game override：每个游戏独立 BIOS、画面、音频、输入、作弊、传感器配置。
 - [x] 支持导入/导出存档、状态、截图、配置。
-- [ ] 支持崩溃日志、运行日志、性能信息导出。
+- [x] 支持崩溃日志、运行日志、性能信息导出。
 
 ### 1.2 Android 原生定义
 
-- [ ] UI 使用 Android 原生技术栈：Kotlin + AndroidX + Jetpack Compose 或 XML/View。首选 Kotlin + Compose，但核心渲染面使用 `SurfaceView` / `TextureView` / `GLSurfaceView` 这种 Android 原生组件。
-- [ ] 模拟核心继续使用现有 C/C++ mGBA，不重写模拟器。
-- [ ] Android 与核心之间使用 JNI/NDK，不引入 Flutter、React Native、Unity、Electron 等跨平台 UI 框架。
-- [ ] 不用 SDL 端口直接套 Android。SDL 可作为参考，但 Android 版必须拥有原生 Activity、原生存储授权、原生输入和原生生命周期。
-- [ ] 不用 libretro 作为最终 App 壳。`src/platform/libretro` 可参考一帧运行、音频缓冲和传感器桥接方式，但 Android 版要直接调用 mGBA core API。
+- [x] UI 使用 Android 原生技术栈：Kotlin + AndroidX + Jetpack Compose 或 XML/View。首选 Kotlin + Compose，但核心渲染面使用 `SurfaceView` / `TextureView` / `GLSurfaceView` 这种 Android 原生组件。
+- [x] 模拟核心继续使用现有 C/C++ mGBA，不重写模拟器。
+- [x] Android 与核心之间使用 JNI/NDK，不引入 Flutter、React Native、Unity、Electron 等跨平台 UI 框架。
+- [x] 不用 SDL 端口直接套 Android。SDL 可作为参考，但 Android 版必须拥有原生 Activity、原生存储授权、原生输入和原生生命周期。
+- [x] 不用 libretro 作为最终 App 壳。`src/platform/libretro` 可参考一帧运行、音频缓冲和传感器桥接方式，但 Android 版要直接调用 mGBA core API。
 
 ### 1.3 初版非目标
 
@@ -293,41 +293,41 @@ src/platform/android/
 - [x] `minSdk` 建议先定 23；如果 AAudio/现代存储策略压力过大，再评估提升到 26。
 - [ ] `targetSdk` / Android Gradle Plugin / Kotlin 版本在真正实现前用官方文档确认一次，避免 2026 年工具链细节过期。
 - [x] Debug ABI：`arm64-v8a`、`armeabi-v7a`、`x86_64`。
-- [ ] Release ABI：至少 `arm64-v8a`，建议保留 `armeabi-v7a` 和 `x86_64` 用于老设备/模拟器。
+- [x] Release ABI：至少 `arm64-v8a`，建议保留 `armeabi-v7a` 和 `x86_64` 用于老设备/模拟器。
 - [x] 开启 `externalNativeBuild.cmake`，CMake 入口先放在 `app/src/main/cpp/CMakeLists.txt`。
 
 ### 3.2 NDK / CMake
 
-- [ ] Android CMake 入口通过 `add_subdirectory(${MGBA_ROOT} ${CMAKE_BINARY_DIR}/mgba-core)` 复用顶层 mGBA 构建。
-- [ ] 给 mGBA core 传入 Android 端配置：
-  - [ ] `-DBUILD_QT=OFF`
-  - [ ] `-DBUILD_SDL=OFF`
-  - [ ] `-DBUILD_LIBRETRO=OFF`
-  - [ ] `-DBUILD_PERF=OFF`
-  - [ ] `-DBUILD_TEST=OFF`
-  - [ ] `-DBUILD_SUITE=OFF`
-  - [ ] `-DBUILD_HEADLESS=OFF`
-  - [ ] `-DBUILD_SHARED=OFF`
-  - [ ] `-DBUILD_STATIC=ON`
-  - [ ] `-DBUILD_GLES2=ON`
-  - [ ] `-DBUILD_GLES3=OFF` 初期关闭，后续再评估。
-  - [ ] `-DBUILD_GL=OFF`
-  - [ ] `-DUSE_FFMPEG=OFF` 初期关闭，录制功能阶段再开启或换 Android MediaCodec。
-  - [ ] `-DUSE_DISCORD_RPC=OFF`
-  - [ ] `-DUSE_EDITLINE=OFF`
-  - [ ] `-DUSE_LUA=OFF` 初期关闭，脚本功能阶段再评估。
+- [x] Android CMake 入口通过 `add_subdirectory(${MGBA_ROOT} ${CMAKE_BINARY_DIR}/mgba-core)` 复用顶层 mGBA 构建。
+- [x] 给 mGBA core 传入 Android 端配置：
+  - [x] `-DBUILD_QT=OFF`
+  - [x] `-DBUILD_SDL=OFF`
+  - [x] `-DBUILD_LIBRETRO=OFF`
+  - [x] `-DBUILD_PERF=OFF`
+  - [x] `-DBUILD_TEST=OFF`
+  - [x] `-DBUILD_SUITE=OFF`
+  - [x] `-DBUILD_HEADLESS=OFF`
+  - [x] `-DBUILD_SHARED=OFF`
+  - [x] `-DBUILD_STATIC=ON`
+  - [x] `-DBUILD_GLES2=ON`
+  - [x] `-DBUILD_GLES3=OFF` 初期关闭，后续再评估。
+  - [x] `-DBUILD_GL=OFF`
+  - [x] `-DUSE_FFMPEG=OFF` 初期关闭，录制功能阶段再开启或换 Android MediaCodec。
+  - [x] `-DUSE_DISCORD_RPC=OFF`
+  - [x] `-DUSE_EDITLINE=OFF`
+  - [x] `-DUSE_LUA=OFF` 初期关闭，脚本功能阶段再评估。
   - [ ] `-DUSE_SQLITE3=ON` 若 ROM 库或核心功能需要；否则先由 Android Room 管理库。
-  - [ ] `-DUSE_ZLIB=ON`
-  - [ ] `-DUSE_PNG=ON`
-  - [ ] `-DUSE_LZMA=ON`
+  - [x] `-DUSE_ZLIB=ON`
+  - [x] `-DUSE_PNG=ON`
+  - [x] `-DUSE_LZMA=ON`
   - [ ] `-DUSE_LIBZIP=OFF` 或 `-DUSE_MINIZIP=ON`，以仓库第三方 zlib/minizip 能否稳定编译为准。
-- [ ] 新增 JNI 共享库 target：`mgba-android`。
-- [ ] `mgba-android` 链接：
-  - [ ] `mgba` 静态库。
-  - [ ] Android 系统库：`log`、`android`、`EGL`、`GLESv2`。
+- [x] 新增 JNI 共享库 target：`mgba-android`。
+- [x] `mgba-android` 链接：
+  - [x] `mgba` 静态库。
+  - [x] Android 系统库：`log`、`android`、`EGL`、`GLESv2`。
   - [ ] 音频库：优先 `aaudio`；如支持低版本则补 `OpenSLES` 或引入 Oboe。
   - [ ] 需要时补 `atomic`。
-- [ ] 避免污染桌面构建：所有 Android 特有逻辑尽量在 `src/platform/android/app/src/main/cpp/CMakeLists.txt` 内完成。
+- [x] 避免污染桌面构建：所有 Android 特有逻辑尽量在 `src/platform/android/app/src/main/cpp/CMakeLists.txt` 内完成。
 - [ ] 如果顶层 CMake 因 Android 交叉编译找包失败，再以最小补丁在顶层 `CMakeLists.txt` 中加 `if(ANDROID)` 默认关闭桌面前端和不可用依赖。
 
 ### 3.3 构建命令
@@ -362,8 +362,8 @@ cd src/platform/android
 
 ### 4.1 Kotlin 侧 NativeBridge
 
-- [ ] `NativeBridge.kt` 负责加载 `System.loadLibrary("mgba-android")`。
-- [ ] JNI handle 用 `Long` 保存 native `AndroidCoreRunner*`。
+- [x] `NativeBridge.kt` 负责加载 `System.loadLibrary("mgba-android")`。
+- [x] JNI handle 用 `Long` 保存 native `AndroidCoreRunner*`。
 - [ ] Kotlin 对外 API 先设计成稳定小接口：
 
 ```kotlin
@@ -401,7 +401,7 @@ object NativeBridge {
 
 ### 4.2 Native CoreRunner
 
-- [ ] 新建 `AndroidCoreRunner`，封装一个正在运行的 mGBA 实例。
+- [x] 新建 `AndroidCoreRunner`，封装一个正在运行的 mGBA 实例。
 - [ ] 成员建议：
   - [ ] `struct mCore* core`
   - [ ] `struct mCoreThread thread`
@@ -454,21 +454,21 @@ object NativeBridge {
 
 ### 5.1 初版渲染路径
 
-- [ ] Activity 内使用 `SurfaceView` 或 `GLSurfaceView` 承载模拟画面。
-- [ ] 初版推荐 `SurfaceView + native EGL`：
-  - [ ] Kotlin `SurfaceHolder.Callback` 把 `Surface` 传给 native。
-  - [ ] Native 创建 EGLDisplay / EGLContext / EGLSurface。
-  - [ ] Native GL 线程负责 `eglMakeCurrent`、上传纹理、绘制、`eglSwapBuffers`。
-- [ ] 画面 buffer 使用 RGB565，匹配 mGBA 默认 `mColor`。
-- [ ] GBA/GBC 视频尺寸变化时：
-  - [ ] 调用 `core->currentVideoSize`。
-  - [ ] 更新 texture 尺寸和 viewport。
+- [x] Activity 内使用 `SurfaceView` 或 `GLSurfaceView` 承载模拟画面。
+- [x] 初版推荐 `SurfaceView + native EGL`：
+  - [x] Kotlin `SurfaceHolder.Callback` 把 `Surface` 传给 native。
+  - [x] Native 创建 EGLDisplay / EGLContext / EGLSurface。
+  - [x] Native GL 线程负责 `eglMakeCurrent`、上传纹理、绘制、`eglSwapBuffers`。
+- [x] 画面 buffer 使用 RGB565，匹配 mGBA 默认 `mColor`。
+- [x] GBA/GBC 视频尺寸变化时：
+  - [x] 调用 `core->currentVideoSize`。
+  - [x] 更新 texture 尺寸和 viewport。
   - [ ] 通知 Kotlin 更新 aspect ratio。
 - [ ] 初版可先实现最小渲染：
-  - [ ] 每帧 `glTexSubImage2D` 上传 core outputBuffer。
-  - [ ] 一个全屏 quad。
+  - [x] 每帧 `glTexSubImage2D` 上传 core outputBuffer。
+  - [x] 一个全屏 quad。
   - [x] nearest / linear filtering 可切换。
-  - [ ] letterbox/pillarbox 维持比例。
+  - [x] letterbox/pillarbox 维持比例。
 - [ ] 第二阶段接入现有 `src/platform/opengl/gles2.c` / `mGLES2Context`：
   - [ ] 复用 shader pipeline。
   - [ ] 复用 integer scaling、filter、interframe blending。
@@ -560,7 +560,7 @@ object NativeBridge {
 - [x] 静音。
 - [x] 低通滤波，参考 libretro 的 `audioLowPass` 实现。
 - [x] 音频 buffer 大小：低延迟 / 平衡 / 稳定。
-- [ ] 后台音频策略：默认切后台暂停。
+- [x] 后台音频策略：默认切后台暂停。
 
 ### 6.4 音频验收标准
 
@@ -610,11 +610,11 @@ object NativeBridge {
   - [x] 横屏布局。
   - [x] 竖屏布局。
   - [x] 震动反馈开关。
-- [ ] 支持布局编辑模式：
-  - [ ] 拖动按钮。
+- [x] 支持布局编辑模式：
+  - [x] 拖动按钮。
   - [ ] 双指缩放按钮。
   - [x] 重置布局。
-  - [ ] 保存为 profile。
+  - [x] 保存为 profile。
 
 ### 7.3 实体手柄/键盘
 
@@ -628,7 +628,7 @@ object NativeBridge {
   - [x] `AXIS_HAT_X` / `AXIS_HAT_Y` 十字键。
   - [x] `AXIS_LTRIGGER` / `AXIS_RTRIGGER` 可映射。
 - [x] 支持 deadzone。
-- [ ] 支持每个设备独立 profile：
+- [x] 支持每个设备独立 profile：
   - [x] 使用 `InputDevice.descriptor` 作为稳定 key。
   - [x] 允许手动绑定。
   - [x] 支持导入/导出 profile。
@@ -640,11 +640,11 @@ object NativeBridge {
   - [x] Native 接 mGBA `mPERIPH_RUMBLE`。
   - [x] Kotlin 使用 `Vibrator` / `VibrationEffect` / controller haptics。
   - [x] 全局和 per-game 开关。
-- [ ] Rotation / tilt：
+- [x] Rotation / tilt：
   - [x] Native 接 `mPERIPH_ROTATION`。
   - [x] Kotlin 监听 accelerometer / gyroscope。
   - [x] 提供校准按钮。
-- [ ] Solar sensor：
+- [x] Solar sensor：
   - [x] 默认提供手动亮度滑条。
   - [x] 可选使用 Android light sensor。
 - [ ] Game Boy Camera：
@@ -715,9 +715,9 @@ object NativeBridge {
 
 ### 8.4 导入导出
 
-- [ ] 从用户选择的 `.sav` 导入到当前 ROM。
+- [x] 从用户选择的 `.sav` 导入到当前 ROM。
 - [x] 导出当前 ROM `.sav`。
-- [ ] 导出/导入单个 savestate。
+- [x] 导出/导入单个 savestate。
 - [x] 导出截图。
 - [x] 导出完整游戏数据包：
   - [x] save。
@@ -757,11 +757,11 @@ object NativeBridge {
 
 ### 9.2 扫描流程
 
-- [ ] 用户选择文件夹。
-- [ ] 保存 tree URI 权限。
+- [x] 用户选择文件夹。
+- [x] 保存 tree URI 权限。
 - [x] 后台遍历文档树。
 - [x] 过滤扩展名：`.gba`、`.agb`、`.gb`、`.gbc`、`.sgb`、`.zip`、`.7z`。
-- [ ] 对每个候选文件：
+- [x] 对每个候选文件：
   - [x] 打开 fd。
   - [x] native 探测 `mCoreFindVF`。
   - [x] 读取 `mGameInfo`。
@@ -775,14 +775,14 @@ object NativeBridge {
 
 - [x] 首页不是营销页，直接显示 ROM 库。
 - [x] 空状态提供“打开 ROM”和“添加文件夹”两个动作。
-- [ ] ROM 列表支持：
+- [x] ROM 列表支持：
   - [x] 最近。
   - [x] 收藏。
   - [x] GBA / GB 筛选。
   - [x] GBC 细分筛选。
   - [x] 搜索。
   - [x] 网格/列表切换。
-- [ ] 每个 ROM item 显示：
+- [x] 每个 ROM item 显示：
   - [x] 标题。
   - [x] 平台。
   - [x] 最近游玩。
@@ -811,7 +811,7 @@ object NativeBridge {
   - [x] 静音。
   - [x] buffer 模式。
   - [x] 低通滤波。
-- [ ] Emulation：
+- [x] Emulation：
   - [x] 使用 BIOS。
   - [x] BIOS 文件路径。
   - [x] 跳过 BIOS。
@@ -819,7 +819,7 @@ object NativeBridge {
   - [x] 倒带开关。
   - [x] 倒带 buffer。
   - [x] RTC 策略。
-- [ ] Input：
+- [x] Input：
   - [x] 触屏显示。
   - [x] 触屏布局编辑。
   - [x] 手柄映射。
@@ -896,7 +896,7 @@ object NativeBridge {
 
 ### 12.1 BIOS
 
-- [ ] BIOS 管理页支持：
+- [x] BIOS 管理页支持：
   - [x] 选择 GBA BIOS。
   - [x] 选择 GB/GBC BIOS，如核心支持。
   - [x] 显示文件 hash 和大小。
@@ -948,7 +948,7 @@ object NativeBridge {
 
 ### 13.3 录制
 
-- [ ] 第一阶段只做截图。
+- [x] 第一阶段只做截图。
 - [ ] 视频录制后续两条路线评估：
   - [ ] Android MediaCodec：更原生，适合 MP4。
   - [ ] FFmpeg：复刻桌面 GIF/WebP/APNG，但 Android 构建成本高。
@@ -980,14 +980,14 @@ object NativeBridge {
 
 ## 14. Android 生命周期与稳定性
 
-- [ ] Activity lifecycle：
-  - [ ] `onCreate` 创建 controller。
-  - [ ] `onStart` 绑定 UI。
-  - [ ] `onResume` 恢复输入/传感器/音频。
-  - [ ] `onPause` 暂停 core/audio/sensors，保存 SRAM。
-  - [ ] `onStop` 保持状态但释放高耗资源。
-  - [ ] `onDestroy` 如果 finishing，停止 core 并释放 native handle。
-- [ ] Surface lifecycle 与 core lifecycle 分离。
+- [x] Activity lifecycle：
+  - [x] `onCreate` 创建 controller。
+  - [x] `onStart` 绑定 UI。
+  - [x] `onResume` 恢复输入/传感器/音频。
+  - [x] `onPause` 暂停 core/audio/sensors，保存 SRAM。
+  - [x] `onStop` 保持状态但释放高耗资源。
+  - [x] `onDestroy` 如果 finishing，停止 core 并释放 native handle。
+- [x] Surface lifecycle 与 core lifecycle 分离。
 - [ ] 设备旋转不重启游戏：
   - [ ] 使用 ViewModel 保存 `EmulatorController`。
   - [ ] 或在 Manifest 处理 configChanges，但要慎用。
@@ -1006,25 +1006,25 @@ object NativeBridge {
 - [x] ROM 库首页。
 - [ ] 顶部操作：搜索、添加、设置。
 - [x] 最近游戏横向区或列表排序。
-- [ ] 空状态。
+- [x] 空状态。
 - [x] 扫描进度。
 
 ### 15.2 EmulatorActivity / EmulatorScreen
 
-- [ ] 全屏沉浸模式。
-- [ ] Surface 渲染区域。
-- [ ] VirtualGamepad overlay。
-- [ ] 顶部/底部临时菜单：
-  - [ ] 暂停/继续。
-  - [ ] 重置。
+- [x] 全屏沉浸模式。
+- [x] Surface 渲染区域。
+- [x] VirtualGamepad overlay。
+- [x] 顶部/底部临时菜单：
+  - [x] 暂停/继续。
+  - [x] 重置。
   - [x] 快进。
   - [x] 倒带。
-  - [ ] 存档。
-  - [ ] 读档。
-  - [ ] 截图。
-  - [ ] 设置。
+  - [x] 存档。
+  - [x] 读档。
+  - [x] 截图。
+  - [x] 设置。
   - [x] 退出。
-- [ ] Debug overlay：
+- [x] Debug overlay：
   - [x] FPS。
   - [x] frame time。
   - [x] audio underrun。
@@ -1033,17 +1033,17 @@ object NativeBridge {
 
 ### 15.3 Settings
 
-- [ ] 全局设置。
+- [x] 全局设置。
 - [x] 当前游戏设置。
-- [ ] 输入映射。
-- [ ] BIOS。
+- [x] 输入映射。
+- [x] BIOS。
 - [x] 存储管理。
-- [ ] 关于/许可。
+- [x] 关于/许可。
 
 ### 15.4 SaveState
 
-- [ ] 9 槽列表。
-- [ ] 快速保存/读取。
+- [x] 9 槽列表。
+- [x] 快速保存/读取。
 - [x] 删除/导出。
 - [x] 覆盖确认。
 
