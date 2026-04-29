@@ -993,13 +993,13 @@ object NativeBridge {
 ### 13.3 录制
 
 - [x] 第一阶段只做截图。
-- [ ] 视频录制后续两条路线评估：
-  - [ ] Android MediaCodec：更原生，适合 MP4。
-  - [ ] FFmpeg：复刻桌面 GIF/WebP/APNG，但 Android 构建成本高。
-- [ ] 若选择 FFmpeg：
-  - [ ] 单独做 `USE_FFMPEG=ON` 的 Android 交叉编译方案。
-  - [ ] 控制 APK 体积。
-  - [ ] 处理 LGPL/GPL 许可边界。
+- [x] 视频录制后续两条路线评估：
+  - [x] Android MediaCodec：作为 Android 后续首选路线，直接输出 MP4，复用当前 EGL texture/frame pacing 诊断，后续补 GL input surface 和 muxer。
+  - [x] FFmpeg：仅作为桌面 GIF/WebP/APNG 兼容路线保留，不进入 Android 首版，避免 APK 体积、交叉编译和 LGPL/GPL 发布义务扩大。
+- [x] 若选择 FFmpeg：Android 首版不选择 FFmpeg，暂不新增 `USE_FFMPEG=ON` Android 交叉编译方案。
+  - [x] 单独做 `USE_FFMPEG=ON` 的 Android 交叉编译方案：暂缓。
+  - [x] 控制 APK 体积：通过不捆绑 FFmpeg 保持首版体积可控。
+  - [x] 处理 LGPL/GPL 许可边界：当前不启用 FFmpeg，因此无需新增发布义务。
 
 ### 13.4 Debug / GDB
 
@@ -1200,7 +1200,7 @@ object NativeBridge {
   - [x] 第三方库 license：zlib、libpng、lzma、sqlite、inih 等实际启用项。
 - [x] 不分发 BIOS。
 - [x] 不分发商业 ROM。
-- [ ] 如果启用 FFmpeg，明确 LGPL/GPL 组件选择和发布义务。
+- [x] 如果启用 FFmpeg，明确 LGPL/GPL 组件选择和发布义务：当前 Android 首版不启用 FFmpeg，后续若启用必须重新评估组件选择和发布义务。
 - [x] 如果使用 AndroidX / Oboe / CameraX / Room，补充各自 license；当前运行时未捆绑这些依赖，`THIRD_PARTY_NOTICES.md` 与 App Licenses 对话框已声明。
 
 ## 19. 分阶段 PR 计划
