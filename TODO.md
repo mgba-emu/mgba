@@ -387,22 +387,23 @@ object NativeBridge {
   - [ ] `std::string basePath/cachePath/savePath/statePath/screenshotPath/cheatPath/biosPath`
 - [ ] `create` 只初始化路径、日志、默认配置，不加载 ROM。
 - [ ] `loadRomFd` 流程：
-  - [ ] Kotlin 通过 SAF `ContentResolver.openFileDescriptor(uri, "r")` 获取 fd。
-  - [ ] JNI 侧 `dup(fd)`。
-  - [ ] `VFileFromFD(dupFd)`。
-  - [ ] `mCoreFindVF(vf)` 判断 GBA / GB / GBC。
-  - [ ] `core->init(core)`。
-  - [ ] `mCoreInitConfig(core, "android")`。
-  - [ ] 配置默认 `mCoreOptions`。
-  - [ ] `mCoreConfigLoadDefaults`。
-  - [ ] 将 Android app 私有目录映射到 `savegamePath`、`savestatePath`、`screenshotPath`、`patchPath`、`cheatsPath`。
-  - [ ] `core->baseVideoSize`、`core->currentVideoSize`。
-  - [ ] 分配 RGB565 视频 buffer，GBA/GBC 最大按 256x224 初始，实际大小由 `currentVideoSize` 更新。
-  - [ ] `core->setVideoBuffer(core, outputBuffer, stride)`。
-  - [ ] `core->setAudioBufferSize`。
+  - [x] Kotlin 通过 SAF `ContentResolver.openFileDescriptor(uri, "r")` 获取 fd。
+  - [x] JNI 侧 `dup(fd)`。
+  - [x] `VFileFromFD(dupFd)`。
+  - [x] `mCoreFindVF(vf)` 判断 GBA / GB / GBC。
+  - [x] `core->init(core)`。
+  - [x] `mCoreInitConfig(core, "android")`。
+  - [x] 配置默认 `mCoreOptions`。
+  - [x] `mCoreConfigLoadDefaults`。
+  - [x] 将 Android app 私有目录映射到 `savegamePath`、`savestatePath`、`screenshotPath`、`patchPath`、`cheatsPath`。
+  - [x] `core->baseVideoSize`、`core->currentVideoSize`。
+  - [x] 分配 RGB565 视频 buffer，GBA/GBC 最大按 256x224 初始，实际大小由 `currentVideoSize` 更新。
+  - [x] `core->setVideoBuffer(core, outputBuffer, stride)`。
+  - [x] `core->setAudioBufferSize`。
   - [ ] `core->setAVStream` 接入音频/视频回调。
-  - [ ] `core->setPeripheral` 接入 rumble / rotation / camera / luminance。
-  - [ ] `core->loadROM(core, vf)`。
+  - [x] `core->setPeripheral` 接入 rumble / rotation / luminance。
+  - [ ] `core->setPeripheral` 接入 camera。
+  - [x] `core->loadROM(core, vf)`。
   - [ ] `mCoreAutoloadSave(core)`、`mCoreAutoloadPatch(core)`、`mCoreAutoloadCheats(core)`。
 - [ ] `start` 使用 `mCoreThreadStart`，不要自己裸循环 `runFrame`，除非后续证明 Android 生命周期下需要自定义 loop。
 - [ ] `pause/resume/stop` 必须统一走 `mCoreThreadPause`、`mCoreThreadUnpause`、`mCoreThreadEnd`、`mCoreThreadJoin`。
@@ -410,13 +411,13 @@ object NativeBridge {
 
 ### 4.3 日志桥
 
-- [ ] 新建 `AndroidLogger`，把 mGBA log 转到 Android `__android_log_vprint`。
-- [ ] mGBA category 和 level 映射：
-  - [ ] `mLOG_FATAL` -> `ANDROID_LOG_FATAL`
-  - [ ] `mLOG_ERROR` -> `ANDROID_LOG_ERROR`
-  - [ ] `mLOG_WARN` -> `ANDROID_LOG_WARN`
-  - [ ] `mLOG_INFO` -> `ANDROID_LOG_INFO`
-  - [ ] `mLOG_DEBUG` -> `ANDROID_LOG_DEBUG`
+- [x] 新建 `AndroidLogger`，把 mGBA log 转到 Android logcat。
+- [x] mGBA category 和 level 映射：
+  - [x] `mLOG_FATAL` -> `ANDROID_LOG_FATAL`
+  - [x] `mLOG_ERROR` -> `ANDROID_LOG_ERROR`
+  - [x] `mLOG_WARN` -> `ANDROID_LOG_WARN`
+  - [x] `mLOG_INFO` -> `ANDROID_LOG_INFO`
+  - [x] `mLOG_DEBUG` -> `ANDROID_LOG_DEBUG`
 - [ ] Kotlin 层保留运行日志 ring buffer，用于“导出日志”。
 
 ## 5. 视频渲染计划
@@ -631,28 +632,28 @@ object NativeBridge {
 
 ### 8.1 Android 存储策略
 
-- [ ] 不申请 broad storage 权限作为默认路径。
-- [ ] ROM 选择使用 `ACTION_OPEN_DOCUMENT`。
-- [ ] ROM 文件夹扫描使用 `ACTION_OPEN_DOCUMENT_TREE`。
-- [ ] 对选中的 ROM / 文件夹调用 `takePersistableUriPermission`。
-- [ ] App 内生成文件使用私有目录：
-  - [ ] `files/saves`
-  - [ ] `files/states`
-  - [ ] `files/screenshots`
-  - [ ] `files/cheats`
-  - [ ] `files/bios`
-  - [ ] `files/patches`
-  - [ ] `files/config`
-  - [ ] `cache/imports`
-- [ ] 导出时使用 `ACTION_CREATE_DOCUMENT` 或分享 sheet。
+- [x] 不申请 broad storage 权限作为默认路径。
+- [x] ROM 选择使用 `ACTION_OPEN_DOCUMENT`。
+- [x] ROM 文件夹扫描使用 `ACTION_OPEN_DOCUMENT_TREE`。
+- [x] 对选中的 ROM / 文件夹调用 `takePersistableUriPermission`。
+- [x] App 内生成文件使用私有目录：
+  - [x] `files/saves`
+  - [x] `files/states`
+  - [x] `files/screenshots`
+  - [x] `files/cheats`
+  - [x] `files/bios`
+  - [x] `files/patches`
+  - [x] `files/config`
+  - [x] `cache/imports`
+- [x] 导出时使用 `ACTION_CREATE_DOCUMENT` 或分享 sheet。
 
 ### 8.2 ROM 加载策略
 
-- [ ] 优先从 SAF fd 加载：
-  - [ ] Kotlin `ParcelFileDescriptor.detachFd()` 或 `dup` 后传 native。
-  - [ ] Native `dup(fd)`。
-  - [ ] Native `VFileFromFD(dupFd)`。
-  - [ ] Native `mCoreFindVF(vf)`。
+- [x] 优先从 SAF fd 加载：
+  - [x] Kotlin `ParcelFileDescriptor.detachFd()` 或 `dup` 后传 native。
+  - [x] Native `dup(fd)`。
+  - [x] Native `VFileFromFD(dupFd)`。
+  - [x] Native `mCoreFindVF(vf)`。
 - [ ] 对不支持 seek/mmap 的 provider：
   - [ ] 探测 `vf->seek` 和 `vf->size` 是否可用。
   - [ ] 失败时复制到 `cache/imports/<hash>.<ext>` 再 `VFileOpen`。
@@ -672,13 +673,13 @@ object NativeBridge {
   - [ ] `files/screenshots/<displayName>-yyyyMMdd-HHmmss.png`
   - [ ] `files/cheats/<romHash>.cheats`
   - [ ] `files/patches/<romHash>.<ips|ups|bps>`
-- [ ] 设置 `mCoreOptions`：
-  - [ ] `savegamePath`
-  - [ ] `savestatePath`
-  - [ ] `screenshotPath`
-  - [ ] `patchPath`
-  - [ ] `cheatsPath`
-- [ ] 如果 mGBA directory set 依赖 `VDirOpen(path)`，Android 私有目录可直接提供真实 filesystem path。
+- [x] 设置 `mCoreOptions`：
+  - [x] `savegamePath`
+  - [x] `savestatePath`
+  - [x] `screenshotPath`
+  - [x] `patchPath`
+  - [x] `cheatsPath`
+- [x] 如果 mGBA directory set 依赖 `VDirOpen(path)`，Android 私有目录可直接提供真实 filesystem path。
 
 ### 8.4 导入导出
 

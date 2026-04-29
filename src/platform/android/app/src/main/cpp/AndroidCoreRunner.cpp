@@ -379,13 +379,29 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	}
 
 	const std::string biosPath = DefaultBiosPath(m_basePath);
+	const std::string savegamePath = m_basePath + "/saves";
+	const std::string savestatePath = m_basePath + "/states";
+	const std::string screenshotPath = m_basePath + "/screenshots";
 	const std::string patchPath = m_basePath + "/patches";
+	const std::string cheatsPath = m_basePath + "/cheats";
+	const std::string configPath = m_basePath + "/config";
+	const std::string importsPath = m_cachePath + "/imports";
+	EnsureDirectory(savegamePath);
+	EnsureDirectory(savestatePath);
+	EnsureDirectory(screenshotPath);
 	EnsureDirectory(patchPath);
+	EnsureDirectory(cheatsPath);
+	EnsureDirectory(configPath);
+	EnsureDirectory(importsPath);
 
 	struct mCoreOptions options = {};
 	options.bios = IsRegularFile(biosPath) ? const_cast<char*>(biosPath.c_str()) : nullptr;
 	options.useBios = options.bios != nullptr;
+	options.savegamePath = const_cast<char*>(savegamePath.c_str());
+	options.savestatePath = const_cast<char*>(savestatePath.c_str());
+	options.screenshotPath = const_cast<char*>(screenshotPath.c_str());
 	options.patchPath = const_cast<char*>(patchPath.c_str());
+	options.cheatsPath = const_cast<char*>(cheatsPath.c_str());
 	options.rewindEnable = m_rewindEnabled.load();
 	options.rewindBufferCapacity = m_rewindBufferCapacity.load();
 	options.rewindBufferInterval = m_rewindBufferInterval.load();
@@ -399,6 +415,13 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	mCoreInitConfig(core, "android");
 	mCoreConfigLoadDefaults(&core->config, &options);
 	mCoreLoadConfig(core);
+	// Directory options are not copied by mCoreConfigLoadDefaults, so map them explicitly.
+	mCoreConfigSetValue(&core->config, "savegamePath", savegamePath.c_str());
+	mCoreConfigSetValue(&core->config, "savestatePath", savestatePath.c_str());
+	mCoreConfigSetValue(&core->config, "screenshotPath", screenshotPath.c_str());
+	mCoreConfigSetValue(&core->config, "patchPath", patchPath.c_str());
+	mCoreConfigSetValue(&core->config, "cheatsPath", cheatsPath.c_str());
+	mCoreLoadForeignConfig(core, &core->config);
 
 	unsigned width = 0;
 	unsigned height = 0;
@@ -424,6 +447,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	SetCoreBaseName(core, displayName);
 #if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 	mCoreAutoloadPatch(core);
+	mCoreAutoloadCheats(core);
 #endif
 	LoadDefaultPatch(core, m_basePath);
 
