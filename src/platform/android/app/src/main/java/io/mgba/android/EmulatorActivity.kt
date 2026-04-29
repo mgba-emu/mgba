@@ -866,6 +866,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             })
             stateRow.addView(Button(context).apply {
+                text = "NoCheat"
+                setOnClickListener {
+                    clearCheatsWithConfirmation()
+                }
+            })
+            stateRow.addView(Button(context).apply {
                 text = "Patch"
                 setOnClickListener {
                     openPatchImportPicker()
@@ -1732,6 +1738,18 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             else -> "Cheat import failed"
         }
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun clearCheatsWithConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("Clear cheats?")
+            .setMessage("Remove saved cheats for this game. Active cheats may stay until reset or next launch.")
+            .setPositiveButton("Clear") { _, _ ->
+                val ok = cheatStore.clearForGame(currentGameId)
+                Toast.makeText(this, if (ok) "Cheats cleared" else "Clear failed", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun displayName(uri: Uri, fallback: String): String {
