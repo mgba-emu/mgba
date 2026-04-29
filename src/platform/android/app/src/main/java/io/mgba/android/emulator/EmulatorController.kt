@@ -162,6 +162,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setBiosOverridePaths(defaultPath: String, gbaPath: String, gbPath: String, gbcPath: String) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetBiosOverridePaths(handle.value, defaultPath, gbaPath, gbPath, gbcPath)
+        }
+    }
+
     fun setLogLevelMode(mode: Int) {
         if (handle.isValid) {
             NativeBridge.nativeSetLogLevelMode(handle.value, mode.coerceIn(0, 2))

@@ -132,11 +132,12 @@
 - [x] 已新增 Android internal release signing config：支持 keystore 文件或 base64 secret，并在 README 中记录本地/CI 配置变量。
 - [x] 已新增 Android crash symbolication 文档，串起 log export、CI native symbols artifact、`ndk-stack` 和 `llvm-addr2line` 排查流程。
 - [x] 已完善 Android release R8/Proguard：开启 resource shrink，保留 manifest 入口、ContentProvider 和 JNI native 方法。
-- [x] 已新增当前游戏数据包导出：zip 内包含 metadata、battery save、1-9 槽 state、state 缩略图、cheats、patch 和 per-game/input settings。
+- [x] 已新增当前游戏数据包导出：zip 内包含 metadata、battery save、1-9 槽 state、state 缩略图、cheats、patch、per-game BIOS 和 per-game/input settings。
 - [x] 已新增当前游戏数据包导入：导入前校验 metadata CRC/stable id，不匹配时提示但允许继续覆盖。
 - [x] 已增强当前游戏数据包迁移：包含 Game Boy Camera 静态图，导入后立即刷新当前会话设置、输入映射、cheat 和 patch。
 - [x] 已新增 Android native wrapper 警告检查：CI 使用 `mgbaAndroidWarningsAsErrors=true` 将端口层 native warning 作为失败处理。
 - [x] 已新增 Android 第三方声明文档，并同步 README 与 App 内 Licenses 文案。
+- [x] 已新增 Android per-game BIOS 覆盖：当前游戏可导入/清除专属 BIOS，启动时优先于全局 BIOS，并随游戏数据包导入导出。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -158,7 +159,7 @@
 - [ ] 支持 Game Boy Camera 图片源的 Android 摄像头桥接。
 - [ ] 支持横屏/竖屏布局、沉浸模式、屏幕比例/整数缩放/滤镜设置。
 - [ ] 支持 ROM 库、最近打开、搜索、封面/标题信息、最后游玩时间。
-- [ ] 支持 per-game override：每个游戏独立 BIOS、画面、音频、输入、作弊、传感器配置。
+- [x] 支持 per-game override：每个游戏独立 BIOS、画面、音频、输入、作弊、传感器配置。
 - [x] 支持导入/导出存档、状态、截图、配置。
 - [ ] 支持崩溃日志、运行日志、性能信息导出。
 
@@ -709,6 +710,7 @@ object NativeBridge {
   - [x] states。
   - [x] cheats。
   - [x] patch。
+  - [x] per-game BIOS。
   - [x] input mappings。
   - [x] Game Boy Camera 静态图。
   - [x] per-game settings。
@@ -821,10 +823,10 @@ object NativeBridge {
 
 ### 10.2 Per-game override
 
-- [ ] 每个游戏可以覆盖：
-  - [ ] BIOS。
-  - [ ] 补丁。
-  - [ ] 作弊自动启用。
+- [x] 每个游戏可以覆盖：
+  - [x] BIOS。
+  - [x] 补丁。
+  - [x] 作弊自动启用。
   - [x] 视频缩放。
   - [x] 视频滤镜。
   - [x] 虚拟手柄显示。

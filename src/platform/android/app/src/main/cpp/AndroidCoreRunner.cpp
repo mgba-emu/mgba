@@ -213,6 +213,13 @@ bool IsRegularFile(const std::string& path) {
 	return stat(path.c_str(), &info) == 0 && S_ISREG(info.st_mode);
 }
 
+std::string EffectiveBiosPath(const std::string& fallbackPath, const std::string& overridePath) {
+	if (!overridePath.empty() && IsRegularFile(overridePath)) {
+		return overridePath;
+	}
+	return fallbackPath;
+}
+
 bool LoadDefaultPatch(mCore* core, const std::string& basePath) {
 	if (!core || !core->loadPatch) {
 		return false;
@@ -464,10 +471,21 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 		return LoadResult(false, "Could not initialize emulator core", "", "", "", displayName);
 	}
 
-	const std::string biosPath = DefaultBiosPath(m_basePath);
-	const std::string gbaBiosPath = GbaBiosPath(m_basePath);
-	const std::string gbBiosPath = GbBiosPath(m_basePath);
-	const std::string gbcBiosPath = GbcBiosPath(m_basePath);
+	std::string defaultBiosOverridePath;
+	std::string gbaBiosOverridePath;
+	std::string gbBiosOverridePath;
+	std::string gbcBiosOverridePath;
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		defaultBiosOverridePath = m_defaultBiosOverridePath;
+		gbaBiosOverridePath = m_gbaBiosOverridePath;
+		gbBiosOverridePath = m_gbBiosOverridePath;
+		gbcBiosOverridePath = m_gbcBiosOverridePath;
+	}
+	const std::string biosPath = EffectiveBiosPath(DefaultBiosPath(m_basePath), defaultBiosOverridePath);
+	const std::string gbaBiosPath = EffectiveBiosPath(GbaBiosPath(m_basePath), gbaBiosOverridePath);
+	const std::string gbBiosPath = EffectiveBiosPath(GbBiosPath(m_basePath), gbBiosOverridePath);
+	const std::string gbcBiosPath = EffectiveBiosPath(GbcBiosPath(m_basePath), gbcBiosOverridePath);
 	const std::string savegamePath = m_basePath + "/saves";
 	const std::string savestatePath = m_basePath + "/states";
 	const std::string screenshotPath = m_basePath + "/screenshots";
@@ -1012,6 +1030,18 @@ void AndroidCoreRunner::setSkipBios(bool enabled) {
 		m_core->opts.skipBios = enabled;
 		mCoreConfigSetOverrideIntValue(&m_core->config, "skipBios", enabled ? 1 : 0);
 	}
+}
+
+void AndroidCoreRunner::setBiosOverridePaths(
+    std::string defaultPath,
+    std::string gbaPath,
+    std::string gbPath,
+    std::string gbcPath) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	m_defaultBiosOverridePath = std::move(defaultPath);
+	m_gbaBiosOverridePath = std::move(gbaPath);
+	m_gbBiosOverridePath = std::move(gbPath);
+	m_gbcBiosOverridePath = std::move(gbcPath);
 }
 
 void AndroidCoreRunner::setLogLevel(int levels) {

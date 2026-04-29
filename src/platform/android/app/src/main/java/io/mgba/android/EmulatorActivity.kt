@@ -57,6 +57,8 @@ import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.settings.RewindSettings
 import io.mgba.android.storage.CheatEntry
 import io.mgba.android.storage.CheatStore
+import io.mgba.android.storage.BiosStore
+import io.mgba.android.storage.BiosSlot
 import io.mgba.android.storage.PatchStore
 import io.mgba.android.storage.ScreenshotExporter
 import io.mgba.android.storage.ScreenshotShareProvider
@@ -78,6 +80,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private lateinit var perGameOverrides: PerGameOverrideStore
     private lateinit var inputMappingStore: InputMappingStore
     private lateinit var cheatStore: CheatStore
+    private lateinit var biosStore: BiosStore
     private lateinit var patchStore: PatchStore
     private var currentGameId: String? = null
     private var currentStableGameId: String? = null
@@ -170,6 +173,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var lastStatsAtMs = 0L
     private var pendingExportStateSlot = 1
     private var pendingImportStateSlot = 1
+    private var pendingGameBiosSlot = BiosSlot.Default
     private var pendingHardwareMappingMask = 0
     private var playAccountingStartedAtMs = 0L
     private var scaleMode = 0
@@ -209,6 +213,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         perGameOverrides = PerGameOverrideStore(this)
         inputMappingStore = InputMappingStore(this)
         cheatStore = CheatStore(this)
+        biosStore = BiosStore(this)
         patchStore = PatchStore(this)
         val currentGame = EmulatorSession.currentGame()
         currentGameId = currentGame?.uri
@@ -337,6 +342,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             REQUEST_IMPORT_INPUT_PROFILE -> importInputProfile(uri)
             REQUEST_IMPORT_PATCH -> importPatch(uri)
             REQUEST_IMPORT_CAMERA_IMAGE -> importCameraImage(uri)
+            REQUEST_IMPORT_GAME_BIOS -> importGameBios(uri)
         }
     }
 
@@ -1004,6 +1010,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(skipBiosButton)
+            runRow.addView(Button(context).apply {
+                text = "GameBIOS"
+                setOnClickListener {
+                    showGameBiosDialog()
+                }
+            })
             padButton = Button(context).apply {
                 setOnClickListener {
                     showVirtualGamepad = !showVirtualGamepad
@@ -1505,6 +1517,88 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             .setView(content)
             .setPositiveButton("Close", null)
             .show()
+    }
+
+    private fun showGameBiosDialog() {
+        val gameId = artifactGameId()
+        if (gameId.isNullOrBlank()) {
+            Toast.makeText(this, "Game BIOS unavailable", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val slots = BiosSlot.entries.toTypedArray()
+        val labels = slots.map { slot ->
+            val info = biosStore.infoForGame(gameId, slot)
+            if (info == null) {
+                "${slot.label}: Not set"
+            } else {
+                "${slot.label}: ${info.displayName} (${formatBytes(info.sizeBytes)})"
+            }
+        }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Game BIOS")
+            .setItems(labels) { _, which ->
+                showGameBiosSlotDialog(slots[which])
+            }
+            .setNegativeButton("Close", null)
+            .show()
+    }
+
+    private fun showGameBiosSlotDialog(slot: BiosSlot) {
+        val gameId = artifactGameId()
+        if (gameId.isNullOrBlank()) {
+            Toast.makeText(this, "Game BIOS unavailable", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val hasBios = biosStore.infoForGame(gameId, slot) != null
+        val actions = if (hasBios) {
+            arrayOf("Import or Replace", "Clear")
+        } else {
+            arrayOf("Import")
+        }
+        AlertDialog.Builder(this)
+            .setTitle("${slot.label} BIOS")
+            .setItems(actions) { _, which ->
+                when (actions[which]) {
+                    "Import", "Import or Replace" -> openGameBiosPicker(slot)
+                    "Clear" -> clearGameBios(slot)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun openGameBiosPicker(slot: BiosSlot) {
+        pendingGameBiosSlot = slot
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_IMPORT_GAME_BIOS)
+    }
+
+    private fun importGameBios(uri: Uri) {
+        val gameId = artifactGameId()
+        if (gameId.isNullOrBlank()) {
+            Toast.makeText(this, "Game BIOS unavailable", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val name = displayName(uri, "${pendingGameBiosSlot.label.lowercase(Locale.US)}.bios")
+        val ok = biosStore.importForGame(gameId, pendingGameBiosSlot, uri, name)
+        Toast.makeText(
+            this,
+            if (ok) "Game BIOS saved; applies on next launch" else "Game BIOS import failed",
+            Toast.LENGTH_SHORT,
+        ).show()
+    }
+
+    private fun clearGameBios(slot: BiosSlot) {
+        val ok = biosStore.clearForGame(artifactGameId(), slot)
+        Toast.makeText(
+            this,
+            if (ok) "Game BIOS cleared; applies on next launch" else "Game BIOS clear failed",
+            Toast.LENGTH_SHORT,
+        ).show()
     }
 
     private fun showCameraImageDialog() {
@@ -2290,6 +2384,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         patchStore.fileForGame(patchGameId())?.let { file ->
             zipFile(zip, "patches/${file.name}", file)
         }
+        BiosSlot.entries.forEach { slot ->
+            biosStore.fileForGame(artifactGameId(), slot)?.let { file ->
+                zipFile(zip, "bios/${slot.name.lowercase(Locale.US)}.bios", file)
+            }
+        }
         cameraImagePath
             .takeIf { it.isNotBlank() }
             ?.let { File(it) }
@@ -2495,6 +2594,17 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                         file.delete()
                     }
                 }
+                name.startsWith("bios/") -> {
+                    val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
+                    val slot = biosSlotForPackageEntry(name)
+                    if (fileName != null && slot != null) {
+                        val file = extractZipEntryToFile(zip, File(importDirectory, fileName))
+                        if (biosStore.importForGameFile(artifactGameId(), slot, file, file.name)) {
+                            result.biosImported += 1
+                        }
+                        file.delete()
+                    }
+                }
                 name.startsWith("camera/") -> {
                     val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
                     if (fileName != null) {
@@ -2514,6 +2624,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             zip.copyTo(output)
         }
         return file
+    }
+
+    private fun biosSlotForPackageEntry(name: String): BiosSlot? {
+        val stem = name.substringAfter("bios/").substringAfterLast('/').substringBeforeLast('.')
+        return BiosSlot.entries.firstOrNull { slot ->
+            slot.name.equals(stem, ignoreCase = true) || slot.label.equals(stem, ignoreCase = true)
+        }
     }
 
     private fun importBatterySaveFile(file: File): Boolean {
@@ -2932,6 +3049,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         return uri.lastPathSegment ?: fallback
     }
 
+    private fun formatBytes(bytes: Long): String {
+        return when {
+            bytes >= 1024L * 1024L -> String.format(Locale.US, "%.1f MiB", bytes / 1024.0 / 1024.0)
+            bytes >= 1024L -> String.format(Locale.US, "%.1f KiB", bytes / 1024.0)
+            else -> "$bytes B"
+        }
+    }
+
     private fun dp(value: Int): Int {
         return (value * resources.displayMetrics.density).toInt()
     }
@@ -2977,6 +3102,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         var stateThumbnailsImported: Int = 0,
         var cheatsImported: Boolean = false,
         var patchImported: Boolean = false,
+        var biosImported: Int = 0,
         var cameraImageImported: Boolean = false,
     ) {
         private val anyImported: Boolean
@@ -2987,6 +3113,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 stateThumbnailsImported > 0 ||
                 cheatsImported ||
                 patchImported ||
+                biosImported > 0 ||
                 cameraImageImported
 
         fun toastMessage(cheatsApplied: Boolean, patchApplied: Boolean): String {
@@ -3001,6 +3128,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 if (inputMappingsImported) add("input")
                 if (cheatsImported) add(if (cheatsApplied) "cheats" else "cheats saved")
                 if (patchImported) add(if (patchApplied) "patch" else "patch saved")
+                if (biosImported > 0) add("$biosImported BIOS")
                 if (cameraImageImported) add("camera")
             }
             return "Game data imported: ${parts.joinToString(", ")}"
@@ -3018,6 +3146,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val REQUEST_IMPORT_CAMERA_IMAGE = 2008
         private const val REQUEST_EXPORT_GAME_DATA = 2009
         private const val REQUEST_IMPORT_GAME_DATA = 2010
+        private const val REQUEST_IMPORT_GAME_BIOS = 2011
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L

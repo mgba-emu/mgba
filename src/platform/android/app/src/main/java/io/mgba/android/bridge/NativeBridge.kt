@@ -108,6 +108,15 @@ object NativeBridge {
     external fun nativeSetSkipBios(handle: Long, enabled: Boolean)
 
     @JvmStatic
+    external fun nativeSetBiosOverridePaths(
+        handle: Long,
+        defaultPath: String,
+        gbaPath: String,
+        gbPath: String,
+        gbcPath: String,
+    )
+
+    @JvmStatic
     external fun nativeSetLogLevelMode(handle: Long, mode: Int)
 
     @JvmStatic

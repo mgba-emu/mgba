@@ -88,6 +88,7 @@ public:
 	void setFilterMode(int mode);
 	void setInterframeBlending(bool enabled);
 	void setSkipBios(bool enabled);
+	void setBiosOverridePaths(std::string defaultPath, std::string gbaPath, std::string gbPath, std::string gbcPath);
 	void setLogLevel(int levels);
 	void setRtcMode(int mode, int64_t valueMs);
 	std::string statsJson();
@@ -163,6 +164,10 @@ private:
 	std::atomic<int> m_filterMode{0};
 	std::atomic<bool> m_interframeBlending{false};
 	std::atomic<bool> m_skipBios{false};
+	std::string m_defaultBiosOverridePath;
+	std::string m_gbaBiosOverridePath;
+	std::string m_gbBiosOverridePath;
+	std::string m_gbcBiosOverridePath;
 	std::atomic<int> m_logLevel{0};
 	std::atomic<int> m_rtcMode{0};
 	std::atomic<int64_t> m_rtcValueMs{946684800000LL};

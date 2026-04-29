@@ -631,12 +631,19 @@ class MainActivity : Activity() {
         val gameId = uri.toString()
         val launchGameId = stableGameIdForLibraryUri(uri, gameId)
         perGameOverrides.migrateGameId(launchGameId, gameId)
+        biosStore.migrateGameId(launchGameId, gameId)
         var patchApplied: Boolean? = null
         var cheatsApplied: Boolean? = null
         var autoStateLoaded = false
         var usedImportFallback = false
         fun loadDescriptor(descriptor: ParcelFileDescriptor): NativeLoadResult {
             val emulator = EmulatorSession.controller(this)
+            emulator.setBiosOverridePaths(
+                biosStore.pathForGame(launchGameId, BiosSlot.Default),
+                biosStore.pathForGame(launchGameId, BiosSlot.Gba),
+                biosStore.pathForGame(launchGameId, BiosSlot.Gb),
+                biosStore.pathForGame(launchGameId, BiosSlot.Gbc),
+            )
             emulator.setSkipBios(perGameOverrides.skipBios(launchGameId, preferences.skipBios))
             emulator.setAudioBufferSamples(
                 AudioBufferModes.samplesFor(
@@ -663,6 +670,7 @@ class MainActivity : Activity() {
                 if (loadResult.ok) {
                     val stableGameId = stableGameIdFor(gameId, loadResult.crc32)
                     perGameOverrides.migrateGameId(stableGameId, gameId)
+                    biosStore.migrateGameId(stableGameId, gameId)
                     patchApplied = applyStoredPatch(emulator, gameId, stableGameId, name, loadResult.crc32)
                     cheatsApplied = applyStoredCheats(emulator, gameId, stableGameId)
                     autoStateLoaded = preferences.autoStateOnExit && emulator.loadAutoState()

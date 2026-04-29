@@ -475,6 +475,24 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetSkipBios(JNIEnv*, jclass, jlon
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetBiosOverridePaths(
+    JNIEnv* env,
+    jclass,
+    jlong handle,
+    jstring defaultPath,
+    jstring gbaPath,
+    jstring gbPath,
+    jstring gbcPath) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setBiosOverridePaths(
+		    JStringToString(env, defaultPath),
+		    JStringToString(env, gbaPath),
+		    JStringToString(env, gbPath),
+		    JStringToString(env, gbcPath));
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeSetLogLevelMode(JNIEnv*, jclass, jlong handle, jint mode) {
 	const int levels = LogLevelsForMode(mode);
 	ApplyAndroidLoggerLevel(levels);
