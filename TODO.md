@@ -128,6 +128,7 @@
 - [x] 已新增虚拟手柄布局编辑模式，可拖动 D-pad、A/B、Start/Select 和肩键分区，并按 per-game stable id 持久化。
 - [x] 已为 ROM 库封面缩略图新增 LRU 内存 cache、按目标尺寸下采样，并在 `onTrimMemory` 中清理/收缩。
 - [x] 已补齐 cheat 条目级编辑/删除：导入或手动新增后的单条作弊码可修改名称和代码内容。
+- [x] 已补齐 patch 自动搜索文件名：除 CRC32 外也查找 `<romName>.ips/.ups/.bps` 和完整显示名派生的补丁名。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围

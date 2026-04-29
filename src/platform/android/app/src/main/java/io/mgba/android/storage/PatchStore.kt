@@ -68,11 +68,16 @@ class PatchStore(context: Context) {
             return null
         }
         val normalizedCrc = crc32.trim().lowercase().takeIf { it.isNotBlank() }
+        val displayBase = displayName.substringBeforeLast('.', displayName).trim().takeIf { it.isNotBlank() }
+        val displayFile = displayName.trim().takeIf { it.isNotBlank() }
         val names = buildList {
+            listOfNotNull(displayBase, displayFile).distinct().forEach { base ->
+                PATCH_EXTENSIONS.forEach { extension -> add("$base.$extension") }
+            }
             normalizedCrc?.let { hash ->
                 PATCH_EXTENSIONS.forEach { extension -> add("$hash.$extension") }
             }
-        }
+        }.distinct()
         return names
             .asSequence()
             .map { File(directory, it) }
