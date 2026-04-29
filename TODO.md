@@ -813,7 +813,7 @@ object NativeBridge {
   - [x] 传感器校准。
   - [x] 快进/倒带。
 - [x] 覆盖层写入 `PerGameOverrideStore`。
-- [ ] 加载 ROM 后把 override 映射到 `mCoreConfigSetOverride*` 或 `mCoreOptions`。
+- [x] 加载 ROM 后把 override 映射到 `mCoreConfigSetOverride*` 或 `mCoreOptions`。
 
 ## 11. 即时存档 / 截图 / 作弊
 

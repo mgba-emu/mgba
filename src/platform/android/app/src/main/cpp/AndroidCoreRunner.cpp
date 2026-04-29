@@ -499,7 +499,9 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	options.rewindEnable = m_rewindEnabled.load();
 	options.rewindBufferCapacity = m_rewindBufferCapacity.load();
 	options.rewindBufferInterval = m_rewindBufferInterval.load();
+	options.frameskip = m_frameSkip.load();
 	options.audioBuffers = m_audioBufferSamples.load();
+	options.interframeBlending = m_interframeBlending.load();
 	const bool skipBios = m_skipBios.load();
 	options.skipBios = skipBios;
 	options.videoSync = false;
@@ -518,6 +520,13 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	mCoreConfigSetValue(&core->config, "patchPath", patchPath.c_str());
 	mCoreConfigSetValue(&core->config, "cheatsPath", cheatsPath.c_str());
 	mCoreConfigSetIntValue(&core->config, "useBios", hasAnyBios ? 1 : 0);
+	mCoreConfigSetOverrideIntValue(&core->config, "skipBios", options.skipBios ? 1 : 0);
+	mCoreConfigSetOverrideIntValue(&core->config, "rewindEnable", options.rewindEnable ? 1 : 0);
+	mCoreConfigSetOverrideIntValue(&core->config, "rewindBufferCapacity", options.rewindBufferCapacity);
+	mCoreConfigSetOverrideIntValue(&core->config, "rewindBufferInterval", options.rewindBufferInterval);
+	mCoreConfigSetOverrideIntValue(&core->config, "frameskip", options.frameskip);
+	mCoreConfigSetOverrideUIntValue(&core->config, "audioBuffers", static_cast<unsigned>(options.audioBuffers));
+	mCoreConfigSetOverrideIntValue(&core->config, "interframeBlending", options.interframeBlending ? 1 : 0);
 	if (hasDefaultBios) {
 		mCoreConfigSetValue(&core->config, "bios", biosPath.c_str());
 	}
@@ -916,6 +925,9 @@ void AndroidCoreRunner::setRewindConfig(bool enabled, int capacity, int interval
 	m_core->opts.rewindEnable = enabled;
 	m_core->opts.rewindBufferCapacity = capacity;
 	m_core->opts.rewindBufferInterval = interval;
+	mCoreConfigSetOverrideIntValue(&m_core->config, "rewindEnable", enabled ? 1 : 0);
+	mCoreConfigSetOverrideIntValue(&m_core->config, "rewindBufferCapacity", capacity);
+	mCoreConfigSetOverrideIntValue(&m_core->config, "rewindBufferInterval", interval);
 	resetRewindContextLocked();
 	m_audioOutput.clear();
 }
@@ -932,6 +944,11 @@ void AndroidCoreRunner::setFrameSkip(int frames) {
 		frames = 3;
 	}
 	m_frameSkip = frames;
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (m_core) {
+		m_core->opts.frameskip = frames;
+		mCoreConfigSetOverrideIntValue(&m_core->config, "frameskip", frames);
+	}
 }
 
 void AndroidCoreRunner::setAudioEnabled(bool enabled) {
@@ -949,6 +966,8 @@ void AndroidCoreRunner::setAudioBufferSamples(int samples) {
 	m_audioBufferSamples = clamped;
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (m_core && m_core->setAudioBufferSize) {
+		m_core->opts.audioBuffers = static_cast<size_t>(clamped);
+		mCoreConfigSetOverrideUIntValue(&m_core->config, "audioBuffers", static_cast<unsigned>(clamped));
 		m_core->setAudioBufferSize(m_core, static_cast<size_t>(clamped));
 		m_audioOutput.clear();
 	}
@@ -977,6 +996,10 @@ void AndroidCoreRunner::setFilterMode(int mode) {
 void AndroidCoreRunner::setInterframeBlending(bool enabled) {
 	m_interframeBlending = enabled;
 	std::lock_guard<std::mutex> lock(m_mutex);
+	if (m_core) {
+		m_core->opts.interframeBlending = enabled;
+		mCoreConfigSetOverrideIntValue(&m_core->config, "interframeBlending", enabled ? 1 : 0);
+	}
 	m_previousVideoBuffer.clear();
 	m_blendedVideoBuffer.clear();
 	m_blendFrameReady = false;
@@ -987,6 +1010,7 @@ void AndroidCoreRunner::setSkipBios(bool enabled) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (m_core) {
 		m_core->opts.skipBios = enabled;
+		mCoreConfigSetOverrideIntValue(&m_core->config, "skipBios", enabled ? 1 : 0);
 	}
 }
 
@@ -995,7 +1019,7 @@ void AndroidCoreRunner::setLogLevel(int levels) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (m_core) {
 		m_core->opts.logLevel = levels;
-		mCoreConfigSetIntValue(&m_core->config, "logLevel", levels);
+		mCoreConfigSetOverrideIntValue(&m_core->config, "logLevel", levels);
 	}
 }
 
