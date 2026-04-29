@@ -6,31 +6,49 @@ import java.io.File
 import java.security.MessageDigest
 
 data class BiosInfo(
+    val slot: BiosSlot,
     val displayName: String,
     val sizeBytes: Long,
     val sha1: String,
 )
+
+enum class BiosSlot(val label: String, val fileName: String, val displayNameKey: String) {
+    Default("Default", "default.bios", "displayName:default"),
+    Gba("GBA", "gba.bios", "displayName:gba"),
+    Gb("GB", "gb.bios", "displayName:gb"),
+    Gbc("GBC", "gbc.bios", "displayName:gbc"),
+}
 
 class BiosStore(context: Context) {
     private val appContext = context.applicationContext
     private val preferences = appContext.getSharedPreferences("bios", Context.MODE_PRIVATE)
 
     val displayName: String?
-        get() = preferences.getString(KEY_DISPLAY_NAME, null)
+        get() = storedDisplayName(BiosSlot.Default)
 
     val info: BiosInfo?
-        get() {
-            val file = defaultFile().takeIf { it.isFile } ?: return null
-            return BiosInfo(
-                displayName = displayName ?: file.name,
-                sizeBytes = file.length(),
-                sha1 = sha1(file),
-            )
-        }
+        get() = info(BiosSlot.Default)
+
+    val infos: List<BiosInfo>
+        get() = BiosSlot.entries.mapNotNull { info(it) }
+
+    fun info(slot: BiosSlot): BiosInfo? {
+        val file = biosFile(slot).takeIf { it.isFile } ?: return null
+        return BiosInfo(
+            slot = slot,
+            displayName = storedDisplayName(slot) ?: file.name,
+            sizeBytes = file.length(),
+            sha1 = sha1(file),
+        )
+    }
 
     fun importDefault(uri: Uri, displayName: String): Boolean {
+        return import(BiosSlot.Default, uri, displayName)
+    }
+
+    fun import(slot: BiosSlot, uri: Uri, displayName: String): Boolean {
         val directory = biosDirectory() ?: return false
-        val target = defaultFile(directory)
+        val target = biosFile(slot, directory)
         val tmp = File(directory, "${target.name}.tmp")
         return runCatching {
             appContext.contentResolver.openInputStream(uri)?.use { input ->
@@ -45,20 +63,36 @@ class BiosStore(context: Context) {
                 tmp.delete()
                 return false
             }
-            preferences.edit().putString(KEY_DISPLAY_NAME, displayName).apply()
+            preferences.edit().putString(slot.displayNameKey, displayName).apply()
             true
         }.getOrDefault(false)
     }
 
     fun clearDefault(): Boolean {
+        return clear(BiosSlot.Default)
+    }
+
+    fun clear(slot: BiosSlot): Boolean {
         val deleted = runCatching {
-            val file = defaultFile()
+            val file = biosFile(slot)
             !file.exists() || file.delete()
         }.getOrDefault(false)
         if (deleted) {
-            preferences.edit().remove(KEY_DISPLAY_NAME).apply()
+            preferences.edit()
+                .remove(slot.displayNameKey)
+                .apply {
+                    if (slot == BiosSlot.Default) {
+                        remove(KEY_LEGACY_DISPLAY_NAME)
+                    }
+                }
+                .apply()
         }
         return deleted
+    }
+
+    private fun storedDisplayName(slot: BiosSlot): String? {
+        return preferences.getString(slot.displayNameKey, null)
+            ?: if (slot == BiosSlot.Default) preferences.getString(KEY_LEGACY_DISPLAY_NAME, null) else null
     }
 
     private fun biosDirectory(): File? {
@@ -66,8 +100,8 @@ class BiosStore(context: Context) {
         return if (directory.exists() || directory.mkdirs()) directory else null
     }
 
-    private fun defaultFile(directory: File = File(appContext.filesDir, BIOS_DIRECTORY)): File {
-        return File(directory, DEFAULT_BIOS_NAME)
+    private fun biosFile(slot: BiosSlot, directory: File = File(appContext.filesDir, BIOS_DIRECTORY)): File {
+        return File(directory, slot.fileName)
     }
 
     private fun sha1(file: File): String {
@@ -86,8 +120,7 @@ class BiosStore(context: Context) {
     }
 
     companion object {
-        private const val KEY_DISPLAY_NAME = "displayName"
         private const val BIOS_DIRECTORY = "bios"
-        private const val DEFAULT_BIOS_NAME = "default.bios"
+        private const val KEY_LEGACY_DISPLAY_NAME = "displayName"
     }
 }

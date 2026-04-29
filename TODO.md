@@ -776,9 +776,9 @@ object NativeBridge {
   - [x] buffer 模式。
   - [x] 低通滤波。
 - [ ] Emulation：
-  - [ ] 使用 BIOS。
-  - [ ] BIOS 文件路径。
-  - [ ] 跳过 BIOS。
+  - [x] 使用 BIOS。
+  - [x] BIOS 文件路径。
+  - [x] 跳过 BIOS。
   - [x] 快进倍率。
   - [x] 倒带开关。
   - [x] 倒带 buffer。
@@ -861,8 +861,8 @@ object NativeBridge {
 ### 12.1 BIOS
 
 - [ ] BIOS 管理页支持：
-  - [ ] 选择 GBA BIOS。
-  - [ ] 选择 GB/GBC BIOS，如核心支持。
+  - [x] 选择 GBA BIOS。
+  - [x] 选择 GB/GBC BIOS，如核心支持。
   - [x] 显示文件 hash 和大小。
   - [x] 删除 BIOS。
 - [x] 导入 BIOS 到 app 私有目录，不长期依赖外部 URI。

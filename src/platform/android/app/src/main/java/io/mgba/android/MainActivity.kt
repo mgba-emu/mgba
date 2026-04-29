@@ -39,6 +39,7 @@ import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.settings.RewindSettings
 import io.mgba.android.storage.AppLogStore
 import io.mgba.android.storage.BiosStore
+import io.mgba.android.storage.BiosSlot
 import io.mgba.android.storage.CheatStore
 import io.mgba.android.storage.LogExporter
 import io.mgba.android.storage.PatchStore
@@ -79,6 +80,7 @@ class MainActivity : Activity() {
     private var libraryFilter = ""
     private var libraryMode = LibraryMode.All
     private var libraryViewMode = LibraryViewMode.List
+    private var pendingBiosSlot = BiosSlot.Default
     private var pendingCoverRomUri: Uri? = null
     private var scanThread: Thread? = null
     @Volatile
@@ -156,14 +158,12 @@ class MainActivity : Activity() {
 
         biosButton = Button(this).apply {
             setOnClickListener {
-                openBiosPicker()
+                showBiosImportDialog()
             }
         }
         clearBiosButton = Button(this).apply {
             setOnClickListener {
-                val ok = biosStore.clearDefault()
-                updateBiosButtons()
-                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "BIOS cleared" else "BIOS clear failed"}"
+                showBiosClearDialog()
             }
         }
         updateBiosButtons()
@@ -392,9 +392,9 @@ class MainActivity : Activity() {
             }
             REQUEST_IMPORT_BIOS -> {
                 val name = displayName(uri)
-                val ok = biosStore.importDefault(uri, name)
+                val ok = biosStore.import(pendingBiosSlot, uri, name)
                 updateBiosButtons()
-                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "BIOS imported" else "BIOS import failed"}"
+                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "${pendingBiosSlot.label} BIOS imported" else "BIOS import failed"}"
             }
             REQUEST_IMPORT_PATCH -> {
                 val name = displayName(uri)
@@ -690,16 +690,60 @@ class MainActivity : Activity() {
     }
 
     private fun updateBiosButtons() {
-        val info = biosStore.info
-        if (info == null) {
+        val infos = biosStore.infos
+        if (infos.isEmpty()) {
             biosButton.text = "Import BIOS"
             clearBiosButton.text = "Clear BIOS"
             clearBiosButton.isEnabled = false
         } else {
-            biosButton.text = "BIOS: ${info.displayName} (${formatBytes(info.sizeBytes)}, SHA1 ${info.sha1.take(8)})"
+            val summary = infos.joinToString("  ") { info ->
+                "${info.slot.label}:${info.sha1.take(8)}"
+            }
+            val totalBytes = infos.sumOf { it.sizeBytes }
+            biosButton.text = "BIOS: $summary (${formatBytes(totalBytes)})"
             clearBiosButton.text = "Clear BIOS"
             clearBiosButton.isEnabled = true
         }
+    }
+
+    private fun showBiosImportDialog() {
+        val slots = BiosSlot.entries.toTypedArray()
+        val labels = slots.map { slot ->
+            val info = biosStore.info(slot)
+            if (info == null) {
+                "${slot.label} BIOS"
+            } else {
+                "${slot.label}: ${info.displayName} (${formatBytes(info.sizeBytes)}, SHA1 ${info.sha1.take(8)})"
+            }
+        }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Import BIOS")
+            .setItems(labels) { _, which ->
+                pendingBiosSlot = slots[which]
+                openBiosPicker()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showBiosClearDialog() {
+        val infos = biosStore.infos
+        if (infos.isEmpty()) {
+            return
+        }
+        val labels = infos.map { info ->
+            "${info.slot.label}: ${info.displayName}"
+        }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Clear BIOS")
+            .setItems(labels) { _, which ->
+                val slot = infos[which].slot
+                val ok = biosStore.clear(slot)
+                updateBiosButtons()
+                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "${slot.label} BIOS cleared" else "BIOS clear failed"}"
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun updateVideoButtons() {

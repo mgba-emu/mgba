@@ -144,6 +144,18 @@ std::string DefaultBiosPath(const std::string& basePath) {
 	return basePath + "/bios/default.bios";
 }
 
+std::string GbaBiosPath(const std::string& basePath) {
+	return basePath + "/bios/gba.bios";
+}
+
+std::string GbBiosPath(const std::string& basePath) {
+	return basePath + "/bios/gb.bios";
+}
+
+std::string GbcBiosPath(const std::string& basePath) {
+	return basePath + "/bios/gbc.bios";
+}
+
 std::string RomBaseName(const std::string& displayName) {
 	size_t nameStart = displayName.find_last_of("/\\");
 	nameStart = nameStart == std::string::npos ? 0 : nameStart + 1;
@@ -379,6 +391,9 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	}
 
 	const std::string biosPath = DefaultBiosPath(m_basePath);
+	const std::string gbaBiosPath = GbaBiosPath(m_basePath);
+	const std::string gbBiosPath = GbBiosPath(m_basePath);
+	const std::string gbcBiosPath = GbcBiosPath(m_basePath);
 	const std::string savegamePath = m_basePath + "/saves";
 	const std::string savestatePath = m_basePath + "/states";
 	const std::string screenshotPath = m_basePath + "/screenshots";
@@ -393,10 +408,15 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	EnsureDirectory(cheatsPath);
 	EnsureDirectory(configPath);
 	EnsureDirectory(importsPath);
+	const bool hasDefaultBios = IsRegularFile(biosPath);
+	const bool hasGbaBios = IsRegularFile(gbaBiosPath);
+	const bool hasGbBios = IsRegularFile(gbBiosPath);
+	const bool hasGbcBios = IsRegularFile(gbcBiosPath);
+	const bool hasAnyBios = hasDefaultBios || hasGbaBios || hasGbBios || hasGbcBios;
 
 	struct mCoreOptions options = {};
-	options.bios = IsRegularFile(biosPath) ? const_cast<char*>(biosPath.c_str()) : nullptr;
-	options.useBios = options.bios != nullptr;
+	options.bios = hasDefaultBios ? const_cast<char*>(biosPath.c_str()) : nullptr;
+	options.useBios = hasAnyBios;
 	options.savegamePath = const_cast<char*>(savegamePath.c_str());
 	options.savestatePath = const_cast<char*>(savestatePath.c_str());
 	options.screenshotPath = const_cast<char*>(screenshotPath.c_str());
@@ -421,6 +441,19 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	mCoreConfigSetValue(&core->config, "screenshotPath", screenshotPath.c_str());
 	mCoreConfigSetValue(&core->config, "patchPath", patchPath.c_str());
 	mCoreConfigSetValue(&core->config, "cheatsPath", cheatsPath.c_str());
+	mCoreConfigSetIntValue(&core->config, "useBios", hasAnyBios ? 1 : 0);
+	if (hasDefaultBios) {
+		mCoreConfigSetValue(&core->config, "bios", biosPath.c_str());
+	}
+	if (hasGbaBios) {
+		mCoreConfigSetValue(&core->config, "gba.bios", gbaBiosPath.c_str());
+	}
+	if (hasGbBios) {
+		mCoreConfigSetValue(&core->config, "gb.bios", gbBiosPath.c_str());
+	}
+	if (hasGbcBios) {
+		mCoreConfigSetValue(&core->config, "gbc.bios", gbcBiosPath.c_str());
+	}
 	mCoreLoadForeignConfig(core, &core->config);
 
 	unsigned width = 0;
