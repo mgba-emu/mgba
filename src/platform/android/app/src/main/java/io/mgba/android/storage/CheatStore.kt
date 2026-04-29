@@ -5,6 +5,13 @@ import android.net.Uri
 import java.io.File
 import java.security.MessageDigest
 
+data class CheatEntry(
+    val name: String,
+    val enabled: Boolean,
+    val lines: List<String>,
+    val directives: List<String> = emptyList(),
+)
+
 class CheatStore(context: Context) {
     private val appContext = context.applicationContext
     private val preferences = appContext.getSharedPreferences("cheats", Context.MODE_PRIVATE)
@@ -47,6 +54,52 @@ class CheatStore(context: Context) {
         return preferences.getString(gameDisplayNameKey(id), null)
     }
 
+    fun entriesForGame(gameId: String?): List<CheatEntry> {
+        val file = fileForGame(gameId) ?: return emptyList()
+        return runCatching { parseEntries(file.readLines()) }.getOrDefault(emptyList())
+    }
+
+    fun setEnabled(gameId: String?, index: Int, enabled: Boolean): Boolean {
+        val file = fileForGame(gameId) ?: return false
+        val entries = entriesForGame(gameId).toMutableList()
+        if (index !in entries.indices) {
+            return false
+        }
+        entries[index] = entries[index].copy(enabled = enabled)
+        return runCatching {
+            file.writeText(serializeEntries(entries))
+            true
+        }.getOrDefault(false)
+    }
+
+    fun addManual(gameId: String?, name: String, codeText: String): Boolean {
+        val id = cheatId(gameId) ?: return false
+        val directory = cheatDirectory() ?: return false
+        val target = File(directory, "$id.cheats")
+        val lines = codeText
+            .lineSequence()
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .toList()
+        if (lines.isEmpty()) {
+            return false
+        }
+        val entries = entriesForGame(gameId).toMutableList()
+        entries += CheatEntry(
+            name = name.ifBlank { "Manual cheat ${entries.size + 1}" },
+            enabled = true,
+            lines = lines,
+        )
+        return runCatching {
+            target.writeText(serializeEntries(entries))
+            preferences.edit()
+                .putString(gameDisplayNameKey(id), "Manual cheats")
+                .putString(gameFileNameKey(id), target.name)
+                .apply()
+            true
+        }.getOrDefault(false)
+    }
+
     fun clearForGame(gameId: String?): Boolean {
         val id = cheatId(gameId) ?: return false
         val fileName = preferences.getString(gameFileNameKey(id), null)
@@ -70,6 +123,76 @@ class CheatStore(context: Context) {
     private fun cheatDirectory(): File? {
         val directory = File(appContext.filesDir, CHEAT_DIRECTORY)
         return if (directory.exists() || directory.mkdirs()) directory else null
+    }
+
+    private fun parseEntries(lines: List<String>): List<CheatEntry> {
+        val entries = mutableListOf<CheatEntry>()
+        var name = "Cheats"
+        var enabled = true
+        var codes = mutableListOf<String>()
+        var directives = mutableListOf<String>()
+        var pendingDisabled = false
+        var pendingDirectives = mutableListOf<String>()
+
+        fun flush() {
+            if (codes.isNotEmpty()) {
+                entries += CheatEntry(name, enabled, codes.toList(), directives.toList())
+            }
+            codes = mutableListOf()
+            directives = mutableListOf()
+        }
+
+        lines.forEach { raw ->
+            val line = raw.trim()
+            when {
+                line.startsWith("#") -> {
+                    flush()
+                    name = line.removePrefix("#").trim().ifBlank { "Cheats ${entries.size + 1}" }
+                    enabled = !pendingDisabled
+                    directives = pendingDirectives
+                    pendingDisabled = false
+                    pendingDirectives = mutableListOf()
+                }
+                line.startsWith("!") -> {
+                    val directive = line.removePrefix("!").trim()
+                    if (directive.equals("disabled", ignoreCase = true)) {
+                        pendingDisabled = true
+                    } else if (directive.equals("reset", ignoreCase = true)) {
+                        pendingDirectives.clear()
+                    } else if (directive.isNotBlank()) {
+                        pendingDirectives += directive
+                    }
+                }
+                line.isNotBlank() -> {
+                    if (codes.isEmpty() && entries.isEmpty() && name == "Cheats") {
+                        enabled = !pendingDisabled
+                        directives = pendingDirectives
+                        pendingDisabled = false
+                        pendingDirectives = mutableListOf()
+                    }
+                    codes += line
+                }
+            }
+        }
+        flush()
+        return entries
+    }
+
+    private fun serializeEntries(entries: List<CheatEntry>): String {
+        return buildString {
+            entries.forEach { entry ->
+                if (!entry.enabled) {
+                    appendLine("!disabled")
+                }
+                entry.directives.forEach { directive ->
+                    appendLine("!$directive")
+                }
+                appendLine("# ${entry.name}")
+                entry.lines.forEach { line ->
+                    appendLine(line)
+                }
+            }
+        }
     }
 
     private fun cheatId(gameId: String?): String? {

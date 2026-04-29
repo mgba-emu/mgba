@@ -848,11 +848,11 @@ object NativeBridge {
 
 - [x] 使用 `core->cheatDevice(core)`。
 - [x] 导入 `.cheats` / GameShark / Action Replay 文本。
-- [ ] 列表展示：
-  - [ ] 名称。
-  - [ ] 代码。
-  - [ ] 启用开关。
-  - [ ] 错误信息。
+- [x] 列表展示：
+  - [x] 名称。
+  - [x] 代码。
+  - [x] 启用开关。
+  - [x] 错误信息。
 - [x] 保存到 `files/cheats/<romHash>.cheats`。
 - [x] ROM 加载后自动应用已保存 cheats。
 
@@ -1013,11 +1013,11 @@ object NativeBridge {
 
 ### 15.5 Cheats
 
-- [ ] 当前游戏 cheat 列表。
-- [ ] 添加代码。
-- [ ] 导入文件。
-- [ ] 启用/禁用。
-- [ ] 保存。
+- [x] 当前游戏 cheat 列表。
+- [x] 添加代码。
+- [x] 导入文件。
+- [x] 启用/禁用。
+- [x] 保存。
 
 ## 16. 测试计划
 
@@ -1215,9 +1215,9 @@ object NativeBridge {
 
 ### PR 10：BIOS / Patch / Cheats / Archive
 
-- [ ] BIOS 管理。
-- [ ] Patch 手动/自动加载。
-- [ ] Cheat UI。
+- [x] BIOS 管理。
+- [x] Patch 手动/自动加载。
+- [x] Cheat UI。
 - [ ] ZIP/7z cache 加载。
 - [ ] 验收：
   - [ ] BIOS 文件可导入并使用。

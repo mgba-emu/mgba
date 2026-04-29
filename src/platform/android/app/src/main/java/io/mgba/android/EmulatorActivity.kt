@@ -19,6 +19,7 @@ import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.provider.OpenableColumns
+import android.text.InputType
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.SurfaceHolder
@@ -29,6 +30,7 @@ import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -1051,7 +1053,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             stateRow.addView(Button(context).apply {
                 text = "Cheats"
                 setOnClickListener {
-                    openCheatImportPicker()
+                    showCheatActionsDialog()
                 }
             })
             stateRow.addView(Button(context).apply {
@@ -1930,6 +1932,84 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         startActivityForResult(intent, REQUEST_IMPORT_CHEATS)
     }
 
+    private fun showCheatActionsDialog() {
+        val entries = cheatStore.entriesForGame(currentGameId)
+        val labels = buildList {
+            entries.forEach { entry ->
+                val state = if (entry.enabled) "[x]" else "[ ]"
+                val preview = entry.lines.firstOrNull()?.let { "  $it" }.orEmpty()
+                add("$state ${entry.name}$preview")
+            }
+            add("Add code")
+            add("Import file")
+        }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Cheats")
+            .setItems(labels) { _, which ->
+                when {
+                    which < entries.size -> toggleCheat(which, !entries[which].enabled)
+                    which == entries.size -> showAddCheatDialog()
+                    else -> openCheatImportPicker()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showAddCheatDialog() {
+        val nameInput = EditText(this).apply {
+            hint = "Name"
+            setSingleLine(true)
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        }
+        val codeInput = EditText(this).apply {
+            hint = "Code lines"
+            minLines = 4
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        }
+        val body = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), 0, dp(16), 0)
+            addView(nameInput)
+            addView(codeInput)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Add cheat")
+            .setView(body)
+            .setPositiveButton("Save") { _, _ ->
+                val stored = cheatStore.addManual(currentGameId, nameInput.text.toString(), codeInput.text.toString())
+                val applied = stored && applyStoredCheats()
+                val message = when {
+                    applied -> "Cheat saved"
+                    stored -> "Cheat saved; apply failed"
+                    else -> "Cheat save failed"
+                }
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun toggleCheat(index: Int, enabled: Boolean) {
+        val stored = cheatStore.setEnabled(currentGameId, index, enabled)
+        val applied = stored && applyStoredCheats()
+        val message = when {
+            applied -> if (enabled) "Cheat enabled" else "Cheat disabled"
+            stored -> "Cheat saved; apply failed"
+            else -> "Cheat update failed"
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun applyStoredCheats(): Boolean {
+        val file = cheatStore.fileForGame(currentGameId) ?: return false
+        return runCatching {
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                controller?.importCheatsFd(descriptor.fd) == true
+            }
+        }.getOrDefault(false)
+    }
+
     private fun openPatchImportPicker() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
@@ -1996,17 +2076,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun importCheats(uri: Uri) {
         val name = displayName(uri, "cheats")
         val stored = cheatStore.importForGame(currentGameId, uri, name)
-        val applied = if (stored) {
-            cheatStore.fileForGame(currentGameId)?.let { file ->
-                runCatching {
-                    ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
-                        controller?.importCheatsFd(descriptor.fd) == true
-                    }
-                }.getOrDefault(false)
-            } ?: false
-        } else {
-            false
-        }
+        val applied = stored && applyStoredCheats()
         val message = when {
             applied -> "Cheats imported"
             stored -> "Cheats saved; apply failed"
