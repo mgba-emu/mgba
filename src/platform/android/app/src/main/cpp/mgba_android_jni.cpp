@@ -1,14 +1,18 @@
 #include "AndroidCoreRunner.h"
 #include "JniUtils.h"
 
+#include <mgba/core/log.h>
 #include <mgba/core/version.h>
 
 #include <android/log.h>
 #include <android/native_window_jni.h>
 #include <jni.h>
 
+#include <cstdarg>
+#include <cstdio>
 #include <exception>
 #include <memory>
+#include <mutex>
 #include <string>
 
 using mgba::android::AndroidCoreRunner;
@@ -18,20 +22,68 @@ namespace {
 
 constexpr const char* kLogTag = "mGBAAndroid";
 
+struct AndroidLogger {
+	mLogger logger = {};
+	mLogFilter filter = {};
+};
+
+AndroidLogger g_androidLogger;
+std::once_flag g_androidLoggerOnce;
+
 AndroidCoreRunner* FromHandle(jlong handle) {
 	return reinterpret_cast<AndroidCoreRunner*>(handle);
+}
+
+android_LogPriority AndroidLogPriority(mLogLevel level) {
+	if (level & mLOG_FATAL) {
+		return ANDROID_LOG_FATAL;
+	}
+	if (level & (mLOG_ERROR | mLOG_GAME_ERROR)) {
+		return ANDROID_LOG_ERROR;
+	}
+	if (level & mLOG_WARN) {
+		return ANDROID_LOG_WARN;
+	}
+	if (level & mLOG_INFO) {
+		return ANDROID_LOG_INFO;
+	}
+	return ANDROID_LOG_DEBUG;
+}
+
+void AndroidCoreLog(mLogger*, int category, mLogLevel level, const char* format, va_list args) {
+	char message[1024];
+	vsnprintf(message, sizeof(message), format, args);
+	const char* categoryName = mLogCategoryName(category);
+	__android_log_print(
+		AndroidLogPriority(level),
+		kLogTag,
+		"%s: %s",
+		categoryName ? categoryName : "mGBA",
+		message);
+}
+
+void InstallAndroidLogger() {
+	std::call_once(g_androidLoggerOnce, [] {
+		mLogFilterInit(&g_androidLogger.filter);
+		g_androidLogger.filter.defaultLevels = mLOG_FATAL | mLOG_ERROR | mLOG_WARN | mLOG_GAME_ERROR;
+		g_androidLogger.logger.log = AndroidCoreLog;
+		g_androidLogger.logger.filter = &g_androidLogger.filter;
+		mLogSetDefaultLogger(&g_androidLogger.logger);
+	});
 }
 
 } // namespace
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeGetVersion(JNIEnv* env, jclass) {
+	InstallAndroidLogger();
 	std::string label = std::string(projectName ? projectName : "mGBA") + " " + (projectVersion ? projectVersion : "unknown");
 	return env->NewStringUTF(label.c_str());
 }
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeCreate(JNIEnv* env, jclass, jstring basePath, jstring cachePath) {
+	InstallAndroidLogger();
 	try {
 		auto runner = std::make_unique<AndroidCoreRunner>(
 			JStringToString(env, basePath),
@@ -53,9 +105,10 @@ Java_io_mgba_android_bridge_NativeBridge_nativeDestroy(JNIEnv*, jclass, jlong ha
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeLoadRomFd(JNIEnv* env, jclass, jlong handle, jint fd, jstring displayName) {
+	InstallAndroidLogger();
 	AndroidCoreRunner* runner = FromHandle(handle);
 	if (!runner) {
-		return env->NewStringUTF("{\"ok\":false,\"message\":\"Native runner is unavailable\",\"platform\":\"\",\"title\":\"\",\"displayName\":\"\"}");
+		return env->NewStringUTF("{\"ok\":false,\"message\":\"Native runner is unavailable\",\"platform\":\"\",\"system\":\"\",\"title\":\"\",\"displayName\":\"\"}");
 	}
 	std::string result = runner->loadRomFd(fd, JStringToString(env, displayName));
 	return env->NewStringUTF(result.c_str());
@@ -63,6 +116,7 @@ Java_io_mgba_android_bridge_NativeBridge_nativeLoadRomFd(JNIEnv* env, jclass, jl
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeProbeRomFd(JNIEnv* env, jclass, jint fd, jstring displayName) {
+	InstallAndroidLogger();
 	std::string result = mgba::android::ProbeRomFd(fd, JStringToString(env, displayName));
 	return env->NewStringUTF(result.c_str());
 }

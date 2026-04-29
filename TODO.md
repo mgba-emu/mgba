@@ -744,7 +744,7 @@ object NativeBridge {
   - [x] GBA / GB 筛选。
   - [x] GBC 细分筛选。
   - [x] 搜索。
-  - [ ] 网格/列表切换。
+  - [x] 网格/列表切换。
 - [ ] 每个 ROM item 显示：
   - [x] 标题。
   - [x] 平台。
@@ -1135,12 +1135,12 @@ object NativeBridge {
 ### PR 2：NDK + mGBA core 静态链接
 
 - [ ] 新增 CMake JNI target。
-- [ ] 链接 mGBA static。
-- [ ] `nativeGetVersion()` 返回 `projectVersion` / git info。
-- [ ] Android log bridge 初版。
+- [x] 链接 mGBA static。
+- [x] `nativeGetVersion()` 返回 `projectVersion` / git info。
+- [x] Android log bridge 初版。
 - [ ] 验收：
-  - [ ] App About 页面显示 native mGBA version。
-  - [ ] 所有 ABI debug 构建通过。
+  - [x] App About 页面显示 native mGBA version。
+  - [x] 所有 ABI debug 构建通过。
 
 ### PR 3：ROM fd 探测和加载
 

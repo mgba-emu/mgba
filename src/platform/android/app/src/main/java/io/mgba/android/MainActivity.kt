@@ -72,9 +72,11 @@ class MainActivity : Activity() {
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
     private lateinit var libraryFilterButton: Button
+    private lateinit var libraryViewButton: Button
     private lateinit var libraryContainer: LinearLayout
     private var libraryFilter = ""
     private var libraryMode = LibraryMode.All
+    private var libraryViewMode = LibraryViewMode.List
     private var pendingCoverRomUri: Uri? = null
     private var scanThread: Thread? = null
     @Volatile
@@ -89,6 +91,9 @@ class MainActivity : Activity() {
         biosStore = BiosStore(this)
         cheatStore = CheatStore(this)
         patchStore = PatchStore(this)
+        libraryViewMode = LibraryViewMode.fromName(
+            getPreferences(MODE_PRIVATE).getString(KEY_LIBRARY_VIEW_MODE, null),
+        )
 
         val scroll = ScrollView(this).apply {
             setBackgroundColor(getColor(R.color.mgba_background))
@@ -314,6 +319,17 @@ class MainActivity : Activity() {
                 renderLibrary()
             }
         }
+        libraryViewButton = Button(this).apply {
+            visibility = View.GONE
+            setOnClickListener {
+                libraryViewMode = libraryViewMode.next()
+                getPreferences(MODE_PRIVATE)
+                    .edit()
+                    .putString(KEY_LIBRARY_VIEW_MODE, libraryViewMode.name)
+                    .apply()
+                renderLibrary()
+            }
+        }
 
         root.addView(title)
         root.addView(subtitle)
@@ -341,6 +357,7 @@ class MainActivity : Activity() {
         root.addView(recentContainer)
         root.addView(librarySearch)
         root.addView(libraryFilterButton)
+        root.addView(libraryViewButton)
         root.addView(libraryContainer)
         scroll.addView(root)
         setContentView(scroll)
@@ -671,7 +688,9 @@ class MainActivity : Activity() {
         val allRoms = libraryStore.list()
         librarySearch.visibility = if (allRoms.isEmpty()) View.GONE else View.VISIBLE
         libraryFilterButton.visibility = if (allRoms.isEmpty()) View.GONE else View.VISIBLE
+        libraryViewButton.visibility = if (allRoms.isEmpty()) View.GONE else View.VISIBLE
         libraryFilterButton.text = "Filter: ${libraryMode.label}"
+        libraryViewButton.text = "View: ${libraryViewMode.label}"
         if (allRoms.isEmpty()) {
             libraryContainer.addView(TextView(this).apply {
                 text = "No ROMs yet"
@@ -729,39 +748,13 @@ class MainActivity : Activity() {
             })
             return
         }
-        roms.take(MAX_LIBRARY_ITEMS).forEach { rom ->
-            libraryContainer.addView(LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                thumbnailView(rom)?.let { thumbnail ->
-                    addView(thumbnail)
-                }
-                addView(Button(context).apply {
-                    text = libraryButtonLabel(rom)
-                    setOnClickListener {
-                        openRomUri(rom.uri, rom.displayName, shouldStoreRecent = true)
-                    }
-                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                })
-                addView(Button(context).apply {
-                    text = if (rom.favorite) "Fav*" else "Fav"
-                    setOnClickListener {
-                        libraryStore.toggleFavorite(rom.uri)
-                        renderLibrary()
-                    }
-                })
-                addView(Button(context).apply {
-                    text = "Cover"
-                    setOnClickListener {
-                        showCoverActions(rom)
-                    }
-                })
-                addView(Button(context).apply {
-                    text = "Del"
-                    setOnClickListener {
-                        confirmRemoveLibraryRom(rom)
-                    }
-                })
-            })
+        val visibleRoms = roms.take(MAX_LIBRARY_ITEMS)
+        if (libraryViewMode == LibraryViewMode.Grid) {
+            renderLibraryGrid(visibleRoms)
+        } else {
+            visibleRoms.forEach { rom ->
+                libraryContainer.addView(libraryListRow(rom))
+            }
         }
         if (roms.size > MAX_LIBRARY_ITEMS) {
             libraryContainer.addView(TextView(this).apply {
@@ -771,6 +764,88 @@ class MainActivity : Activity() {
                 setPadding(0, dp(6), 0, 0)
             })
         }
+    }
+
+    private fun libraryListRow(rom: LibraryRom): LinearLayout {
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            thumbnailView(rom)?.let { thumbnail ->
+                addView(thumbnail)
+            }
+            addView(Button(context).apply {
+                text = libraryButtonLabel(rom)
+                setOnClickListener {
+                    openRomUri(rom.uri, rom.displayName, shouldStoreRecent = true)
+                }
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            })
+            addLibraryActionButtons(this, rom)
+        }
+    }
+
+    private fun renderLibraryGrid(roms: List<LibraryRom>) {
+        roms.chunked(LIBRARY_GRID_COLUMNS).forEach { chunk ->
+            libraryContainer.addView(LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                chunk.forEach { rom ->
+                    addView(libraryGridCell(rom))
+                }
+                repeat(LIBRARY_GRID_COLUMNS - chunk.size) {
+                    addView(LinearLayout(context).apply {
+                        visibility = View.INVISIBLE
+                        layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                    })
+                }
+            })
+        }
+    }
+
+    private fun libraryGridCell(rom: LibraryRom): LinearLayout {
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, 0, dp(8), dp(10))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            thumbnailView(rom, widthDp = 96, heightDp = 72, rightMarginDp = 0, bottomMarginDp = 4)?.let { thumbnail ->
+                addView(thumbnail)
+            }
+            addView(Button(context).apply {
+                text = libraryButtonLabel(rom)
+                maxLines = 4
+                setOnClickListener {
+                    openRomUri(rom.uri, rom.displayName, shouldStoreRecent = true)
+                }
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                )
+            })
+            addView(LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                addLibraryActionButtons(this, rom)
+            })
+        }
+    }
+
+    private fun addLibraryActionButtons(container: LinearLayout, rom: LibraryRom) {
+        container.addView(Button(container.context).apply {
+            text = if (rom.favorite) "Fav*" else "Fav"
+            setOnClickListener {
+                libraryStore.toggleFavorite(rom.uri)
+                renderLibrary()
+            }
+        })
+        container.addView(Button(container.context).apply {
+            text = "Cover"
+            setOnClickListener {
+                showCoverActions(rom)
+            }
+        })
+        container.addView(Button(container.context).apply {
+            text = "Del"
+            setOnClickListener {
+                confirmRemoveLibraryRom(rom)
+            }
+        })
     }
 
     private fun showCoverActions(rom: LibraryRom) {
@@ -849,7 +924,13 @@ class MainActivity : Activity() {
         nativeStatus.text = "${getString(R.string.native_version_label)}: Cover cleared"
     }
 
-    private fun thumbnailView(rom: LibraryRom): ImageView? {
+    private fun thumbnailView(
+        rom: LibraryRom,
+        widthDp: Int = 64,
+        heightDp: Int = 48,
+        rightMarginDp: Int = 8,
+        bottomMarginDp: Int = 0,
+    ): ImageView? {
         val path = rom.coverPath.takeIf { it.isNotBlank() } ?: return null
         if (!File(path).isFile) {
             return null
@@ -858,8 +939,9 @@ class MainActivity : Activity() {
         return ImageView(this).apply {
             setImageBitmap(bitmap)
             scaleType = ImageView.ScaleType.CENTER_CROP
-            layoutParams = LinearLayout.LayoutParams(dp(64), dp(48)).apply {
-                rightMargin = dp(8)
+            layoutParams = LinearLayout.LayoutParams(dp(widthDp), dp(heightDp)).apply {
+                rightMargin = dp(rightMarginDp)
+                bottomMargin = dp(bottomMarginDp)
             }
         }
     }
@@ -1068,6 +1150,8 @@ class MainActivity : Activity() {
         private const val REQUEST_SCAN_FOLDER = 1004
         private const val REQUEST_IMPORT_COVER = 1005
         private const val MAX_LIBRARY_ITEMS = 24
+        private const val LIBRARY_GRID_COLUMNS = 2
+        private const val KEY_LIBRARY_VIEW_MODE = "libraryViewMode"
         private const val TRIM_MEMORY_RUNNING_LOW_LEVEL = 10
         private const val ARCHIVE_CACHE_MAX_BYTES = 256L * 1024L * 1024L
         private const val ARCHIVE_CACHE_TRIM_BYTES = 64L * 1024L * 1024L
@@ -1075,6 +1159,22 @@ class MainActivity : Activity() {
         private val FILTER_LABELS = arrayOf("Pixel", "Smooth")
         private val FRAME_SKIP_LABELS = arrayOf("0", "1", "2", "3")
         private val ROM_ENTRY_EXTENSIONS = arrayOf(".gba", ".agb", ".gb", ".gbc", ".sgb")
+    }
+}
+
+private enum class LibraryViewMode(val label: String) {
+    List("List"),
+    Grid("Grid");
+
+    fun next(): LibraryViewMode {
+        val modes = entries
+        return modes[(ordinal + 1) % modes.size]
+    }
+
+    companion object {
+        fun fromName(name: String?): LibraryViewMode {
+            return entries.firstOrNull { it.name == name } ?: List
+        }
     }
 }
 
