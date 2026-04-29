@@ -1,6 +1,7 @@
 package io.mgba.android
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
@@ -112,6 +113,13 @@ class MainActivity : Activity() {
             }
         }
 
+        val aboutButton = Button(this).apply {
+            text = "About"
+            setOnClickListener {
+                showAboutDialog()
+            }
+        }
+
         recentContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(0, dp(24), 0, 0)
@@ -146,6 +154,7 @@ class MainActivity : Activity() {
         root.addView(scanButton)
         root.addView(biosButton)
         root.addView(patchButton)
+        root.addView(aboutButton)
         root.addView(recentContainer)
         root.addView(librarySearch)
         root.addView(libraryContainer)
@@ -342,6 +351,21 @@ class MainActivity : Activity() {
         } finally {
             cursor?.close()
         }
+    }
+
+    private fun showAboutDialog() {
+        val message = listOf(
+            "Native core: ${NativeBridge.versionLabel()}",
+            "mGBA copyright (c) 2013-2026 Jeffrey Pfau.",
+            "mGBA is distributed under the Mozilla Public License 2.0.",
+            "Third-party notices are preserved in the source tree and release artifacts.",
+            "No commercial ROMs or BIOS files are bundled.",
+        ).joinToString(separator = "\n\n")
+        AlertDialog.Builder(this)
+            .setTitle("About mGBA")
+            .setMessage(message)
+            .setPositiveButton("OK", null)
+            .show()
     }
 
     companion object {

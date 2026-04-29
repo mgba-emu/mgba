@@ -62,6 +62,7 @@
 - [x] 已新增 Android 输入映射单元测试，并验证 `:app:testDebugUnitTest`。
 - [x] 已为 ROM 库首页新增搜索过滤、结果计数和空匹配状态。
 - [x] 已补齐 ROM 扫描扩展名过滤：`.gba`、`.agb`、`.gb`、`.gbc`、`.sgb`、`.zip`、`.7z`。
+- [x] 已新增 Android About 对话框，展示 native 版本、mGBA copyright、MPL 2.0 和不捆绑 ROM/BIOS 声明。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -1032,10 +1033,10 @@ object NativeBridge {
 
 ## 18. 许可与合规
 
-- [ ] 保留 MPL 2.0 license。
-- [ ] App 内 About 页面展示：
-  - [ ] mGBA copyright。
-  - [ ] MPL 2.0。
+- [x] 保留 MPL 2.0 license。
+- [x] App 内 About 页面展示：
+  - [x] mGBA copyright。
+  - [x] MPL 2.0。
   - [ ] 第三方库 license：zlib、libpng、lzma、sqlite、inih 等实际启用项。
 - [ ] 不分发 BIOS。
 - [ ] 不分发商业 ROM。
