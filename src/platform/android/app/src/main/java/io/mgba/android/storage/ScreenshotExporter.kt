@@ -38,6 +38,12 @@ object ScreenshotExporter {
         }
     }
 
+    fun writeToUri(context: Context, uri: Uri, writer: (ParcelFileDescriptor) -> Boolean): Boolean {
+        return runCatching {
+            context.contentResolver.openFileDescriptor(uri, "w")?.use(writer) == true
+        }.getOrDefault(false)
+    }
+
     fun exportToPictures(context: Context, path: String): Uri? {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             return null

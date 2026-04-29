@@ -348,6 +348,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             REQUEST_IMPORT_GAME_BIOS -> importGameBios(uri)
             REQUEST_EXPORT_DIAGNOSTICS -> exportDiagnosticsToUri(uri)
             REQUEST_EXPORT_SAVE -> exportBatterySaveToUri(uri)
+            REQUEST_EXPORT_SCREENSHOT -> exportScreenshotToUri(uri)
         }
     }
 
@@ -1139,14 +1140,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             runRow.addView(Button(context).apply {
                 text = "Export"
                 setOnClickListener {
-                    val uri = ScreenshotExporter.exportToPictures(context, screenshotExportName()) { descriptor ->
-                        controller?.takeScreenshotFd(descriptor.fd) == true
-                    }
-                    Toast.makeText(
-                        context,
-                        if (uri != null) "Screenshot exported" else "Export unavailable",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    exportScreenshot()
                 }
             })
             stateRow.addView(Button(context).apply {
@@ -2894,6 +2888,35 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         return "$base-${System.currentTimeMillis()}.png"
     }
 
+    private fun exportScreenshot() {
+        val name = screenshotExportName()
+        val uri = ScreenshotExporter.exportToPictures(this, name) { descriptor ->
+            controller?.takeScreenshotFd(descriptor.fd) == true
+        }
+        if (uri != null) {
+            Toast.makeText(this, "Screenshot exported", Toast.LENGTH_SHORT).show()
+        } else {
+            openScreenshotExportPicker(name)
+        }
+    }
+
+    private fun openScreenshotExportPicker(name: String) {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "image/png"
+            putExtra(Intent.EXTRA_TITLE, name)
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_EXPORT_SCREENSHOT)
+    }
+
+    private fun exportScreenshotToUri(uri: Uri) {
+        val ok = ScreenshotExporter.writeToUri(this, uri) { descriptor ->
+            controller?.takeScreenshotFd(descriptor.fd) == true
+        }
+        Toast.makeText(this, if (ok) "Screenshot exported" else "Screenshot export failed", Toast.LENGTH_SHORT).show()
+    }
+
     private fun openSaveImportPicker() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
@@ -3253,6 +3276,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val REQUEST_IMPORT_GAME_BIOS = 2011
         private const val REQUEST_EXPORT_DIAGNOSTICS = 2012
         private const val REQUEST_EXPORT_SAVE = 2013
+        private const val REQUEST_EXPORT_SCREENSHOT = 2014
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L
