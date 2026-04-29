@@ -1,6 +1,7 @@
 package io.mgba.android
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
@@ -19,6 +20,7 @@ import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.input.AndroidInputMapper
 import io.mgba.android.input.VirtualGamepadView
+import io.mgba.android.storage.ScreenshotShareProvider
 
 class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var controller: EmulatorController? = null
@@ -215,11 +217,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 text = "Shot"
                 setOnClickListener {
                     val path = controller?.takeScreenshot()
-                    Toast.makeText(
-                        context,
-                        if (path != null) "Screenshot saved" else "Screenshot failed",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    if (path == null) {
+                        Toast.makeText(context, "Screenshot failed", Toast.LENGTH_SHORT).show()
+                    } else {
+                        shareScreenshot(path)
+                    }
                 }
             })
             addView(Button(context).apply {
@@ -266,6 +268,16 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private fun updateRunButtons() {
         pauseButton?.text = if (userPaused) "Resume" else "Pause"
         fastButton?.text = if (fastForward) "1x" else "Fast"
+    }
+
+    private fun shareScreenshot(path: String) {
+        val uri = ScreenshotShareProvider.uriFor(this, path)
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "image/bmp"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(Intent.createChooser(intent, "Share screenshot"))
     }
 
     private fun dp(value: Int): Int {

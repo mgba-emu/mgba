@@ -20,5 +20,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:name=".storage.ScreenshotShareProvider"
+            android:authorities="${applicationId}.screenshots"
+            android:exported="false"
+            android:grantUriPermissions="true" />
     </application>
 </manifest>
