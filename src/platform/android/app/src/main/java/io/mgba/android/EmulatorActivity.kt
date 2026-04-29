@@ -299,6 +299,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 virtualGamepadLayoutOffsets = offsets
                 saveGamepadLayoutPreference()
             }
+            setOnSizePercentChangedListener { sizePercent ->
+                virtualGamepadSizePercent = sizePercent
+                saveGamepadStylePreference()
+            }
         }
         root.addView(
             gamepadView,

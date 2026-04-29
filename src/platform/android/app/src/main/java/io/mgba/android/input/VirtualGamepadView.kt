@@ -10,6 +10,7 @@ import android.view.View
 import android.view.HapticFeedbackConstants
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 data class VirtualGamepadLayoutOffsets(
     val dpadXPercent: Int = 0,
@@ -106,7 +107,10 @@ class VirtualGamepadView(context: Context) : View(context) {
     private var activeEditCluster: Cluster? = null
     private var lastEditX = 0f
     private var lastEditY = 0f
+    private var activePinchStartDistance = 0f
+    private var activePinchStartSizePercent = sizePercent
     private var onLayoutOffsetsChanged: ((VirtualGamepadLayoutOffsets) -> Unit)? = null
+    private var onSizePercentChanged: ((Int) -> Unit)? = null
 
     init {
         isFocusable = true
@@ -120,6 +124,10 @@ class VirtualGamepadView(context: Context) : View(context) {
 
     fun setOnLayoutOffsetsChangedListener(listener: (VirtualGamepadLayoutOffsets) -> Unit) {
         onLayoutOffsetsChanged = listener
+    }
+
+    fun setOnSizePercentChangedListener(listener: (Int) -> Unit) {
+        onSizePercentChanged = listener
     }
 
     fun clearKeys() {
@@ -141,6 +149,7 @@ class VirtualGamepadView(context: Context) : View(context) {
         }
         layoutEditMode = enabled
         activeEditCluster = null
+        activePinchStartDistance = 0f
         updateKeys(0)
         invalidate()
     }
@@ -152,9 +161,9 @@ class VirtualGamepadView(context: Context) : View(context) {
         hapticsEnabled: Boolean,
         leftHanded: Boolean,
     ) {
-        val newSizePercent = sizePercent.coerceIn(60, 140)
-        val newOpacityPercent = opacityPercent.coerceIn(35, 100)
-        val newSpacingPercent = spacingPercent.coerceIn(70, 140)
+        val newSizePercent = sizePercent.coerceIn(MinSizePercent, MaxSizePercent)
+        val newOpacityPercent = opacityPercent.coerceIn(MinOpacityPercent, MaxOpacityPercent)
+        val newSpacingPercent = spacingPercent.coerceIn(MinSpacingPercent, MaxSpacingPercent)
         if (this.sizePercent == newSizePercent &&
             this.opacityPercent == newOpacityPercent &&
             this.spacingPercent == newSpacingPercent &&
@@ -209,11 +218,20 @@ class VirtualGamepadView(context: Context) : View(context) {
     }
 
     private fun handleLayoutEditTouch(event: MotionEvent): Boolean {
+        if (event.pointerCount >= 2) {
+            return handleLayoutPinchTouch(event)
+        }
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 activeEditCluster = regionAt(event.x, event.y)?.cluster
+                activePinchStartDistance = 0f
                 lastEditX = event.x
                 lastEditY = event.y
+                return true
+            }
+            MotionEvent.ACTION_POINTER_UP -> {
+                activeEditCluster = null
+                activePinchStartDistance = 0f
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
@@ -233,11 +251,44 @@ class VirtualGamepadView(context: Context) : View(context) {
             MotionEvent.ACTION_UP,
             MotionEvent.ACTION_CANCEL -> {
                 activeEditCluster = null
+                activePinchStartDistance = 0f
                 performClick()
                 return true
             }
         }
         return true
+    }
+
+    private fun handleLayoutPinchTouch(event: MotionEvent): Boolean {
+        activeEditCluster = null
+        if (event.actionMasked == MotionEvent.ACTION_POINTER_UP) {
+            activePinchStartDistance = 0f
+            return true
+        }
+        val distance = pointerDistance(event)
+        if (event.actionMasked == MotionEvent.ACTION_POINTER_DOWN || activePinchStartDistance <= 0f) {
+            activePinchStartDistance = distance
+            activePinchStartSizePercent = sizePercent
+            return true
+        }
+        if (event.actionMasked == MotionEvent.ACTION_MOVE && activePinchStartDistance > 0f) {
+            val scaledSize = (activePinchStartSizePercent * (distance / activePinchStartDistance))
+                .roundToInt()
+                .coerceIn(MinSizePercent, MaxSizePercent)
+            if (scaledSize != sizePercent) {
+                sizePercent = scaledSize
+                rebuildRegions(width, height)
+                onSizePercentChanged?.invoke(sizePercent)
+                invalidate()
+            }
+        }
+        return true
+    }
+
+    private fun pointerDistance(event: MotionEvent): Float {
+        val dx = event.getX(0) - event.getX(1)
+        val dy = event.getY(0) - event.getY(1)
+        return sqrt(dx * dx + dy * dy).coerceAtLeast(1f)
     }
 
     override fun performClick(): Boolean {
@@ -547,4 +598,12 @@ class VirtualGamepadView(context: Context) : View(context) {
         return value * resources.displayMetrics.density
     }
 
+    private companion object {
+        const val MinSizePercent = 60
+        const val MaxSizePercent = 140
+        const val MinOpacityPercent = 35
+        const val MaxOpacityPercent = 100
+        const val MinSpacingPercent = 70
+        const val MaxSpacingPercent = 140
+    }
 }
