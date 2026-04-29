@@ -99,6 +99,7 @@ class MainActivity : Activity() {
     private lateinit var rtcButton: Button
     private lateinit var patchButton: Button
     private lateinit var storageButton: Button
+    private lateinit var resumeButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
     private lateinit var libraryFilterButton: Button
@@ -170,6 +171,14 @@ class MainActivity : Activity() {
             text = getString(R.string.open_emulator_placeholder)
             setOnClickListener {
                 openRomPicker()
+            }
+        }
+
+        resumeButton = Button(this).apply {
+            text = "Resume Game"
+            visibility = View.GONE
+            setOnClickListener {
+                resumeActiveSession()
             }
         }
 
@@ -440,6 +449,7 @@ class MainActivity : Activity() {
         root.addView(subtitle)
         root.addView(nativeStatus)
         root.addView(openButton)
+        root.addView(resumeButton)
         root.addView(scanButton)
         root.addView(rescanFoldersButton)
         root.addView(libraryFoldersButton)
@@ -479,13 +489,24 @@ class MainActivity : Activity() {
         showCrashRecoveryPromptIfNeeded()
         renderRecentGames()
         renderLibrary()
-        handleViewIntent(intent)
+        val handledViewIntent = handleViewIntent(intent)
+        updateResumeButton()
+        if (!handledViewIntent && savedInstanceState == null) {
+            maybeResumeActiveSessionFromLauncher(intent)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateResumeButton()
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         setIntent(intent)
-        handleViewIntent(intent)
+        if (!handleViewIntent(intent)) {
+            maybeResumeActiveSessionFromLauncher(intent)
+        }
     }
 
     override fun onTrimMemory(level: Int) {
@@ -556,11 +577,11 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun handleViewIntent(intent: Intent?) {
+    private fun handleViewIntent(intent: Intent?): Boolean {
         if (intent?.action != Intent.ACTION_VIEW) {
-            return
+            return false
         }
-        val uri = intent.data ?: return
+        val uri = intent.data ?: return false
         runCatching {
             val flags = intent.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION
             if (flags != 0) {
@@ -570,9 +591,35 @@ class MainActivity : Activity() {
         val name = displayName(uri)
         if (!RomFileSupport.isSupportedRomName(name)) {
             nativeStatus.text = "${getString(R.string.native_version_label)}: Unsupported ROM file"
-            return
+            return true
         }
         openRomUri(uri, name, shouldStoreRecent = true)
+        return true
+    }
+
+    private fun maybeResumeActiveSessionFromLauncher(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_MAIN || !intent.hasCategory(Intent.CATEGORY_LAUNCHER)) {
+            return
+        }
+        resumeActiveSession()
+    }
+
+    private fun resumeActiveSession(): Boolean {
+        val game = EmulatorSession.currentGame() ?: return false
+        if (EmulatorSession.current() == null) {
+            return false
+        }
+        AppLogStore.append(this, "Resuming active ROM ${game.displayName} from launcher")
+        startEmulatorActivity()
+        return true
+    }
+
+    private fun updateResumeButton() {
+        if (!::resumeButton.isInitialized) {
+            return
+        }
+        val hasActiveSession = EmulatorSession.currentGame() != null && EmulatorSession.current() != null
+        resumeButton.visibility = if (hasActiveSession) View.VISIBLE else View.GONE
     }
 
     private fun openZipRomUri(uri: Uri, name: String, shouldStoreRecent: Boolean) {
@@ -814,8 +861,16 @@ class MainActivity : Activity() {
             }
             libraryStore.markPlayed(uri)
             renderLibrary()
-            startActivity(Intent(this, EmulatorActivity::class.java))
+            startEmulatorActivity()
         }
+    }
+
+    private fun startEmulatorActivity() {
+        startActivity(
+            Intent(this, EmulatorActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            },
+        )
     }
 
     private fun applyStoredPatch(

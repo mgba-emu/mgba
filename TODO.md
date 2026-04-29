@@ -178,7 +178,8 @@
 - [x] 已完成 OnePlus7 真机真实 ROM 首帧验收：`木叶战记` 377ms、`决战三国` 254ms、`水浒传` 308ms，均小于 1 秒。
 - [x] 已完成 Android 模拟器 30 分钟 native heap smoke：`Medium_Phone` arm64 AVD 跑 `~/game/[gba]木叶战记.zip`，5/10/15/20/25/30 分钟 Native Heap Alloc 为 64932/65398/65768/66039/66251/66399 KB，预热后无持续线性增长。
 - [x] 已修复 Android ZIP/native archive 编码兼容：Java ZIP 未识别老编码 entry 时 fallback 到 native archive，native entry token 和 ROM header JSON 均避免非法 Modified UTF-8 崩溃。
-- [x] 首帧真机截图验证已在 OnePlus7 上执行；模拟器因性能过慢已停用。
+- [x] 已修复 Android launcher 回前台恢复：HOME 后从 launcher 入口返回会将活动中的 EmulatorActivity 拉回前台，避免停在 MainActivity。
+- [x] 已完成 Android 模拟器锁屏/解锁恢复验证：`Medium_Phone` arm64 AVD 跑 `~/game/[gba]木叶战记.zip`，解锁后仍聚焦 EmulatorActivity 且画面继续渲染。
 
 ## 1. 产品目标和范围
 
@@ -546,10 +547,10 @@ object NativeBridge {
 
 ### 5.4 视频验收标准
 
-- [ ] 能连续运行 30 分钟不黑屏、不闪退。
-- [ ] 锁屏/解锁、切后台/切前台后画面恢复。
-- [ ] 旋转屏幕后画面比例正确。
-- [ ] GBA 240x160、GB 160x144 均显示正确。
+- [x] 能连续运行 30 分钟不黑屏、不闪退。
+- [x] 锁屏/解锁、切后台/切前台后画面恢复。
+- [x] 旋转屏幕后画面比例正确。
+- [x] GBA 240x160、GB 160x144 均显示正确。
 - [ ] 帧率接近目标帧率，正常设备无明显 frame pacing 抖动。
 - [ ] 画面无错色、无上下颠倒、无 stride 错位。
 
@@ -594,7 +595,7 @@ object NativeBridge {
 - [ ] 正常设备 30 分钟无持续爆音。
 - [ ] 快进/暂停/恢复后音频不永久静音。
 - [x] 蓝牙/有线输出路由变化后可恢复音频；已实现 route change 自动重建音频输出，真实蓝牙耳机实体仍需设备矩阵验证。
-- [ ] 横竖屏旋转不重启音频核心。
+- [x] 横竖屏旋转不重启音频核心。
 - [x] underrun 计数可在 debug overlay 查看。
 
 ## 7. 输入计划
@@ -1015,9 +1016,9 @@ object NativeBridge {
   - [x] `onStop` 保持状态但释放高耗资源。
   - [x] `onDestroy` 如果 finishing，停止 core 并释放 native handle。
 - [x] Surface lifecycle 与 core lifecycle 分离。
-- [ ] 设备旋转不重启游戏：
+- [x] 设备旋转不重启游戏：
   - [ ] 使用 ViewModel 保存 `EmulatorController`。
-  - [ ] 或在 Manifest 处理 configChanges，但要慎用。
+  - [x] 或在 Manifest 处理 configChanges，但要慎用。
 - [ ] 内存压力：
   - [x] `onTrimMemory` 清理 ROM archive cache。
   - [x] `onTrimMemory` 清理封面 cache。
@@ -1339,7 +1340,8 @@ object NativeBridge {
 - [x] 保存、读档、截图、BIOS、patch、cheat、archive 至少达到桌面常用功能。
 - [x] ROM 库和最近游戏可用。
 - [x] 全局设置和 per-game override 可用。
-- [ ] 横竖屏、切后台、锁屏、外设变化稳定。
+- [x] 横竖屏、切后台、锁屏恢复稳定。
+- [ ] 外设变化实体矩阵稳定验证。
 - [x] Debug APK、Release APK/AAB 可构建。
 - [x] CI 自动构建 Android。
 - [x] License / 第三方声明完整。
