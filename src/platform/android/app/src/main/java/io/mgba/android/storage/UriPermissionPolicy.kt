@@ -10,6 +10,17 @@ object UriPermissionPolicy {
         if (scheme != "content") {
             return false
         }
+        return hasPersistableReadGrant(flags)
+    }
+
+    fun canPersistDocumentTree(scheme: String?, flags: Int): Boolean {
+        if (scheme != "content") {
+            return false
+        }
+        return hasPersistableReadGrant(flags)
+    }
+
+    private fun hasPersistableReadGrant(flags: Int): Boolean {
         val hasReadGrant = flags and Intent.FLAG_GRANT_READ_URI_PERMISSION != 0
         val hasPersistableGrant = flags and Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION != 0
         return hasReadGrant && hasPersistableGrant

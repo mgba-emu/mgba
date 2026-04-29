@@ -594,10 +594,12 @@ class MainActivity : Activity() {
                 nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "Patch imported" else "Patch import failed"}"
             }
             REQUEST_SCAN_FOLDER -> {
-                runCatching {
-                    contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                if (persistDocumentTreeReadPermission(uri, data.flags)) {
+                    scanLibraryInBackground(uri)
+                } else {
+                    nativeStatus.text = "${getString(R.string.native_version_label)}: Folder permission failed"
+                    AppLogStore.append(this, "Folder scan skipped because persistent permission failed: $uri")
                 }
-                scanLibraryInBackground(uri)
             }
             REQUEST_IMPORT_COVER -> importCover(uri)
             REQUEST_EXPORT_SETTINGS -> exportSettings(uri)
@@ -644,6 +646,16 @@ class MainActivity : Activity() {
         }
         if (uri.scheme == "file") {
             return true
+        }
+        return runCatching {
+            contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            true
+        }.getOrDefault(false)
+    }
+
+    private fun persistDocumentTreeReadPermission(uri: Uri, flags: Int): Boolean {
+        if (!UriPermissionPolicy.canPersistDocumentTree(uri.scheme, flags)) {
+            return false
         }
         return runCatching {
             contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
