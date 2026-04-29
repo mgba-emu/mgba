@@ -4,6 +4,39 @@ This checklist is the repeatable manual validation flow for the native Android p
 Use public-domain or homebrew ROMs only. Do not copy commercial ROMs, user BIOS files,
 or save data into the repository.
 
+## Local Environment
+
+If Java or the Android SDK are not already visible to the shell, export them before
+running Gradle:
+
+```bash
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+```
+
+## Latest Automated Pass
+
+2026-04-30 on `master` (`9545717dc`):
+
+```bash
+JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
+ANDROID_HOME="$HOME/Library/Android/sdk" \
+./gradlew :app:assembleDebug :app:testDebugUnitTest \
+  :app:externalNativeBuildDebug -PmgbaAndroidWarningsAsErrors=true \
+  :app:assembleRelease :app:bundleRelease --no-daemon
+
+JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
+ANDROID_HOME="$HOME/Library/Android/sdk" \
+./gradlew :app:connectedDebugAndroidTest --no-daemon
+```
+
+Result:
+
+- Debug APK, release APK, and release AAB built successfully.
+- Unit tests passed.
+- Android JNI/native wrapper warning check passed.
+- Instrumented tests passed on `Medium_Phone(AVD) - 16`, `sdk_gphone64_arm64`.
+
 ## Build Artifacts
 
 Run these from `src/platform/android` before installing:
