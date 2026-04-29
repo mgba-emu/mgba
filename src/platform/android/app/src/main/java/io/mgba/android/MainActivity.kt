@@ -2674,7 +2674,9 @@ class MainActivity : Activity() {
     private fun clearArchiveCache() {
         val deleted = clearCacheDirectory("archive-roms") +
             clearCacheDirectory("archive-files") +
-            clearCacheDirectory("imports")
+            clearCacheDirectory("imports") +
+            clearCacheDirectory("game-data-export") +
+            clearCacheDirectory("game-data-import")
         val thumbnailBytes = coverThumbnailCache.size()
         coverThumbnailCache.evictAll()
         val thumbnailStatus = if (thumbnailBytes > 0) ", ${formatBytes(thumbnailBytes.toLong())} thumbnails" else ""
@@ -2710,6 +2712,8 @@ class MainActivity : Activity() {
             "Archive cache" to File(cacheDir, "archive-roms"),
             "Archive files" to File(cacheDir, "archive-files"),
             "Import cache" to File(cacheDir, "imports"),
+            "Game data export cache" to File(cacheDir, "game-data-export"),
+            "Game data import cache" to File(cacheDir, "game-data-import"),
         )
         val diskSummary = entries.joinToString("\n") { (label, file) ->
             val stats = storageStats(file)
