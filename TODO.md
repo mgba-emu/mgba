@@ -102,6 +102,7 @@
 - [x] 已新增虚拟手柄横屏/竖屏自动布局，竖屏时将肩键收进下半区控制区域。
 - [x] 已用单测锁定 Android `GbaKeyMask` 与 native `GBA_KEY_*` bit position 的对应关系。
 - [x] 已为虚拟手柄 PadCfg 新增 Reset，一键恢复默认布局样式。
+- [x] 已补齐 Android 画面比例模式：Fit / Fill / Integer / Original / Stretch，并保持旧 Fit 设置兼容。
 - [x] 已新增 Android 画面 Pix/Smooth 过滤切换，JNI 透传到 GLES texture filtering 并按游戏持久化。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
@@ -448,12 +449,12 @@ object NativeBridge {
 
 ### 5.3 画面设置
 
-- [ ] 比例模式：
-  - [ ] Original。
-  - [ ] Fit。
-  - [ ] Fill。
-  - [ ] Integer scale。
-  - [ ] Stretch。
+- [x] 比例模式：
+  - [x] Original。
+  - [x] Fit。
+  - [x] Fill。
+  - [x] Integer scale。
+  - [x] Stretch。
 - [ ] 滤镜：
   - [x] Nearest。
   - [x] Linear。

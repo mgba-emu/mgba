@@ -721,7 +721,7 @@ void AndroidCoreRunner::setAudioEnabled(bool enabled) {
 }
 
 void AndroidCoreRunner::setScaleMode(int mode) {
-	if (mode < 0 || mode > 2) {
+	if (mode < 0 || mode > 4) {
 		mode = 0;
 	}
 	m_scaleMode = mode;
@@ -1098,10 +1098,14 @@ void AndroidCoreRunner::renderFrameLocked() {
 	int viewportX = 0;
 	int viewportY = 0;
 	const int scaleMode = m_scaleMode;
-	if (scaleMode != 1) {
+	if (scaleMode != 4) {
 		float scale = std::min(windowWidth / static_cast<float>(m_videoWidth), windowHeight / static_cast<float>(m_videoHeight));
-		if (scaleMode == 2) {
+		if (scaleMode == 1) {
+			scale = std::max(windowWidth / static_cast<float>(m_videoWidth), windowHeight / static_cast<float>(m_videoHeight));
+		} else if (scaleMode == 2) {
 			scale = std::max(1.0f, std::floor(scale));
+		} else if (scaleMode == 3) {
+			scale = 1.0f;
 		}
 		viewportWidth = static_cast<int>(m_videoWidth * scale);
 		viewportHeight = static_cast<int>(m_videoHeight * scale);

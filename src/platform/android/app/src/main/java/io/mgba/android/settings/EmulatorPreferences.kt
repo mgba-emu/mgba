@@ -6,9 +6,9 @@ class EmulatorPreferences(context: Context) {
     private val preferences = context.applicationContext.getSharedPreferences("emulator_preferences", Context.MODE_PRIVATE)
 
     var scaleMode: Int
-        get() = preferences.getInt(KEY_SCALE_MODE, 0).coerceIn(0, 2)
+        get() = preferences.getInt(KEY_SCALE_MODE, 0).coerceIn(0, 4)
         set(value) {
-            preferences.edit().putInt(KEY_SCALE_MODE, value.coerceIn(0, 2)).apply()
+            preferences.edit().putInt(KEY_SCALE_MODE, value.coerceIn(0, 4)).apply()
         }
 
     var filterMode: Int

@@ -1599,7 +1599,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val GAMEPAD_SPACING_MAX = 140
         private val DEADZONE_LEVELS = arrayOf(25, 35, 45, 55, 65)
         private val FRAME_SKIP_LABELS = arrayOf("Skip0", "Skip1", "Skip2", "Skip3")
-        private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int")
+        private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int", "Orig", "Str")
         private val FILTER_LABELS = arrayOf("Pix", "Smooth")
     }
 }

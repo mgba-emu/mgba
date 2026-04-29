@@ -6,7 +6,7 @@ class PerGameOverrideStore(context: Context) {
     private val preferences = context.applicationContext.getSharedPreferences("per_game_overrides", Context.MODE_PRIVATE)
 
     fun scaleMode(gameId: String?, fallback: Int): Int {
-        return intOverride(gameId, KEY_SCALE_MODE, fallback).coerceIn(0, 2)
+        return intOverride(gameId, KEY_SCALE_MODE, fallback).coerceIn(0, 4)
     }
 
     fun filterMode(gameId: String?, fallback: Int): Int {
@@ -50,7 +50,7 @@ class PerGameOverrideStore(context: Context) {
     }
 
     fun setScaleMode(gameId: String?, value: Int): Boolean {
-        return putIntOverride(gameId, KEY_SCALE_MODE, value.coerceIn(0, 2))
+        return putIntOverride(gameId, KEY_SCALE_MODE, value.coerceIn(0, 4))
     }
 
     fun setFilterMode(gameId: String?, value: Int): Boolean {
