@@ -421,9 +421,9 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 
 	struct mCoreOptions options = {};
 	options.useBios = true;
-	options.rewindEnable = true;
-	options.rewindBufferCapacity = 600;
-	options.rewindBufferInterval = 1;
+	options.rewindEnable = m_rewindEnabled.load();
+	options.rewindBufferCapacity = m_rewindBufferCapacity.load();
+	options.rewindBufferInterval = m_rewindBufferInterval.load();
 	options.audioBuffers = m_audioBufferSamples.load();
 	options.skipBios = m_skipBios.load();
 	options.videoSync = false;
@@ -471,6 +471,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	m_videoStride = stride;
 	m_textureHeight = textureHeight;
 	m_core->currentVideoSize(m_core, &m_videoWidth, &m_videoHeight);
+	resetRewindContextLocked();
 	m_audioOutput.clear();
 	m_audioOutput.resetUnderrunCount();
 	m_frameCounter = 0;
@@ -569,6 +570,7 @@ bool AndroidCoreRunner::loadStateSlot(int slot) {
 	const bool ok = mCoreLoadStateNamed(m_core, vf, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
 	vf->close(vf);
 	if (ok) {
+		resetRewindContextLocked();
 		m_core->currentVideoSize(m_core, &m_videoWidth, &m_videoHeight);
 		m_audioOutput.clear();
 	}
@@ -692,6 +694,7 @@ void AndroidCoreRunner::reset() {
 	if (m_core) {
 		m_rumbleActive = false;
 		m_core->reset(m_core);
+		resetRewindContextLocked();
 		m_audioOutput.clear();
 	}
 }
@@ -717,6 +720,33 @@ void AndroidCoreRunner::setFastForwardMultiplier(int multiplier) {
 		multiplier = 0;
 	}
 	m_fastForwardMultiplier = multiplier;
+}
+
+void AndroidCoreRunner::setRewindConfig(bool enabled, int capacity, int interval) {
+	capacity = std::clamp(capacity, 0, 1200);
+	interval = std::clamp(interval, 1, 4);
+
+	std::lock_guard<std::mutex> lock(m_mutex);
+	const bool changed = m_rewindEnabled.load() != enabled ||
+	    m_rewindBufferCapacity.load() != capacity ||
+	    m_rewindBufferInterval.load() != interval;
+	m_rewindEnabled = enabled;
+	m_rewindBufferCapacity = capacity;
+	m_rewindBufferInterval = interval;
+	if (!m_core || !changed) {
+		return;
+	}
+	m_rewinding = false;
+	m_core->opts.rewindEnable = enabled;
+	m_core->opts.rewindBufferCapacity = capacity;
+	m_core->opts.rewindBufferInterval = interval;
+	resetRewindContextLocked();
+	m_audioOutput.clear();
+}
+
+void AndroidCoreRunner::setRewinding(bool enabled) {
+	m_rewinding = enabled && m_rewindEnabled.load();
+	m_audioOutput.clear();
 }
 
 void AndroidCoreRunner::setFrameSkip(int frames) {
@@ -786,6 +816,10 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"paused\":" << (m_paused.load() ? "true" : "false")
 	    << ",\"fastForward\":" << (m_fastForward.load() ? "true" : "false")
 	    << ",\"fastForwardMultiplier\":" << m_fastForwardMultiplier.load()
+	    << ",\"rewinding\":" << (m_rewinding.load() ? "true" : "false")
+	    << ",\"rewindEnabled\":" << (m_rewindEnabled.load() ? "true" : "false")
+	    << ",\"rewindBufferCapacity\":" << m_rewindBufferCapacity.load()
+	    << ",\"rewindBufferInterval\":" << m_rewindBufferInterval.load()
 	    << ",\"frameSkip\":" << m_frameSkip.load()
 	    << ",\"volumePercent\":" << m_volumePercent.load()
 	    << ",\"audioBufferSamples\":" << m_audioBufferSamples.load()
@@ -1256,6 +1290,19 @@ bool AndroidCoreRunner::flushBatterySave() {
 	return true;
 }
 
+void AndroidCoreRunner::resetRewindContextLocked() {
+	if (m_rewindReady) {
+		mCoreRewindContextDeinit(&m_rewind);
+		m_rewind = {};
+		m_rewindReady = false;
+	}
+	if (!m_core || !m_rewindEnabled.load() || m_rewindBufferCapacity.load() <= 0) {
+		return;
+	}
+	mCoreRewindContextInit(&m_rewind, static_cast<size_t>(m_rewindBufferCapacity.load()), false);
+	m_rewindReady = true;
+}
+
 std::chrono::microseconds AndroidCoreRunner::frameDurationLocked() const {
 	if (!m_core || !m_core->frameCycles || !m_core->frequency) {
 		return std::chrono::microseconds(16667);
@@ -1281,8 +1328,29 @@ void AndroidCoreRunner::runLoop() {
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
 			if (m_core) {
+				bool rewinding = m_rewinding.load();
+				if (m_core->opts.rewindEnable && m_rewindReady) {
+					if (rewinding) {
+						if (mCoreRewindRestore(&m_rewind, m_core, 1)) {
+							m_core->currentVideoSize(m_core, &m_videoWidth, &m_videoHeight);
+						} else {
+							m_rewinding = false;
+							rewinding = false;
+						}
+					} else if (m_rewind.rewindFrameCounter == 0) {
+						mCoreRewindAppend(&m_rewind, m_core);
+						m_rewind.rewindFrameCounter = m_core->opts.rewindBufferInterval;
+					}
+					if (!rewinding && m_rewind.rewindFrameCounter > 0) {
+						--m_rewind.rewindFrameCounter;
+					}
+				}
 				m_core->runFrame(m_core);
-				m_audioOutput.enqueueFromCore(m_core);
+				if (rewinding) {
+					m_audioOutput.clear();
+				} else {
+					m_audioOutput.enqueueFromCore(m_core);
+				}
 				const uint64_t frame = ++m_frameCounter;
 				const int skip = m_frameSkip.load();
 				if (skip <= 0 || frame % static_cast<uint64_t>(skip + 1) == 0) {
@@ -1344,11 +1412,17 @@ void AndroidCoreRunner::unloadCore() {
 		m_core->setPeripheral(m_core, mPERIPH_GBA_LUMINANCE, nullptr);
 	}
 	m_rumbleActive = false;
+	m_rewinding = false;
 	m_tiltX = 0;
 	m_tiltY = 0;
 	m_gyroZ = 0;
 	m_solarLevel = 0xFF;
 	flushBatterySave();
+	if (m_rewindReady) {
+		mCoreRewindContextDeinit(&m_rewind);
+		m_rewind = {};
+		m_rewindReady = false;
+	}
 	m_core->unloadROM(m_core);
 	m_core->deinit(m_core);
 	m_core = nullptr;

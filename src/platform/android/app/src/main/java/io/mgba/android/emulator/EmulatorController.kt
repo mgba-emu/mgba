@@ -84,6 +84,18 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setRewindConfig(enabled: Boolean, capacity: Int, interval: Int) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetRewindConfig(handle.value, enabled, capacity, interval)
+        }
+    }
+
+    fun setRewinding(enabled: Boolean) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetRewinding(handle.value, enabled)
+        }
+    }
+
     fun setFrameSkip(frames: Int) {
         if (handle.isValid) {
             NativeBridge.nativeSetFrameSkip(handle.value, frames.coerceIn(0, 3))

@@ -69,6 +69,24 @@ class EmulatorPreferences(context: Context) {
                 .apply()
         }
 
+    var rewindEnabled: Boolean
+        get() = preferences.getBoolean(KEY_REWIND_ENABLED, true)
+        set(value) {
+            preferences.edit().putBoolean(KEY_REWIND_ENABLED, value).apply()
+        }
+
+    var rewindBufferCapacity: Int
+        get() = RewindSettings.coerceCapacity(preferences.getInt(KEY_REWIND_BUFFER_CAPACITY, 600))
+        set(value) {
+            preferences.edit().putInt(KEY_REWIND_BUFFER_CAPACITY, RewindSettings.coerceCapacity(value)).apply()
+        }
+
+    var rewindBufferInterval: Int
+        get() = RewindSettings.coerceInterval(preferences.getInt(KEY_REWIND_BUFFER_INTERVAL, 1))
+        set(value) {
+            preferences.edit().putInt(KEY_REWIND_BUFFER_INTERVAL, RewindSettings.coerceInterval(value)).apply()
+        }
+
     var showVirtualGamepad: Boolean
         get() = preferences.getBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, true)
         set(value) {
@@ -116,6 +134,9 @@ class EmulatorPreferences(context: Context) {
         const val KEY_AUDIO_LOW_PASS_MODE = "audioLowPassMode"
         const val KEY_FAST_FORWARD_MODE = "fastForwardMode"
         const val KEY_FAST_FORWARD_MULTIPLIER = "fastForwardMultiplier"
+        const val KEY_REWIND_ENABLED = "rewindEnabled"
+        const val KEY_REWIND_BUFFER_CAPACITY = "rewindBufferCapacity"
+        const val KEY_REWIND_BUFFER_INTERVAL = "rewindBufferInterval"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
         const val KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT = "virtualGamepadOpacityPercent"

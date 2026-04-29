@@ -165,6 +165,21 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetFastForwardMultiplier(JNIEnv*,
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetRewindConfig(
+    JNIEnv*, jclass, jlong handle, jboolean enabled, jint capacity, jint interval) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setRewindConfig(enabled == JNI_TRUE, capacity, interval);
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetRewinding(JNIEnv*, jclass, jlong handle, jboolean enabled) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setRewinding(enabled == JNI_TRUE);
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeSetFrameSkip(JNIEnv*, jclass, jlong handle, jint frames) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
 		runner->setFrameSkip(frames);
@@ -224,7 +239,7 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeGetStats(JNIEnv* env, jclass, jlong handle) {
 	AndroidCoreRunner* runner = FromHandle(handle);
 	if (!runner) {
-		return env->NewStringUTF("{\"frames\":0,\"videoWidth\":0,\"videoHeight\":0,\"running\":false,\"paused\":true,\"fastForward\":false,\"fastForwardMultiplier\":0,\"frameSkip\":0,\"volumePercent\":100,\"audioBufferSamples\":1024,\"audioUnderruns\":0,\"audioLowPassRange\":0,\"romPlatform\":\"\",\"gameTitle\":\"\",\"scaleMode\":0,\"filterMode\":0,\"skipBios\":false}");
+		return env->NewStringUTF("{\"frames\":0,\"videoWidth\":0,\"videoHeight\":0,\"running\":false,\"paused\":true,\"fastForward\":false,\"fastForwardMultiplier\":0,\"rewinding\":false,\"rewindEnabled\":true,\"rewindBufferCapacity\":600,\"rewindBufferInterval\":1,\"frameSkip\":0,\"volumePercent\":100,\"audioBufferSamples\":1024,\"audioUnderruns\":0,\"audioLowPassRange\":0,\"romPlatform\":\"\",\"gameTitle\":\"\",\"scaleMode\":0,\"filterMode\":0,\"skipBios\":false}");
 	}
 	std::string result = runner->statsJson();
 	return env->NewStringUTF(result.c_str());

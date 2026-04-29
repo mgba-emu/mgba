@@ -778,8 +778,8 @@ object NativeBridge {
   - [ ] BIOS 文件路径。
   - [ ] 跳过 BIOS。
   - [x] 快进倍率。
-  - [ ] 倒带开关。
-  - [ ] 倒带 buffer。
+  - [x] 倒带开关。
+  - [x] 倒带 buffer。
   - [ ] RTC 策略。
 - [ ] Input：
   - [x] 触屏显示。
@@ -808,7 +808,7 @@ object NativeBridge {
   - [x] 虚拟手柄显示。
   - [ ] 输入布局编辑。
   - [ ] 传感器校准。
-  - [ ] 快进/倒带。
+  - [x] 快进/倒带。
 - [x] 覆盖层写入 `PerGameOverrideStore`。
 - [ ] 加载 ROM 后把 override 映射到 `mCoreConfigSetOverride*` 或 `mCoreOptions`。
 
@@ -901,12 +901,12 @@ object NativeBridge {
 
 ### 13.2 倒带
 
-- [ ] 启用 `rewindEnable`。
-- [ ] 设置：
-  - [ ] rewindBufferCapacity。
-  - [ ] rewindBufferInterval。
-- [ ] UI 按住倒带。
-- [ ] 倒带时处理音频清空和画面立即刷新。
+- [x] 启用 `rewindEnable`。
+- [x] 设置：
+  - [x] rewindBufferCapacity。
+  - [x] rewindBufferInterval。
+- [x] UI 按住倒带。
+- [x] 倒带时处理音频清空和画面立即刷新。
 
 ### 13.3 录制
 
@@ -980,7 +980,7 @@ object NativeBridge {
   - [ ] 暂停/继续。
   - [ ] 重置。
   - [x] 快进。
-  - [ ] 倒带。
+  - [x] 倒带。
   - [ ] 存档。
   - [ ] 读档。
   - [ ] 截图。

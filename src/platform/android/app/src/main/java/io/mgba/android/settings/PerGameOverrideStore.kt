@@ -45,6 +45,18 @@ class PerGameOverrideStore(context: Context) {
         return FastForwardModes.coerceMultiplier(intOverride(gameId, KEY_FAST_FORWARD_MULTIPLIER, fallback))
     }
 
+    fun rewindEnabled(gameId: String?, fallback: Boolean): Boolean {
+        return booleanOverride(gameId, KEY_REWIND_ENABLED, fallback)
+    }
+
+    fun rewindBufferCapacity(gameId: String?, fallback: Int): Int {
+        return RewindSettings.coerceCapacity(intOverride(gameId, KEY_REWIND_BUFFER_CAPACITY, fallback))
+    }
+
+    fun rewindBufferInterval(gameId: String?, fallback: Int): Int {
+        return RewindSettings.coerceInterval(intOverride(gameId, KEY_REWIND_BUFFER_INTERVAL, fallback))
+    }
+
     fun showVirtualGamepad(gameId: String?, fallback: Boolean): Boolean {
         return booleanOverride(gameId, KEY_SHOW_VIRTUAL_GAMEPAD, fallback)
     }
@@ -115,6 +127,18 @@ class PerGameOverrideStore(context: Context) {
 
     fun setFastForwardMultiplier(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_FAST_FORWARD_MULTIPLIER, FastForwardModes.coerceMultiplier(value))
+    }
+
+    fun setRewindEnabled(gameId: String?, value: Boolean): Boolean {
+        return putBooleanOverride(gameId, KEY_REWIND_ENABLED, value)
+    }
+
+    fun setRewindBufferCapacity(gameId: String?, value: Int): Boolean {
+        return putIntOverride(gameId, KEY_REWIND_BUFFER_CAPACITY, RewindSettings.coerceCapacity(value))
+    }
+
+    fun setRewindBufferInterval(gameId: String?, value: Int): Boolean {
+        return putIntOverride(gameId, KEY_REWIND_BUFFER_INTERVAL, RewindSettings.coerceInterval(value))
     }
 
     fun setShowVirtualGamepad(gameId: String?, value: Boolean): Boolean {
@@ -189,6 +213,9 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_AUDIO_LOW_PASS_MODE = "audioLowPassMode"
         const val KEY_FAST_FORWARD_MODE = "fastForwardMode"
         const val KEY_FAST_FORWARD_MULTIPLIER = "fastForwardMultiplier"
+        const val KEY_REWIND_ENABLED = "rewindEnabled"
+        const val KEY_REWIND_BUFFER_CAPACITY = "rewindBufferCapacity"
+        const val KEY_REWIND_BUFFER_INTERVAL = "rewindBufferInterval"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_FRAME_SKIP = "frameSkip"
         const val KEY_DEADZONE_PERCENT = "deadzonePercent"

@@ -48,6 +48,7 @@ import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.FastForwardModes
 import io.mgba.android.settings.InputMappingStore
 import io.mgba.android.settings.PerGameOverrideStore
+import io.mgba.android.settings.RewindSettings
 import io.mgba.android.storage.CheatStore
 import io.mgba.android.storage.PatchStore
 import io.mgba.android.storage.ScreenshotExporter
@@ -92,6 +93,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var fastButton: Button? = null
     private var fastModeButton: Button? = null
     private var fastMultiplierButton: Button? = null
+    private var rewindButton: Button? = null
+    private var rewindEnabledButton: Button? = null
+    private var rewindBufferButton: Button? = null
+    private var rewindIntervalButton: Button? = null
     private var frameSkipButton: Button? = null
     private var muteButton: Button? = null
     private var volumeButton: Button? = null
@@ -112,6 +117,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var fastForward = false
     private var fastForwardMode = FastForwardModes.ModeToggle
     private var fastForwardMultiplier = FastForwardModes.MultiplierMax
+    private var rewinding = false
+    private var rewindEnabled = true
+    private var rewindBufferCapacity = 600
+    private var rewindBufferInterval = 1
     private var frameSkip = 0
     private var muted = false
     private var volumePercent = 100
@@ -188,6 +197,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         audioLowPassMode = perGameOverrides.audioLowPassMode(currentGameId, preferences.audioLowPassMode)
         fastForwardMode = perGameOverrides.fastForwardMode(currentGameId, preferences.fastForwardMode)
         fastForwardMultiplier = perGameOverrides.fastForwardMultiplier(currentGameId, preferences.fastForwardMultiplier)
+        rewindEnabled = perGameOverrides.rewindEnabled(currentGameId, preferences.rewindEnabled)
+        rewindBufferCapacity = perGameOverrides.rewindBufferCapacity(currentGameId, preferences.rewindBufferCapacity)
+        rewindBufferInterval = perGameOverrides.rewindBufferInterval(currentGameId, preferences.rewindBufferInterval)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
         virtualGamepadSizePercent = perGameOverrides.virtualGamepadSizePercent(
             currentGameId,
@@ -230,6 +242,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         controller?.setAudioBufferSamples(AudioBufferModes.samplesFor(audioBufferMode))
         controller?.setLowPassRangePercent(AudioLowPassModes.rangeFor(audioLowPassMode))
         controller?.setFastForwardMultiplier(fastForwardMultiplier)
+        controller?.setRewindConfig(rewindEnabled, rewindBufferCapacity, rewindBufferInterval)
 
         val root = FrameLayout(this).apply {
             setBackgroundColor(getColor(R.color.mgba_background))
@@ -472,6 +485,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         if (fastForwardMode == FastForwardModes.ModeHold) {
             setFastForwardActive(false)
         }
+        setRewindingActive(false)
     }
 
     private fun syncKeys() {
@@ -535,6 +549,18 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun saveFastForwardMultiplierPreference() {
         if (!perGameOverrides.setFastForwardMultiplier(currentGameId, fastForwardMultiplier)) {
             preferences.fastForwardMultiplier = fastForwardMultiplier
+        }
+    }
+
+    private fun saveRewindPreference() {
+        if (!perGameOverrides.setRewindEnabled(currentGameId, rewindEnabled)) {
+            preferences.rewindEnabled = rewindEnabled
+        }
+        if (!perGameOverrides.setRewindBufferCapacity(currentGameId, rewindBufferCapacity)) {
+            preferences.rewindBufferCapacity = rewindBufferCapacity
+        }
+        if (!perGameOverrides.setRewindBufferInterval(currentGameId, rewindBufferInterval)) {
+            preferences.rewindBufferInterval = rewindBufferInterval
         }
     }
 
@@ -682,6 +708,65 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(fastMultiplierButton)
+            rewindButton = Button(context).apply {
+                setOnClickListener {
+                    if (!rewindEnabled) {
+                        Toast.makeText(context, "Rewind disabled", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                setOnTouchListener { view, event ->
+                    if (!rewindEnabled) {
+                        return@setOnTouchListener false
+                    }
+                    when (event.actionMasked) {
+                        MotionEvent.ACTION_DOWN -> {
+                            setRewindingActive(true)
+                            true
+                        }
+                        MotionEvent.ACTION_UP -> {
+                            setRewindingActive(false)
+                            view.performClick()
+                            true
+                        }
+                        MotionEvent.ACTION_CANCEL -> {
+                            setRewindingActive(false)
+                            true
+                        }
+                        else -> true
+                    }
+                }
+            }
+            runRow.addView(rewindButton)
+            rewindEnabledButton = Button(context).apply {
+                setOnClickListener {
+                    rewindEnabled = !rewindEnabled
+                    setRewindingActive(false)
+                    controller?.setRewindConfig(rewindEnabled, rewindBufferCapacity, rewindBufferInterval)
+                    saveRewindPreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(rewindEnabledButton)
+            rewindBufferButton = Button(context).apply {
+                setOnClickListener {
+                    rewindBufferCapacity = RewindSettings.nextCapacity(rewindBufferCapacity)
+                    setRewindingActive(false)
+                    controller?.setRewindConfig(rewindEnabled, rewindBufferCapacity, rewindBufferInterval)
+                    saveRewindPreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(rewindBufferButton)
+            rewindIntervalButton = Button(context).apply {
+                setOnClickListener {
+                    rewindBufferInterval = RewindSettings.nextInterval(rewindBufferInterval)
+                    setRewindingActive(false)
+                    controller?.setRewindConfig(rewindEnabled, rewindBufferCapacity, rewindBufferInterval)
+                    saveRewindPreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(rewindIntervalButton)
             frameSkipButton = Button(context).apply {
                 setOnClickListener {
                     frameSkip = (frameSkip + 1) % FRAME_SKIP_LABELS.size
@@ -1007,6 +1092,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
         fastModeButton?.text = if (fastForwardMode == FastForwardModes.ModeHold) "Mode:Hold" else "Mode:Tog"
         fastMultiplierButton?.text = "Fwd:${FastForwardModes.labelForMultiplier(fastForwardMultiplier)}"
+        rewindButton?.text = if (rewinding) "Rw*" else "Rw"
+        rewindEnabledButton?.text = if (rewindEnabled) "RwOn" else "RwOff"
+        rewindBufferButton?.text = "RwB$rewindBufferCapacity"
+        rewindIntervalButton?.text = "RwI$rewindBufferInterval"
         frameSkipButton?.text = FRAME_SKIP_LABELS[frameSkip]
         muteButton?.text = if (muted) "Sound" else "Mute"
         volumeButton?.text = "Vol$volumePercent"
@@ -1040,6 +1129,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun setFastForwardActive(enabled: Boolean) {
         fastForward = enabled
         controller?.setFastForward(enabled)
+        updateRunButtons()
+    }
+
+    private fun setRewindingActive(enabled: Boolean) {
+        val active = enabled && rewindEnabled
+        rewinding = active
+        controller?.setRewinding(active)
         updateRunButtons()
     }
 
@@ -1552,7 +1648,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         lastStatsAtMs = now
         statsOverlay?.text = String.format(
             Locale.US,
-            "FPS %.1f  Frame %.2fms\nFrames %d\nROM %s  %s\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nAudio %s  Vol %d%%  Buf %d  LPF %d  Und %d\nScale %s  Filter %s  BIOS %s",
+            "FPS %.1f  Frame %.2fms\nFrames %d\nROM %s  %s\nVideo %dx%d\nRun %s  Fast %s  Rewind %s/%d/%d  Skip %d\nAudio %s  Vol %d%%  Buf %d  LPF %d  Und %d\nScale %s  Filter %s  BIOS %s",
             fps,
             frameTimeMs,
             stats.frames,
@@ -1562,6 +1658,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             stats.videoHeight,
             if (stats.running && !stats.paused) "on" else "off",
             if (stats.fastForward) FastForwardModes.labelForMultiplier(stats.fastForwardMultiplier) else "off",
+            if (stats.rewinding) "on" else if (stats.rewindEnabled) "ready" else "off",
+            stats.rewindBufferCapacity,
+            stats.rewindBufferInterval,
             frameSkip,
             if (muted) "muted" else "on",
             stats.volumePercent,

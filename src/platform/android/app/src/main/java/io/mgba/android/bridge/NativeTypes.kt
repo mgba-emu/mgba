@@ -33,6 +33,10 @@ data class NativeStats(
     val paused: Boolean,
     val fastForward: Boolean,
     val fastForwardMultiplier: Int,
+    val rewinding: Boolean,
+    val rewindEnabled: Boolean,
+    val rewindBufferCapacity: Int,
+    val rewindBufferInterval: Int,
     val scaleMode: Int,
     val filterMode: Int,
     val volumePercent: Int,
@@ -56,6 +60,10 @@ data class NativeStats(
                 fastForwardMultiplier = json.optInt("fastForwardMultiplier", 0).let {
                     if (it in 2..4) it else 0
                 },
+                rewinding = json.optBoolean("rewinding", false),
+                rewindEnabled = json.optBoolean("rewindEnabled", true),
+                rewindBufferCapacity = json.optInt("rewindBufferCapacity", 600),
+                rewindBufferInterval = json.optInt("rewindBufferInterval", 1),
                 scaleMode = json.optInt("scaleMode", 0),
                 filterMode = json.optInt("filterMode", 0),
                 volumePercent = json.optInt("volumePercent", 100).coerceIn(0, 100),

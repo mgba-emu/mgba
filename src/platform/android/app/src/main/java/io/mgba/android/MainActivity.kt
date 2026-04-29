@@ -35,6 +35,7 @@ import io.mgba.android.settings.AudioLowPassModes
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.FastForwardModes
 import io.mgba.android.settings.PerGameOverrideStore
+import io.mgba.android.settings.RewindSettings
 import io.mgba.android.storage.BiosStore
 import io.mgba.android.storage.CheatStore
 import io.mgba.android.storage.LogExporter
@@ -60,6 +61,9 @@ class MainActivity : Activity() {
     private lateinit var audioLowPassButton: Button
     private lateinit var fastForwardModeButton: Button
     private lateinit var fastForwardSpeedButton: Button
+    private lateinit var rewindButton: Button
+    private lateinit var rewindBufferButton: Button
+    private lateinit var rewindIntervalButton: Button
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
@@ -195,6 +199,26 @@ class MainActivity : Activity() {
         }
         updateFastForwardButtons()
 
+        rewindButton = Button(this).apply {
+            setOnClickListener {
+                preferences.rewindEnabled = !preferences.rewindEnabled
+                updateRewindButtons()
+            }
+        }
+        rewindBufferButton = Button(this).apply {
+            setOnClickListener {
+                preferences.rewindBufferCapacity = RewindSettings.nextCapacity(preferences.rewindBufferCapacity)
+                updateRewindButtons()
+            }
+        }
+        rewindIntervalButton = Button(this).apply {
+            setOnClickListener {
+                preferences.rewindBufferInterval = RewindSettings.nextInterval(preferences.rewindBufferInterval)
+                updateRewindButtons()
+            }
+        }
+        updateRewindButtons()
+
         patchButton = Button(this).apply {
             text = patchStore.displayName?.let { "Patch: $it" } ?: "Import Patch"
             setOnClickListener {
@@ -269,6 +293,9 @@ class MainActivity : Activity() {
         root.addView(audioLowPassButton)
         root.addView(fastForwardModeButton)
         root.addView(fastForwardSpeedButton)
+        root.addView(rewindButton)
+        root.addView(rewindBufferButton)
+        root.addView(rewindIntervalButton)
         root.addView(patchButton)
         root.addView(aboutButton)
         root.addView(logButton)
@@ -398,6 +425,11 @@ class MainActivity : Activity() {
                     AudioLowPassModes.rangeFor(
                         perGameOverrides.audioLowPassMode(gameId, preferences.audioLowPassMode),
                     ),
+                )
+                emulator.setRewindConfig(
+                    perGameOverrides.rewindEnabled(gameId, preferences.rewindEnabled),
+                    perGameOverrides.rewindBufferCapacity(gameId, preferences.rewindBufferCapacity),
+                    perGameOverrides.rewindBufferInterval(gameId, preferences.rewindBufferInterval),
                 )
                 emulator.loadRomFd(descriptor.fd, name).also { loadResult ->
                     if (loadResult.ok) {
@@ -564,6 +596,12 @@ class MainActivity : Activity() {
     private fun updateFastForwardButtons() {
         fastForwardModeButton.text = "Fast Mode: ${FastForwardModes.modeLabels[preferences.fastForwardMode]}"
         fastForwardSpeedButton.text = "Fast Speed: ${FastForwardModes.labelForMultiplier(preferences.fastForwardMultiplier)}"
+    }
+
+    private fun updateRewindButtons() {
+        rewindButton.text = if (preferences.rewindEnabled) "Rewind: On" else "Rewind: Off"
+        rewindBufferButton.text = "Rewind Buffer: ${preferences.rewindBufferCapacity}"
+        rewindIntervalButton.text = "Rewind Speed: ${preferences.rewindBufferInterval}"
     }
 
     private fun renderLibrary() {

@@ -11,6 +11,7 @@
 #include <chrono>
 #include <cstdint>
 #include <mgba/core/interface.h>
+#include <mgba/core/rewind.h>
 #include <mgba/gba/interface.h>
 #include <mgba-util/image.h>
 #include <mutex>
@@ -61,6 +62,8 @@ public:
 	bool stepFrame();
 	void setFastForward(bool enabled);
 	void setFastForwardMultiplier(int multiplier);
+	void setRewindConfig(bool enabled, int capacity, int interval);
+	void setRewinding(bool enabled);
 	void setFrameSkip(int frames);
 	void setAudioEnabled(bool enabled);
 	void setVolumePercent(int percent);
@@ -95,6 +98,7 @@ private:
 	void destroyEglLocked();
 	void renderFrameLocked();
 	bool flushBatterySave();
+	void resetRewindContextLocked();
 	std::chrono::microseconds frameDurationLocked() const;
 	void runLoop();
 	std::string romIdFromSavePath() const;
@@ -120,6 +124,10 @@ private:
 	std::atomic<bool> m_paused{true};
 	std::atomic<bool> m_fastForward{false};
 	std::atomic<int> m_fastForwardMultiplier{0};
+	std::atomic<bool> m_rewindEnabled{true};
+	std::atomic<bool> m_rewinding{false};
+	std::atomic<int> m_rewindBufferCapacity{600};
+	std::atomic<int> m_rewindBufferInterval{1};
 	std::atomic<int> m_frameSkip{0};
 	std::atomic<int> m_volumePercent{100};
 	std::atomic<int> m_audioBufferSamples{1024};
@@ -136,6 +144,8 @@ private:
 	AndroidRumbleState m_rumble;
 	AndroidRotationState m_rotation;
 	AndroidLuminanceState m_luminance;
+	mCoreRewindContext m_rewind = {};
+	bool m_rewindReady = false;
 
 	ANativeWindow* m_window = nullptr;
 	EGLDisplay m_display = EGL_NO_DISPLAY;

@@ -59,6 +59,12 @@ object NativeBridge {
     external fun nativeSetFastForwardMultiplier(handle: Long, multiplier: Int)
 
     @JvmStatic
+    external fun nativeSetRewindConfig(handle: Long, enabled: Boolean, capacity: Int, interval: Int)
+
+    @JvmStatic
+    external fun nativeSetRewinding(handle: Long, enabled: Boolean)
+
+    @JvmStatic
     external fun nativeSetFrameSkip(handle: Long, frames: Int)
 
     @JvmStatic
