@@ -91,3 +91,41 @@ jobs:
           name: mgba-android-release-native-symbols
           path: src/platform/android/app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
           if-no-files-found: ignore
+
+  android-abi-smoke:
+    name: Android ABI ${{ matrix.abi }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        abi:
+          - arm64-v8a
+          - armeabi-v7a
+          - x86_64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android packages
+        run: |
+          sdkmanager --install \
+            "platforms;android-36" \
+            "build-tools;36.0.0" \
+            "cmake;3.22.1" \
+            "ndk;28.2.13676358"
+
+      - name: Build native wrapper for ABI
+        working-directory: src/platform/android
+        run: ./gradlew :app:externalNativeBuildDebug -PmgbaAndroidAbiFilters=${{ matrix.abi }} -PmgbaAndroidWarningsAsErrors=true --no-daemon

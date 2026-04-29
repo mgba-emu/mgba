@@ -22,6 +22,12 @@ cd src/platform/android
 
 The checked-in Gradle wrapper pins Gradle 9.3.1 for reproducible local and CI builds.
 
+To build a subset of ABIs locally or in CI, pass a comma-separated filter:
+
+```bash
+./gradlew :app:externalNativeBuildDebug -PmgbaAndroidAbiFilters=arm64-v8a
+```
+
 ## Native warning check
 
 CI treats Android platform native warnings as errors with:

@@ -143,6 +143,7 @@
 - [x] 已新增 Android ROM 库文件夹管理：可移除单个/全部扫描来源并释放 SAF 持久授权。
 - [x] 已增强 Android ROM 库清理：移除条目或扫描来源时会清理 App 内封面文件。
 - [x] 已新增 Android 游戏内诊断导出：运行中可把 native stats、音频/输入/传感器状态写入日志并导出。
+- [x] 已新增 Android ABI smoke CI matrix：支持 `mgbaAndroidAbiFilters` 单 ABI native warning 构建。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -1118,9 +1119,10 @@ object NativeBridge {
   - [x] `./gradlew :app:bundleRelease`。
   - [x] `./gradlew :app:testDebugUnitTest`。
   - [x] 上传 debug APK、release APK、release AAB 和 native symbols artifacts。
-- [ ] 可选 matrix：
-  - [ ] arm64-v8a。
-  - [ ] x86_64。
+- [x] 可选 matrix：
+  - [x] arm64-v8a。
+  - [x] armeabi-v7a。
+  - [x] x86_64。
 - [x] Native warnings 作为 PR 检查。
 
 ### 17.2 Release

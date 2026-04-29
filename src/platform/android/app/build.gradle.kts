@@ -15,12 +15,22 @@ fun booleanValue(propertyName: String, environmentName: String): Boolean {
     return signingValue(propertyName, environmentName)?.toBooleanStrictOrNull() == true
 }
 
+fun listValue(propertyName: String, environmentName: String): List<String> {
+    return signingValue(propertyName, environmentName)
+        ?.split(",")
+        ?.map { it.trim() }
+        ?.filter { it.isNotEmpty() }
+        .orEmpty()
+}
+
 val releaseKeystoreFile = signingValue("mgbaAndroidKeystoreFile", "MGBA_ANDROID_KEYSTORE_FILE")
 val releaseKeystoreBase64 = signingValue("mgbaAndroidKeystoreBase64", "MGBA_ANDROID_KEYSTORE_BASE64")
 val releaseKeystorePassword = signingValue("mgbaAndroidKeystorePassword", "MGBA_ANDROID_KEYSTORE_PASSWORD")
 val releaseKeyAlias = signingValue("mgbaAndroidKeyAlias", "MGBA_ANDROID_KEY_ALIAS")
 val releaseKeyPassword = signingValue("mgbaAndroidKeyPassword", "MGBA_ANDROID_KEY_PASSWORD")
 val nativeWarningsAsErrors = booleanValue("mgbaAndroidWarningsAsErrors", "MGBA_ANDROID_WARNINGS_AS_ERRORS")
+val androidAbiFilters = listValue("mgbaAndroidAbiFilters", "MGBA_ANDROID_ABI_FILTERS")
+    .ifEmpty { listOf("arm64-v8a", "armeabi-v7a", "x86_64") }
 val generatedReleaseKeystore = layout.buildDirectory.file("generated/signing/mgba-release.jks").get().asFile
 val releaseKeystore = releaseKeystoreFile?.let { file(it) } ?: releaseKeystoreBase64?.let { encoded ->
     generatedReleaseKeystore.parentFile.mkdirs()
@@ -54,7 +64,7 @@ android {
         }
 
         ndk {
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+            abiFilters += androidAbiFilters
         }
     }
 
