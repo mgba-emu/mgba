@@ -5,6 +5,7 @@ import android.view.Surface
 import io.mgba.android.bridge.EmulatorHandle
 import io.mgba.android.bridge.NativeBridge
 import io.mgba.android.bridge.NativeLoadResult
+import io.mgba.android.bridge.NativeStats
 
 class EmulatorController(context: Context) : AutoCloseable {
     private val appContext = context.applicationContext
@@ -71,6 +72,13 @@ class EmulatorController(context: Context) : AutoCloseable {
         if (handle.isValid) {
             NativeBridge.nativeSetScaleMode(handle.value, mode)
         }
+    }
+
+    fun stats(): NativeStats? {
+        if (!handle.isValid) {
+            return null
+        }
+        return NativeBridge.stats(handle.value)
     }
 
     fun takeScreenshot(): String? {

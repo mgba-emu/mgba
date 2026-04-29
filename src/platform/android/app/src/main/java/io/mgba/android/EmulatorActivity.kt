@@ -6,6 +6,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.SurfaceHolder
@@ -17,6 +20,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
@@ -26,6 +30,7 @@ import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.storage.ScreenshotExporter
 import io.mgba.android.storage.ScreenshotShareProvider
 import io.mgba.android.storage.SaveExporter
+import java.util.Locale
 
 class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var controller: EmulatorController? = null
@@ -41,12 +46,26 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var muteButton: Button? = null
     private var scaleButton: Button? = null
     private var padButton: Button? = null
+    private var statsButton: Button? = null
+    private var statsOverlay: TextView? = null
     private var userPaused = false
     private var fastForward = false
     private var muted = false
     private var showVirtualGamepad = true
+    private var showStats = false
+    private var lastStatsFrames = 0L
+    private var lastStatsAtMs = 0L
     private var scaleMode = 0
     private var hasSurface = false
+    private val statsHandler = Handler(Looper.getMainLooper())
+    private val statsRunnable = object : Runnable {
+        override fun run() {
+            updateStatsOverlay()
+            if (showStats) {
+                statsHandler.postDelayed(this, 1000L)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,6 +123,24 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 topMargin = dp(12)
             },
         )
+        statsOverlay = TextView(this).apply {
+            visibility = View.GONE
+            textSize = 12f
+            setTextColor(android.graphics.Color.WHITE)
+            setBackgroundColor(0x99000000.toInt())
+            setPadding(dp(8), dp(6), dp(8), dp(6))
+        }
+        root.addView(
+            statsOverlay,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                android.view.Gravity.BOTTOM or android.view.Gravity.START,
+            ).apply {
+                leftMargin = dp(12)
+                bottomMargin = dp(12)
+            },
+        )
 
         setContentView(root)
     }
@@ -137,12 +174,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
     override fun onPause() {
         clearInput()
+        stopStatsOverlay()
         controller?.pause()
         super.onPause()
     }
 
     override fun onDestroy() {
         clearInput()
+        stopStatsOverlay()
         controller?.setSurface(null)
         super.onDestroy()
     }
@@ -280,6 +319,18 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 }
             }
             runRow.addView(padButton)
+            statsButton = Button(context).apply {
+                setOnClickListener {
+                    showStats = !showStats
+                    if (showStats) {
+                        startStatsOverlay()
+                    } else {
+                        stopStatsOverlay()
+                    }
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(statsButton)
             runRow.addView(Button(context).apply {
                 text = "Shot"
                 setOnClickListener {
@@ -375,6 +426,45 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         muteButton?.text = if (muted) "Sound" else "Mute"
         scaleButton?.text = SCALE_LABELS[scaleMode]
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
+        statsButton?.text = if (showStats) "Stats*" else "Stats"
+    }
+
+    private fun startStatsOverlay() {
+        statsOverlay?.visibility = View.VISIBLE
+        lastStatsFrames = 0L
+        lastStatsAtMs = 0L
+        updateStatsOverlay()
+        statsHandler.removeCallbacks(statsRunnable)
+        statsHandler.postDelayed(statsRunnable, 1000L)
+    }
+
+    private fun stopStatsOverlay() {
+        showStats = false
+        statsHandler.removeCallbacks(statsRunnable)
+        statsOverlay?.visibility = View.GONE
+        updateRunButtons()
+    }
+
+    private fun updateStatsOverlay() {
+        val stats = controller?.stats() ?: return
+        val now = SystemClock.elapsedRealtime()
+        val fps = if (lastStatsAtMs > 0L && now > lastStatsAtMs) {
+            (stats.frames - lastStatsFrames).coerceAtLeast(0L) * 1000.0 / (now - lastStatsAtMs)
+        } else {
+            0.0
+        }
+        lastStatsFrames = stats.frames
+        lastStatsAtMs = now
+        statsOverlay?.text = String.format(
+            Locale.US,
+            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s",
+            fps,
+            stats.frames,
+            stats.videoWidth,
+            stats.videoHeight,
+            if (stats.running && !stats.paused) "on" else "off",
+            if (stats.fastForward) "on" else "off",
+        )
     }
 
     private fun saveStateWithConfirmation() {

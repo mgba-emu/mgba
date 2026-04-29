@@ -37,6 +37,7 @@ public:
 	void setFastForward(bool enabled);
 	void setAudioEnabled(bool enabled);
 	void setScaleMode(int mode);
+	std::string statsJson();
 	std::string takeScreenshot();
 	std::string exportBatterySave();
 	bool importBatterySaveFd(int fd);
@@ -74,6 +75,7 @@ private:
 	std::atomic<bool> m_paused{true};
 	std::atomic<bool> m_fastForward{false};
 	std::atomic<int> m_scaleMode{0};
+	std::atomic<uint64_t> m_frameCounter{0};
 
 	ANativeWindow* m_window = nullptr;
 	EGLDisplay m_display = EGL_NO_DISPLAY;

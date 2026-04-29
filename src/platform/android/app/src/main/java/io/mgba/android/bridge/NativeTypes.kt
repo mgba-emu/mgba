@@ -22,3 +22,28 @@ data class NativeLoadResult(
         }
     }
 }
+
+data class NativeStats(
+    val frames: Long,
+    val videoWidth: Int,
+    val videoHeight: Int,
+    val running: Boolean,
+    val paused: Boolean,
+    val fastForward: Boolean,
+    val scaleMode: Int,
+) {
+    companion object {
+        fun fromJson(raw: String): NativeStats {
+            val json = runCatching { JSONObject(raw) }.getOrDefault(JSONObject())
+            return NativeStats(
+                frames = json.optLong("frames", 0L),
+                videoWidth = json.optInt("videoWidth", 0),
+                videoHeight = json.optInt("videoHeight", 0),
+                running = json.optBoolean("running", false),
+                paused = json.optBoolean("paused", true),
+                fastForward = json.optBoolean("fastForward", false),
+                scaleMode = json.optInt("scaleMode", 0),
+            )
+        }
+    }
+}

@@ -68,6 +68,7 @@
 - [x] 已为 ROM 库记录并显示 last played 时间，重新扫描时保留已有游玩元数据。
 - [x] 已为 ROM 库新增收藏标记，收藏项优先排序并随重新扫描保留。
 - [x] 已为 ROM 库条目新增删除记录确认操作，只移除索引不删除用户文件。
+- [x] 已新增 Emulator debug stats overlay：native 帧计数、视频尺寸、运行状态和 Kotlin 侧 FPS 估算。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -1169,7 +1170,7 @@ object NativeBridge {
 
 ### PR 12：性能、稳定性和 release polish
 
-- [ ] Debug overlay。
+- [x] Debug overlay。
 - [ ] Crash/log export。
 - [ ] Proguard/R8。
 - [ ] Native symbols。

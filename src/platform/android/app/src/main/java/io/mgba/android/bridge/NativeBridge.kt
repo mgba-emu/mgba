@@ -47,6 +47,9 @@ object NativeBridge {
     external fun nativeSetScaleMode(handle: Long, mode: Int)
 
     @JvmStatic
+    external fun nativeGetStats(handle: Long): String
+
+    @JvmStatic
     external fun nativeTakeScreenshot(handle: Long): String
 
     @JvmStatic
@@ -81,6 +84,12 @@ object NativeBridge {
             runCatching { nativeLoadRomFd(handle, fd, displayName) }.getOrElse { error ->
                 """{"ok":false,"message":"${error.javaClass.simpleName}"}"""
             },
+        )
+    }
+
+    fun stats(handle: Long): NativeStats {
+        return NativeStats.fromJson(
+            runCatching { nativeGetStats(handle) }.getOrDefault("{}"),
         )
     }
 }

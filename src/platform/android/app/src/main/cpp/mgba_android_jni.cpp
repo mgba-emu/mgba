@@ -134,6 +134,16 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetScaleMode(JNIEnv*, jclass, jlo
 }
 
 extern "C" JNIEXPORT jstring JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeGetStats(JNIEnv* env, jclass, jlong handle) {
+	AndroidCoreRunner* runner = FromHandle(handle);
+	if (!runner) {
+		return env->NewStringUTF("{\"frames\":0,\"videoWidth\":0,\"videoHeight\":0,\"running\":false,\"paused\":true,\"fastForward\":false,\"scaleMode\":0}");
+	}
+	std::string result = runner->statsJson();
+	return env->NewStringUTF(result.c_str());
+}
+
+extern "C" JNIEXPORT jstring JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeTakeScreenshot(JNIEnv* env, jclass, jlong handle) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
 		const std::string path = runner->takeScreenshot();

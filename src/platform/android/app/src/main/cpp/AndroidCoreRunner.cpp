@@ -353,6 +353,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	m_textureHeight = textureHeight;
 	m_core->currentVideoSize(m_core, &m_videoWidth, &m_videoHeight);
 	m_audioOutput.clear();
+	m_frameCounter = 0;
 
 	struct mGameInfo info;
 	std::memset(&info, 0, sizeof(info));
@@ -450,6 +451,20 @@ void AndroidCoreRunner::setScaleMode(int mode) {
 		mode = 0;
 	}
 	m_scaleMode = mode;
+}
+
+std::string AndroidCoreRunner::statsJson() {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	std::ostringstream out;
+	out << "{\"frames\":" << m_frameCounter.load()
+	    << ",\"videoWidth\":" << m_videoWidth
+	    << ",\"videoHeight\":" << m_videoHeight
+	    << ",\"running\":" << (m_running.load() ? "true" : "false")
+	    << ",\"paused\":" << (m_paused.load() ? "true" : "false")
+	    << ",\"fastForward\":" << (m_fastForward.load() ? "true" : "false")
+	    << ",\"scaleMode\":" << m_scaleMode.load()
+	    << "}";
+	return out.str();
 }
 
 std::string AndroidCoreRunner::takeScreenshot() {
@@ -813,6 +828,7 @@ void AndroidCoreRunner::runLoop() {
 				m_core->runFrame(m_core);
 				m_audioOutput.enqueueFromCore(m_core);
 				renderFrameLocked();
+				++m_frameCounter;
 				nextFrame += frameDurationLocked();
 			}
 		}
