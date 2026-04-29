@@ -2,16 +2,22 @@ package io.mgba.android
 
 import android.app.Activity
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.widget.FrameLayout
 import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
+import io.mgba.android.input.AndroidInputMapper
 import io.mgba.android.input.VirtualGamepadView
 
 class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var controller: EmulatorController? = null
     private var gamepadView: VirtualGamepadView? = null
+    private var virtualKeys = 0
+    private var hardwareButtonKeys = 0
+    private var hardwareAxisKeys = 0
     private var hasSurface = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +46,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
         gamepadView = VirtualGamepadView(this).apply {
             setOnKeysChangedListener { keys ->
-                controller?.setKeys(keys)
+                virtualKeys = keys
+                syncKeys()
             }
         }
         root.addView(
@@ -62,13 +69,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     }
 
     override fun onPause() {
-        gamepadView?.clearKeys()
+        clearInput()
         controller?.pause()
         super.onPause()
     }
 
     override fun onDestroy() {
-        gamepadView?.clearKeys()
+        clearInput()
         controller?.setSurface(null)
         super.onDestroy()
     }
@@ -85,8 +92,54 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         hasSurface = false
-        gamepadView?.clearKeys()
+        clearInput()
         controller?.pause()
         controller?.setSurface(null)
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val mask = AndroidInputMapper.keyMaskForKeyCode(event.keyCode)
+        if (mask == 0) {
+            return super.dispatchKeyEvent(event)
+        }
+
+        when (event.action) {
+            KeyEvent.ACTION_DOWN -> {
+                hardwareButtonKeys = hardwareButtonKeys or mask
+                syncKeys()
+                return true
+            }
+            KeyEvent.ACTION_UP -> {
+                hardwareButtonKeys = hardwareButtonKeys and mask.inv()
+                syncKeys()
+                return true
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
+    override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+        if (event.actionMasked != MotionEvent.ACTION_MOVE) {
+            return super.onGenericMotionEvent(event)
+        }
+        val keys = AndroidInputMapper.motionKeys(event)
+        if (keys == 0 && hardwareAxisKeys == 0) {
+            return super.onGenericMotionEvent(event)
+        }
+        hardwareAxisKeys = keys
+        syncKeys()
+        return true
+    }
+
+    private fun clearInput() {
+        virtualKeys = 0
+        hardwareButtonKeys = 0
+        hardwareAxisKeys = 0
+        gamepadView?.clearKeys()
+        syncKeys()
+    }
+
+    private fun syncKeys() {
+        controller?.setKeys(virtualKeys or hardwareButtonKeys or hardwareAxisKeys)
     }
 }

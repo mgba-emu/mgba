@@ -126,17 +126,17 @@ class VirtualGamepadView(context: Context) : View(context) {
         val dpadX = padding + button * 1.75f
         val faceX = width - padding - button * 1.65f
 
-        addCircle("UP", Key.Up, dpadX, controlsY - button, smallButton)
-        addCircle("DOWN", Key.Down, dpadX, controlsY + button, smallButton)
-        addCircle("LEFT", Key.Left, dpadX - button, controlsY, smallButton)
-        addCircle("RIGHT", Key.Right, dpadX + button, controlsY, smallButton)
+        addCircle("UP", GbaKeyMask.Up, dpadX, controlsY - button, smallButton)
+        addCircle("DOWN", GbaKeyMask.Down, dpadX, controlsY + button, smallButton)
+        addCircle("LEFT", GbaKeyMask.Left, dpadX - button, controlsY, smallButton)
+        addCircle("RIGHT", GbaKeyMask.Right, dpadX + button, controlsY, smallButton)
 
-        addCircle("B", Key.B, faceX - button * 1.05f, controlsY + button * 0.35f, button)
-        addCircle("A", Key.A, faceX, controlsY - button * 0.45f, button)
-        addRoundRect("SELECT", Key.Select, width / 2f - button * 1.75f, controlsY + button * 1.05f, button * 1.55f, button * 0.58f)
-        addRoundRect("START", Key.Start, width / 2f + button * 0.2f, controlsY + button * 1.05f, button * 1.55f, button * 0.58f)
-        addRoundRect("L", Key.L, padding, padding, button * 1.7f, button * 0.7f)
-        addRoundRect("R", Key.R, width - padding - button * 1.7f, padding, button * 1.7f, button * 0.7f)
+        addCircle("B", GbaKeyMask.B, faceX - button * 1.05f, controlsY + button * 0.35f, button)
+        addCircle("A", GbaKeyMask.A, faceX, controlsY - button * 0.45f, button)
+        addRoundRect("SELECT", GbaKeyMask.Select, width / 2f - button * 1.75f, controlsY + button * 1.05f, button * 1.55f, button * 0.58f)
+        addRoundRect("START", GbaKeyMask.Start, width / 2f + button * 0.2f, controlsY + button * 1.05f, button * 1.55f, button * 0.58f)
+        addRoundRect("L", GbaKeyMask.L, padding, padding, button * 1.7f, button * 0.7f)
+        addRoundRect("R", GbaKeyMask.R, width - padding - button * 1.7f, padding, button * 1.7f, button * 0.7f)
     }
 
     private fun addCircle(label: String, mask: Int, centerX: Float, centerY: Float, size: Float) {
@@ -200,16 +200,4 @@ class VirtualGamepadView(context: Context) : View(context) {
         return value * resources.displayMetrics.density
     }
 
-    private object Key {
-        const val A = 1 shl 0
-        const val B = 1 shl 1
-        const val Select = 1 shl 2
-        const val Start = 1 shl 3
-        const val Right = 1 shl 4
-        const val Left = 1 shl 5
-        const val Up = 1 shl 6
-        const val Down = 1 shl 7
-        const val R = 1 shl 8
-        const val L = 1 shl 9
-    }
 }
