@@ -64,8 +64,11 @@ import io.mgba.android.storage.SaveExporter
 import java.io.File
 import java.security.MessageDigest
 import java.util.Locale
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import kotlin.math.max
 import kotlin.math.min
+import org.json.JSONObject
 
 class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener {
     private var controller: EmulatorController? = null
@@ -393,6 +396,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             REQUEST_IMPORT_SAVE -> importBatterySave(uri)
             REQUEST_IMPORT_CHEATS -> importCheats(uri)
             REQUEST_EXPORT_STATE -> exportStateSlot(uri, pendingExportStateSlot)
+            REQUEST_EXPORT_GAME_DATA -> exportGameDataPackage(uri)
             REQUEST_IMPORT_STATE -> importStateSlot(uri, pendingImportStateSlot)
             REQUEST_EXPORT_INPUT_PROFILE -> exportInputProfile(uri)
             REQUEST_IMPORT_INPUT_PROFILE -> importInputProfile(uri)
@@ -1146,6 +1150,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                         if (uri != null) "Save exported" else "Export failed",
                         Toast.LENGTH_SHORT,
                     ).show()
+                }
+            })
+            stateRow.addView(Button(context).apply {
+                text = "DataOut"
+                setOnClickListener {
+                    openGameDataExportPicker()
                 }
             })
             stateRow.addView(Button(context).apply {
@@ -2155,6 +2165,112 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         Toast.makeText(this, if (ok) "State exported" else "State export failed", Toast.LENGTH_SHORT).show()
     }
 
+    private fun openGameDataExportPicker() {
+        val game = EmulatorSession.currentGame()
+        if (game == null) {
+            Toast.makeText(this, "No game data to export", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val base = game.displayName
+            .substringBeforeLast('.')
+            .replace(Regex("[^A-Za-z0-9._-]+"), "-")
+            .trim('-')
+            .ifBlank { "mgba-game-data" }
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/zip"
+            putExtra(Intent.EXTRA_TITLE, "$base-mgba-data.zip")
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_EXPORT_GAME_DATA)
+    }
+
+    private fun exportGameDataPackage(uri: Uri) {
+        val resolver = contentResolver
+        Thread {
+            val ok = runCatching {
+                resolver.openOutputStream(uri)?.use { output ->
+                    ZipOutputStream(output.buffered()).use { zip ->
+                        writeGameDataPackage(zip)
+                    }
+                } != null
+            }.getOrDefault(false)
+            runOnUiThread {
+                Toast.makeText(this, if (ok) "Game data exported" else "Game data export failed", Toast.LENGTH_SHORT).show()
+            }
+        }.start()
+    }
+
+    private fun writeGameDataPackage(zip: ZipOutputStream) {
+        val game = EmulatorSession.currentGame()
+        val metadata = JSONObject()
+            .put("version", 1)
+            .put("exportedAt", System.currentTimeMillis())
+            .put("displayName", game?.displayName.orEmpty())
+            .put("uri", currentGameId.orEmpty())
+            .put("stableId", currentStableGameId.orEmpty())
+            .put("crc32", game?.crc32.orEmpty())
+        zipText(zip, "metadata.json", metadata.toString(2))
+        zipText(zip, "per-game-overrides.json", perGameOverrides.exportGameJson(currentOverrideGameId).toString(2))
+        zipText(zip, "input-mappings.json", inputMappingStore.exportGameJson(currentOverrideGameId).toString(2))
+
+        controller?.exportBatterySave()?.let { savePath ->
+            zipFile(zip, "save/battery.sav", File(savePath))
+        }
+        cheatStore.fileForGame(cheatGameId())?.let { file ->
+            zipFile(zip, "cheats/${file.name}", file)
+        }
+        patchStore.fileForGame(patchGameId())?.let { file ->
+            zipFile(zip, "patches/${file.name}", file)
+        }
+        for (slot in 1..9) {
+            if (controller?.hasStateSlot(slot) == true) {
+                exportStateSlotToTemp(slot)?.let { file ->
+                    zipFile(zip, "states/slot-$slot.ss", file)
+                    file.delete()
+                }
+            }
+            stateThumbnailFile(slot)?.let { file ->
+                zipFile(zip, "state-thumbnails/slot-$slot.png", file)
+            }
+        }
+    }
+
+    private fun exportStateSlotToTemp(slot: Int): File? {
+        val directory = File(cacheDir, "game-data-export")
+        directory.mkdirs()
+        val file = File(directory, "slot-$slot-${SystemClock.elapsedRealtime()}.ss")
+        val ok = runCatching {
+            ParcelFileDescriptor.open(
+                file,
+                ParcelFileDescriptor.MODE_CREATE or ParcelFileDescriptor.MODE_TRUNCATE or ParcelFileDescriptor.MODE_READ_WRITE,
+            ).use { descriptor ->
+                controller?.exportStateSlotFd(slot, descriptor.fd) == true
+            }
+        }.getOrDefault(false)
+        if (!ok) {
+            file.delete()
+        }
+        return file.takeIf { ok && it.isFile }
+    }
+
+    private fun zipText(zip: ZipOutputStream, name: String, text: String) {
+        zip.putNextEntry(ZipEntry(name))
+        zip.write(text.toByteArray(Charsets.UTF_8))
+        zip.closeEntry()
+    }
+
+    private fun zipFile(zip: ZipOutputStream, name: String, file: File) {
+        if (!file.isFile) {
+            return
+        }
+        zip.putNextEntry(ZipEntry(name))
+        file.inputStream().use { input ->
+            input.copyTo(zip)
+        }
+        zip.closeEntry()
+    }
+
     private fun importStateWithConfirmation() {
         if (controller?.hasStateSlot(stateSlot) != true) {
             openStateImportPicker()
@@ -2598,6 +2714,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val REQUEST_IMPORT_INPUT_PROFILE = 2006
         private const val REQUEST_IMPORT_PATCH = 2007
         private const val REQUEST_IMPORT_CAMERA_IMAGE = 2008
+        private const val REQUEST_EXPORT_GAME_DATA = 2009
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L

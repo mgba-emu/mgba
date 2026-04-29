@@ -306,6 +306,20 @@ class PerGameOverrideStore(context: Context) {
         return json
     }
 
+    fun exportGameJson(gameId: String?): JSONObject {
+        val prefix = key(gameId, "") ?: return JSONObject()
+        val json = JSONObject()
+        preferences.all.toSortedMap().forEach { (key, value) ->
+            if (!key.startsWith(prefix)) {
+                return@forEach
+            }
+            when (value) {
+                is Boolean, is Float, is Int, is Long, is String -> json.put(key.removePrefix(prefix), value)
+            }
+        }
+        return json
+    }
+
     fun importJson(json: JSONObject): Boolean {
         val editor = preferences.edit().clear()
         val keys = json.keys()

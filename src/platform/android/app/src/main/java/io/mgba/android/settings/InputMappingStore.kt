@@ -93,6 +93,18 @@ class InputMappingStore(context: Context) {
         return imported > 0
     }
 
+    fun exportGameJson(gameId: String?): JSONObject {
+        val scope = gameScope(gameId) ?: return JSONObject()
+        val prefix = "$scope::"
+        val json = JSONObject()
+        preferences.all.toSortedMap().forEach { (key, value) ->
+            if (key.startsWith(prefix) && value is Int) {
+                json.put(key.removePrefix(prefix), value)
+            }
+        }
+        return json
+    }
+
     fun migrateGameId(primaryGameId: String?, legacyGameId: String?): Boolean {
         val primaryScope = gameScope(primaryGameId) ?: return false
         val legacy = legacyGameId?.takeIf { it.isNotBlank() } ?: return false

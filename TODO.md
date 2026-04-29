@@ -132,6 +132,7 @@
 - [x] 已新增 Android internal release signing config：支持 keystore 文件或 base64 secret，并在 README 中记录本地/CI 配置变量。
 - [x] 已新增 Android crash symbolication 文档，串起 log export、CI native symbols artifact、`ndk-stack` 和 `llvm-addr2line` 排查流程。
 - [x] 已完善 Android release R8/Proguard：开启 resource shrink，保留 manifest 入口、ContentProvider 和 JNI native 方法。
+- [x] 已新增当前游戏数据包导出：zip 内包含 metadata、battery save、1-9 槽 state、state 缩略图、cheats、patch 和 per-game/input settings。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -699,11 +700,11 @@ object NativeBridge {
 - [ ] 导出当前 ROM `.sav`。
 - [ ] 导出/导入单个 savestate。
 - [ ] 导出截图。
-- [ ] 导出完整游戏数据包：
-  - [ ] save。
-  - [ ] states。
-  - [ ] cheats。
-  - [ ] per-game settings。
+- [x] 导出完整游戏数据包：
+  - [x] save。
+  - [x] states。
+  - [x] cheats。
+  - [x] per-game settings。
 - [ ] 导入时校验 ROM hash，不匹配则提示但允许用户继续。
 
 ## 9. ROM 库计划
