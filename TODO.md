@@ -592,7 +592,7 @@ object NativeBridge {
 - [ ] 使用 `mCoreSyncLockAudio` / `mCoreSyncConsumeAudio`，让音频 high water mark 控制核心速度。
 - [ ] 快进时：
   - [x] 可选择静音或降低音量。
-  - [ ] 调整 resampler source rate。
+  - [x] 调整 resampler source rate（Android 首版快进选择静音并丢弃 audio buffer，因此不再重采样快进音频）。
   - [x] 禁用过度等待，避免快进被音频拖住。
 - [x] 倒带时：
   - [x] 清空音频输出 buffer。
