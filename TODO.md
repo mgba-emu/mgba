@@ -40,6 +40,7 @@
 - [x] 已实现无外部依赖的 BMP 截图保存，输出到 app 私有 `screenshots/` 目录。
 - [x] 已实现 SAF URI 最近打开列表，可从首页直接重新打开已授权 ROM。
 - [x] 已实现 emulator 画面沉浸全屏与游玩时保持屏幕常亮。
+- [x] 已提交 Gradle wrapper，Android 工程可直接使用 `./gradlew :app:assembleDebug` 构建。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] 完整 ROM 库扫描、截图分享/导出、即时存档缩略图、覆盖确认、可配置重映射、震动和传感器输入仍待后续阶段实现。
 
@@ -173,17 +174,17 @@ src/platform/android/
 
 ### 3.1 Gradle 工程
 
-- [ ] 新建 `src/platform/android/settings.gradle.kts`。
-- [ ] 新建 `src/platform/android/build.gradle.kts`。
-- [ ] 新建 `src/platform/android/gradle.properties`。
-- [ ] 新建 `src/platform/android/app/build.gradle.kts`。
-- [ ] 包名暂定 `io.mgba.android`。
-- [ ] App 名称暂定 `mGBA` 或 `mGBA Android`。
-- [ ] `minSdk` 建议先定 23；如果 AAudio/现代存储策略压力过大，再评估提升到 26。
+- [x] 新建 `src/platform/android/settings.gradle.kts`。
+- [x] 新建 `src/platform/android/build.gradle.kts`。
+- [x] 新建 `src/platform/android/gradle.properties`。
+- [x] 新建 `src/platform/android/app/build.gradle.kts`。
+- [x] 包名暂定 `io.mgba.android`。
+- [x] App 名称暂定 `mGBA` 或 `mGBA Android`。
+- [x] `minSdk` 建议先定 23；如果 AAudio/现代存储策略压力过大，再评估提升到 26。
 - [ ] `targetSdk` / Android Gradle Plugin / Kotlin 版本在真正实现前用官方文档确认一次，避免 2026 年工具链细节过期。
-- [ ] Debug ABI：`arm64-v8a`、`armeabi-v7a`、`x86_64`。
+- [x] Debug ABI：`arm64-v8a`、`armeabi-v7a`、`x86_64`。
 - [ ] Release ABI：至少 `arm64-v8a`，建议保留 `armeabi-v7a` 和 `x86_64` 用于老设备/模拟器。
-- [ ] 开启 `externalNativeBuild.cmake`，CMake 入口先放在 `app/src/main/cpp/CMakeLists.txt`。
+- [x] 开启 `externalNativeBuild.cmake`，CMake 入口先放在 `app/src/main/cpp/CMakeLists.txt`。
 
 ### 3.2 NDK / CMake
 

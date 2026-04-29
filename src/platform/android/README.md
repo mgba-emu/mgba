@@ -13,11 +13,11 @@ The versions above follow the Android Gradle Plugin 9.1 compatibility table from
 
 ## Build
 
-Install Android Studio or configure `ANDROID_HOME` and a compatible Gradle installation, then run:
+Install Android Studio or configure `ANDROID_HOME`, then run:
 
 ```bash
 cd src/platform/android
-gradle :app:assembleDebug
+./gradlew :app:assembleDebug
 ```
 
-The local development machine used to create this scaffold did not have `gradle` or `ANDROID_HOME` configured, so the first checked-in state is intentionally limited to source-level scaffolding.
+The checked-in Gradle wrapper pins Gradle 9.3.1 for reproducible local and CI builds.
