@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.text.Editable
 import android.text.InputType
@@ -35,6 +36,7 @@ import io.mgba.android.storage.LogExporter
 import io.mgba.android.storage.PatchStore
 import java.io.File
 import java.security.MessageDigest
+import java.util.zip.ZipInputStream
 
 class MainActivity : Activity() {
     private lateinit var nativeStatus: TextView
@@ -257,9 +259,61 @@ class MainActivity : Activity() {
     }
 
     private fun openRomUri(uri: Uri, name: String, shouldStoreRecent: Boolean) {
+        if (isZipArchive(name)) {
+            openZipRomUri(uri, name, shouldStoreRecent)
+            return
+        }
+        launchRomFd(uri, name, shouldStoreRecent) {
+            contentResolver.openFileDescriptor(uri, "r")
+        }
+    }
+
+    private fun openZipRomUri(uri: Uri, name: String, shouldStoreRecent: Boolean) {
+        val entries = runCatching { zipRomEntries(uri) }.getOrDefault(emptyList())
+        when (entries.size) {
+            0 -> {
+                nativeStatus.text = "${getString(R.string.native_version_label)}: No supported ROM found in ZIP"
+            }
+            1 -> launchZipRomEntry(uri, name, entries.first(), shouldStoreRecent)
+            else -> {
+                val labels = entries.map { it.substringAfterLast('/') }.toTypedArray()
+                AlertDialog.Builder(this)
+                    .setTitle("Select ROM")
+                    .setItems(labels) { _, which ->
+                        launchZipRomEntry(uri, name, entries[which], shouldStoreRecent)
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+        }
+    }
+
+    private fun launchZipRomEntry(uri: Uri, archiveName: String, entryName: String, shouldStoreRecent: Boolean) {
+        val extracted = runCatching { extractZipRomEntry(uri, entryName) }.getOrNull()
+        if (extracted == null) {
+            nativeStatus.text = "${getString(R.string.native_version_label)}: ZIP extract failed"
+            return
+        }
+        launchRomFd(
+            uri,
+            entryName.substringAfterLast('/').ifBlank { archiveName },
+            shouldStoreRecent,
+            recentDisplayName = archiveName,
+        ) {
+            ParcelFileDescriptor.open(extracted, ParcelFileDescriptor.MODE_READ_ONLY)
+        }
+    }
+
+    private fun launchRomFd(
+        uri: Uri,
+        name: String,
+        shouldStoreRecent: Boolean,
+        recentDisplayName: String = name,
+        openDescriptor: () -> ParcelFileDescriptor?,
+    ) {
         val gameId = uri.toString()
         val result = runCatching {
-            contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
+            openDescriptor()?.use { descriptor ->
                 val emulator = EmulatorSession.controller(this)
                 emulator.setSkipBios(perGameOverrides.skipBios(gameId, preferences.skipBios))
                 emulator.loadRomFd(descriptor.fd, name)
@@ -273,13 +327,69 @@ class MainActivity : Activity() {
         if (result?.ok == true) {
             EmulatorSession.setCurrentGame(gameId, name)
             if (shouldStoreRecent) {
-                recentStore.add(uri, name)
+                recentStore.add(uri, recentDisplayName)
                 renderRecentGames()
             }
             libraryStore.markPlayed(uri)
             renderLibrary()
             startActivity(Intent(this, EmulatorActivity::class.java))
         }
+    }
+
+    private fun zipRomEntries(uri: Uri): List<String> {
+        val entries = mutableListOf<String>()
+        contentResolver.openInputStream(uri)?.buffered()?.use { input ->
+            ZipInputStream(input).use { zip ->
+                while (true) {
+                    val entry = zip.nextEntry ?: break
+                    if (!entry.isDirectory && isSupportedRomEntry(entry.name)) {
+                        entries += entry.name
+                    }
+                    zip.closeEntry()
+                }
+            }
+        }
+        return entries
+    }
+
+    private fun extractZipRomEntry(uri: Uri, entryName: String): File? {
+        val target = archiveCacheFile(uri, entryName)
+        val tmp = File(target.parentFile, "${target.name}.tmp")
+        target.parentFile?.mkdirs()
+        contentResolver.openInputStream(uri)?.buffered()?.use { input ->
+            ZipInputStream(input).use { zip ->
+                while (true) {
+                    val entry = zip.nextEntry ?: break
+                    if (!entry.isDirectory && entry.name == entryName) {
+                        tmp.outputStream().use { output ->
+                            zip.copyTo(output)
+                        }
+                        zip.closeEntry()
+                        if (target.exists()) {
+                            target.delete()
+                        }
+                        return if (tmp.renameTo(target)) target else null
+                    }
+                    zip.closeEntry()
+                }
+            }
+        }
+        tmp.delete()
+        return null
+    }
+
+    private fun archiveCacheFile(uri: Uri, entryName: String): File {
+        val extension = entryName.substringAfterLast('.', "").takeIf { it.isNotBlank() }?.let { ".$it" } ?: ".rom"
+        return File(File(cacheDir, "archive-roms"), "${sha1("${uri}\n$entryName")}$extension")
+    }
+
+    private fun isZipArchive(name: String): Boolean {
+        return name.lowercase().endsWith(".zip")
+    }
+
+    private fun isSupportedRomEntry(name: String): Boolean {
+        val lower = name.lowercase()
+        return ROM_ENTRY_EXTENSIONS.any { lower.endsWith(it) }
     }
 
     private fun renderRecentGames() {
@@ -663,6 +773,7 @@ class MainActivity : Activity() {
         private const val REQUEST_SCAN_FOLDER = 1004
         private const val REQUEST_IMPORT_COVER = 1005
         private const val MAX_LIBRARY_ITEMS = 24
+        private val ROM_ENTRY_EXTENSIONS = arrayOf(".gba", ".agb", ".gb", ".gbc", ".sgb")
     }
 }
 
