@@ -50,6 +50,7 @@ import io.mgba.android.storage.LogExporter
 import io.mgba.android.storage.PatchStore
 import java.io.File
 import java.security.MessageDigest
+import org.json.JSONObject
 import java.util.zip.ZipInputStream
 
 class MainActivity : Activity() {
@@ -330,6 +331,18 @@ class MainActivity : Activity() {
                 clearArchiveCache()
             }
         }
+        val exportSettingsButton = Button(this).apply {
+            text = "Export Settings"
+            setOnClickListener {
+                openSettingsExportPicker()
+            }
+        }
+        val importSettingsButton = Button(this).apply {
+            text = "Import Settings"
+            setOnClickListener {
+                openSettingsImportPicker()
+            }
+        }
 
         recentContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -403,6 +416,8 @@ class MainActivity : Activity() {
         root.addView(aboutButton)
         root.addView(logButton)
         root.addView(clearArchiveCacheButton)
+        root.addView(exportSettingsButton)
+        root.addView(importSettingsButton)
         root.addView(recentContainer)
         root.addView(librarySearch)
         root.addView(libraryFilterButton)
@@ -460,6 +475,8 @@ class MainActivity : Activity() {
                 scanLibraryInBackground(uri)
             }
             REQUEST_IMPORT_COVER -> importCover(uri)
+            REQUEST_EXPORT_SETTINGS -> exportSettings(uri)
+            REQUEST_IMPORT_SETTINGS -> importSettings(uri)
         }
     }
 
@@ -963,6 +980,20 @@ class MainActivity : Activity() {
         logLevelButton.text = "Log Level: ${LogLevelModes.labels[preferences.logLevelMode]}"
     }
 
+    private fun updatePreferenceButtons() {
+        updateSkipBiosButton()
+        updateVideoButtons()
+        updateAudioBufferButton()
+        updateAudioLowPassButton()
+        updateFastForwardButtons()
+        updateFrameSkipButton()
+        updateRewindButtons()
+        updateOpposingDirectionsButton()
+        updateRumbleButton()
+        updateLogLevelButton()
+        updateRtcButton()
+    }
+
     private fun rtcValueForMode(mode: Int): Long {
         return when (RtcModes.coerce(mode)) {
             RtcModes.ModeFixed, RtcModes.ModeFakeEpoch -> preferences.rtcFixedTimeMs
@@ -1378,6 +1409,25 @@ class MainActivity : Activity() {
         startActivityForResult(intent, REQUEST_IMPORT_PATCH)
     }
 
+    private fun openSettingsExportPicker() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+            putExtra(Intent.EXTRA_TITLE, "mgba-settings.json")
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_EXPORT_SETTINGS)
+    }
+
+    private fun openSettingsImportPicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_IMPORT_SETTINGS)
+    }
+
     private fun displayName(uri: Uri): String {
         var cursor: Cursor? = null
         return try {
@@ -1509,6 +1559,44 @@ class MainActivity : Activity() {
         }.start()
     }
 
+    private fun exportSettings(uri: Uri) {
+        val ok = runCatching {
+            contentResolver.openOutputStream(uri)?.bufferedWriter(Charsets.UTF_8)?.use { writer ->
+                writer.write(settingsBackupJson())
+            } != null
+        }.getOrDefault(false)
+        nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "Settings exported" else "Settings export failed"}"
+    }
+
+    private fun importSettings(uri: Uri) {
+        val raw = runCatching {
+            contentResolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)?.use { reader ->
+                reader.readText()
+            }
+        }.getOrNull()
+        val ok = raw?.let { importSettingsBackup(it) } == true
+        if (ok) {
+            updatePreferenceButtons()
+        }
+        nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (ok) "Settings imported" else "Settings import failed"}"
+    }
+
+    private fun settingsBackupJson(): String {
+        return JSONObject()
+            .put("version", 1)
+            .put("emulatorPreferences", JSONObject(preferences.exportJson()))
+            .put("perGameOverrides", perGameOverrides.exportJson())
+            .toString(2)
+    }
+
+    private fun importSettingsBackup(raw: String): Boolean {
+        val root = runCatching { JSONObject(raw) }.getOrNull() ?: return false
+        val importedPreferences = preferences.importJson(raw)
+        val overrides = root.optJSONObject("perGameOverrides")
+        val importedOverrides = overrides?.let { perGameOverrides.importJson(it) } ?: true
+        return importedPreferences && importedOverrides
+    }
+
     private fun clearArchiveCache() {
         val deleted = clearCacheDirectory("archive-roms") +
             clearCacheDirectory("archive-files") +
@@ -1584,6 +1672,8 @@ class MainActivity : Activity() {
         private const val REQUEST_IMPORT_PATCH = 1003
         private const val REQUEST_SCAN_FOLDER = 1004
         private const val REQUEST_IMPORT_COVER = 1005
+        private const val REQUEST_EXPORT_SETTINGS = 1006
+        private const val REQUEST_IMPORT_SETTINGS = 1007
         private const val MAX_LIBRARY_ITEMS = 24
         private const val LIBRARY_GRID_COLUMNS = 2
         private const val KEY_LIBRARY_VIEW_MODE = "libraryViewMode"

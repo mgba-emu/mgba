@@ -1,6 +1,7 @@
 package io.mgba.android.settings
 
 import android.content.Context
+import org.json.JSONObject
 
 class EmulatorPreferences(context: Context) {
     private val preferences = context.applicationContext.getSharedPreferences("emulator_preferences", Context.MODE_PRIVATE)
@@ -170,6 +171,98 @@ class EmulatorPreferences(context: Context) {
         set(value) {
             preferences.edit().putLong(KEY_RTC_OFFSET_MS, value).apply()
         }
+
+    fun exportJson(): String {
+        return JSONObject()
+            .put("version", 1)
+            .put(KEY_SCALE_MODE, scaleMode)
+            .put(KEY_FILTER_MODE, filterMode)
+            .put(KEY_INTERFRAME_BLENDING, interframeBlending)
+            .put(KEY_ORIENTATION_MODE, orientationMode)
+            .put(KEY_SKIP_BIOS, skipBios)
+            .put(KEY_MUTED, muted)
+            .put(KEY_VOLUME_PERCENT, volumePercent)
+            .put(KEY_AUDIO_BUFFER_MODE, audioBufferMode)
+            .put(KEY_AUDIO_LOW_PASS_MODE, audioLowPassMode)
+            .put(KEY_FAST_FORWARD_MODE, fastForwardMode)
+            .put(KEY_FAST_FORWARD_MULTIPLIER, fastForwardMultiplier)
+            .put(KEY_FRAME_SKIP, frameSkip)
+            .put(KEY_REWIND_ENABLED, rewindEnabled)
+            .put(KEY_REWIND_BUFFER_CAPACITY, rewindBufferCapacity)
+            .put(KEY_REWIND_BUFFER_INTERVAL, rewindBufferInterval)
+            .put(KEY_SHOW_VIRTUAL_GAMEPAD, showVirtualGamepad)
+            .put(KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT, virtualGamepadSizePercent)
+            .put(KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT, virtualGamepadOpacityPercent)
+            .put(KEY_VIRTUAL_GAMEPAD_SPACING_PERCENT, virtualGamepadSpacingPercent)
+            .put(KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED, virtualGamepadHapticsEnabled)
+            .put(KEY_VIRTUAL_GAMEPAD_LEFT_HANDED, virtualGamepadLeftHanded)
+            .put(KEY_ALLOW_OPPOSING_DIRECTIONS, allowOpposingDirections)
+            .put(KEY_RUMBLE_ENABLED, rumbleEnabled)
+            .put(KEY_LOG_LEVEL_MODE, logLevelMode)
+            .put(KEY_RTC_MODE, rtcMode)
+            .put(KEY_RTC_FIXED_TIME_MS, rtcFixedTimeMs)
+            .put(KEY_RTC_OFFSET_MS, rtcOffsetMs)
+            .toString(2)
+    }
+
+    fun importJson(raw: String): Boolean {
+        val root = runCatching { JSONObject(raw) }.getOrNull() ?: return false
+        val json = root.optJSONObject("emulatorPreferences") ?: root
+        preferences.edit()
+            .putInt(KEY_SCALE_MODE, json.optInt(KEY_SCALE_MODE, scaleMode).coerceIn(0, 4))
+            .putInt(KEY_FILTER_MODE, json.optInt(KEY_FILTER_MODE, filterMode).coerceIn(0, 1))
+            .putBoolean(KEY_INTERFRAME_BLENDING, json.optBoolean(KEY_INTERFRAME_BLENDING, interframeBlending))
+            .putInt(KEY_ORIENTATION_MODE, json.optInt(KEY_ORIENTATION_MODE, orientationMode).coerceIn(0, 2))
+            .putBoolean(KEY_SKIP_BIOS, json.optBoolean(KEY_SKIP_BIOS, skipBios))
+            .putBoolean(KEY_MUTED, json.optBoolean(KEY_MUTED, muted))
+            .putInt(KEY_VOLUME_PERCENT, json.optInt(KEY_VOLUME_PERCENT, volumePercent).coerceIn(0, 100))
+            .putInt(KEY_AUDIO_BUFFER_MODE, json.optInt(KEY_AUDIO_BUFFER_MODE, audioBufferMode).coerceIn(0, 2))
+            .putInt(KEY_AUDIO_LOW_PASS_MODE, json.optInt(KEY_AUDIO_LOW_PASS_MODE, audioLowPassMode).coerceIn(0, 3))
+            .putInt(KEY_FAST_FORWARD_MODE, FastForwardModes.coerceMode(json.optInt(KEY_FAST_FORWARD_MODE, fastForwardMode)))
+            .putInt(
+                KEY_FAST_FORWARD_MULTIPLIER,
+                FastForwardModes.coerceMultiplier(json.optInt(KEY_FAST_FORWARD_MULTIPLIER, fastForwardMultiplier)),
+            )
+            .putInt(KEY_FRAME_SKIP, json.optInt(KEY_FRAME_SKIP, frameSkip).coerceIn(0, 3))
+            .putBoolean(KEY_REWIND_ENABLED, json.optBoolean(KEY_REWIND_ENABLED, rewindEnabled))
+            .putInt(
+                KEY_REWIND_BUFFER_CAPACITY,
+                RewindSettings.coerceCapacity(json.optInt(KEY_REWIND_BUFFER_CAPACITY, rewindBufferCapacity)),
+            )
+            .putInt(
+                KEY_REWIND_BUFFER_INTERVAL,
+                RewindSettings.coerceInterval(json.optInt(KEY_REWIND_BUFFER_INTERVAL, rewindBufferInterval)),
+            )
+            .putBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, json.optBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, showVirtualGamepad))
+            .putInt(
+                KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT,
+                json.optInt(KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT, virtualGamepadSizePercent).coerceIn(60, 140),
+            )
+            .putInt(
+                KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT,
+                json.optInt(KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT, virtualGamepadOpacityPercent).coerceIn(35, 100),
+            )
+            .putInt(
+                KEY_VIRTUAL_GAMEPAD_SPACING_PERCENT,
+                json.optInt(KEY_VIRTUAL_GAMEPAD_SPACING_PERCENT, virtualGamepadSpacingPercent).coerceIn(70, 140),
+            )
+            .putBoolean(
+                KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED,
+                json.optBoolean(KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED, virtualGamepadHapticsEnabled),
+            )
+            .putBoolean(
+                KEY_VIRTUAL_GAMEPAD_LEFT_HANDED,
+                json.optBoolean(KEY_VIRTUAL_GAMEPAD_LEFT_HANDED, virtualGamepadLeftHanded),
+            )
+            .putBoolean(KEY_ALLOW_OPPOSING_DIRECTIONS, json.optBoolean(KEY_ALLOW_OPPOSING_DIRECTIONS, allowOpposingDirections))
+            .putBoolean(KEY_RUMBLE_ENABLED, json.optBoolean(KEY_RUMBLE_ENABLED, rumbleEnabled))
+            .putInt(KEY_LOG_LEVEL_MODE, LogLevelModes.coerce(json.optInt(KEY_LOG_LEVEL_MODE, logLevelMode)))
+            .putInt(KEY_RTC_MODE, RtcModes.coerce(json.optInt(KEY_RTC_MODE, rtcMode)))
+            .putLong(KEY_RTC_FIXED_TIME_MS, json.optLong(KEY_RTC_FIXED_TIME_MS, rtcFixedTimeMs))
+            .putLong(KEY_RTC_OFFSET_MS, json.optLong(KEY_RTC_OFFSET_MS, rtcOffsetMs))
+            .apply()
+        return true
+    }
 
     private companion object {
         const val KEY_SCALE_MODE = "scaleMode"

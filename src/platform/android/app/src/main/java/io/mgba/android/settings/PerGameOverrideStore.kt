@@ -1,6 +1,7 @@
 package io.mgba.android.settings
 
 import android.content.Context
+import org.json.JSONObject
 
 class PerGameOverrideStore(context: Context) {
     private val preferences = context.applicationContext.getSharedPreferences("per_game_overrides", Context.MODE_PRIVATE)
@@ -253,6 +254,37 @@ class PerGameOverrideStore(context: Context) {
         return true
     }
 
+    fun exportJson(): JSONObject {
+        val json = JSONObject()
+        preferences.all.toSortedMap().forEach { (key, value) ->
+            when (value) {
+                is Boolean, is Float, is Int, is Long, is String -> json.put(key, value)
+            }
+        }
+        return json
+    }
+
+    fun importJson(json: JSONObject): Boolean {
+        val editor = preferences.edit().clear()
+        val keys = json.keys()
+        while (keys.hasNext()) {
+            val key = keys.next()
+            when (val value = json.opt(key)) {
+                is Boolean -> editor.putBoolean(key, value)
+                is Number -> {
+                    if (isFloatKey(key)) {
+                        editor.putFloat(key, value.toFloat())
+                    } else {
+                        editor.putInt(key, value.toInt())
+                    }
+                }
+                is String -> editor.putString(key, value)
+            }
+        }
+        editor.apply()
+        return true
+    }
+
     private fun intOverride(gameId: String?, name: String, fallback: Int): Int {
         val key = key(gameId, name) ?: return fallback
         return if (preferences.contains(key)) preferences.getInt(key, fallback) else fallback
@@ -296,6 +328,10 @@ class PerGameOverrideStore(context: Context) {
             return null
         }
         return "$gameId::$name"
+    }
+
+    private fun isFloatKey(key: String): Boolean {
+        return key.endsWith("::$KEY_TILT_OFFSET_X") || key.endsWith("::$KEY_TILT_OFFSET_Y")
     }
 
     private companion object {
