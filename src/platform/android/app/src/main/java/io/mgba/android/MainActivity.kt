@@ -2069,12 +2069,11 @@ class MainActivity : Activity() {
             .setTitle("Remove from library?")
             .setMessage(rom.displayName)
             .setPositiveButton("Remove") { _, _ ->
-                libraryStore.remove(rom.uri)?.let { removed ->
-                    deleteCoverPath(removed.coverPath)
-                    coverThumbnailCache.evictAll()
-                }
+                val removed = removeStoredRomReferencesForUri(rom.uri)
+                renderRecentGames()
                 renderLibrary()
-                nativeStatus.text = "${getString(R.string.native_version_label)}: Removed from library"
+                val recentStatus = if (removed.recent > 0) " + Recent" else ""
+                nativeStatus.text = "${getString(R.string.native_version_label)}: Removed from library$recentStatus"
             }
             .setNegativeButton("Cancel", null)
             .show()
