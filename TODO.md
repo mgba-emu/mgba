@@ -765,7 +765,7 @@ object NativeBridge {
   - [x] 缩放模式。
   - [ ] 整数缩放。
   - [ ] 滤镜。
-  - [ ] 帧跳过。
+  - [x] 帧跳过。
   - [ ] interframe blending。
   - [ ] 着色器，后续。
 - [ ] Audio：

@@ -190,7 +190,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         filterMode = perGameOverrides.filterMode(currentGameId, preferences.filterMode)
         orientationMode = perGameOverrides.orientationMode(currentGameId, preferences.orientationMode)
         skipBios = perGameOverrides.skipBios(currentGameId, preferences.skipBios)
-        frameSkip = perGameOverrides.frameSkip(currentGameId, 0)
+        frameSkip = perGameOverrides.frameSkip(currentGameId, preferences.frameSkip)
         muted = perGameOverrides.muted(currentGameId, preferences.muted)
         volumePercent = perGameOverrides.volumePercent(currentGameId, preferences.volumePercent)
         audioBufferMode = perGameOverrides.audioBufferMode(currentGameId, preferences.audioBufferMode)
@@ -589,7 +589,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun saveFrameSkipPreference() {
-        perGameOverrides.setFrameSkip(currentGameId, frameSkip)
+        if (!perGameOverrides.setFrameSkip(currentGameId, frameSkip)) {
+            preferences.frameSkip = frameSkip
+        }
     }
 
     private fun saveDeadzonePreference() {

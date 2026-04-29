@@ -69,6 +69,12 @@ class EmulatorPreferences(context: Context) {
                 .apply()
         }
 
+    var frameSkip: Int
+        get() = preferences.getInt(KEY_FRAME_SKIP, 0).coerceIn(0, 3)
+        set(value) {
+            preferences.edit().putInt(KEY_FRAME_SKIP, value.coerceIn(0, 3)).apply()
+        }
+
     var rewindEnabled: Boolean
         get() = preferences.getBoolean(KEY_REWIND_ENABLED, true)
         set(value) {
@@ -134,6 +140,7 @@ class EmulatorPreferences(context: Context) {
         const val KEY_AUDIO_LOW_PASS_MODE = "audioLowPassMode"
         const val KEY_FAST_FORWARD_MODE = "fastForwardMode"
         const val KEY_FAST_FORWARD_MULTIPLIER = "fastForwardMultiplier"
+        const val KEY_FRAME_SKIP = "frameSkip"
         const val KEY_REWIND_ENABLED = "rewindEnabled"
         const val KEY_REWIND_BUFFER_CAPACITY = "rewindBufferCapacity"
         const val KEY_REWIND_BUFFER_INTERVAL = "rewindBufferInterval"

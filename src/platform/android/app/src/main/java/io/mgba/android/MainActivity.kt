@@ -61,6 +61,7 @@ class MainActivity : Activity() {
     private lateinit var audioLowPassButton: Button
     private lateinit var fastForwardModeButton: Button
     private lateinit var fastForwardSpeedButton: Button
+    private lateinit var frameSkipButton: Button
     private lateinit var rewindButton: Button
     private lateinit var rewindBufferButton: Button
     private lateinit var rewindIntervalButton: Button
@@ -199,6 +200,14 @@ class MainActivity : Activity() {
         }
         updateFastForwardButtons()
 
+        frameSkipButton = Button(this).apply {
+            setOnClickListener {
+                preferences.frameSkip = (preferences.frameSkip + 1) % FRAME_SKIP_LABELS.size
+                updateFrameSkipButton()
+            }
+        }
+        updateFrameSkipButton()
+
         rewindButton = Button(this).apply {
             setOnClickListener {
                 preferences.rewindEnabled = !preferences.rewindEnabled
@@ -293,6 +302,7 @@ class MainActivity : Activity() {
         root.addView(audioLowPassButton)
         root.addView(fastForwardModeButton)
         root.addView(fastForwardSpeedButton)
+        root.addView(frameSkipButton)
         root.addView(rewindButton)
         root.addView(rewindBufferButton)
         root.addView(rewindIntervalButton)
@@ -426,6 +436,7 @@ class MainActivity : Activity() {
                         perGameOverrides.audioLowPassMode(gameId, preferences.audioLowPassMode),
                     ),
                 )
+                emulator.setFrameSkip(perGameOverrides.frameSkip(gameId, preferences.frameSkip))
                 emulator.setRewindConfig(
                     perGameOverrides.rewindEnabled(gameId, preferences.rewindEnabled),
                     perGameOverrides.rewindBufferCapacity(gameId, preferences.rewindBufferCapacity),
@@ -596,6 +607,10 @@ class MainActivity : Activity() {
     private fun updateFastForwardButtons() {
         fastForwardModeButton.text = "Fast Mode: ${FastForwardModes.modeLabels[preferences.fastForwardMode]}"
         fastForwardSpeedButton.text = "Fast Speed: ${FastForwardModes.labelForMultiplier(preferences.fastForwardMultiplier)}"
+    }
+
+    private fun updateFrameSkipButton() {
+        frameSkipButton.text = "Frame Skip: ${FRAME_SKIP_LABELS[preferences.frameSkip]}"
     }
 
     private fun updateRewindButtons() {
@@ -986,6 +1001,7 @@ class MainActivity : Activity() {
         private const val TRIM_MEMORY_RUNNING_LOW_LEVEL = 10
         private const val ARCHIVE_CACHE_MAX_BYTES = 256L * 1024L * 1024L
         private const val ARCHIVE_CACHE_TRIM_BYTES = 64L * 1024L * 1024L
+        private val FRAME_SKIP_LABELS = arrayOf("0", "1", "2", "3")
         private val ROM_ENTRY_EXTENSIONS = arrayOf(".gba", ".agb", ".gb", ".gbc", ".sgb")
     }
 }
