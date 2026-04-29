@@ -64,6 +64,13 @@ class EmulatorController(context: Context) : AutoCloseable {
         return NativeBridge.nativeTakeScreenshot(handle.value).takeIf { it.isNotBlank() }
     }
 
+    fun exportBatterySave(): String? {
+        if (!handle.isValid) {
+            return null
+        }
+        return NativeBridge.nativeExportBatterySave(handle.value).takeIf { it.isNotBlank() }
+    }
+
     fun start() {
         if (handle.isValid) {
             NativeBridge.nativeStart(handle.value)

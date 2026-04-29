@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cerrno>
 #include <chrono>
+#include <cstdlib>
 #include <ctime>
 #include <cstring>
 #include <fstream>
@@ -458,6 +459,33 @@ std::string AndroidCoreRunner::takeScreenshot() {
 
 	const std::string path = screenshotsPath + "/" + romIdFromSavePath() + "-" + timestamp + ".bmp";
 	return WriteBmpScreenshot(path, m_videoBuffer, width, height, m_videoStride) ? path : "";
+}
+
+std::string AndroidCoreRunner::exportBatterySave() {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (!m_core || !m_core->savedataClone || m_savePath.empty()) {
+		return "";
+	}
+
+	void* savedata = nullptr;
+	const size_t size = m_core->savedataClone(m_core, &savedata);
+	if (!savedata || !size) {
+		return "";
+	}
+
+	const std::string exportsPath = m_basePath + "/exports";
+	if (!EnsureDirectory(exportsPath)) {
+		free(savedata);
+		return "";
+	}
+
+	const std::string path = exportsPath + "/" + romIdFromSavePath() + ".sav";
+	std::ofstream out(path, std::ios::binary | std::ios::trunc);
+	if (out) {
+		out.write(static_cast<const char*>(savedata), static_cast<std::streamsize>(size));
+	}
+	free(savedata);
+	return out ? path : "";
 }
 
 void AndroidCoreRunner::start() {

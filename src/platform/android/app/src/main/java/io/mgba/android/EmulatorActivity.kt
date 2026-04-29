@@ -22,6 +22,7 @@ import io.mgba.android.input.AndroidInputMapper
 import io.mgba.android.input.VirtualGamepadView
 import io.mgba.android.storage.ScreenshotExporter
 import io.mgba.android.storage.ScreenshotShareProvider
+import io.mgba.android.storage.SaveExporter
 
 class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var controller: EmulatorController? = null
@@ -273,6 +274,18 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 setOnClickListener {
                     val ok = controller?.loadStateSlot(stateSlot) == true
                     Toast.makeText(context, if (ok) "State loaded" else "Load failed", Toast.LENGTH_SHORT).show()
+                }
+            })
+            stateRow.addView(Button(context).apply {
+                text = "Backup"
+                setOnClickListener {
+                    val path = controller?.exportBatterySave()
+                    val uri = path?.let { SaveExporter.exportToDocuments(context, it) }
+                    Toast.makeText(
+                        context,
+                        if (uri != null) "Save exported" else "Export failed",
+                        Toast.LENGTH_SHORT,
+                    ).show()
                 }
             })
             addView(runRow)

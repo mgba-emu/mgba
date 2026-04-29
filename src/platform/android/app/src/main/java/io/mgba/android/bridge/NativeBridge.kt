@@ -41,6 +41,9 @@ object NativeBridge {
     external fun nativeTakeScreenshot(handle: Long): String
 
     @JvmStatic
+    external fun nativeExportBatterySave(handle: Long): String
+
+    @JvmStatic
     external fun nativeStart(handle: Long)
 
     @JvmStatic

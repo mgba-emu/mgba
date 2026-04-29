@@ -34,6 +34,7 @@ public:
 	void reset();
 	void setFastForward(bool enabled);
 	std::string takeScreenshot();
+	std::string exportBatterySave();
 	void start();
 	void pause();
 	void resume();
