@@ -179,6 +179,15 @@ object NativeBridge {
     @JvmStatic
     external fun nativeStop(handle: Long)
 
+    private fun nativeFailureJson(error: Throwable): String {
+        val code = error.javaClass.simpleName.ifBlank { "NativeError" }
+        return JSONObject()
+            .put("ok", false)
+            .put("errorCode", code)
+            .put("message", code)
+            .toString()
+    }
+
     fun versionLabel(): String {
         return runCatching { nativeGetVersion() }.getOrElse { error ->
             "Unavailable (${error.javaClass.simpleName})"
@@ -188,7 +197,7 @@ object NativeBridge {
     fun loadRomFd(handle: Long, fd: Int, displayName: String): NativeLoadResult {
         return NativeLoadResult.fromJson(
             runCatching { nativeLoadRomFd(handle, fd, displayName) }.getOrElse { error ->
-                """{"ok":false,"message":"${error.javaClass.simpleName}"}"""
+                nativeFailureJson(error)
             },
         )
     }
@@ -196,7 +205,7 @@ object NativeBridge {
     fun probeRomFd(fd: Int, displayName: String): NativeLoadResult {
         return NativeLoadResult.fromJson(
             runCatching { nativeProbeRomFd(fd, displayName) }.getOrElse { error ->
-                """{"ok":false,"message":"${error.javaClass.simpleName}"}"""
+                nativeFailureJson(error)
             },
         )
     }

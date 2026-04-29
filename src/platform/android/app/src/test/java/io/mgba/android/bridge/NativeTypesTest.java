@@ -20,7 +20,8 @@ public class NativeTypesTest {
                 + "\"crc32\":\"1234abcd\","
                 + "\"gameCode\":\"ABCD\","
                 + "\"maker\":\"01\","
-                + "\"version\":2"
+                + "\"version\":2,"
+                + "\"errorCode\":\"\""
                 + "}"
         );
 
@@ -34,6 +35,7 @@ public class NativeTypesTest {
         assertEquals("ABCD", result.getGameCode());
         assertEquals("01", result.getMaker());
         assertEquals(2, result.getVersion());
+        assertEquals("", result.getErrorCode());
     }
 
     @Test

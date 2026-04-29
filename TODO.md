@@ -187,6 +187,7 @@
 - [x] 已增强 Android native audio 诊断：stats/DIAG 导出 started/paused/enabled、queued buffers/frames、read frames 和 last read frames，模拟器真实 ROM smoke 已确认字段递增。
 - [x] 已完成 Android 模拟器音频暂停/恢复/快进 smoke：暂停期间 native frames 和 audio queue 计数保持不变，恢复并 FAST 往返后 queue/read frames 继续递增。
 - [x] 已确认 Android 输入释放策略：`onPause` / `onDestroy` / `surfaceDestroyed` 调用 `clearInput()`，虚拟和硬件 key mask 会清零，后台恢复后 DIAG 显示 current input 为 `(none)`。
+- [x] 已为 Android JNI 入口新增 native guard：native 异常会写入 logcat，并返回 JSON / false / 0 / 空字符串等可处理结果。
 
 ## 1. 产品目标和范围
 
@@ -428,9 +429,9 @@ object NativeBridge {
 ```
 
 - [x] 初期如果 `NativeLoadResult` / `NativeCoreConfig` 用 JNI object 复杂度太高，可以先用 primitive + JSON 字符串过桥，等 API 稳定后再优化。
-- [ ] 所有 native 方法必须：
+- [x] 所有 native 方法必须：
   - [x] 校验 handle 是否为 0。
-  - [ ] 捕获 native 异常/错误并返回可展示错误码。
+  - [x] 捕获 native 异常/错误并返回可展示错误码。
   - [x] 不在 UI 线程执行长时间 I/O。
   - [x] 不把 Java 层传入的 fd 直接长期占用，必须 `dup(fd)` 后交给 `VFileFromFD`。
 

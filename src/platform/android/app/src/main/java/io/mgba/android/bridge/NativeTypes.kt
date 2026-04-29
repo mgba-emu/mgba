@@ -13,6 +13,7 @@ data class NativeLoadResult(
     val gameCode: String,
     val maker: String,
     val version: Int,
+    val errorCode: String = "",
 ) {
     companion object {
         fun fromJson(raw: String): NativeLoadResult {
@@ -28,6 +29,7 @@ data class NativeLoadResult(
                 gameCode = json.optString("gameCode"),
                 maker = json.optString("maker"),
                 version = json.optInt("version", -1),
+                errorCode = json.optString("errorCode"),
             )
         }
     }
