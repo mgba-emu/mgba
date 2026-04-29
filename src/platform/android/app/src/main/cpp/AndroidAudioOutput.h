@@ -61,6 +61,7 @@ private:
 	struct mAudioResampler m_resampler = {};
 	std::array<std::vector<int16_t>, 4> m_buffers;
 	size_t m_nextBuffer = 0;
+	size_t m_warmupBuffersRemaining = 0;
 	std::atomic<uint64_t> m_underrunCount{0};
 };
 

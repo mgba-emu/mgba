@@ -10,8 +10,9 @@ namespace {
 
 constexpr SLuint32 kOutputRate = SL_SAMPLINGRATE_48;
 constexpr uint32_t kOutputRateHz = 48000;
-constexpr size_t kFramesPerBuffer = 1024;
+constexpr size_t kFramesPerBuffer = 800;
 constexpr size_t kQueueDepth = 4;
+constexpr size_t kWarmupBufferCount = kQueueDepth * 4;
 constexpr size_t kChannels = 2;
 
 bool Succeeded(SLresult result) {
@@ -56,6 +57,7 @@ bool AndroidAudioOutput::start() {
 
 	m_started = true;
 	m_paused = false;
+	m_warmupBuffersRemaining = kWarmupBufferCount;
 	if (m_player) {
 		(*m_player)->SetPlayState(m_player, m_enabled ? SL_PLAYSTATE_PLAYING : SL_PLAYSTATE_PAUSED);
 	}
@@ -73,6 +75,7 @@ void AndroidAudioOutput::stop() {
 	m_started = false;
 	m_paused = true;
 	m_nextBuffer = 0;
+	m_warmupBuffersRemaining = 0;
 	m_lowPassLeftPrev = 0;
 	m_lowPassRightPrev = 0;
 }
@@ -89,6 +92,7 @@ void AndroidAudioOutput::pause() {
 	if (m_resamplerReady) {
 		mAudioBufferClear(&m_resampledBuffer);
 	}
+	m_warmupBuffersRemaining = kWarmupBufferCount;
 }
 
 void AndroidAudioOutput::resume() {
@@ -111,6 +115,7 @@ void AndroidAudioOutput::clear() {
 		mAudioBufferClear(&m_resampledBuffer);
 	}
 	m_nextBuffer = 0;
+	m_warmupBuffersRemaining = kWarmupBufferCount;
 	m_lowPassLeftPrev = 0;
 	m_lowPassRightPrev = 0;
 }
@@ -129,6 +134,7 @@ void AndroidAudioOutput::setEnabled(bool enabled) {
 			mAudioBufferClear(&m_resampledBuffer);
 		}
 		m_nextBuffer = 0;
+		m_warmupBuffersRemaining = kWarmupBufferCount;
 		m_lowPassLeftPrev = 0;
 		m_lowPassRightPrev = 0;
 	} else if (m_started && !m_paused && m_player) {
@@ -306,7 +312,13 @@ size_t AndroidAudioOutput::fillBufferLocked(mCore* core, int16_t* output, size_t
 	mAudioResamplerProcess(&m_resampler);
 	const size_t readFrames = mAudioBufferRead(&m_resampledBuffer, output, frames);
 	if (readFrames < frames) {
-		++m_underrunCount;
+		if (m_warmupBuffersRemaining > 0) {
+			--m_warmupBuffersRemaining;
+		} else {
+			++m_underrunCount;
+		}
+	} else if (m_warmupBuffersRemaining > 0) {
+		--m_warmupBuffersRemaining;
 	}
 	const int lowPassRange = m_lowPassRange;
 	if (lowPassRange > 0) {
