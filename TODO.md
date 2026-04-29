@@ -985,7 +985,7 @@ object NativeBridge {
   - [ ] 读档。
   - [ ] 截图。
   - [ ] 设置。
-  - [ ] 退出。
+  - [x] 退出。
 - [ ] Debug overlay：
   - [x] FPS。
   - [x] frame time。

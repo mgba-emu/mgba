@@ -883,6 +883,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     clearPatchWithConfirmation()
                 }
             })
+            stateRow.addView(Button(context).apply {
+                text = "Exit"
+                setOnClickListener {
+                    exitWithConfirmation()
+                }
+            })
             addView(runRow)
             addView(stateRow)
             stateThumbnailView = ImageView(context).apply {
@@ -1731,6 +1737,17 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             .setPositiveButton("Clear") { _, _ ->
                 val ok = patchStore.clearForGame(currentGameId)
                 Toast.makeText(this, if (ok) "Patch cleared" else "Clear failed", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun exitWithConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("Exit game?")
+            .setMessage("Save data will be flushed before the emulator closes.")
+            .setPositiveButton("Exit") { _, _ ->
+                finish()
             }
             .setNegativeButton("Cancel", null)
             .show()
