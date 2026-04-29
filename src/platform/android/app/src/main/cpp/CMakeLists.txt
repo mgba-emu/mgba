@@ -83,6 +83,7 @@ target_link_libraries(mgba-android
         mgba
         android
         log
+        dl
         EGL
         GLESv2
         OpenSLES

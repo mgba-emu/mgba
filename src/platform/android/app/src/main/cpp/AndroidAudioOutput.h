@@ -3,6 +3,7 @@
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
+#include <aaudio/AAudio.h>
 
 #include <array>
 #include <atomic>
@@ -25,6 +26,7 @@ struct AndroidAudioStats {
 	uint64_t enqueuedOutputFrames = 0;
 	uint64_t readFrames = 0;
 	uint64_t lastReadFrames = 0;
+	const char* backend = "OpenSL ES";
 };
 
 class AndroidAudioOutput {
@@ -46,16 +48,31 @@ public:
 	void enqueueFromCore(mCore* core);
 
 private:
+	struct AAudioApi;
+	enum class AudioBackend {
+		OpenSl,
+		AAudio,
+	};
+
 	static void BufferQueueCallback(SLAndroidSimpleBufferQueueItf queue, void* context);
 
 	bool createEngineLocked();
 	void destroyEngineLocked();
+	bool createAAudioStreamLocked();
+	void destroyAAudioStreamLocked();
+	bool createOpenSlEngineLocked();
+	void destroyOpenSlEngineLocked();
+	void setOutputPlayingLocked(bool playing);
+	void flushOutputLocked();
+	const char* backendNameLocked() const;
 	size_t fillBufferLocked(mCore* core, int16_t* output, size_t frames);
 
 	mutable std::mutex m_mutex;
+	AudioBackend m_backend = AudioBackend::OpenSl;
 	bool m_started = false;
 	bool m_paused = true;
 	bool m_enabled = true;
+	bool m_outputPlaying = false;
 	bool m_resamplerReady = false;
 	int m_volumePercent = 100;
 	int m_lowPassRange = 0;
@@ -68,6 +85,9 @@ private:
 	SLObjectItf m_playerObject = nullptr;
 	SLPlayItf m_player = nullptr;
 	SLAndroidSimpleBufferQueueItf m_bufferQueue = nullptr;
+
+	const AAudioApi* m_aaudioApi = nullptr;
+	AAudioStream* m_aaudioStream = nullptr;
 
 	struct mAudioBuffer m_resampledBuffer = {};
 	struct mAudioResampler m_resampler = {};

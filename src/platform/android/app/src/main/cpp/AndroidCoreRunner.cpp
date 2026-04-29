@@ -1121,6 +1121,7 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"audioEnqueuedOutputFrames\":" << audioStats.enqueuedOutputFrames
 	    << ",\"audioReadFrames\":" << audioStats.readFrames
 	    << ",\"audioLastReadFrames\":" << audioStats.lastReadFrames
+	    << ",\"audioBackend\":\"" << JsonEscape(audioStats.backend) << "\""
 	    << ",\"audioLowPassRange\":" << m_lowPassRangePercent.load()
 	    << ",\"inputKeys\":" << m_inputKeys
 	    << ",\"seenInputKeys\":" << m_seenInputKeys

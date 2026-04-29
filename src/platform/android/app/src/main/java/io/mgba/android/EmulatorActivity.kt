@@ -2469,7 +2469,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         lastStatsAtMs = now
         statsOverlay?.text = String.format(
             Locale.US,
-            "FPS %.1f  Frame %.2fms\nFrames %d\nROM %s  %s\nVideo %dx%d\nRun %s  Fast %s  Rewind %s/%d/%d  Skip %d\nAudio %s  Vol %d%%  Buf %d  LPF %d  Und %d  Q %d\nScale %s  Filter %s  BIOS %s",
+            "FPS %.1f  Frame %.2fms\nFrames %d\nROM %s  %s\nVideo %dx%d\nRun %s  Fast %s  Rewind %s/%d/%d  Skip %d\nAudio %s/%s  Vol %d%%  Buf %d  LPF %d  Und %d  Q %d\nScale %s  Filter %s  BIOS %s",
             fps,
             frameTimeMs,
             stats.frames,
@@ -2484,6 +2484,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             stats.rewindBufferInterval,
             frameSkip,
             if (muted) "muted" else "on",
+            stats.audioBackend,
             stats.volumePercent,
             stats.audioBufferSamples,
             stats.audioLowPassRange,
@@ -2560,7 +2561,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 appendLine("nativeFrames=${stats.frames}")
                 appendLine("nativeVideo=${stats.videoWidth}x${stats.videoHeight}")
                 appendLine("nativeRun running=${stats.running} paused=${stats.paused} fast=${stats.fastForward} rewind=${stats.rewinding}")
-                appendLine("nativeAudio volume=${stats.volumePercent} buffer=${stats.audioBufferSamples} lowPass=${stats.audioLowPassRange} started=${stats.audioStarted} paused=${stats.audioPaused} enabled=${stats.audioEnabled} underruns=${stats.audioUnderruns} queuedBuffers=${stats.audioEnqueuedBuffers} queuedFrames=${stats.audioEnqueuedOutputFrames} readFrames=${stats.audioReadFrames} lastReadFrames=${stats.audioLastReadFrames}")
+                appendLine("nativeAudio backend=${stats.audioBackend} volume=${stats.volumePercent} buffer=${stats.audioBufferSamples} lowPass=${stats.audioLowPassRange} started=${stats.audioStarted} paused=${stats.audioPaused} enabled=${stats.audioEnabled} underruns=${stats.audioUnderruns} queuedBuffers=${stats.audioEnqueuedBuffers} queuedFrames=${stats.audioEnqueuedOutputFrames} readFrames=${stats.audioReadFrames} lastReadFrames=${stats.audioLastReadFrames}")
                 appendLine("nativeInput current=${formatGbaMask(stats.inputKeys)} seen=${formatGbaMask(stats.seenInputKeys)}")
                 appendLine("nativeRom platform=${stats.romPlatform} title=${stats.gameTitle} skipBios=${stats.skipBios}")
             }

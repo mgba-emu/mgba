@@ -330,7 +330,7 @@ std::string NativeStatsFallbackJson() {
 	    "\"audioBufferSamples\":1024,\"audioStarted\":false,\"audioPaused\":true,\"audioEnabled\":true,"
 	    "\"audioUnderruns\":0,\"audioEnqueuedBuffers\":0,\"audioEnqueuedOutputFrames\":0,"
 	    "\"audioReadFrames\":0,\"audioLastReadFrames\":0,\"audioLowPassRange\":0,\"inputKeys\":0,"
-	    "\"seenInputKeys\":0,\"romPlatform\":\"\",\"gameTitle\":\"\",\"scaleMode\":0,\"filterMode\":0,"
+	    "\"audioBackend\":\"OpenSL ES\",\"seenInputKeys\":0,\"romPlatform\":\"\",\"gameTitle\":\"\",\"scaleMode\":0,\"filterMode\":0,"
 	    "\"skipBios\":false}";
 }
 

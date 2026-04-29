@@ -188,6 +188,7 @@
 - [x] 已完成 Android 模拟器音频暂停/恢复/快进 smoke：暂停期间 native frames 和 audio queue 计数保持不变，恢复并 FAST 往返后 queue/read frames 继续递增。
 - [x] 已确认 Android 输入释放策略：`onPause` / `onDestroy` / `surfaceDestroyed` 调用 `clearInput()`，虚拟和硬件 key mask 会清零，后台恢复后 DIAG 显示 current input 为 `(none)`。
 - [x] 已为 Android JNI 入口新增 native guard：native 异常会写入 logcat，并返回 JSON / false / 0 / 空字符串等可处理结果。
+- [x] 已新增 Android AAudio 输出后端：API 26+ 通过 `dlopen` 优先使用 AAudio，失败或旧系统自动回落 OpenSL ES，并在 native stats/诊断中展示后端。
 
 ## 1. 产品目标和范围
 
@@ -567,7 +568,7 @@ object NativeBridge {
 ### 6.1 初版音频路径
 
 - [x] 优先 native 音频线程，避免每个 callback 穿越 JNI。
-- [ ] Android API >= 26 使用 AAudio。
+- [x] Android API >= 26 使用 AAudio。
 - [x] 如果保留 `minSdk < 26`，补 OpenSL ES fallback 或引入 Oboe 包装 AAudio/OpenSL。
 - [x] 音频格式：PCM 16-bit stereo。
 - [x] 输出采样率：优先设备 native sample rate，通常 48000；使用 `mAudioResampler` 从 core sample rate 转换。
@@ -1239,7 +1240,7 @@ object NativeBridge {
 
 ### PR 5：音频
 
-- [x] AAudio/OpenSL/Oboe 路线落地：当前使用 OpenSL ES。
+- [x] AAudio/OpenSL/Oboe 路线落地：当前 API 26+ 优先 AAudio，旧系统或初始化失败时回落 OpenSL ES。
 - [x] `mAudioResampler` 接入。
 - [x] 暂停/恢复处理。
 - [x] 验收：

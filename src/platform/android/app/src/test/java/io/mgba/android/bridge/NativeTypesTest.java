@@ -56,6 +56,7 @@ public class NativeTypesTest {
         assertEquals(0L, stats.getAudioEnqueuedOutputFrames());
         assertEquals(0L, stats.getAudioReadFrames());
         assertEquals(0L, stats.getAudioLastReadFrames());
+        assertEquals("OpenSL ES", stats.getAudioBackend());
         assertEquals(0, stats.getInputKeys());
         assertEquals(0, stats.getSeenInputKeys());
     }
@@ -74,6 +75,7 @@ public class NativeTypesTest {
                 + "\"audioEnqueuedOutputFrames\":9600,"
                 + "\"audioReadFrames\":8800,"
                 + "\"audioLastReadFrames\":800,"
+                + "\"audioBackend\":\"AAudio\","
                 + "\"audioLowPassRange\":120,"
                 + "\"inputKeys\":2049,"
                 + "\"seenInputKeys\":1073"
@@ -90,6 +92,7 @@ public class NativeTypesTest {
         assertEquals(9600L, stats.getAudioEnqueuedOutputFrames());
         assertEquals(8800L, stats.getAudioReadFrames());
         assertEquals(800L, stats.getAudioLastReadFrames());
+        assertEquals("AAudio", stats.getAudioBackend());
         assertEquals(95, stats.getAudioLowPassRange());
         assertEquals(1, stats.getInputKeys());
         assertEquals(49, stats.getSeenInputKeys());
