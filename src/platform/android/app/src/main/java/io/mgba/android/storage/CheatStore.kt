@@ -77,10 +77,7 @@ class CheatStore(context: Context) {
             return false
         }
         entries[index] = entries[index].copy(enabled = enabled)
-        return runCatching {
-            file.writeText(serializeEntries(entries))
-            true
-        }.getOrDefault(false)
+        return writeEntries(file, entries)
     }
 
     fun addManual(gameId: String?, name: String, codeText: String): Boolean {
