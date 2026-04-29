@@ -51,6 +51,10 @@ jobs:
         working-directory: src/platform/android
         run: ./gradlew :app:assembleDebug --no-daemon
 
+      - name: Run unit tests
+        working-directory: src/platform/android
+        run: ./gradlew :app:testDebugUnitTest --no-daemon
+
       - name: Build release APK
         working-directory: src/platform/android
         run: ./gradlew :app:assembleRelease --no-daemon

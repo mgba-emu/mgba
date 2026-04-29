@@ -59,6 +59,7 @@
 - [x] 已新增 GitHub Actions Android debug APK 构建 workflow。
 - [x] 已修复 Android backup/data-extraction XML 规则，并验证 `:app:bundleRelease` 可生成 release AAB。
 - [x] 已扩展 GitHub Actions Android build：debug APK、release APK、release AAB 和 native symbols artifacts。
+- [x] 已新增 Android 输入映射单元测试，并验证 `:app:testDebugUnitTest`。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/搜索/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -1007,7 +1008,7 @@ object NativeBridge {
   - [x] `./gradlew :app:assembleDebug`。
   - [x] `./gradlew :app:assembleRelease`。
   - [x] `./gradlew :app:bundleRelease`。
-  - [ ] `./gradlew :app:testDebugUnitTest`。
+  - [x] `./gradlew :app:testDebugUnitTest`。
   - [x] 上传 debug APK、release APK、release AAB 和 native symbols artifacts。
 - [ ] 可选 matrix：
   - [ ] arm64-v8a。
