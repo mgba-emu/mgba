@@ -199,6 +199,7 @@
 - [x] 已新增 Android 输入同步延迟诊断：虚拟/实体输入到 `nativeSetKeys` 的事件年龄、JNI 调用耗时、最大耗时和 slow sample 计数会进入 Input debug 与诊断导出，并用 instrumented test 锁定虚拟触摸事件时间传递。
 - [x] 已完成 Android link cable 首轮调研：Qt MultiplayerController 依赖 `mCoreThread` wait/wake、GBA/GB lockstep driver、save player id 分配和多实例 CoreController 编排；Android 首版不接联机，后续需先抽象多 runner lockstep 调度层。
 - [x] 已新增 Android GDB stub 原生构建和运行时开关：默认关闭，内部开发可用 `-PmgbaAndroidEnableGdbStub=true` / `MGBA_ANDROID_ENABLE_GDB_STUB=true` 编译 debugger/GDB stub；编译后 Run Options 的 GDB 按钮可监听 `127.0.0.1:2345`，诊断导出会记录支持状态、启用状态和端口，release/non-debuggable 构建开启前需要确认。
+- [x] 已确认 Android 首版不接 `mCoreSync` audio high-water 等待：当前 runner 在同一线程 `runFrame` 后主动把 core audio buffer 灌入 AAudio/OpenSL 队列，若在 core audio sample 回调里启用 `audioWait`，消费端无法在 `runFrame` 返回前唤醒，存在死锁风险；首版继续使用 frame pacing + 有界输出队列 + underrun/queue/readFrames 诊断。
 
 ## 1. 产品目标和范围
 
@@ -592,7 +593,7 @@ object NativeBridge {
 
 ### 6.2 音频同步
 
-- [ ] 使用 `mCoreSyncLockAudio` / `mCoreSyncConsumeAudio`，让音频 high water mark 控制核心速度。
+- [x] 使用 `mCoreSyncLockAudio` / `mCoreSyncConsumeAudio`，让音频 high water mark 控制核心速度：Android 首版不启用该路径。原因是 Android 当前没有独立 audio callback 消费 core source buffer，而是在 `AndroidCoreRunner::runLoop` 的同一线程 `runFrame` 后调用 `AndroidAudioOutput::enqueueFromCore`；启用 `audioWait` 后 core 可能在 `runFrame` 内等待 high-water，消费端无法运行并唤醒，存在死锁风险。首版同步策略改为 native frame pacing + AAudio/OpenSL 有界队列 + underrun/queued/readFrames 诊断，后续若切到 `mCoreThread` 或独立 audio pump 再重评。
 - [x] 快进时：
   - [x] 可选择静音或降低音量。
   - [x] 调整 resampler source rate（Android 首版快进选择静音并丢弃 audio buffer，因此不再重采样快进音频）。
@@ -700,7 +701,7 @@ object NativeBridge {
 
 ### 7.5 输入验收标准
 
-- [ ] 虚拟按键无明显延迟。
+- [x] 虚拟按键无明显延迟：虚拟手柄 touch event 同步回调到 Activity，并立即调用 `nativeSetKeys`；Input debug / 诊断导出记录 event age、JNI call、max call 和 slow samples，instrumented test 已锁定触摸事件时间会传递到 listener。
 - [x] 多点触控可同时按方向+A/B。
 - [x] 切后台后不会出现按键卡住。
 - [ ] Xbox / DualShock / Switch Pro / 常见蓝牙手柄至少验证两类。
