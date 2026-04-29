@@ -254,6 +254,40 @@ class PerGameOverrideStore(context: Context) {
         return true
     }
 
+    fun migrateGameId(primaryGameId: String?, legacyGameId: String?): Boolean {
+        val primary = primaryGameId?.takeIf { it.isNotBlank() } ?: return false
+        val legacy = legacyGameId?.takeIf { it.isNotBlank() } ?: return false
+        if (primary == legacy) {
+            return false
+        }
+        val legacyPrefix = "$legacy::"
+        val editor = preferences.edit()
+        var changed = false
+        preferences.all.forEach { (legacyKey, value) ->
+            if (!legacyKey.startsWith(legacyPrefix)) {
+                return@forEach
+            }
+            val name = legacyKey.removePrefix(legacyPrefix)
+            val primaryKey = key(primary, name) ?: return@forEach
+            if (preferences.contains(primaryKey)) {
+                return@forEach
+            }
+            when (value) {
+                is Boolean -> editor.putBoolean(primaryKey, value)
+                is Float -> editor.putFloat(primaryKey, value)
+                is Int -> editor.putInt(primaryKey, value)
+                is Long -> editor.putLong(primaryKey, value)
+                is String -> editor.putString(primaryKey, value)
+                else -> return@forEach
+            }
+            changed = true
+        }
+        if (changed) {
+            editor.apply()
+        }
+        return changed
+    }
+
     fun exportJson(): JSONObject {
         val json = JSONObject()
         preferences.all.toSortedMap().forEach { (key, value) ->

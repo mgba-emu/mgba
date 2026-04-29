@@ -619,37 +619,40 @@ class MainActivity : Activity() {
         openDescriptor: () -> ParcelFileDescriptor?,
     ) {
         val gameId = uri.toString()
+        val launchGameId = stableGameIdForLibraryUri(uri, gameId)
+        perGameOverrides.migrateGameId(launchGameId, gameId)
         var patchApplied: Boolean? = null
         var cheatsApplied: Boolean? = null
         var autoStateLoaded = false
         var usedImportFallback = false
         fun loadDescriptor(descriptor: ParcelFileDescriptor): NativeLoadResult {
             val emulator = EmulatorSession.controller(this)
-            emulator.setSkipBios(perGameOverrides.skipBios(gameId, preferences.skipBios))
+            emulator.setSkipBios(perGameOverrides.skipBios(launchGameId, preferences.skipBios))
             emulator.setAudioBufferSamples(
                 AudioBufferModes.samplesFor(
-                    perGameOverrides.audioBufferMode(gameId, preferences.audioBufferMode),
+                    perGameOverrides.audioBufferMode(launchGameId, preferences.audioBufferMode),
                 ),
             )
             emulator.setLowPassRangePercent(
                 AudioLowPassModes.rangeFor(
-                    perGameOverrides.audioLowPassMode(gameId, preferences.audioLowPassMode),
+                    perGameOverrides.audioLowPassMode(launchGameId, preferences.audioLowPassMode),
                 ),
             )
-            emulator.setFrameSkip(perGameOverrides.frameSkip(gameId, preferences.frameSkip))
+            emulator.setFrameSkip(perGameOverrides.frameSkip(launchGameId, preferences.frameSkip))
             emulator.setInterframeBlending(
-                perGameOverrides.interframeBlending(gameId, preferences.interframeBlending),
+                perGameOverrides.interframeBlending(launchGameId, preferences.interframeBlending),
             )
             emulator.setLogLevelMode(preferences.logLevelMode)
             emulator.setRtcMode(preferences.rtcMode, rtcValueForMode(preferences.rtcMode))
             emulator.setRewindConfig(
-                perGameOverrides.rewindEnabled(gameId, preferences.rewindEnabled),
-                perGameOverrides.rewindBufferCapacity(gameId, preferences.rewindBufferCapacity),
-                perGameOverrides.rewindBufferInterval(gameId, preferences.rewindBufferInterval),
+                perGameOverrides.rewindEnabled(launchGameId, preferences.rewindEnabled),
+                perGameOverrides.rewindBufferCapacity(launchGameId, preferences.rewindBufferCapacity),
+                perGameOverrides.rewindBufferInterval(launchGameId, preferences.rewindBufferInterval),
             )
             return emulator.loadRomFd(descriptor.fd, name).also { loadResult ->
                 if (loadResult.ok) {
                     val stableGameId = stableGameIdFor(gameId, loadResult.crc32)
+                    perGameOverrides.migrateGameId(stableGameId, gameId)
                     patchApplied = applyStoredPatch(emulator, gameId, stableGameId, name, loadResult.crc32)
                     cheatsApplied = applyStoredCheats(emulator, gameId, stableGameId)
                     autoStateLoaded = preferences.autoStateOnExit && emulator.loadAutoState()
@@ -749,6 +752,11 @@ class MainActivity : Activity() {
     private fun stableGameIdFor(gameId: String, crc32: String): String {
         val normalizedCrc = crc32.trim().lowercase(java.util.Locale.US)
         return if (normalizedCrc.isBlank()) gameId else "crc32:$normalizedCrc"
+    }
+
+    private fun stableGameIdForLibraryUri(uri: Uri, gameId: String): String {
+        val crc32 = libraryStore.list().firstOrNull { it.uri == uri }?.crc32.orEmpty()
+        return stableGameIdFor(gameId, crc32)
     }
 
     private fun artifactGameIds(gameId: String, stableGameId: String): List<String> {

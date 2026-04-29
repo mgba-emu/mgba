@@ -75,6 +75,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private lateinit var patchStore: PatchStore
     private var currentGameId: String? = null
     private var currentStableGameId: String? = null
+    private var currentOverrideGameId: String? = null
     private var activeInputDeviceDescriptor: String? = null
     private var activeInputDeviceName: String? = null
     private var lastInputDeviceDescriptor: String? = null
@@ -204,61 +205,63 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         val currentGame = EmulatorSession.currentGame()
         currentGameId = currentGame?.uri
         currentStableGameId = currentGame?.stableId?.takeIf { it.isNotBlank() }
-        scaleMode = perGameOverrides.scaleMode(currentGameId, preferences.scaleMode)
-        filterMode = perGameOverrides.filterMode(currentGameId, preferences.filterMode)
-        interframeBlending = perGameOverrides.interframeBlending(currentGameId, preferences.interframeBlending)
-        orientationMode = perGameOverrides.orientationMode(currentGameId, preferences.orientationMode)
-        skipBios = perGameOverrides.skipBios(currentGameId, preferences.skipBios)
-        frameSkip = perGameOverrides.frameSkip(currentGameId, preferences.frameSkip)
-        muted = perGameOverrides.muted(currentGameId, preferences.muted)
-        volumePercent = perGameOverrides.volumePercent(currentGameId, preferences.volumePercent)
-        audioBufferMode = perGameOverrides.audioBufferMode(currentGameId, preferences.audioBufferMode)
-        audioLowPassMode = perGameOverrides.audioLowPassMode(currentGameId, preferences.audioLowPassMode)
-        fastForwardMode = perGameOverrides.fastForwardMode(currentGameId, preferences.fastForwardMode)
-        fastForwardMultiplier = perGameOverrides.fastForwardMultiplier(currentGameId, preferences.fastForwardMultiplier)
-        rewindEnabled = perGameOverrides.rewindEnabled(currentGameId, preferences.rewindEnabled)
-        rewindBufferCapacity = perGameOverrides.rewindBufferCapacity(currentGameId, preferences.rewindBufferCapacity)
-        rewindBufferInterval = perGameOverrides.rewindBufferInterval(currentGameId, preferences.rewindBufferInterval)
+        currentOverrideGameId = currentStableGameId ?: currentGameId
+        perGameOverrides.migrateGameId(currentOverrideGameId, currentGameId)
+        scaleMode = perGameOverrides.scaleMode(currentOverrideGameId, preferences.scaleMode)
+        filterMode = perGameOverrides.filterMode(currentOverrideGameId, preferences.filterMode)
+        interframeBlending = perGameOverrides.interframeBlending(currentOverrideGameId, preferences.interframeBlending)
+        orientationMode = perGameOverrides.orientationMode(currentOverrideGameId, preferences.orientationMode)
+        skipBios = perGameOverrides.skipBios(currentOverrideGameId, preferences.skipBios)
+        frameSkip = perGameOverrides.frameSkip(currentOverrideGameId, preferences.frameSkip)
+        muted = perGameOverrides.muted(currentOverrideGameId, preferences.muted)
+        volumePercent = perGameOverrides.volumePercent(currentOverrideGameId, preferences.volumePercent)
+        audioBufferMode = perGameOverrides.audioBufferMode(currentOverrideGameId, preferences.audioBufferMode)
+        audioLowPassMode = perGameOverrides.audioLowPassMode(currentOverrideGameId, preferences.audioLowPassMode)
+        fastForwardMode = perGameOverrides.fastForwardMode(currentOverrideGameId, preferences.fastForwardMode)
+        fastForwardMultiplier = perGameOverrides.fastForwardMultiplier(currentOverrideGameId, preferences.fastForwardMultiplier)
+        rewindEnabled = perGameOverrides.rewindEnabled(currentOverrideGameId, preferences.rewindEnabled)
+        rewindBufferCapacity = perGameOverrides.rewindBufferCapacity(currentOverrideGameId, preferences.rewindBufferCapacity)
+        rewindBufferInterval = perGameOverrides.rewindBufferInterval(currentOverrideGameId, preferences.rewindBufferInterval)
         autoStateOnExit = preferences.autoStateOnExit
-        showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
+        showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentOverrideGameId, preferences.showVirtualGamepad)
         virtualGamepadSizePercent = perGameOverrides.virtualGamepadSizePercent(
-            currentGameId,
+            currentOverrideGameId,
             preferences.virtualGamepadSizePercent,
         )
         virtualGamepadOpacityPercent = perGameOverrides.virtualGamepadOpacityPercent(
-            currentGameId,
+            currentOverrideGameId,
             preferences.virtualGamepadOpacityPercent,
         )
         virtualGamepadSpacingPercent = perGameOverrides.virtualGamepadSpacingPercent(
-            currentGameId,
+            currentOverrideGameId,
             preferences.virtualGamepadSpacingPercent,
         )
         virtualGamepadHapticsEnabled = perGameOverrides.virtualGamepadHapticsEnabled(
-            currentGameId,
+            currentOverrideGameId,
             preferences.virtualGamepadHapticsEnabled,
         )
         virtualGamepadLeftHanded = perGameOverrides.virtualGamepadLeftHanded(
-            currentGameId,
+            currentOverrideGameId,
             preferences.virtualGamepadLeftHanded,
         )
         deadzonePercent = perGameOverrides.deadzonePercent(
-            currentGameId,
+            currentOverrideGameId,
             AndroidInputMapper.DefaultAxisThresholdPercent,
         )
         allowOpposingDirections = perGameOverrides.allowOpposingDirections(
-            currentGameId,
+            currentOverrideGameId,
             preferences.allowOpposingDirections,
         )
         rumbleEnabled = perGameOverrides.rumbleEnabled(
-            currentGameId,
+            currentOverrideGameId,
             preferences.rumbleEnabled,
         )
-        tiltEnabled = perGameOverrides.tiltEnabled(currentGameId, false)
-        tiltOffsetX = perGameOverrides.tiltOffsetX(currentGameId, 0f)
-        tiltOffsetY = perGameOverrides.tiltOffsetY(currentGameId, 0f)
-        solarLevel = perGameOverrides.solarLevel(currentGameId, 255)
-        useLightSensor = perGameOverrides.useLightSensor(currentGameId, false)
-        cameraImagePath = perGameOverrides.cameraImagePath(currentGameId)
+        tiltEnabled = perGameOverrides.tiltEnabled(currentOverrideGameId, false)
+        tiltOffsetX = perGameOverrides.tiltOffsetX(currentOverrideGameId, 0f)
+        tiltOffsetY = perGameOverrides.tiltOffsetY(currentOverrideGameId, 0f)
+        solarLevel = perGameOverrides.solarLevel(currentOverrideGameId, 255)
+        useLightSensor = perGameOverrides.useLightSensor(currentOverrideGameId, false)
+        cameraImagePath = perGameOverrides.cameraImagePath(currentOverrideGameId)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         applyOrientationMode()
         enterImmersiveMode()
@@ -534,79 +537,79 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun saveScaleModePreference() {
-        if (!perGameOverrides.setScaleMode(currentGameId, scaleMode)) {
+        if (!perGameOverrides.setScaleMode(currentOverrideGameId, scaleMode)) {
             preferences.scaleMode = scaleMode
         }
     }
 
     private fun saveFilterModePreference() {
-        if (!perGameOverrides.setFilterMode(currentGameId, filterMode)) {
+        if (!perGameOverrides.setFilterMode(currentOverrideGameId, filterMode)) {
             preferences.filterMode = filterMode
         }
     }
 
     private fun saveInterframeBlendingPreference() {
-        if (!perGameOverrides.setInterframeBlending(currentGameId, interframeBlending)) {
+        if (!perGameOverrides.setInterframeBlending(currentOverrideGameId, interframeBlending)) {
             preferences.interframeBlending = interframeBlending
         }
     }
 
     private fun saveOrientationModePreference() {
-        if (!perGameOverrides.setOrientationMode(currentGameId, orientationMode)) {
+        if (!perGameOverrides.setOrientationMode(currentOverrideGameId, orientationMode)) {
             preferences.orientationMode = orientationMode
         }
     }
 
     private fun saveSkipBiosPreference() {
-        if (!perGameOverrides.setSkipBios(currentGameId, skipBios)) {
+        if (!perGameOverrides.setSkipBios(currentOverrideGameId, skipBios)) {
             preferences.skipBios = skipBios
         }
     }
 
     private fun saveMutedPreference() {
-        if (!perGameOverrides.setMuted(currentGameId, muted)) {
+        if (!perGameOverrides.setMuted(currentOverrideGameId, muted)) {
             preferences.muted = muted
         }
     }
 
     private fun saveVolumePreference() {
-        if (!perGameOverrides.setVolumePercent(currentGameId, volumePercent)) {
+        if (!perGameOverrides.setVolumePercent(currentOverrideGameId, volumePercent)) {
             preferences.volumePercent = volumePercent
         }
     }
 
     private fun saveAudioBufferPreference() {
-        if (!perGameOverrides.setAudioBufferMode(currentGameId, audioBufferMode)) {
+        if (!perGameOverrides.setAudioBufferMode(currentOverrideGameId, audioBufferMode)) {
             preferences.audioBufferMode = audioBufferMode
         }
     }
 
     private fun saveAudioLowPassPreference() {
-        if (!perGameOverrides.setAudioLowPassMode(currentGameId, audioLowPassMode)) {
+        if (!perGameOverrides.setAudioLowPassMode(currentOverrideGameId, audioLowPassMode)) {
             preferences.audioLowPassMode = audioLowPassMode
         }
     }
 
     private fun saveFastForwardModePreference() {
-        if (!perGameOverrides.setFastForwardMode(currentGameId, fastForwardMode)) {
+        if (!perGameOverrides.setFastForwardMode(currentOverrideGameId, fastForwardMode)) {
             preferences.fastForwardMode = fastForwardMode
         }
     }
 
     private fun saveFastForwardMultiplierPreference() {
-        if (!perGameOverrides.setFastForwardMultiplier(currentGameId, fastForwardMultiplier)) {
+        if (!perGameOverrides.setFastForwardMultiplier(currentOverrideGameId, fastForwardMultiplier)) {
             preferences.fastForwardMultiplier = fastForwardMultiplier
         }
     }
 
     private fun saveRewindPreference() {
-        if (!perGameOverrides.setRewindEnabled(currentGameId, rewindEnabled)) {
+        if (!perGameOverrides.setRewindEnabled(currentOverrideGameId, rewindEnabled)) {
             preferences.rewindEnabled = rewindEnabled
         }
-        if (!perGameOverrides.setRewindBufferCapacity(currentGameId, rewindBufferCapacity)) {
+        if (!perGameOverrides.setRewindBufferCapacity(currentOverrideGameId, rewindBufferCapacity)) {
             preferences.rewindBufferCapacity = rewindBufferCapacity
         }
-        if (!perGameOverrides.setRewindBufferInterval(currentGameId, rewindBufferInterval)) {
+        if (!perGameOverrides.setRewindBufferInterval(currentOverrideGameId, rewindBufferInterval)) {
             preferences.rewindBufferInterval = rewindBufferInterval
         }
     }
@@ -616,56 +619,56 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun saveGamepadPreference() {
-        if (!perGameOverrides.setShowVirtualGamepad(currentGameId, showVirtualGamepad)) {
+        if (!perGameOverrides.setShowVirtualGamepad(currentOverrideGameId, showVirtualGamepad)) {
             preferences.showVirtualGamepad = showVirtualGamepad
         }
     }
 
     private fun saveGamepadStylePreference() {
-        if (!perGameOverrides.setVirtualGamepadSizePercent(currentGameId, virtualGamepadSizePercent)) {
+        if (!perGameOverrides.setVirtualGamepadSizePercent(currentOverrideGameId, virtualGamepadSizePercent)) {
             preferences.virtualGamepadSizePercent = virtualGamepadSizePercent
         }
-        if (!perGameOverrides.setVirtualGamepadOpacityPercent(currentGameId, virtualGamepadOpacityPercent)) {
+        if (!perGameOverrides.setVirtualGamepadOpacityPercent(currentOverrideGameId, virtualGamepadOpacityPercent)) {
             preferences.virtualGamepadOpacityPercent = virtualGamepadOpacityPercent
         }
-        if (!perGameOverrides.setVirtualGamepadSpacingPercent(currentGameId, virtualGamepadSpacingPercent)) {
+        if (!perGameOverrides.setVirtualGamepadSpacingPercent(currentOverrideGameId, virtualGamepadSpacingPercent)) {
             preferences.virtualGamepadSpacingPercent = virtualGamepadSpacingPercent
         }
-        if (!perGameOverrides.setVirtualGamepadHapticsEnabled(currentGameId, virtualGamepadHapticsEnabled)) {
+        if (!perGameOverrides.setVirtualGamepadHapticsEnabled(currentOverrideGameId, virtualGamepadHapticsEnabled)) {
             preferences.virtualGamepadHapticsEnabled = virtualGamepadHapticsEnabled
         }
-        if (!perGameOverrides.setVirtualGamepadLeftHanded(currentGameId, virtualGamepadLeftHanded)) {
+        if (!perGameOverrides.setVirtualGamepadLeftHanded(currentOverrideGameId, virtualGamepadLeftHanded)) {
             preferences.virtualGamepadLeftHanded = virtualGamepadLeftHanded
         }
     }
 
     private fun saveFrameSkipPreference() {
-        if (!perGameOverrides.setFrameSkip(currentGameId, frameSkip)) {
+        if (!perGameOverrides.setFrameSkip(currentOverrideGameId, frameSkip)) {
             preferences.frameSkip = frameSkip
         }
     }
 
     private fun saveDeadzonePreference() {
-        perGameOverrides.setDeadzonePercent(currentGameId, deadzonePercent)
+        perGameOverrides.setDeadzonePercent(currentOverrideGameId, deadzonePercent)
     }
 
     private fun saveOpposingDirectionsPreference() {
-        if (!perGameOverrides.setAllowOpposingDirections(currentGameId, allowOpposingDirections)) {
+        if (!perGameOverrides.setAllowOpposingDirections(currentOverrideGameId, allowOpposingDirections)) {
             preferences.allowOpposingDirections = allowOpposingDirections
         }
     }
 
     private fun saveRumblePreference() {
-        if (!perGameOverrides.setRumbleEnabled(currentGameId, rumbleEnabled)) {
+        if (!perGameOverrides.setRumbleEnabled(currentOverrideGameId, rumbleEnabled)) {
             preferences.rumbleEnabled = rumbleEnabled
         }
     }
 
     private fun saveSensorPreference() {
-        perGameOverrides.setTiltEnabled(currentGameId, tiltEnabled)
-        perGameOverrides.setTiltCalibration(currentGameId, tiltOffsetX, tiltOffsetY)
-        perGameOverrides.setSolarLevel(currentGameId, solarLevel)
-        perGameOverrides.setUseLightSensor(currentGameId, useLightSensor)
+        perGameOverrides.setTiltEnabled(currentOverrideGameId, tiltEnabled)
+        perGameOverrides.setTiltCalibration(currentOverrideGameId, tiltOffsetX, tiltOffsetY)
+        perGameOverrides.setSolarLevel(currentOverrideGameId, solarLevel)
+        perGameOverrides.setUseLightSensor(currentOverrideGameId, useLightSensor)
     }
 
     private fun startPlayAccounting() {
@@ -1456,9 +1459,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun importCameraImage(imageUri: Uri) {
-        val gameId = currentGameId
+        val overrideGameId = currentOverrideGameId
         val storageGameId = artifactGameId()
-        if (gameId.isNullOrBlank() || storageGameId.isNullOrBlank()) {
+        if (overrideGameId.isNullOrBlank() || storageGameId.isNullOrBlank()) {
             Toast.makeText(this, "Camera image unavailable for this game", Toast.LENGTH_SHORT).show()
             return
         }
@@ -1466,7 +1469,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             val path = copyCameraImage(storageGameId, imageUri)
             val appliedPath = path?.takeIf { setCameraImageFromPath(it) }
             if (appliedPath != null) {
-                perGameOverrides.setCameraImagePath(gameId, appliedPath)
+                perGameOverrides.setCameraImagePath(overrideGameId, appliedPath)
             }
             runOnUiThread {
                 if (appliedPath != null) {
@@ -1486,7 +1489,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             return
         }
         if (!setCameraImageFromPath(path)) {
-            perGameOverrides.clearCameraImagePath(currentGameId)
+            perGameOverrides.clearCameraImagePath(currentOverrideGameId)
             cameraImagePath = ""
         }
     }
@@ -1566,7 +1569,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun clearCameraImage() {
         val previousPath = cameraImagePath
-        perGameOverrides.clearCameraImagePath(currentGameId)
+        perGameOverrides.clearCameraImagePath(currentOverrideGameId)
         cameraImagePath = ""
         controller?.clearCameraImage()
         if (previousPath.isNotBlank()) {
