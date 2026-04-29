@@ -327,6 +327,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         if (userPaused) {
             controller?.pause()
         } else {
+            controller?.resume()
+            startRumblePolling()
             startPlayAccounting()
         }
         updateSensorRegistration()
