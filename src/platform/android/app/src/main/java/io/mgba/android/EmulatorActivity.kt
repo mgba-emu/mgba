@@ -4,6 +4,10 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -42,8 +46,10 @@ import io.mgba.android.storage.SaveExporter
 import java.io.File
 import java.security.MessageDigest
 import java.util.Locale
+import kotlin.math.max
+import kotlin.math.min
 
-class EmulatorActivity : Activity(), SurfaceHolder.Callback {
+class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener {
     private var controller: EmulatorController? = null
     private var gamepadView: VirtualGamepadView? = null
     private lateinit var preferences: EmulatorPreferences
@@ -63,12 +69,19 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var muteButton: Button? = null
     private var scaleButton: Button? = null
     private var padButton: Button? = null
+    private var tiltButton: Button? = null
     private var statsButton: Button? = null
     private var statsOverlay: TextView? = null
     private var userPaused = false
     private var fastForward = false
     private var muted = false
     private var showVirtualGamepad = true
+    private var tiltEnabled = false
+    private var lastRawTiltX = 0f
+    private var lastRawTiltY = 0f
+    private var tiltOffsetX = 0f
+    private var tiltOffsetY = 0f
+    private var gyroZ = 0f
     private var showStats = false
     private var lastStatsFrames = 0L
     private var lastStatsAtMs = 0L
@@ -83,6 +96,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private val statsHandler = Handler(Looper.getMainLooper())
     private val rumbleHandler = Handler(Looper.getMainLooper())
     private val vibrator: Vibrator? by lazy { getSystemService(Vibrator::class.java) }
+    private val sensorManager: SensorManager? by lazy { getSystemService(SensorManager::class.java) }
+    private val accelerometer: Sensor? by lazy { sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
+    private val gyroscope: Sensor? by lazy { sensorManager?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
     private var lastRumbleAtMs = 0L
     private val statsRunnable = object : Runnable {
         override fun run() {
@@ -188,6 +204,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             startPlayAccounting()
         }
         startRumblePolling()
+        updateSensorRegistration()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -215,6 +232,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         clearInput()
         recordPlayTime()
         stopRumblePolling()
+        unregisterSensors()
         stopStatsOverlay()
         controller?.pause()
         super.onPause()
@@ -224,6 +242,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         clearInput()
         recordPlayTime()
         stopRumblePolling()
+        unregisterSensors()
         stopStatsOverlay()
         controller?.setSurface(null)
         super.onDestroy()
@@ -238,6 +257,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         } else {
             startPlayAccounting()
         }
+        updateSensorRegistration()
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
@@ -248,9 +268,28 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         hasSurface = false
         clearInput()
         recordPlayTime()
+        unregisterSensors()
         controller?.pause()
         controller?.setSurface(null)
     }
+
+    override fun onSensorChanged(event: SensorEvent) {
+        if (!tiltEnabled) {
+            return
+        }
+        when (event.sensor.type) {
+            Sensor.TYPE_ACCELEROMETER -> {
+                lastRawTiltX = clamp(event.values[0] / SensorManager.GRAVITY_EARTH)
+                lastRawTiltY = clamp(event.values[1] / SensorManager.GRAVITY_EARTH)
+            }
+            Sensor.TYPE_GYROSCOPE -> {
+                gyroZ = clamp(event.values[2] / MAX_GYRO_RADIANS)
+            }
+        }
+        syncRotation()
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (pendingHardwareMappingMask != 0) {
@@ -368,6 +407,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                         startRumblePolling()
                         startPlayAccounting()
                     }
+                    updateSensorRegistration()
                     updateRunButtons()
                 }
             }
@@ -417,6 +457,21 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 }
             }
             runRow.addView(padButton)
+            tiltButton = Button(context).apply {
+                setOnClickListener {
+                    tiltEnabled = !tiltEnabled
+                    updateSensorRegistration()
+                    updateRunButtons()
+                    Toast.makeText(context, if (tiltEnabled) "Tilt enabled" else "Tilt disabled", Toast.LENGTH_SHORT).show()
+                }
+            }
+            runRow.addView(tiltButton)
+            runRow.addView(Button(context).apply {
+                text = "Cal"
+                setOnClickListener {
+                    calibrateTilt()
+                }
+            })
             runRow.addView(Button(context).apply {
                 text = "Keys"
                 setOnClickListener {
@@ -582,7 +637,41 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         muteButton?.text = if (muted) "Sound" else "Mute"
         scaleButton?.text = SCALE_LABELS[scaleMode]
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
+        tiltButton?.text = if (tiltEnabled) "Tilt*" else "Tilt"
         statsButton?.text = if (showStats) "Stats*" else "Stats"
+    }
+
+    private fun updateSensorRegistration() {
+        unregisterSensors()
+        if (!tiltEnabled || userPaused || !hasSurface) {
+            controller?.setRotation(0f, 0f, 0f)
+            return
+        }
+        accelerometer?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
+        gyroscope?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
+    }
+
+    private fun unregisterSensors() {
+        sensorManager?.unregisterListener(this)
+        controller?.setRotation(0f, 0f, 0f)
+    }
+
+    private fun calibrateTilt() {
+        tiltOffsetX = lastRawTiltX
+        tiltOffsetY = lastRawTiltY
+        gyroZ = 0f
+        syncRotation()
+        Toast.makeText(this, "Tilt calibrated", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun syncRotation() {
+        val tiltX = clamp(lastRawTiltX - tiltOffsetX)
+        val tiltY = clamp(lastRawTiltY - tiltOffsetY)
+        controller?.setRotation(tiltX, tiltY, gyroZ)
+    }
+
+    private fun clamp(value: Float): Float {
+        return max(-1f, min(1f, value))
     }
 
     private fun showInputMappingDialog() {
@@ -977,6 +1066,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L
+        private const val MAX_GYRO_RADIANS = 8f
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int")
     }
 }

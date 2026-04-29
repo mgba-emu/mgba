@@ -216,6 +216,13 @@ Java_io_mgba_android_bridge_NativeBridge_nativePollRumble(JNIEnv*, jclass, jlong
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetRotation(JNIEnv*, jclass, jlong handle, jfloat tiltX, jfloat tiltY, jfloat gyroZ) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setRotation(tiltX, tiltY, gyroZ);
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeStart(JNIEnv*, jclass, jlong handle) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
 		runner->start();

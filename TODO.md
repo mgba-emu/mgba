@@ -86,8 +86,9 @@
 - [x] 已新增即时存档槽位缩略图：保存时生成、切换槽位显示、删除/导入时清理。
 - [x] 已新增 ROM 库按 SAF 文件夹来源增量合并扫描，避免重扫一个目录时冲掉其他库来源。
 - [x] 已接入 native `mPERIPH_RUMBLE` 到 Android `Vibrator` 的运行时震动反馈。
+- [x] 已接入 Android accelerometer/gyroscope 到 native `mPERIPH_ROTATION`，并提供 Tilt 开关和 Cal 校准。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
-- [ ] ROM 库封面、profile 导入/导出、rotation/solar 传感器输入仍待后续阶段实现。
+- [ ] ROM 库封面、profile 导入/导出和 solar 传感器输入仍待后续阶段实现。
 
 ## 1. 产品目标和范围
 
@@ -574,9 +575,9 @@ object NativeBridge {
   - [x] Native 接 mGBA `mPERIPH_RUMBLE`。
   - [x] Kotlin 使用 `Vibrator` / `VibrationEffect` / controller haptics。
 - [ ] Rotation / tilt：
-  - [ ] Native 接 `mPERIPH_ROTATION`。
-  - [ ] Kotlin 监听 accelerometer / gyroscope。
-  - [ ] 提供校准按钮。
+  - [x] Native 接 `mPERIPH_ROTATION`。
+  - [x] Kotlin 监听 accelerometer / gyroscope。
+  - [x] 提供校准按钮。
 - [ ] Solar sensor：
   - [ ] 默认提供手动亮度滑条。
   - [ ] 可选使用 Android light sensor。

@@ -30,6 +30,11 @@ struct AndroidRumbleState {
 	AndroidCoreRunner* runner = nullptr;
 };
 
+struct AndroidRotationState {
+	mRotationSource d = {};
+	AndroidCoreRunner* runner = nullptr;
+};
+
 class AndroidCoreRunner {
 public:
 	AndroidCoreRunner(std::string basePath, std::string cachePath);
@@ -57,6 +62,10 @@ public:
 	bool importCheatsFd(int fd);
 	bool pollRumble() const;
 	void setRumbleActive(bool active);
+	void setRotation(float tiltX, float tiltY, float gyroZ);
+	int32_t readTiltX() const;
+	int32_t readTiltY() const;
+	int32_t readGyroZ() const;
 	void start();
 	void pause();
 	void resume();
@@ -92,7 +101,11 @@ private:
 	std::atomic<int> m_scaleMode{0};
 	std::atomic<uint64_t> m_frameCounter{0};
 	std::atomic<bool> m_rumbleActive{false};
+	std::atomic<int32_t> m_tiltX{0};
+	std::atomic<int32_t> m_tiltY{0};
+	std::atomic<int32_t> m_gyroZ{0};
 	AndroidRumbleState m_rumble;
+	AndroidRotationState m_rotation;
 
 	ANativeWindow* m_window = nullptr;
 	EGLDisplay m_display = EGL_NO_DISPLAY;

@@ -119,6 +119,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         return handle.isValid && NativeBridge.nativePollRumble(handle.value)
     }
 
+    fun setRotation(tiltX: Float, tiltY: Float, gyroZ: Float) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetRotation(handle.value, tiltX, tiltY, gyroZ)
+        }
+    }
+
     fun start() {
         if (handle.isValid) {
             NativeBridge.nativeStart(handle.value)

@@ -21,6 +21,7 @@
 #include <cstring>
 #include <fstream>
 #include <iomanip>
+#include <limits>
 #include <sstream>
 #include <utility>
 
@@ -245,6 +246,33 @@ void AndroidRumbleSet(mRumble* rumble, bool enable, uint32_t) {
 void AndroidRumbleIntegrate(mRumble*, uint32_t) {
 }
 
+void AndroidRotationSample(mRotationSource*) {
+}
+
+int32_t AndroidRotationReadTiltX(mRotationSource* rotation) {
+	auto* state = reinterpret_cast<AndroidRotationState*>(rotation);
+	return state && state->runner ? state->runner->readTiltX() : 0;
+}
+
+int32_t AndroidRotationReadTiltY(mRotationSource* rotation) {
+	auto* state = reinterpret_cast<AndroidRotationState*>(rotation);
+	return state && state->runner ? state->runner->readTiltY() : 0;
+}
+
+int32_t AndroidRotationReadGyroZ(mRotationSource* rotation) {
+	auto* state = reinterpret_cast<AndroidRotationState*>(rotation);
+	return state && state->runner ? state->runner->readGyroZ() : 0;
+}
+
+int32_t RotationValueFromFloat(float value) {
+	if (value < -1.0f) {
+		value = -1.0f;
+	} else if (value > 1.0f) {
+		value = 1.0f;
+	}
+	return static_cast<int32_t>(value * static_cast<float>(std::numeric_limits<int32_t>::max()));
+}
+
 GLuint CompileShader(GLenum type, const char* source) {
 	GLuint shader = glCreateShader(type);
 	glShaderSource(shader, 1, &source, nullptr);
@@ -443,6 +471,18 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	m_rumble.d.integrate = AndroidRumbleIntegrate;
 	if (m_core->setPeripheral) {
 		m_core->setPeripheral(m_core, mPERIPH_RUMBLE, &m_rumble.d);
+	}
+	m_tiltX = 0;
+	m_tiltY = 0;
+	m_gyroZ = 0;
+	m_rotation = {};
+	m_rotation.runner = this;
+	m_rotation.d.sample = AndroidRotationSample;
+	m_rotation.d.readTiltX = AndroidRotationReadTiltX;
+	m_rotation.d.readTiltY = AndroidRotationReadTiltY;
+	m_rotation.d.readGyroZ = AndroidRotationReadGyroZ;
+	if (m_core->setPeripheral) {
+		m_core->setPeripheral(m_core, mPERIPH_ROTATION, &m_rotation.d);
 	}
 
 	struct mGameInfo info;
@@ -795,6 +835,24 @@ void AndroidCoreRunner::setRumbleActive(bool active) {
 	m_rumbleActive = active;
 }
 
+void AndroidCoreRunner::setRotation(float tiltX, float tiltY, float gyroZ) {
+	m_tiltX = RotationValueFromFloat(tiltX);
+	m_tiltY = RotationValueFromFloat(tiltY);
+	m_gyroZ = RotationValueFromFloat(gyroZ);
+}
+
+int32_t AndroidCoreRunner::readTiltX() const {
+	return m_tiltX.load();
+}
+
+int32_t AndroidCoreRunner::readTiltY() const {
+	return m_tiltY.load();
+}
+
+int32_t AndroidCoreRunner::readGyroZ() const {
+	return m_gyroZ.load();
+}
+
 void AndroidCoreRunner::start() {
 	if (m_running.exchange(true)) {
 		m_paused = false;
@@ -1086,8 +1144,12 @@ void AndroidCoreRunner::unloadCore() {
 	}
 	if (m_core->setPeripheral) {
 		m_core->setPeripheral(m_core, mPERIPH_RUMBLE, nullptr);
+		m_core->setPeripheral(m_core, mPERIPH_ROTATION, nullptr);
 	}
 	m_rumbleActive = false;
+	m_tiltX = 0;
+	m_tiltY = 0;
+	m_gyroZ = 0;
 	m_core->unloadROM(m_core);
 	m_core->deinit(m_core);
 	m_core = nullptr;

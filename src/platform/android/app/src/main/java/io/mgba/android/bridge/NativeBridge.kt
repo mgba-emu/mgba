@@ -77,6 +77,9 @@ object NativeBridge {
     external fun nativePollRumble(handle: Long): Boolean
 
     @JvmStatic
+    external fun nativeSetRotation(handle: Long, tiltX: Float, tiltY: Float, gyroZ: Float)
+
+    @JvmStatic
     external fun nativeStart(handle: Long)
 
     @JvmStatic
