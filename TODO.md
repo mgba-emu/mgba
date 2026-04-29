@@ -606,9 +606,10 @@ object NativeBridge {
 
 ### 7.4 特殊输入/外设
 
-- [ ] Rumble：
+- [x] Rumble：
   - [x] Native 接 mGBA `mPERIPH_RUMBLE`。
   - [x] Kotlin 使用 `Vibrator` / `VibrationEffect` / controller haptics。
+  - [x] 全局和 per-game 开关。
 - [ ] Rotation / tilt：
   - [x] Native 接 `mPERIPH_ROTATION`。
   - [x] Kotlin 监听 accelerometer / gyroscope。
@@ -787,7 +788,7 @@ object NativeBridge {
   - [x] 触屏显示。
   - [ ] 触屏布局编辑。
   - [ ] 手柄映射。
-  - [ ] 震动。
+  - [x] 震动。
   - [x] 允许相反方向。
 - [ ] Storage：
   - [ ] ROM 文件夹。
@@ -1227,7 +1228,7 @@ object NativeBridge {
 
 ### PR 11：高级输入和传感器
 
-- [ ] Rumble。
+- [x] Rumble。
 - [ ] Tilt / gyro。
 - [ ] Solar sensor。
 - [ ] Game Boy Camera 静态图片源。

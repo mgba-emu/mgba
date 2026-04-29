@@ -113,6 +113,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var padSettingsButton: Button? = null
     private var deadzoneButton: Button? = null
     private var opposingDirectionsButton: Button? = null
+    private var rumbleButton: Button? = null
     private var tiltButton: Button? = null
     private var solarButton: Button? = null
     private var statsButton: Button? = null
@@ -138,6 +139,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var virtualGamepadLeftHanded = false
     private var deadzonePercent = AndroidInputMapper.DefaultAxisThresholdPercent
     private var allowOpposingDirections = true
+    private var rumbleEnabled = true
     private var tiltEnabled = false
     private var lastRawTiltX = 0f
     private var lastRawTiltY = 0f
@@ -233,6 +235,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         allowOpposingDirections = perGameOverrides.allowOpposingDirections(
             currentGameId,
             preferences.allowOpposingDirections,
+        )
+        rumbleEnabled = perGameOverrides.rumbleEnabled(
+            currentGameId,
+            preferences.rumbleEnabled,
         )
         tiltEnabled = perGameOverrides.tiltEnabled(currentGameId, false)
         tiltOffsetX = perGameOverrides.tiltOffsetX(currentGameId, 0f)
@@ -619,6 +625,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
+    private fun saveRumblePreference() {
+        if (!perGameOverrides.setRumbleEnabled(currentGameId, rumbleEnabled)) {
+            preferences.rumbleEnabled = rumbleEnabled
+        }
+    }
+
     private fun saveSensorPreference() {
         perGameOverrides.setTiltEnabled(currentGameId, tiltEnabled)
         perGameOverrides.setTiltCalibration(currentGameId, tiltOffsetX, tiltOffsetY)
@@ -918,6 +930,18 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(opposingDirectionsButton)
+            rumbleButton = Button(context).apply {
+                setOnClickListener {
+                    rumbleEnabled = !rumbleEnabled
+                    saveRumblePreference()
+                    if (!rumbleEnabled) {
+                        vibrator?.cancel()
+                        lastRumbleAtMs = 0L
+                    }
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(rumbleButton)
             tiltButton = Button(context).apply {
                 setOnClickListener {
                     tiltEnabled = !tiltEnabled
@@ -1147,6 +1171,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         padSettingsButton?.text = "PadCfg"
         deadzoneButton?.text = "DZ$deadzonePercent"
         opposingDirectionsButton?.text = if (allowOpposingDirections) "OppOn" else "OppOff"
+        rumbleButton?.text = if (rumbleEnabled) "Rumble" else "NoRumble"
         tiltButton?.text = if (tiltEnabled) "Tilt*" else "Tilt"
         solarButton?.text = if (useLightSensor) "Solar*" else "Solar"
         statsButton?.text = if (showStats) "Stats*" else "Stats"
@@ -1736,6 +1761,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     private fun pollRumble() {
+        if (!rumbleEnabled) {
+            return
+        }
         if (controller?.pollRumble() == true) {
             triggerRumblePulse()
         }

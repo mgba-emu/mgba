@@ -135,6 +135,12 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putBoolean(KEY_ALLOW_OPPOSING_DIRECTIONS, value).apply()
         }
 
+    var rumbleEnabled: Boolean
+        get() = preferences.getBoolean(KEY_RUMBLE_ENABLED, true)
+        set(value) {
+            preferences.edit().putBoolean(KEY_RUMBLE_ENABLED, value).apply()
+        }
+
     private companion object {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_FILTER_MODE = "filterMode"
@@ -157,5 +163,6 @@ class EmulatorPreferences(context: Context) {
         const val KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED = "virtualGamepadHapticsEnabled"
         const val KEY_VIRTUAL_GAMEPAD_LEFT_HANDED = "virtualGamepadLeftHanded"
         const val KEY_ALLOW_OPPOSING_DIRECTIONS = "allowOpposingDirections"
+        const val KEY_RUMBLE_ENABLED = "rumbleEnabled"
     }
 }

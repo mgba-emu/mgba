@@ -71,6 +71,7 @@ class MainActivity : Activity() {
     private lateinit var rewindBufferButton: Button
     private lateinit var rewindIntervalButton: Button
     private lateinit var opposingDirectionsButton: Button
+    private lateinit var rumbleButton: Button
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
@@ -260,6 +261,14 @@ class MainActivity : Activity() {
         }
         updateOpposingDirectionsButton()
 
+        rumbleButton = Button(this).apply {
+            setOnClickListener {
+                preferences.rumbleEnabled = !preferences.rumbleEnabled
+                updateRumbleButton()
+            }
+        }
+        updateRumbleButton()
+
         patchButton = Button(this).apply {
             text = patchStore.displayName?.let { "Patch: $it" } ?: "Import Patch"
             setOnClickListener {
@@ -352,6 +361,7 @@ class MainActivity : Activity() {
         root.addView(rewindBufferButton)
         root.addView(rewindIntervalButton)
         root.addView(opposingDirectionsButton)
+        root.addView(rumbleButton)
         root.addView(patchButton)
         root.addView(aboutButton)
         root.addView(logButton)
@@ -779,6 +789,14 @@ class MainActivity : Activity() {
             "Opposite Directions: On"
         } else {
             "Opposite Directions: Off"
+        }
+    }
+
+    private fun updateRumbleButton() {
+        rumbleButton.text = if (preferences.rumbleEnabled) {
+            "Rumble: On"
+        } else {
+            "Rumble: Off"
         }
     }
 
