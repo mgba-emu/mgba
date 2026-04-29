@@ -2947,8 +2947,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         for (slot in 1..9) {
             if (controller?.hasStateSlot(slot) == true) {
                 exportStateSlotToTemp(slot)?.let { file ->
-                    zipFile(zip, "states/slot-$slot.ss", file)
-                    file.delete()
+                    try {
+                        zipFile(zip, "states/slot-$slot.ss", file)
+                    } finally {
+                        file.delete()
+                    }
                 }
             }
             stateThumbnailFile(slot)?.let { file ->
@@ -3078,96 +3081,103 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun readGameDataPackageEntries(zip: ZipInputStream): GameDataImportResult {
         val result = GameDataImportResult()
-        val importDirectory = File(cacheDir, "game-data-import")
+        val importDirectory = File(
+            File(cacheDir, "game-data-import"),
+            SystemClock.elapsedRealtime().toString(),
+        )
         importDirectory.mkdirs()
-        while (true) {
-            val entry = zip.nextEntry ?: break
-            if (entry.isDirectory) {
-                continue
+        try {
+            while (true) {
+                val entry = zip.nextEntry ?: break
+                if (entry.isDirectory) {
+                    continue
+                }
+                val name = entry.name
+                when {
+                    name == "per-game-overrides.json" -> {
+                        result.settingsImported = perGameOverrides.importGameJson(
+                            currentOverrideGameId,
+                            JSONObject(zip.readBytes().toString(Charsets.UTF_8)),
+                        ) || result.settingsImported
+                    }
+                    name == "input-mappings.json" -> {
+                        result.inputMappingsImported = inputMappingStore.importGameJson(
+                            currentOverrideGameId,
+                            JSONObject(zip.readBytes().toString(Charsets.UTF_8)),
+                        ) || result.inputMappingsImported
+                    }
+                    name == "save/battery.sav" -> {
+                        val file = extractZipEntryToFile(zip, File(importDirectory, "battery.sav"))
+                        result.saveImported = importBatterySaveFile(file) || result.saveImported
+                        file.delete()
+                    }
+                    name.startsWith("states/slot-") && name.endsWith(".ss") -> {
+                        val slot = name.substringAfter("slot-").substringBefore(".ss").toIntOrNull()
+                        val file = extractZipEntryToFile(zip, File(importDirectory, "state-${slot ?: 0}.ss"))
+                        if (slot != null && slot in 1..9) {
+                            if (importStateSlotFile(file, slot)) {
+                                result.statesImported += 1
+                            }
+                        }
+                        file.delete()
+                    }
+                    name.startsWith("state-thumbnails/slot-") && name.endsWith(".png") -> {
+                        val slot = name.substringAfter("slot-").substringBefore(".png").toIntOrNull()
+                        if (slot != null && slot in 1..9) {
+                            stateThumbnailFile(slot, forWrite = true)?.let { target ->
+                                target.parentFile?.mkdirs()
+                                extractZipEntryToFile(zip, target)
+                                result.stateThumbnailsImported += 1
+                            }
+                        }
+                    }
+                    name.startsWith("cheats/") -> {
+                        val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
+                        if (fileName != null) {
+                            val file = extractZipEntryToFile(zip, File(importDirectory, fileName))
+                            result.cheatsImported = cheatStore.importForGameFile(
+                                artifactGameId(),
+                                file,
+                                file.name,
+                            ) || result.cheatsImported
+                            file.delete()
+                        }
+                    }
+                    name.startsWith("patches/") -> {
+                        val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
+                        if (fileName != null) {
+                            val file = extractZipEntryToFile(zip, File(importDirectory, fileName))
+                            result.patchImported = patchStore.importForGameFile(
+                                artifactGameId(),
+                                file,
+                                file.name,
+                            ) || result.patchImported
+                            file.delete()
+                        }
+                    }
+                    name.startsWith("bios/") -> {
+                        val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
+                        val slot = biosSlotForPackageEntry(name)
+                        if (fileName != null && slot != null) {
+                            val file = extractZipEntryToFile(zip, File(importDirectory, fileName))
+                            if (biosStore.importForGameFile(artifactGameId(), slot, file, file.name)) {
+                                result.biosImported += 1
+                            }
+                            file.delete()
+                        }
+                    }
+                    name.startsWith("camera/") -> {
+                        val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
+                        if (fileName != null) {
+                            val file = extractZipEntryToFile(zip, File(importDirectory, fileName))
+                            result.cameraImageImported = importCameraImageFile(file) || result.cameraImageImported
+                            file.delete()
+                        }
+                    }
+                }
             }
-            val name = entry.name
-            when {
-                name == "per-game-overrides.json" -> {
-                    result.settingsImported = perGameOverrides.importGameJson(
-                        currentOverrideGameId,
-                        JSONObject(zip.readBytes().toString(Charsets.UTF_8)),
-                    ) || result.settingsImported
-                }
-                name == "input-mappings.json" -> {
-                    result.inputMappingsImported = inputMappingStore.importGameJson(
-                        currentOverrideGameId,
-                        JSONObject(zip.readBytes().toString(Charsets.UTF_8)),
-                    ) || result.inputMappingsImported
-                }
-                name == "save/battery.sav" -> {
-                    val file = extractZipEntryToFile(zip, File(importDirectory, "battery.sav"))
-                    result.saveImported = importBatterySaveFile(file) || result.saveImported
-                    file.delete()
-                }
-                name.startsWith("states/slot-") && name.endsWith(".ss") -> {
-                    val slot = name.substringAfter("slot-").substringBefore(".ss").toIntOrNull()
-                    val file = extractZipEntryToFile(zip, File(importDirectory, "state-${slot ?: 0}.ss"))
-                    if (slot != null && slot in 1..9) {
-                        if (importStateSlotFile(file, slot)) {
-                            result.statesImported += 1
-                        }
-                    }
-                    file.delete()
-                }
-                name.startsWith("state-thumbnails/slot-") && name.endsWith(".png") -> {
-                    val slot = name.substringAfter("slot-").substringBefore(".png").toIntOrNull()
-                    if (slot != null && slot in 1..9) {
-                        stateThumbnailFile(slot, forWrite = true)?.let { target ->
-                            target.parentFile?.mkdirs()
-                            extractZipEntryToFile(zip, target)
-                            result.stateThumbnailsImported += 1
-                        }
-                    }
-                }
-                name.startsWith("cheats/") -> {
-                    val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
-                    if (fileName != null) {
-                        val file = extractZipEntryToFile(zip, File(importDirectory, fileName))
-                        result.cheatsImported = cheatStore.importForGameFile(
-                            artifactGameId(),
-                            file,
-                            file.name,
-                        ) || result.cheatsImported
-                        file.delete()
-                    }
-                }
-                name.startsWith("patches/") -> {
-                    val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
-                    if (fileName != null) {
-                        val file = extractZipEntryToFile(zip, File(importDirectory, fileName))
-                        result.patchImported = patchStore.importForGameFile(
-                            artifactGameId(),
-                            file,
-                            file.name,
-                        ) || result.patchImported
-                        file.delete()
-                    }
-                }
-                name.startsWith("bios/") -> {
-                    val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
-                    val slot = biosSlotForPackageEntry(name)
-                    if (fileName != null && slot != null) {
-                        val file = extractZipEntryToFile(zip, File(importDirectory, fileName))
-                        if (biosStore.importForGameFile(artifactGameId(), slot, file, file.name)) {
-                            result.biosImported += 1
-                        }
-                        file.delete()
-                    }
-                }
-                name.startsWith("camera/") -> {
-                    val fileName = name.substringAfterLast('/').takeIf { it.isNotBlank() }
-                    if (fileName != null) {
-                        val file = extractZipEntryToFile(zip, File(importDirectory, fileName))
-                        result.cameraImageImported = importCameraImageFile(file) || result.cameraImageImported
-                        file.delete()
-                    }
-                }
-            }
+        } finally {
+            importDirectory.deleteRecursively()
         }
         return result
     }
