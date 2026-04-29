@@ -2675,7 +2675,10 @@ class MainActivity : Activity() {
         val deleted = clearCacheDirectory("archive-roms") +
             clearCacheDirectory("archive-files") +
             clearCacheDirectory("imports")
-        nativeStatus.text = "${getString(R.string.native_version_label)}: Cache cleared ($deleted files)"
+        val thumbnailBytes = coverThumbnailCache.size()
+        coverThumbnailCache.evictAll()
+        val thumbnailStatus = if (thumbnailBytes > 0) ", ${formatBytes(thumbnailBytes.toLong())} thumbnails" else ""
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Cache cleared ($deleted files$thumbnailStatus)"
     }
 
     private fun showStorageDialog() {
@@ -2708,10 +2711,11 @@ class MainActivity : Activity() {
             "Archive files" to File(cacheDir, "archive-files"),
             "Import cache" to File(cacheDir, "imports"),
         )
-        return entries.joinToString("\n") { (label, file) ->
+        val diskSummary = entries.joinToString("\n") { (label, file) ->
             val stats = storageStats(file)
             "$label: ${stats.count} files, ${formatBytes(stats.bytes)}"
         }
+        return "$diskSummary\nCover thumbnails memory: ${formatBytes(coverThumbnailCache.size().toLong())}"
     }
 
     private fun storageStats(file: File): StorageStats {
