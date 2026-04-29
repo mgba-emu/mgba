@@ -137,6 +137,14 @@ Java_io_mgba_android_bridge_NativeBridge_nativeImportBatterySaveFd(JNIEnv*, jcla
 	return JNI_FALSE;
 }
 
+extern "C" JNIEXPORT jboolean JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeImportCheatsFd(JNIEnv*, jclass, jlong handle, jint fd) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		return runner->importCheatsFd(fd) ? JNI_TRUE : JNI_FALSE;
+	}
+	return JNI_FALSE;
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeStart(JNIEnv*, jclass, jlong handle) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {

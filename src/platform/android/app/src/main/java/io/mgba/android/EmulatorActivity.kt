@@ -109,11 +109,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != REQUEST_IMPORT_SAVE || resultCode != RESULT_OK) {
+        if (resultCode != RESULT_OK) {
             return
         }
         val uri = data?.data ?: return
-        importBatterySave(uri)
+        when (requestCode) {
+            REQUEST_IMPORT_SAVE -> importBatterySave(uri)
+            REQUEST_IMPORT_CHEATS -> importCheats(uri)
+        }
     }
 
     override fun onPause() {
@@ -304,6 +307,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                     openSaveImportPicker()
                 }
             })
+            stateRow.addView(Button(context).apply {
+                text = "Cheats"
+                setOnClickListener {
+                    openCheatImportPicker()
+                }
+            })
             addView(runRow)
             addView(stateRow)
             updateSlotButton()
@@ -339,6 +348,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         startActivityForResult(intent, REQUEST_IMPORT_SAVE)
     }
 
+    private fun openCheatImportPicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_IMPORT_CHEATS)
+    }
+
     private fun importBatterySave(uri: Uri) {
         val ok = runCatching {
             contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
@@ -346,6 +364,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             } == true
         }.getOrDefault(false)
         Toast.makeText(this, if (ok) "Save imported" else "Import failed", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun importCheats(uri: Uri) {
+        val ok = runCatching {
+            contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
+                controller?.importCheatsFd(descriptor.fd) == true
+            } == true
+        }.getOrDefault(false)
+        Toast.makeText(this, if (ok) "Cheats imported" else "Cheat import failed", Toast.LENGTH_SHORT).show()
     }
 
     private fun dp(value: Int): Int {
@@ -373,5 +400,6 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
     companion object {
         private const val REQUEST_IMPORT_SAVE = 2001
+        private const val REQUEST_IMPORT_CHEATS = 2002
     }
 }

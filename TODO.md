@@ -46,6 +46,7 @@
 - [x] 已实现 patch SAF 导入到 app 私有目录，并在 native ROM 加载后尝试应用。
 - [x] 已实现电池存档从 native 内存克隆导出，并通过 MediaStore 写入 Android 10+ `Documents/mGBA`。
 - [x] 已实现 SAF 电池存档导入，直接恢复到当前 core savedata 并写回当前游戏存档。
+- [x] 已实现 SAF cheat 文件导入，native 侧调用 `mCheatParseFile` 解析并应用到当前 core。
 - [x] 已实现 emulator 画面沉浸全屏与游玩时保持屏幕常亮。
 - [x] 已实现虚拟按键按下时的系统 haptic feedback。
 - [x] 已提交 Gradle wrapper，Android 工程可直接使用 `./gradlew :app:assembleDebug` 构建。

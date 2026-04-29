@@ -1,6 +1,7 @@
 #include "AndroidCoreRunner.h"
 
 #include <mgba/core/config.h>
+#include <mgba/core/cheats.h>
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
 #include <mgba/core/serialize.h>
@@ -521,6 +522,35 @@ bool AndroidCoreRunner::importBatterySaveFd(int fd) {
 		return false;
 	}
 	return m_core->savedataRestore(m_core, savedata.data(), savedata.size(), true);
+}
+
+bool AndroidCoreRunner::importCheatsFd(int fd) {
+	if (fd < 0) {
+		return false;
+	}
+
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (!m_core || !m_core->cheatDevice) {
+		return false;
+	}
+	struct mCheatDevice* device = m_core->cheatDevice(m_core);
+	if (!device) {
+		return false;
+	}
+
+	int ownedFd = dup(fd);
+	if (ownedFd < 0) {
+		return false;
+	}
+
+	struct VFile* vf = VFileFromFD(ownedFd);
+	if (!vf) {
+		return false;
+	}
+	mCheatDeviceClear(device);
+	const bool ok = mCheatParseFile(device, vf);
+	vf->close(vf);
+	return ok;
 }
 
 void AndroidCoreRunner::start() {

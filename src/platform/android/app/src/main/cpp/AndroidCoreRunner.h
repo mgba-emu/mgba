@@ -36,6 +36,7 @@ public:
 	std::string takeScreenshot();
 	std::string exportBatterySave();
 	bool importBatterySaveFd(int fd);
+	bool importCheatsFd(int fd);
 	void start();
 	void pause();
 	void resume();
