@@ -159,6 +159,7 @@
 - [x] 已完成 Android 最终本地构建验收：`assembleDebug`、`testDebugUnitTest`、`assembleRelease`、`bundleRelease` 和 native warnings-as-errors 均通过。
 - [x] 已新增 Android ACTION_VIEW ROM 文件打开入口，支持文件管理器/系统分享面板以 `.gba`、`.gb`、`.gbc`、`.sgb`、`.zip`、`.7z` 启动。
 - [x] 已完成 OnePlus7 真机首帧验证：通过 ACTION_VIEW 打开仓库 homebrew GB/GBA 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
+- [x] 已完成 OnePlus7 真机 GBC 验证：通过 ACTION_VIEW 打开仓库 homebrew GBC 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 首帧真机截图验证已在 OnePlus7 上执行；模拟器因性能过慢已停用。
 
 ## 1. 产品目标和范围
@@ -1110,7 +1111,7 @@ object NativeBridge {
 
 - [x] GBA ROM。
 - [x] GB ROM。
-- [ ] GBC ROM。
+- [x] GBC ROM。
 - [ ] 需要 RTC 的游戏。
 - [ ] 需要 rumble 的游戏。
 - [ ] 需要 tilt 的游戏。
@@ -1315,7 +1316,7 @@ object NativeBridge {
 
 ## 21. 最终 Definition of Done
 
-- [ ] Android App 可以从用户文件/文件夹启动 GBA、GB、GBC ROM。
+- [x] Android App 可以从用户文件/文件夹启动 GBA、GB、GBC ROM。
 - [ ] 视频、音频、输入完整可玩。
 - [ ] 保存、读档、截图、BIOS、patch、cheat、archive 至少达到桌面常用功能。
 - [x] ROM 库和最近游戏可用。
