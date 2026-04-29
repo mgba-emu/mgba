@@ -61,3 +61,7 @@ Release builds are unsigned unless signing inputs are provided. Configure either
 ## Crash symbolication
 
 Release native symbols are produced at `app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip` and uploaded by CI as `mgba-android-release-native-symbols`. See [CRASH_SYMBOLS.md](CRASH_SYMBOLS.md) for the local and internal release crash debug flow.
+
+## Validation
+
+Use [VALIDATION.md](VALIDATION.md) for the repeatable device, emulator, storage, input, save-state, screenshot, sensor, and diagnostics validation flow.

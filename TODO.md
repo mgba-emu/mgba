@@ -152,6 +152,7 @@
 - [x] 已新增 Android CI 合规检查：禁止在 App 源码中捆绑 ROM、save、savestate 或 BIOS 文件。
 - [x] 已新增 Android Storage 管理摘要：展示 saves/states/screenshots/covers/logs/cache 占用并可清日志或 cache。
 - [x] 已增强 Android ROM 扫描进度：首页扫描/重扫时显示已发现数量和当前 ROM 名称。
+- [x] 已新增 Android 可重复手工验收清单，覆盖构建、设备矩阵、ROM、输入、存档、截图、传感器和诊断。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -1316,4 +1317,4 @@ object NativeBridge {
 - [x] CI 自动构建 Android。
 - [x] License / 第三方声明完整。
 - [x] 没有提交商业 ROM、BIOS 或不可分发资源。
-- [ ] 有一套可重复执行的手工验收清单和至少基础自动化测试。
+- [x] 有一套可重复执行的手工验收清单和至少基础自动化测试。
