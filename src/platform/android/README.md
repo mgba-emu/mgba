@@ -21,3 +21,17 @@ cd src/platform/android
 ```
 
 The checked-in Gradle wrapper pins Gradle 9.3.1 for reproducible local and CI builds.
+
+## Release signing
+
+Release builds are unsigned unless signing inputs are provided. Configure either Gradle properties or matching environment variables:
+
+| Gradle property | Environment variable |
+| --- | --- |
+| `mgbaAndroidKeystoreFile` | `MGBA_ANDROID_KEYSTORE_FILE` |
+| `mgbaAndroidKeystoreBase64` | `MGBA_ANDROID_KEYSTORE_BASE64` |
+| `mgbaAndroidKeystorePassword` | `MGBA_ANDROID_KEYSTORE_PASSWORD` |
+| `mgbaAndroidKeyAlias` | `MGBA_ANDROID_KEY_ALIAS` |
+| `mgbaAndroidKeyPassword` | `MGBA_ANDROID_KEY_PASSWORD` |
+
+`mgbaAndroidKeystoreFile` points to a local keystore path. `mgbaAndroidKeystoreBase64` is useful for CI secrets and is decoded into the build directory at configuration time. When all required values are present, `:app:assembleRelease` and `:app:bundleRelease` use the release signing config automatically.

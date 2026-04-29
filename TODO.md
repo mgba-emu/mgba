@@ -129,6 +129,7 @@
 - [x] 已为 ROM 库封面缩略图新增 LRU 内存 cache、按目标尺寸下采样，并在 `onTrimMemory` 中清理/收缩。
 - [x] 已补齐 cheat 条目级编辑/删除：导入或手动新增后的单条作弊码可修改名称和代码内容。
 - [x] 已补齐 patch 自动搜索文件名：除 CRC32 外也查找 `<romName>.ips/.ups/.bps` 和完整显示名派生的补丁名。
+- [x] 已新增 Android internal release signing config：支持 keystore 文件或 base64 secret，并在 README 中记录本地/CI 配置变量。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -1109,7 +1110,7 @@ object NativeBridge {
 
 - [x] Debug APK。
 - [x] Release APK 构建输出（当前为 unsigned）。
-- [ ] Internal Release APK 签名配置。
+- [x] Internal Release APK 签名配置。
 - [x] AAB。
 - [x] Proguard/R8 验证。
 - [x] Native symbols 输出：
