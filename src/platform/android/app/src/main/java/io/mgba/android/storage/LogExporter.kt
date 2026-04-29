@@ -57,11 +57,8 @@ object LogExporter {
     }
 
     private fun collectLogs(context: Context): String {
-        val process = Runtime.getRuntime().exec(arrayOf("logcat", "-d", "-t", "1000"))
-        val output = process.inputStream.bufferedReader().use { it.readText() }
-        val error = process.errorStream.bufferedReader().use { it.readText() }
-        process.waitFor()
         val appLog = AppLogStore.recent(context)
+        val logcat = readLogcat()
         return buildString {
             appendLine("mGBA Android log export")
             appendLine("Generated: ${Date()}")
@@ -74,16 +71,33 @@ object LogExporter {
             }
             appendLine()
             appendLine("Logcat:")
-            if (output.isBlank() && error.isBlank()) {
+            if (logcat.output.isBlank() && logcat.error.isBlank()) {
                 appendLine("No logcat output was available.")
             } else {
-                append(output)
-                if (error.isNotBlank()) {
+                append(logcat.output)
+                if (logcat.error.isNotBlank()) {
                     appendLine()
                     appendLine("logcat stderr:")
-                    append(error)
+                    append(logcat.error)
                 }
             }
         }
     }
+
+    private fun readLogcat(): LogcatOutput {
+        return runCatching {
+            val process = Runtime.getRuntime().exec(arrayOf("logcat", "-d", "-t", "1000"))
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val error = process.errorStream.bufferedReader().use { it.readText() }
+            process.waitFor()
+            LogcatOutput(output, error)
+        }.getOrElse { error ->
+            LogcatOutput("", error.stackTraceToString())
+        }
+    }
+
+    private data class LogcatOutput(
+        val output: String,
+        val error: String,
+    )
 }

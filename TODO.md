@@ -145,6 +145,7 @@
 - [x] 已新增 Android 游戏内诊断导出：运行中可把 native stats、音频/输入/传感器状态写入日志并导出。
 - [x] 已新增 Android ABI smoke CI matrix：支持 `mgbaAndroidAbiFilters` 单 ABI native warning 构建。
 - [x] 已增强 Android 日志/诊断导出：Android 6-9 通过 SAF 创建文档 fallback 导出。
+- [x] 已增强 Android 日志导出韧性：`logcat` 不可用时仍导出 App ring buffer。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
