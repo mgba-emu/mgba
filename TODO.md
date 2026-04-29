@@ -190,6 +190,7 @@
 - [x] 已为 Android JNI 入口新增 native guard：native 异常会写入 logcat，并返回 JSON / false / 0 / 空字符串等可处理结果。
 - [x] 已新增 Android AAudio 输出后端：API 26+ 通过 `dlopen` 优先使用 AAudio，失败或旧系统自动回落 OpenSL ES，并在 native stats/诊断中展示后端。
 - [x] 已新增 Android frame pacing 诊断：native stats/overlay/日志导出包含目标帧时长、实际帧间隔、jitter、sleep late 和采样数。
+- [x] 已将 Android GL texture upload 切换到 RGB565，并在 native stats/overlay/诊断中展示上传像素格式。
 
 ## 1. 产品目标和范围
 
@@ -497,7 +498,7 @@ object NativeBridge {
   - [x] Kotlin `SurfaceHolder.Callback` 把 `Surface` 传给 native。
   - [x] Native 创建 EGLDisplay / EGLContext / EGLSurface。
   - [x] Native GL 线程负责 `eglMakeCurrent`、上传纹理、绘制、`eglSwapBuffers`。
-- [x] 画面 buffer 使用 mGBA native `mColor`，当前 Android build 走 32-bit `GL_RGBA`/`GL_UNSIGNED_BYTE` texture upload；RGB565 upload 保留为后续优化项。
+- [x] 画面 buffer 使用 mGBA native `mColor`，Android 渲染路径在 GL 上传前转换为 RGB565 `GL_RGB`/`GL_UNSIGNED_SHORT_5_6_5` upload buffer。
 - [x] GBA/GBC 视频尺寸变化时：
   - [x] 调用 `core->currentVideoSize`。
   - [x] 更新 texture 尺寸和 viewport。
@@ -1233,7 +1234,7 @@ object NativeBridge {
 
 - [x] SurfaceView。
 - [x] Native EGL。
-- [ ] RGB565 texture upload。
+- [x] RGB565 texture upload。
 - [x] core thread run。
 - [x] 验收：
   - [x] 测试 ROM 可见画面。

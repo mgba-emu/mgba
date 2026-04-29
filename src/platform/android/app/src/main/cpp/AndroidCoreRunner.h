@@ -145,6 +145,7 @@ private:
 	unsigned m_textureHeight = 224;
 	std::vector<mColor> m_previousVideoBuffer;
 	std::vector<mColor> m_blendedVideoBuffer;
+	std::vector<uint16_t> m_rgb565UploadBuffer;
 	AndroidAudioOutput m_audioOutput;
 
 	std::mutex m_mutex;

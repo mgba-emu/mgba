@@ -2469,7 +2469,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         lastStatsAtMs = now
         statsOverlay?.text = String.format(
             Locale.US,
-            "FPS %.1f  Frame %.2fms\nPace %.2f/%.2fms  Jit %.2f  Late %.2f\nFrames %d\nROM %s  %s\nVideo %dx%d\nRun %s  Fast %s  Rewind %s/%d/%d  Skip %d\nAudio %s/%s  Vol %d%%  Buf %d  LPF %d  Und %d  Q %d\nScale %s  Filter %s  BIOS %s",
+            "FPS %.1f  Frame %.2fms\nPace %.2f/%.2fms  Jit %.2f  Late %.2f\nFrames %d\nROM %s  %s\nVideo %dx%d %s\nRun %s  Fast %s  Rewind %s/%d/%d  Skip %d\nAudio %s/%s  Vol %d%%  Buf %d  LPF %d  Und %d  Q %d\nScale %s  Filter %s  BIOS %s",
             fps,
             frameTimeMs,
             stats.frameTargetUs / 1000.0,
@@ -2481,6 +2481,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             stats.gameTitle.ifBlank { "untitled" },
             stats.videoWidth,
             stats.videoHeight,
+            stats.videoPixelFormat,
             if (stats.running && !stats.paused) "on" else "off",
             if (stats.fastForward) FastForwardModes.labelForMultiplier(stats.fastForwardMultiplier) else "off",
             if (stats.rewinding) "on" else if (stats.rewindEnabled) "ready" else "off",
@@ -2563,7 +2564,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 appendLine("nativeStats=unavailable")
             } else {
                 appendLine("nativeFrames=${stats.frames}")
-                appendLine("nativeVideo=${stats.videoWidth}x${stats.videoHeight}")
+                appendLine("nativeVideo=${stats.videoWidth}x${stats.videoHeight} format=${stats.videoPixelFormat}")
                 appendLine("nativePacing targetUs=${stats.frameTargetUs} actualUs=${stats.frameActualUs} jitterUs=${stats.frameJitterUs} lateUs=${stats.frameLateUs} samples=${stats.framePacingSamples}")
                 appendLine("nativeRun running=${stats.running} paused=${stats.paused} fast=${stats.fastForward} rewind=${stats.rewinding}")
                 appendLine("nativeAudio backend=${stats.audioBackend} volume=${stats.volumePercent} buffer=${stats.audioBufferSamples} lowPass=${stats.audioLowPassRange} started=${stats.audioStarted} paused=${stats.audioPaused} enabled=${stats.audioEnabled} underruns=${stats.audioUnderruns} queuedBuffers=${stats.audioEnqueuedBuffers} queuedFrames=${stats.audioEnqueuedOutputFrames} readFrames=${stats.audioReadFrames} lastReadFrames=${stats.audioLastReadFrames}")

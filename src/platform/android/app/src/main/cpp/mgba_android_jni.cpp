@@ -324,7 +324,7 @@ std::string NativeLoadFailureJson(const std::string& message, const std::string&
 }
 
 std::string NativeStatsFallbackJson() {
-	return "{\"frames\":0,\"videoWidth\":0,\"videoHeight\":0,\"running\":false,\"paused\":true,"
+	return "{\"frames\":0,\"videoWidth\":0,\"videoHeight\":0,\"videoPixelFormat\":\"RGB565\",\"running\":false,\"paused\":true,"
 	    "\"frameTargetUs\":0,\"frameActualUs\":0,\"frameJitterUs\":0,\"frameLateUs\":0,\"framePacingSamples\":0,"
 	    "\"fastForward\":false,\"fastForwardMultiplier\":0,\"rewinding\":false,\"rewindEnabled\":true,"
 	    "\"rewindBufferCapacity\":600,\"rewindBufferInterval\":1,\"frameSkip\":0,\"volumePercent\":100,"

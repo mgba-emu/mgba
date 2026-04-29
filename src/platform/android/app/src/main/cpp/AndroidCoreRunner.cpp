@@ -125,6 +125,36 @@ mColor BlendPixel(mColor current, mColor previous) {
 	return (((current ^ previous) & 0xFEFEFEFEu) >> 1) + (current & previous);
 }
 
+GLint VideoTextureInternalFormat() {
+	return GL_RGB;
+}
+
+GLenum VideoTextureFormat() {
+	return GL_RGB;
+}
+
+GLenum VideoTextureType() {
+	return GL_UNSIGNED_SHORT_5_6_5;
+}
+
+const char* VideoPixelFormatName() {
+	return "RGB565";
+}
+
+uint16_t NativeColorToRgb565(mColor color) {
+	const uint16_t red = static_cast<uint16_t>(color & 0xFFu);
+	const uint16_t green = static_cast<uint16_t>((color >> 8) & 0xFFu);
+	const uint16_t blue = static_cast<uint16_t>((color >> 16) & 0xFFu);
+	return static_cast<uint16_t>(((red >> 3) << 11) | ((green >> 2) << 5) | (blue >> 3));
+}
+
+void ConvertNativePixelsToRgb565(const mColor* source, size_t pixelCount, std::vector<uint16_t>& target) {
+	target.resize(pixelCount);
+	for (size_t i = 0; i < pixelCount; ++i) {
+		target[i] = NativeColorToRgb565(source[i]);
+	}
+}
+
 std::string BoundedString(const char* value, size_t maxLength) {
 	size_t length = 0;
 	while (length < maxLength && value[length]) {
@@ -621,6 +651,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	m_audioOutput.resetUnderrunCount();
 	m_previousVideoBuffer.clear();
 	m_blendedVideoBuffer.clear();
+	m_rgb565UploadBuffer.clear();
 	m_blendFrameReady = false;
 	m_frameCounter = 0;
 	m_rumbleActive = false;
@@ -1102,6 +1133,7 @@ std::string AndroidCoreRunner::statsJson() {
 	out << "{\"frames\":" << m_frameCounter.load()
 	    << ",\"videoWidth\":" << m_videoWidth
 	    << ",\"videoHeight\":" << m_videoHeight
+	    << ",\"videoPixelFormat\":\"" << VideoPixelFormatName() << "\""
 	    << ",\"frameTargetUs\":" << m_frameTargetUs.load()
 	    << ",\"frameActualUs\":" << m_frameActualUs.load()
 	    << ",\"frameJitterUs\":" << m_frameJitterUs.load()
@@ -1534,7 +1566,16 @@ bool AndroidCoreRunner::initGlLocked() {
 	applyTextureFilterLocked();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_videoStride, m_textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	glTexImage2D(
+	    GL_TEXTURE_2D,
+	    0,
+	    VideoTextureInternalFormat(),
+	    m_videoStride,
+	    m_textureHeight,
+	    0,
+	    VideoTextureFormat(),
+	    VideoTextureType(),
+	    nullptr);
 
 	glGenBuffers(1, &m_vbo);
 	return true;
@@ -1629,7 +1670,7 @@ void AndroidCoreRunner::renderFrameLocked() {
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 	applyTextureFilterLocked();
 	const size_t pixelCount = static_cast<size_t>(m_videoStride) * m_videoHeight;
-	const mColor* uploadBuffer = m_videoBuffer.data();
+	const mColor* sourceBuffer = m_videoBuffer.data();
 	if (m_interframeBlending.load() && pixelCount && pixelCount <= m_videoBuffer.size()) {
 		if (m_previousVideoBuffer.size() != pixelCount) {
 			m_previousVideoBuffer.resize(pixelCount);
@@ -1640,7 +1681,7 @@ void AndroidCoreRunner::renderFrameLocked() {
 			for (size_t i = 0; i < pixelCount; ++i) {
 				m_blendedVideoBuffer[i] = BlendPixel(m_videoBuffer[i], m_previousVideoBuffer[i]);
 			}
-			uploadBuffer = m_blendedVideoBuffer.data();
+			sourceBuffer = m_blendedVideoBuffer.data();
 		} else {
 			m_blendFrameReady = true;
 		}
@@ -1650,7 +1691,17 @@ void AndroidCoreRunner::renderFrameLocked() {
 		m_blendedVideoBuffer.clear();
 		m_blendFrameReady = false;
 	}
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_videoStride, m_videoHeight, GL_RGBA, GL_UNSIGNED_BYTE, uploadBuffer);
+	ConvertNativePixelsToRgb565(sourceBuffer, pixelCount, m_rgb565UploadBuffer);
+	glTexSubImage2D(
+	    GL_TEXTURE_2D,
+	    0,
+	    0,
+	    0,
+	    m_videoStride,
+	    m_videoHeight,
+	    VideoTextureFormat(),
+	    VideoTextureType(),
+	    m_rgb565UploadBuffer.data());
 	glUniform1i(m_textureLocation, 0);
 
 	const float u = m_videoWidth / static_cast<float>(m_videoStride);

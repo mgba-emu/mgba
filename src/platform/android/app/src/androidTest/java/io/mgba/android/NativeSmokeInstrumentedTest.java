@@ -59,6 +59,7 @@ public final class NativeSmokeInstrumentedTest {
             NativeStats stats = NativeBridge.INSTANCE.stats(handle);
             assertTrue("Frame counter should advance", stats.getFrames() >= 300L);
             assertEquals("GB", stats.getRomPlatform());
+            assertEquals("RGB565", stats.getVideoPixelFormat());
 
             assertTrue("State save should succeed", NativeBridge.nativeSaveStateSlot(handle, SMOKE_STATE_SLOT));
             assertTrue("State should exist", NativeBridge.nativeHasStateSlot(handle, SMOKE_STATE_SLOT));

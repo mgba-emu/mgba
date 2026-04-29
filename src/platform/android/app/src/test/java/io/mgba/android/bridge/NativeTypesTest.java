@@ -45,6 +45,7 @@ public class NativeTypesTest {
         assertEquals(0L, stats.getFrames());
         assertEquals(0, stats.getVideoWidth());
         assertEquals(0, stats.getVideoHeight());
+        assertEquals("RGB565", stats.getVideoPixelFormat());
         assertEquals(0L, stats.getFrameTargetUs());
         assertEquals(0L, stats.getFrameActualUs());
         assertEquals(0L, stats.getFrameJitterUs());
@@ -70,6 +71,7 @@ public class NativeTypesTest {
     public void statsCoercesInvalidRanges() {
         NativeStats stats = NativeStats.Companion.fromJson(
             "{"
+                + "\"videoPixelFormat\":\"RGB565\","
                 + "\"frameTargetUs\":16667,"
                 + "\"frameActualUs\":16720,"
                 + "\"frameJitterUs\":53,"
@@ -92,6 +94,7 @@ public class NativeTypesTest {
                 + "}"
         );
 
+        assertEquals("RGB565", stats.getVideoPixelFormat());
         assertEquals(16667L, stats.getFrameTargetUs());
         assertEquals(16720L, stats.getFrameActualUs());
         assertEquals(53L, stats.getFrameJitterUs());
