@@ -33,6 +33,10 @@ class PerGameOverrideStore(context: Context) {
         return intOverride(gameId, KEY_AUDIO_BUFFER_MODE, fallback).coerceIn(0, 2)
     }
 
+    fun audioLowPassMode(gameId: String?, fallback: Int): Int {
+        return intOverride(gameId, KEY_AUDIO_LOW_PASS_MODE, fallback).coerceIn(0, 3)
+    }
+
     fun showVirtualGamepad(gameId: String?, fallback: Boolean): Boolean {
         return booleanOverride(gameId, KEY_SHOW_VIRTUAL_GAMEPAD, fallback)
     }
@@ -91,6 +95,10 @@ class PerGameOverrideStore(context: Context) {
 
     fun setAudioBufferMode(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_AUDIO_BUFFER_MODE, value.coerceIn(0, 2))
+    }
+
+    fun setAudioLowPassMode(gameId: String?, value: Int): Boolean {
+        return putIntOverride(gameId, KEY_AUDIO_LOW_PASS_MODE, value.coerceIn(0, 3))
     }
 
     fun setShowVirtualGamepad(gameId: String?, value: Boolean): Boolean {
@@ -162,6 +170,7 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_MUTED = "muted"
         const val KEY_VOLUME_PERCENT = "volumePercent"
         const val KEY_AUDIO_BUFFER_MODE = "audioBufferMode"
+        const val KEY_AUDIO_LOW_PASS_MODE = "audioLowPassMode"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_FRAME_SKIP = "frameSkip"
         const val KEY_DEADZONE_PERCENT = "deadzonePercent"

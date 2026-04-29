@@ -30,6 +30,7 @@ import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.library.RomScanner
 import io.mgba.android.library.RecentGameStore
 import io.mgba.android.settings.AudioBufferModes
+import io.mgba.android.settings.AudioLowPassModes
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.storage.BiosStore
@@ -51,6 +52,7 @@ class MainActivity : Activity() {
     private lateinit var biosButton: Button
     private lateinit var skipBiosButton: Button
     private lateinit var audioBufferButton: Button
+    private lateinit var audioLowPassButton: Button
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
@@ -152,6 +154,14 @@ class MainActivity : Activity() {
         }
         updateAudioBufferButton()
 
+        audioLowPassButton = Button(this).apply {
+            setOnClickListener {
+                preferences.audioLowPassMode = (preferences.audioLowPassMode + 1) % AudioLowPassModes.labels.size
+                updateAudioLowPassButton()
+            }
+        }
+        updateAudioLowPassButton()
+
         patchButton = Button(this).apply {
             text = patchStore.displayName?.let { "Patch: $it" } ?: "Import Patch"
             setOnClickListener {
@@ -222,6 +232,7 @@ class MainActivity : Activity() {
         root.addView(biosButton)
         root.addView(skipBiosButton)
         root.addView(audioBufferButton)
+        root.addView(audioLowPassButton)
         root.addView(patchButton)
         root.addView(aboutButton)
         root.addView(logButton)
@@ -347,6 +358,11 @@ class MainActivity : Activity() {
                         perGameOverrides.audioBufferMode(gameId, preferences.audioBufferMode),
                     ),
                 )
+                emulator.setLowPassRangePercent(
+                    AudioLowPassModes.rangeFor(
+                        perGameOverrides.audioLowPassMode(gameId, preferences.audioLowPassMode),
+                    ),
+                )
                 emulator.loadRomFd(descriptor.fd, name)
             }
         }.getOrNull()
@@ -457,6 +473,10 @@ class MainActivity : Activity() {
 
     private fun updateAudioBufferButton() {
         audioBufferButton.text = "Audio Buffer: ${AudioBufferModes.nameFor(preferences.audioBufferMode)}"
+    }
+
+    private fun updateAudioLowPassButton() {
+        audioLowPassButton.text = "Low Pass: ${AudioLowPassModes.nameFor(preferences.audioLowPassMode)}"
     }
 
     private fun renderLibrary() {

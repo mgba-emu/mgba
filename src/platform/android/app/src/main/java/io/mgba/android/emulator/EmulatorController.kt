@@ -102,6 +102,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setLowPassRangePercent(percent: Int) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetLowPassRangePercent(handle.value, percent.coerceIn(0, 95))
+        }
+    }
+
     fun setScaleMode(mode: Int) {
         if (handle.isValid) {
             NativeBridge.nativeSetScaleMode(handle.value, mode)

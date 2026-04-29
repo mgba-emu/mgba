@@ -47,6 +47,12 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putInt(KEY_AUDIO_BUFFER_MODE, value.coerceIn(0, 2)).apply()
         }
 
+    var audioLowPassMode: Int
+        get() = preferences.getInt(KEY_AUDIO_LOW_PASS_MODE, 0).coerceIn(0, 3)
+        set(value) {
+            preferences.edit().putInt(KEY_AUDIO_LOW_PASS_MODE, value.coerceIn(0, 3)).apply()
+        }
+
     var showVirtualGamepad: Boolean
         get() = preferences.getBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, true)
         set(value) {
@@ -91,6 +97,7 @@ class EmulatorPreferences(context: Context) {
         const val KEY_MUTED = "muted"
         const val KEY_VOLUME_PERCENT = "volumePercent"
         const val KEY_AUDIO_BUFFER_MODE = "audioBufferMode"
+        const val KEY_AUDIO_LOW_PASS_MODE = "audioLowPassMode"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
         const val KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT = "virtualGamepadOpacityPercent"

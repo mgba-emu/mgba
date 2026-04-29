@@ -64,6 +64,7 @@ public:
 	void setAudioEnabled(bool enabled);
 	void setVolumePercent(int percent);
 	void setAudioBufferSamples(int samples);
+	void setLowPassRangePercent(int percent);
 	void setScaleMode(int mode);
 	void setFilterMode(int mode);
 	void setSkipBios(bool enabled);
@@ -119,6 +120,7 @@ private:
 	std::atomic<int> m_frameSkip{0};
 	std::atomic<int> m_volumePercent{100};
 	std::atomic<int> m_audioBufferSamples{1024};
+	std::atomic<int> m_lowPassRangePercent{0};
 	std::atomic<int> m_scaleMode{0};
 	std::atomic<int> m_filterMode{0};
 	std::atomic<bool> m_skipBios{false};

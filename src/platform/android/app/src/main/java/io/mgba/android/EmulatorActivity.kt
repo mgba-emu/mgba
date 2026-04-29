@@ -41,6 +41,7 @@ import io.mgba.android.input.GbaButtons
 import io.mgba.android.input.VirtualGamepadView
 import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.settings.AudioBufferModes
+import io.mgba.android.settings.AudioLowPassModes
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.InputMappingStore
 import io.mgba.android.settings.PerGameOverrideStore
@@ -86,6 +87,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var muteButton: Button? = null
     private var volumeButton: Button? = null
     private var audioBufferButton: Button? = null
+    private var audioLowPassButton: Button? = null
     private var scaleButton: Button? = null
     private var filterButton: Button? = null
     private var orientationButton: Button? = null
@@ -103,6 +105,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var muted = false
     private var volumePercent = 100
     private var audioBufferMode = 1
+    private var audioLowPassMode = 0
     private var showVirtualGamepad = true
     private var virtualGamepadSizePercent = 100
     private var virtualGamepadOpacityPercent = 100
@@ -169,6 +172,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         muted = perGameOverrides.muted(currentGameId, preferences.muted)
         volumePercent = perGameOverrides.volumePercent(currentGameId, preferences.volumePercent)
         audioBufferMode = perGameOverrides.audioBufferMode(currentGameId, preferences.audioBufferMode)
+        audioLowPassMode = perGameOverrides.audioLowPassMode(currentGameId, preferences.audioLowPassMode)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
         virtualGamepadSizePercent = perGameOverrides.virtualGamepadSizePercent(
             currentGameId,
@@ -209,6 +213,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         controller?.setAudioEnabled(!muted)
         controller?.setVolumePercent(volumePercent)
         controller?.setAudioBufferSamples(AudioBufferModes.samplesFor(audioBufferMode))
+        controller?.setLowPassRangePercent(AudioLowPassModes.rangeFor(audioLowPassMode))
 
         val root = FrameLayout(this).apply {
             setBackgroundColor(getColor(R.color.mgba_background))
@@ -495,6 +500,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
+    private fun saveAudioLowPassPreference() {
+        if (!perGameOverrides.setAudioLowPassMode(currentGameId, audioLowPassMode)) {
+            preferences.audioLowPassMode = audioLowPassMode
+        }
+    }
+
     private fun saveGamepadPreference() {
         if (!perGameOverrides.setShowVirtualGamepad(currentGameId, showVirtualGamepad)) {
             preferences.showVirtualGamepad = showVirtualGamepad
@@ -631,6 +642,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(audioBufferButton)
+            audioLowPassButton = Button(context).apply {
+                setOnClickListener {
+                    audioLowPassMode = (audioLowPassMode + 1) % AudioLowPassModes.labels.size
+                    controller?.setLowPassRangePercent(AudioLowPassModes.rangeFor(audioLowPassMode))
+                    saveAudioLowPassPreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(audioLowPassButton)
             scaleButton = Button(context).apply {
                 setOnClickListener {
                     scaleMode = (scaleMode + 1) % SCALE_LABELS.size
@@ -884,6 +904,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         muteButton?.text = if (muted) "Sound" else "Mute"
         volumeButton?.text = "Vol$volumePercent"
         audioBufferButton?.text = AudioBufferModes.labelFor(audioBufferMode)
+        audioLowPassButton?.text = AudioLowPassModes.labelFor(audioLowPassMode)
         scaleButton?.text = SCALE_LABELS[scaleMode]
         filterButton?.text = FILTER_LABELS[filterMode]
         orientationButton?.text = ORIENTATION_LABELS[orientationMode]
@@ -1418,7 +1439,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         lastStatsAtMs = now
         statsOverlay?.text = String.format(
             Locale.US,
-            "FPS %.1f  Frame %.2fms\nFrames %d\nROM %s  %s\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nAudio %s  Vol %d%%  Buf %d  Und %d\nScale %s  Filter %s  BIOS %s",
+            "FPS %.1f  Frame %.2fms\nFrames %d\nROM %s  %s\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nAudio %s  Vol %d%%  Buf %d  LPF %d  Und %d\nScale %s  Filter %s  BIOS %s",
             fps,
             frameTimeMs,
             stats.frames,
@@ -1432,6 +1453,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             if (muted) "muted" else "on",
             stats.volumePercent,
             stats.audioBufferSamples,
+            stats.audioLowPassRange,
             stats.audioUnderruns,
             SCALE_LABELS.getOrElse(stats.scaleMode) { SCALE_LABELS[0] },
             FILTER_LABELS.getOrElse(stats.filterMode) { FILTER_LABELS[0] },

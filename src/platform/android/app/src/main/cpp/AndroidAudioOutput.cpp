@@ -73,6 +73,8 @@ void AndroidAudioOutput::stop() {
 	m_started = false;
 	m_paused = true;
 	m_nextBuffer = 0;
+	m_lowPassLeftPrev = 0;
+	m_lowPassRightPrev = 0;
 }
 
 void AndroidAudioOutput::pause() {
@@ -109,6 +111,8 @@ void AndroidAudioOutput::clear() {
 		mAudioBufferClear(&m_resampledBuffer);
 	}
 	m_nextBuffer = 0;
+	m_lowPassLeftPrev = 0;
+	m_lowPassRightPrev = 0;
 }
 
 void AndroidAudioOutput::setEnabled(bool enabled) {
@@ -125,6 +129,8 @@ void AndroidAudioOutput::setEnabled(bool enabled) {
 			mAudioBufferClear(&m_resampledBuffer);
 		}
 		m_nextBuffer = 0;
+		m_lowPassLeftPrev = 0;
+		m_lowPassRightPrev = 0;
 	} else if (m_started && !m_paused && m_player) {
 		(*m_player)->SetPlayState(m_player, SL_PLAYSTATE_PLAYING);
 	}
@@ -133,6 +139,13 @@ void AndroidAudioOutput::setEnabled(bool enabled) {
 void AndroidAudioOutput::setVolumePercent(int percent) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	m_volumePercent = std::clamp(percent, 0, 100);
+}
+
+void AndroidAudioOutput::setLowPassRangePercent(int percent) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	m_lowPassRange = (std::clamp(percent, 0, 95) * 0x10000) / 100;
+	m_lowPassLeftPrev = 0;
+	m_lowPassRightPrev = 0;
 }
 
 uint64_t AndroidAudioOutput::underrunCount() const {
@@ -294,6 +307,23 @@ size_t AndroidAudioOutput::fillBufferLocked(mCore* core, int16_t* output, size_t
 	const size_t readFrames = mAudioBufferRead(&m_resampledBuffer, output, frames);
 	if (readFrames < frames) {
 		++m_underrunCount;
+	}
+	const int lowPassRange = m_lowPassRange;
+	if (lowPassRange > 0) {
+		int32_t left = m_lowPassLeftPrev;
+		int32_t right = m_lowPassRightPrev;
+		const int32_t factorB = 0x10000 - lowPassRange;
+		for (size_t frame = 0; frame < readFrames; ++frame) {
+			int16_t* sample = output + frame * kChannels;
+			left = (left * lowPassRange) + (static_cast<int32_t>(sample[0]) * factorB);
+			right = (right * lowPassRange) + (static_cast<int32_t>(sample[1]) * factorB);
+			left >>= 16;
+			right >>= 16;
+			sample[0] = static_cast<int16_t>(left);
+			sample[1] = static_cast<int16_t>(right);
+		}
+		m_lowPassLeftPrev = left;
+		m_lowPassRightPrev = right;
 	}
 	const int volumePercent = m_volumePercent;
 	if (volumePercent < 100) {

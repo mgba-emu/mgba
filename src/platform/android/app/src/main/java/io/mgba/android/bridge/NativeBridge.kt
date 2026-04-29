@@ -68,6 +68,9 @@ object NativeBridge {
     external fun nativeSetAudioBufferSamples(handle: Long, samples: Int)
 
     @JvmStatic
+    external fun nativeSetLowPassRangePercent(handle: Long, percent: Int)
+
+    @JvmStatic
     external fun nativeSetScaleMode(handle: Long, mode: Int)
 
     @JvmStatic

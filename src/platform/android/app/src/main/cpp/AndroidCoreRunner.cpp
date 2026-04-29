@@ -741,6 +741,12 @@ void AndroidCoreRunner::setAudioBufferSamples(int samples) {
 	}
 }
 
+void AndroidCoreRunner::setLowPassRangePercent(int percent) {
+	const int clamped = std::clamp(percent, 0, 95);
+	m_lowPassRangePercent = clamped;
+	m_audioOutput.setLowPassRangePercent(clamped);
+}
+
 void AndroidCoreRunner::setScaleMode(int mode) {
 	if (mode < 0 || mode > 4) {
 		mode = 0;
@@ -776,6 +782,7 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"volumePercent\":" << m_volumePercent.load()
 	    << ",\"audioBufferSamples\":" << m_audioBufferSamples.load()
 	    << ",\"audioUnderruns\":" << m_audioOutput.underrunCount()
+	    << ",\"audioLowPassRange\":" << m_lowPassRangePercent.load()
 	    << ",\"romPlatform\":\"" << JsonEscape(m_platformName) << "\""
 	    << ",\"gameTitle\":\"" << JsonEscape(m_gameTitle) << "\""
 	    << ",\"scaleMode\":" << m_scaleMode.load()

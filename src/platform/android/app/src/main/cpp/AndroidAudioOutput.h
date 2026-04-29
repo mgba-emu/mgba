@@ -28,6 +28,7 @@ public:
 	void clear();
 	void setEnabled(bool enabled);
 	void setVolumePercent(int percent);
+	void setLowPassRangePercent(int percent);
 	uint64_t underrunCount() const;
 	void resetUnderrunCount();
 	void enqueueFromCore(mCore* core);
@@ -45,6 +46,9 @@ private:
 	bool m_enabled = true;
 	bool m_resamplerReady = false;
 	int m_volumePercent = 100;
+	int m_lowPassRange = 0;
+	int32_t m_lowPassLeftPrev = 0;
+	int32_t m_lowPassRightPrev = 0;
 
 	SLObjectItf m_engineObject = nullptr;
 	SLEngineItf m_engine = nullptr;

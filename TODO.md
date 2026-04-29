@@ -118,6 +118,7 @@
 - [x] 已新增 Android 音频 buffer 模式：Low/Balanced/Stable 三档、全局启动前应用、运行时 per-game 覆盖和 stats overlay 展示。
 - [x] 已新增 Android 音频 underrun 计数，OpenSL 输出补零时累计并在 debug stats overlay 展示。
 - [x] 已扩展 Android debug stats overlay：展示 FPS、frame time、core frame counter、ROM platform/title、音频 buffer 和 underrun。
+- [x] 已新增 Android 音频低通滤波：复用 libretro 风格单极滤波，支持 Off/40/60/80 全局和 per-game 切换。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -523,7 +524,7 @@ object NativeBridge {
 
 - [x] 音量。
 - [x] 静音。
-- [ ] 低通滤波，参考 libretro 的 `audioLowPass` 实现。
+- [x] 低通滤波，参考 libretro 的 `audioLowPass` 实现。
 - [x] 音频 buffer 大小：低延迟 / 平衡 / 稳定。
 - [ ] 后台音频策略：默认切后台暂停。
 
@@ -768,7 +769,7 @@ object NativeBridge {
   - [x] 音量。
   - [x] 静音。
   - [x] buffer 模式。
-  - [ ] 低通滤波。
+  - [x] 低通滤波。
 - [ ] Emulation：
   - [ ] 使用 BIOS。
   - [ ] BIOS 文件路径。
