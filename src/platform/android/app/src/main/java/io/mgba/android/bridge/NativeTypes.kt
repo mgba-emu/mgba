@@ -34,6 +34,7 @@ data class NativeStats(
     val fastForward: Boolean,
     val scaleMode: Int,
     val filterMode: Int,
+    val skipBios: Boolean,
 ) {
     companion object {
         fun fromJson(raw: String): NativeStats {
@@ -47,6 +48,7 @@ data class NativeStats(
                 fastForward = json.optBoolean("fastForward", false),
                 scaleMode = json.optInt("scaleMode", 0),
                 filterMode = json.optInt("filterMode", 0),
+                skipBios = json.optBoolean("skipBios", false),
             )
         }
     }

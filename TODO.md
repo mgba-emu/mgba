@@ -108,6 +108,7 @@
 - [x] 已修复 Surface 重建后非用户暂停状态不会自动 resume 的生命周期问题。
 - [x] 已在 EmulatorActivity 真正 finish 时关闭 EmulatorSession，释放 native runner/thread/audio。
 - [x] 已收敛 Android Surface 生命周期验收：Surface 销毁释放 EGL/window，恢复时重绑并继续渲染。
+- [x] 已新增 Android Skip BIOS 全局/每游戏设置，启动前传入 native 并可在 reset/下次启动生效。
 - [x] 已新增 Android 画面 Pix/Smooth 过滤切换，JNI 透传到 GLES texture filtering 并按游戏持久化。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
@@ -119,7 +120,7 @@
 - [ ] 支持从 `.zip` 和 `.7z` 中选择/自动识别 ROM。
 - [ ] 支持自动存档、电池存档、即时存档 1-9 槽位。
 - [x] 支持即时读档、即时存档缩略图、存档覆盖确认。
-- [ ] 支持 BIOS 配置、内置 BIOS、跳过 BIOS。
+- [x] 支持 BIOS 配置、内置 BIOS、跳过 BIOS。
 - [ ] 支持 IPS / UPS / BPS 补丁自动加载和手动加载。
 - [ ] 支持作弊码导入、启用、禁用、编辑、保存。
 - [ ] 支持截图。

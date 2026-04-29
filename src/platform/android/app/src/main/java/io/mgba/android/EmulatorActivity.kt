@@ -86,6 +86,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var scaleButton: Button? = null
     private var filterButton: Button? = null
     private var orientationButton: Button? = null
+    private var skipBiosButton: Button? = null
     private var padButton: Button? = null
     private var padSettingsButton: Button? = null
     private var deadzoneButton: Button? = null
@@ -122,6 +123,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var scaleMode = 0
     private var filterMode = 0
     private var orientationMode = 0
+    private var skipBios = false
     private var hasSurface = false
     private var inputMappingDialog: AlertDialog? = null
     private var keyCaptureDialog: AlertDialog? = null
@@ -157,6 +159,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         scaleMode = perGameOverrides.scaleMode(currentGameId, preferences.scaleMode)
         filterMode = perGameOverrides.filterMode(currentGameId, preferences.filterMode)
         orientationMode = perGameOverrides.orientationMode(currentGameId, preferences.orientationMode)
+        skipBios = perGameOverrides.skipBios(currentGameId, preferences.skipBios)
         frameSkip = perGameOverrides.frameSkip(currentGameId, 0)
         muted = perGameOverrides.muted(currentGameId, preferences.muted)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
@@ -194,6 +197,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
         controller?.setScaleMode(scaleMode)
         controller?.setFilterMode(filterMode)
+        controller?.setSkipBios(skipBios)
         controller?.setFrameSkip(frameSkip)
         controller?.setAudioEnabled(!muted)
 
@@ -458,6 +462,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
+    private fun saveSkipBiosPreference() {
+        if (!perGameOverrides.setSkipBios(currentGameId, skipBios)) {
+            preferences.skipBios = skipBios
+        }
+    }
+
     private fun saveMutedPreference() {
         if (!perGameOverrides.setMuted(currentGameId, muted)) {
             preferences.muted = muted
@@ -608,6 +618,16 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(orientationButton)
+            skipBiosButton = Button(context).apply {
+                setOnClickListener {
+                    skipBios = !skipBios
+                    controller?.setSkipBios(skipBios)
+                    saveSkipBiosPreference()
+                    updateRunButtons()
+                    Toast.makeText(context, "BIOS setting applies on reset or next launch", Toast.LENGTH_SHORT).show()
+                }
+            }
+            runRow.addView(skipBiosButton)
             padButton = Button(context).apply {
                 setOnClickListener {
                     showVirtualGamepad = !showVirtualGamepad
@@ -825,6 +845,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         scaleButton?.text = SCALE_LABELS[scaleMode]
         filterButton?.text = FILTER_LABELS[filterMode]
         orientationButton?.text = ORIENTATION_LABELS[orientationMode]
+        skipBiosButton?.text = if (skipBios) "SkipBIOS" else "BIOS"
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
         padSettingsButton?.text = "PadCfg"
         deadzoneButton?.text = "DZ$deadzonePercent"
@@ -1352,7 +1373,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         lastStatsAtMs = now
         statsOverlay?.text = String.format(
             Locale.US,
-            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nScale %s  Filter %s",
+            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nScale %s  Filter %s  BIOS %s",
             fps,
             stats.frames,
             stats.videoWidth,
@@ -1362,6 +1383,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             frameSkip,
             SCALE_LABELS.getOrElse(stats.scaleMode) { SCALE_LABELS[0] },
             FILTER_LABELS.getOrElse(stats.filterMode) { FILTER_LABELS[0] },
+            if (stats.skipBios) "skip" else "boot",
         )
     }
 

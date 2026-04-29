@@ -28,6 +28,8 @@ import io.mgba.android.library.LibraryRom
 import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.library.RomScanner
 import io.mgba.android.library.RecentGameStore
+import io.mgba.android.settings.EmulatorPreferences
+import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.storage.BiosStore
 import io.mgba.android.storage.LogExporter
 import io.mgba.android.storage.PatchStore
@@ -38,10 +40,13 @@ class MainActivity : Activity() {
     private lateinit var nativeStatus: TextView
     private lateinit var recentStore: RecentGameStore
     private lateinit var libraryStore: RomLibraryStore
+    private lateinit var preferences: EmulatorPreferences
+    private lateinit var perGameOverrides: PerGameOverrideStore
     private lateinit var biosStore: BiosStore
     private lateinit var patchStore: PatchStore
     private lateinit var scanButton: Button
     private lateinit var biosButton: Button
+    private lateinit var skipBiosButton: Button
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
     private lateinit var librarySearch: EditText
@@ -58,6 +63,8 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         recentStore = RecentGameStore(this)
         libraryStore = RomLibraryStore(this)
+        preferences = EmulatorPreferences(this)
+        perGameOverrides = PerGameOverrideStore(this)
         biosStore = BiosStore(this)
         patchStore = PatchStore(this)
 
@@ -125,6 +132,14 @@ class MainActivity : Activity() {
             }
         }
 
+        skipBiosButton = Button(this).apply {
+            setOnClickListener {
+                preferences.skipBios = !preferences.skipBios
+                updateSkipBiosButton()
+            }
+        }
+        updateSkipBiosButton()
+
         patchButton = Button(this).apply {
             text = patchStore.displayName?.let { "Patch: $it" } ?: "Import Patch"
             setOnClickListener {
@@ -186,6 +201,7 @@ class MainActivity : Activity() {
         root.addView(openButton)
         root.addView(scanButton)
         root.addView(biosButton)
+        root.addView(skipBiosButton)
         root.addView(patchButton)
         root.addView(aboutButton)
         root.addView(logButton)
@@ -241,9 +257,11 @@ class MainActivity : Activity() {
     }
 
     private fun openRomUri(uri: Uri, name: String, shouldStoreRecent: Boolean) {
+        val gameId = uri.toString()
         val result = runCatching {
             contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
                 val emulator = EmulatorSession.controller(this)
+                emulator.setSkipBios(perGameOverrides.skipBios(gameId, preferences.skipBios))
                 emulator.loadRomFd(descriptor.fd, name)
             }
         }.getOrNull()
@@ -253,7 +271,7 @@ class MainActivity : Activity() {
             "${getString(R.string.native_version_label)}: ${result?.message ?: "Unable to open ROM"}"
         }
         if (result?.ok == true) {
-            EmulatorSession.setCurrentGame(uri.toString(), name)
+            EmulatorSession.setCurrentGame(gameId, name)
             if (shouldStoreRecent) {
                 recentStore.add(uri, name)
                 renderRecentGames()
@@ -285,6 +303,10 @@ class MainActivity : Activity() {
                 }
             })
         }
+    }
+
+    private fun updateSkipBiosButton() {
+        skipBiosButton.text = if (preferences.skipBios) "Skip BIOS: On" else "Skip BIOS: Off"
     }
 
     private fun renderLibrary() {

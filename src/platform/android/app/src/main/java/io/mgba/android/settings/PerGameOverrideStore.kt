@@ -17,6 +17,10 @@ class PerGameOverrideStore(context: Context) {
         return intOverride(gameId, KEY_ORIENTATION_MODE, fallback).coerceIn(0, 2)
     }
 
+    fun skipBios(gameId: String?, fallback: Boolean): Boolean {
+        return booleanOverride(gameId, KEY_SKIP_BIOS, fallback)
+    }
+
     fun muted(gameId: String?, fallback: Boolean): Boolean {
         return booleanOverride(gameId, KEY_MUTED, fallback)
     }
@@ -63,6 +67,10 @@ class PerGameOverrideStore(context: Context) {
 
     fun setOrientationMode(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_ORIENTATION_MODE, value.coerceIn(0, 2))
+    }
+
+    fun setSkipBios(gameId: String?, value: Boolean): Boolean {
+        return putBooleanOverride(gameId, KEY_SKIP_BIOS, value)
     }
 
     fun setMuted(gameId: String?, value: Boolean): Boolean {
@@ -134,6 +142,7 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_FILTER_MODE = "filterMode"
         const val KEY_ORIENTATION_MODE = "orientationMode"
+        const val KEY_SKIP_BIOS = "skipBios"
         const val KEY_MUTED = "muted"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_FRAME_SKIP = "frameSkip"

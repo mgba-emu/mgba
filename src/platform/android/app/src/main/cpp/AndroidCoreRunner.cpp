@@ -425,6 +425,7 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	options.rewindBufferCapacity = 600;
 	options.rewindBufferInterval = 1;
 	options.audioBuffers = 1024;
+	options.skipBios = m_skipBios.load();
 	options.videoSync = false;
 	options.audioSync = true;
 	options.volume = 0x100;
@@ -735,6 +736,14 @@ void AndroidCoreRunner::setFilterMode(int mode) {
 	m_filterMode = mode;
 }
 
+void AndroidCoreRunner::setSkipBios(bool enabled) {
+	m_skipBios = enabled;
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (m_core) {
+		m_core->opts.skipBios = enabled;
+	}
+}
+
 std::string AndroidCoreRunner::statsJson() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	std::ostringstream out;
@@ -747,6 +756,7 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"frameSkip\":" << m_frameSkip.load()
 	    << ",\"scaleMode\":" << m_scaleMode.load()
 	    << ",\"filterMode\":" << m_filterMode.load()
+	    << ",\"skipBios\":" << (m_skipBios.load() ? "true" : "false")
 	    << "}";
 	return out.str();
 }

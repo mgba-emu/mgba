@@ -68,6 +68,9 @@ object NativeBridge {
     external fun nativeSetFilterMode(handle: Long, mode: Int)
 
     @JvmStatic
+    external fun nativeSetSkipBios(handle: Long, enabled: Boolean)
+
+    @JvmStatic
     external fun nativeGetStats(handle: Long): String
 
     @JvmStatic

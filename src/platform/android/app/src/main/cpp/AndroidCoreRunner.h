@@ -64,6 +64,7 @@ public:
 	void setAudioEnabled(bool enabled);
 	void setScaleMode(int mode);
 	void setFilterMode(int mode);
+	void setSkipBios(bool enabled);
 	std::string statsJson();
 	std::string takeScreenshot();
 	std::string exportBatterySave();
@@ -114,6 +115,7 @@ private:
 	std::atomic<int> m_frameSkip{0};
 	std::atomic<int> m_scaleMode{0};
 	std::atomic<int> m_filterMode{0};
+	std::atomic<bool> m_skipBios{false};
 	std::atomic<uint64_t> m_frameCounter{0};
 	std::atomic<bool> m_rumbleActive{false};
 	std::atomic<int32_t> m_tiltX{0};

@@ -102,6 +102,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setSkipBios(enabled: Boolean) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetSkipBios(handle.value, enabled)
+        }
+    }
+
     fun stats(): NativeStats? {
         if (!handle.isValid) {
             return null

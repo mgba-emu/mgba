@@ -23,6 +23,12 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putInt(KEY_ORIENTATION_MODE, value.coerceIn(0, 2)).apply()
         }
 
+    var skipBios: Boolean
+        get() = preferences.getBoolean(KEY_SKIP_BIOS, false)
+        set(value) {
+            preferences.edit().putBoolean(KEY_SKIP_BIOS, value).apply()
+        }
+
     var muted: Boolean
         get() = preferences.getBoolean(KEY_MUTED, false)
         set(value) {
@@ -69,6 +75,7 @@ class EmulatorPreferences(context: Context) {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_FILTER_MODE = "filterMode"
         const val KEY_ORIENTATION_MODE = "orientationMode"
+        const val KEY_SKIP_BIOS = "skipBios"
         const val KEY_MUTED = "muted"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
