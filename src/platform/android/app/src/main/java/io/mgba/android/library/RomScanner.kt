@@ -6,11 +6,13 @@ import android.provider.DocumentsContract
 
 class RomScanner(private val context: Context) {
     fun scan(treeUri: Uri): List<LibraryRom> {
+        throwIfInterrupted()
         val rootId = DocumentsContract.getTreeDocumentId(treeUri)
         return scanDocument(treeUri, rootId, depth = 0)
     }
 
     private fun scanDocument(treeUri: Uri, documentId: String, depth: Int): List<LibraryRom> {
+        throwIfInterrupted()
         if (depth > MAX_DEPTH) {
             return emptyList()
         }
@@ -27,6 +29,7 @@ class RomScanner(private val context: Context) {
             val nameIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
             val mimeIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
             while (cursor.moveToNext()) {
+                throwIfInterrupted()
                 val childId = cursor.getString(idIndex) ?: continue
                 val name = cursor.getString(nameIndex) ?: continue
                 val mime = cursor.getString(mimeIndex)
@@ -41,6 +44,12 @@ class RomScanner(private val context: Context) {
             }
         }
         return results
+    }
+
+    private fun throwIfInterrupted() {
+        if (Thread.currentThread().isInterrupted) {
+            throw InterruptedException("ROM scan canceled")
+        }
     }
 
     private companion object {

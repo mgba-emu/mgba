@@ -39,6 +39,9 @@ class MainActivity : Activity() {
     private lateinit var librarySearch: EditText
     private lateinit var libraryContainer: LinearLayout
     private var libraryFilter = ""
+    private var scanThread: Thread? = null
+    @Volatile
+    private var scanGeneration = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,7 +99,11 @@ class MainActivity : Activity() {
         scanButton = Button(this).apply {
             text = "Scan Folder"
             setOnClickListener {
-                openFolderPicker()
+                if (scanThread?.isAlive == true) {
+                    cancelLibraryScan()
+                } else {
+                    openFolderPicker()
+                }
             }
         }
 
@@ -298,12 +305,18 @@ class MainActivity : Activity() {
     }
 
     private fun scanLibraryInBackground(uri: Uri) {
-        scanButton.isEnabled = false
+        val generation = ++scanGeneration
+        scanThread?.interrupt()
+        scanButton.text = "Cancel Scan"
         nativeStatus.text = "${getString(R.string.native_version_label)}: Scanning folder"
-        Thread {
+        val thread = Thread {
             val result = runCatching { RomScanner(this).scan(uri) }
             runOnUiThread {
-                scanButton.isEnabled = true
+                if (generation != scanGeneration) {
+                    return@runOnUiThread
+                }
+                scanThread = null
+                scanButton.text = "Scan Folder"
                 result
                     .onSuccess { roms ->
                         libraryStore.replace(roms)
@@ -314,7 +327,17 @@ class MainActivity : Activity() {
                         nativeStatus.text = "${getString(R.string.native_version_label)}: Scan failed"
                     }
             }
-        }.start()
+        }
+        scanThread = thread
+        thread.start()
+    }
+
+    private fun cancelLibraryScan() {
+        scanGeneration += 1
+        scanThread?.interrupt()
+        scanThread = null
+        scanButton.text = "Scan Folder"
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Scan canceled"
     }
 
     private fun dp(value: Int): Int {

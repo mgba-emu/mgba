@@ -64,6 +64,7 @@
 - [x] 已补齐 ROM 扫描扩展名过滤：`.gba`、`.agb`、`.gb`、`.gbc`、`.sgb`、`.zip`、`.7z`。
 - [x] 已新增 Android About 对话框，展示 native 版本、mGBA copyright、MPL 2.0 和不捆绑 ROM/BIOS 声明。
 - [x] 已将 ROM 文件夹扫描移到后台线程，扫描期间禁用重复触发并在完成后刷新库。
+- [x] 已实现 ROM 文件夹扫描取消，避免旧扫描结果覆盖新库状态。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -671,7 +672,7 @@ object NativeBridge {
   - [ ] 读取 `mGameInfo`。
   - [ ] 计算 hash。
   - [ ] 入库。
-- [ ] 扫描进度可取消。
+- [x] 扫描进度可取消。
 - [x] 扫描不应阻塞 UI。
 
 ### 9.3 Library UI
