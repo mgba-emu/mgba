@@ -487,7 +487,7 @@ bool AndroidCoreRunner::saveStateSlot(int slot) {
 	if (!vf) {
 		return false;
 	}
-	const bool ok = mCoreSaveStateNamed(m_core, vf, SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
+	const bool ok = mCoreSaveStateNamed(m_core, vf, SAVESTATE_ALL);
 	vf->close(vf);
 	return ok;
 }
@@ -502,7 +502,7 @@ bool AndroidCoreRunner::loadStateSlot(int slot) {
 	if (!vf) {
 		return false;
 	}
-	const bool ok = mCoreLoadStateNamed(m_core, vf, SAVESTATE_SAVEDATA | SAVESTATE_RTC);
+	const bool ok = mCoreLoadStateNamed(m_core, vf, SAVESTATE_ALL);
 	vf->close(vf);
 	if (ok) {
 		resetRewindContextLocked();

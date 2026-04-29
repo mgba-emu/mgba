@@ -827,7 +827,7 @@ object NativeBridge {
     - [x] 删除。
     - [ ] 导出。
 - [ ] Native 操作必须在 core thread 执行。
-- [ ] 保存 flags 使用 `SAVESTATE_ALL`。
+- [x] 保存 flags 使用 `SAVESTATE_ALL`。
 - [ ] 缩略图：
   - [ ] 优先读取 state extdata 中的 screenshot。
   - [x] 若没有，保存时额外生成 PNG cache。
