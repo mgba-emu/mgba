@@ -1,5 +1,6 @@
 package io.mgba.android
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.pm.ActivityInfo
@@ -2379,6 +2380,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             }
             true
         }
+        dialog.setOnCancelListener {
+            cancelHardwareMappingCapture()
+        }
         dialog.setOnDismissListener {
             if (keyCaptureDialog === dialog) {
                 keyCaptureDialog = null
@@ -2388,8 +2392,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         dialog.show()
     }
 
+    @SuppressLint("GestureBackNavigation")
     private fun captureHardwareMappingKey(event: KeyEvent) {
         val keyCode = event.keyCode
+        // Predictive back reaches the dialog cancel listener; this branch keeps
+        // physical Back keys from being recorded as a hardware mapping.
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             cancelHardwareMappingCapture()
             return

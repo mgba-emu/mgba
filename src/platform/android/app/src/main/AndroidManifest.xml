@@ -22,12 +22,12 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- This is a local ROM file handler, not a web or Android App Link. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="content" />
-                <data android:scheme="file" />
+                <data android:scheme="content" android:host="*" />
+                <data android:scheme="file" android:host="*" />
                 <data android:pathPattern=".*\\.agb" />
                 <data android:pathPattern=".*\\.gba" />
                 <data android:pathPattern=".*\\.gb" />

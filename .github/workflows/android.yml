@@ -62,6 +62,10 @@ jobs:
         working-directory: src/platform/android
         run: ./gradlew :app:externalNativeBuildDebug -PmgbaAndroidWarningsAsErrors=true --no-daemon
 
+      - name: Run debug lint
+        working-directory: src/platform/android
+        run: ./gradlew :app:lintDebug --no-daemon
+
       - name: Build release APK
         working-directory: src/platform/android
         run: ./gradlew :app:assembleRelease --no-daemon

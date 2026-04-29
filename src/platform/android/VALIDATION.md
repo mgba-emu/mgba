@@ -25,7 +25,7 @@ JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
 ANDROID_HOME="$HOME/Library/Android/sdk" \
 ./gradlew :app:assembleDebug :app:testDebugUnitTest \
   :app:externalNativeBuildDebug -PmgbaAndroidWarningsAsErrors=true \
-  :app:assembleRelease :app:bundleRelease --no-daemon
+  :app:lintDebug :app:assembleRelease :app:bundleRelease --no-daemon
 
 JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
 ANDROID_HOME="$HOME/Library/Android/sdk" \
@@ -38,6 +38,7 @@ Result:
 - Debug APK, release APK, and release AAB built successfully.
 - Unit tests passed.
 - Android JNI/native wrapper warning check passed.
+- Debug lint passed.
 - Instrumented tests passed on `Medium_Phone(AVD) - 16`, `sdk_gphone64_arm64`.
 
 ## Build Artifacts
@@ -48,6 +49,7 @@ Run these from `src/platform/android` before installing:
 scripts/check-bundled-assets.sh
 ./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon
 ./gradlew :app:externalNativeBuildDebug -PmgbaAndroidWarningsAsErrors=true --no-daemon
+./gradlew :app:lintDebug --no-daemon
 ./gradlew :app:assembleRelease :app:bundleRelease --no-daemon
 ```
 
@@ -57,6 +59,7 @@ Expected result:
 - Release APK and AAB build.
 - Unit tests pass.
 - Native wrapper warning check passes.
+- Debug lint passes.
 - CI bundled asset check finds no ROM, save, state, or BIOS files under `app/src/main`.
 
 ## Device Matrix
