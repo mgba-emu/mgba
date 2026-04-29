@@ -186,6 +186,17 @@ std::string LoadResult(bool ok, const std::string& message, const std::string& p
 	return out.str();
 }
 
+std::string GdbStubStatus(bool ok, bool supported, bool enabled, int port, const std::string& message) {
+	std::ostringstream out;
+	out << "{\"ok\":" << (ok ? "true" : "false")
+	    << ",\"supported\":" << (supported ? "true" : "false")
+	    << ",\"enabled\":" << (enabled ? "true" : "false")
+	    << ",\"port\":" << port
+	    << ",\"message\":\"" << JsonEscape(message)
+	    << "\"}";
+	return out.str();
+}
+
 bool EnsureDirectory(const std::string& path) {
 	if (mkdir(path.c_str(), 0700) == 0) {
 		return true;
@@ -481,6 +492,12 @@ AndroidCoreRunner::~AndroidCoreRunner() {
 	stop();
 	setSurface(nullptr);
 	unloadCore();
+#ifdef ENABLE_GDB_STUB
+	if (m_debuggerInitialized) {
+		mDebuggerDeinit(&m_debugger);
+		m_debuggerInitialized = false;
+	}
+#endif
 }
 
 const std::string& AndroidCoreRunner::basePath() const {
@@ -1132,6 +1149,51 @@ void AndroidCoreRunner::setRtcMode(int mode, int64_t valueMs) {
 	ApplyRtcMode(m_core, mode, valueMs);
 }
 
+std::string AndroidCoreRunner::setGdbStubEnabled(bool enabled, int port) {
+#ifdef ENABLE_GDB_STUB
+	if (port <= 0 || port > 65535) {
+		port = 2345;
+	}
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (!enabled) {
+		shutdownGdbStubLocked();
+		return GdbStubStatus(true, true, false, 0, "GDB stub stopped");
+	}
+	if (!m_core) {
+		return GdbStubStatus(false, true, false, 0, "Load a ROM before enabling the GDB stub");
+	}
+	if (!m_debuggerInitialized) {
+		mDebuggerInit(&m_debugger);
+		GDBStubCreate(&m_gdbStub);
+		m_debuggerInitialized = true;
+	}
+	if (m_gdbStubEnabled.load() && m_gdbStubPort.load() == port) {
+		return GdbStubStatus(true, true, true, port, "GDB stub listening on 127.0.0.1:" + std::to_string(port));
+	}
+	shutdownGdbStubLocked();
+
+	Address localHost = {};
+	localHost.version = IPV4;
+	localHost.ipv4 = 0x7F000001;
+	if (!GDBStubListen(&m_gdbStub, port, &localHost, GDB_WATCHPOINT_STANDARD_LOGIC)) {
+		return GdbStubStatus(false, true, false, 0, "Could not listen on 127.0.0.1:" + std::to_string(port));
+	}
+	mDebuggerAttachModule(&m_debugger, &m_gdbStub.d);
+	m_gdbStubModuleAttached = true;
+	if (m_core->debugger != &m_debugger) {
+		mDebuggerAttach(&m_debugger, m_core);
+	}
+	mDebuggerEnter(&m_debugger, DEBUGGER_ENTER_ATTACHED, nullptr);
+	m_gdbStubEnabled = true;
+	m_gdbStubPort = port;
+	return GdbStubStatus(true, true, true, port, "GDB stub listening on 127.0.0.1:" + std::to_string(port));
+#else
+	(void) enabled;
+	(void) port;
+	return GdbStubStatus(false, false, false, 0, "GDB stub is not compiled into this build");
+#endif
+}
+
 std::string AndroidCoreRunner::statsJson() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	const AndroidAudioStats audioStats = m_audioOutput.stats();
@@ -1173,6 +1235,14 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"scaleMode\":" << m_scaleMode.load()
 	    << ",\"filterMode\":" << m_filterMode.load()
 	    << ",\"skipBios\":" << (m_skipBios.load() ? "true" : "false")
+	    << ",\"gdbStubSupported\":" <<
+#ifdef ENABLE_GDB_STUB
+	        "true"
+#else
+	        "false"
+#endif
+	    << ",\"gdbStubEnabled\":" << (m_gdbStubEnabled.load() ? "true" : "false")
+	    << ",\"gdbStubPort\":" << m_gdbStubPort.load()
 	    << "}";
 	return out.str();
 }
@@ -1777,6 +1847,23 @@ void AndroidCoreRunner::dropAudioLocked() {
 	}
 }
 
+void AndroidCoreRunner::shutdownGdbStubLocked() {
+#ifdef ENABLE_GDB_STUB
+	if (m_debuggerInitialized) {
+		GDBStubShutdown(&m_gdbStub);
+		if (m_gdbStubModuleAttached) {
+			mDebuggerDetachModule(&m_debugger, &m_gdbStub.d);
+			m_gdbStubModuleAttached = false;
+		}
+		if (m_core && m_core->debugger == &m_debugger && m_core->detachDebugger) {
+			m_core->detachDebugger(m_core);
+		}
+	}
+#endif
+	m_gdbStubEnabled = false;
+	m_gdbStubPort = 0;
+}
+
 void AndroidCoreRunner::resetRewindContextLocked() {
 	if (m_rewindReady) {
 		mCoreRewindContextDeinit(&m_rewind);
@@ -1842,7 +1929,22 @@ void AndroidCoreRunner::runLoop() {
 						--m_rewind.rewindFrameCounter;
 					}
 				}
+				bool coreAdvanced = true;
+#ifdef ENABLE_DEBUGGERS
+				if (m_core->debugger) {
+					const uint32_t previousCoreFrame = m_core->frameCounter ? m_core->frameCounter(m_core) : 0;
+					mDebuggerRunTimeout(m_core->debugger, 1);
+					coreAdvanced = !m_core->frameCounter || m_core->frameCounter(m_core) != previousCoreFrame;
+				} else {
+					m_core->runFrame(m_core);
+				}
+#else
 				m_core->runFrame(m_core);
+#endif
+				if (!coreAdvanced) {
+					frameRan = false;
+					continue;
+				}
 				if (rewinding || m_fastForward.load()) {
 					dropAudioLocked();
 				} else {
@@ -1939,6 +2041,7 @@ void AndroidCoreRunner::unloadCore() {
 	if (!m_core) {
 		return;
 	}
+	shutdownGdbStubLocked();
 	if (m_core->setPeripheral) {
 		m_core->setPeripheral(m_core, mPERIPH_RUMBLE, nullptr);
 		m_core->setPeripheral(m_core, mPERIPH_ROTATION, nullptr);

@@ -3,6 +3,7 @@ package io.mgba.android
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.pm.ActivityInfo
+import android.content.pm.ApplicationInfo
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -149,6 +150,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var solarButton: Button? = null
     private var cameraButton: Button? = null
     private var statsButton: Button? = null
+    private var gdbButton: Button? = null
     private var statsOverlay: TextView? = null
     private var userPaused = false
     private var fastForward = false
@@ -185,6 +187,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var useLightSensor = false
     private var cameraImagePath = ""
     private var showStats = false
+    private var gdbStubEnabled = false
+    private var gdbStubPort = GDB_STUB_PORT
     private var firstFrameLogged = false
     private var lastStatsFrames = 0L
     private var lastStatsAtMs = 0L
@@ -1325,6 +1329,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     exportRuntimeDiagnostics()
                 }
             })
+            gdbButton = Button(context).apply {
+                setOnClickListener {
+                    toggleGdbStub()
+                }
+            }
+            gdbButton?.let(runOptions::add)
             runOptions.add(Button(context).apply {
                 text = "Shot"
                 setOnClickListener {
@@ -1684,6 +1694,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         solarButton?.text = if (useLightSensor) "Solar*" else "Solar"
         cameraButton?.text = if (cameraImagePath.isBlank()) "Camera" else "Cam*"
         statsButton?.text = if (showStats) "Stats*" else "Stats"
+        gdbButton?.text = if (gdbStubEnabled) "GDB:$gdbStubPort" else "GDB"
     }
 
     private fun stepFrame() {
@@ -1697,6 +1708,38 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         val ok = controller?.stepFrame() == true
         updateRunButtons()
         Toast.makeText(this, if (ok) "Stepped" else "Step failed", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun toggleGdbStub() {
+        val enable = !gdbStubEnabled
+        if (enable && !isDebuggableBuild()) {
+            AlertDialog.Builder(this)
+                .setTitle("Enable GDB stub?")
+                .setMessage("This will open a localhost debug server on port $GDB_STUB_PORT for the current game.")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Enable") { _, _ ->
+                    applyGdbStubState(true)
+                }
+                .show()
+            return
+        }
+        applyGdbStubState(enable)
+    }
+
+    private fun applyGdbStubState(enabled: Boolean) {
+        val result = controller?.setGdbStubEnabled(enabled, GDB_STUB_PORT)
+        if (result == null) {
+            Toast.makeText(this, "Native runner is unavailable", Toast.LENGTH_SHORT).show()
+            return
+        }
+        gdbStubEnabled = result.enabled
+        gdbStubPort = result.port.takeIf { it > 0 } ?: GDB_STUB_PORT
+        updateRunButtons()
+        Toast.makeText(this, result.message, Toast.LENGTH_LONG).show()
+    }
+
+    private fun isDebuggableBuild(): Boolean {
+        return (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
     }
 
     private fun setFastForwardActive(enabled: Boolean) {
@@ -2563,6 +2606,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun updateStatsOverlay() {
         val stats = controller?.stats() ?: return
         updateVideoAspectRatio(stats.videoWidth, stats.videoHeight)
+        gdbStubEnabled = stats.gdbStubEnabled
+        if (stats.gdbStubPort > 0) {
+            gdbStubPort = stats.gdbStubPort
+        }
         val now = SystemClock.elapsedRealtime()
         val frameDelta = (stats.frames - lastStatsFrames).coerceAtLeast(0L)
         val elapsedMs = now - lastStatsAtMs
@@ -2688,6 +2735,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 appendLine("nativeVideo=${stats.videoWidth}x${stats.videoHeight} format=${stats.videoPixelFormat}")
                 appendLine("nativePacing targetUs=${stats.frameTargetUs} actualUs=${stats.frameActualUs} jitterUs=${stats.frameJitterUs} lateUs=${stats.frameLateUs} samples=${stats.framePacingSamples}")
                 appendLine("nativeRun running=${stats.running} paused=${stats.paused} fast=${stats.fastForward} rewind=${stats.rewinding}")
+                appendLine("nativeGdb supported=${stats.gdbStubSupported} enabled=${stats.gdbStubEnabled} port=${stats.gdbStubPort}")
                 appendLine("nativeAudio backend=${stats.audioBackend} volume=${stats.volumePercent} buffer=${stats.audioBufferSamples} lowPass=${stats.audioLowPassRange} started=${stats.audioStarted} paused=${stats.audioPaused} enabled=${stats.audioEnabled} underruns=${stats.audioUnderruns} queuedBuffers=${stats.audioEnqueuedBuffers} queuedFrames=${stats.audioEnqueuedOutputFrames} readFrames=${stats.audioReadFrames} lastReadFrames=${stats.audioLastReadFrames}")
                 appendLine("nativeInput current=${formatGbaMask(stats.inputKeys)} seen=${formatGbaMask(stats.seenInputKeys)}")
                 appendLine("nativeRom platform=${stats.romPlatform} title=${stats.gameTitle} skipBios=${stats.skipBios}")
@@ -3716,6 +3764,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val FIRST_FRAME_TIMEOUT_MS = 5000L
         private const val AUDIO_ROUTE_RESTART_DELAY_MS = 250L
         private const val INPUT_SYNC_SLOW_THRESHOLD_US = 2000L
+        private const val GDB_STUB_PORT = 2345
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L

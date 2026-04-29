@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.Surface
 import io.mgba.android.bridge.EmulatorHandle
 import io.mgba.android.bridge.NativeBridge
+import io.mgba.android.bridge.NativeGdbStubResult
 import io.mgba.android.bridge.NativeLoadResult
 import io.mgba.android.bridge.NativeStats
 
@@ -184,6 +185,13 @@ class EmulatorController(context: Context) : AutoCloseable {
         if (handle.isValid) {
             NativeBridge.nativeSetRtcMode(handle.value, mode.coerceIn(0, 3), valueMs)
         }
+    }
+
+    fun setGdbStubEnabled(enabled: Boolean, port: Int): NativeGdbStubResult {
+        if (!handle.isValid) {
+            return NativeGdbStubResult(false, false, false, 0, "Native runner is unavailable")
+        }
+        return NativeBridge.setGdbStubEnabled(handle.value, enabled, port.coerceIn(1, 65535))
     }
 
     fun stats(): NativeStats? {

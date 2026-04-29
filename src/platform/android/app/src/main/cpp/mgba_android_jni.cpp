@@ -332,7 +332,7 @@ std::string NativeStatsFallbackJson() {
 	    "\"audioUnderruns\":0,\"audioEnqueuedBuffers\":0,\"audioEnqueuedOutputFrames\":0,"
 	    "\"audioReadFrames\":0,\"audioLastReadFrames\":0,\"audioLowPassRange\":0,\"inputKeys\":0,"
 	    "\"audioBackend\":\"OpenSL ES\",\"seenInputKeys\":0,\"romPlatform\":\"\",\"gameTitle\":\"\",\"scaleMode\":0,\"filterMode\":0,"
-	    "\"skipBios\":false}";
+	    "\"skipBios\":false,\"gdbStubSupported\":false,\"gdbStubEnabled\":false,\"gdbStubPort\":0}";
 }
 
 jstring NewJString(JNIEnv* env, const std::string& value) {
@@ -779,6 +779,20 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetRtcMode(JNIEnv*, jclass, jlong
 		if (AndroidCoreRunner* runner = FromHandle(handle)) {
 			runner->setRtcMode(mode, static_cast<int64_t>(valueMs));
 		}
+	});
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetGdbStubEnabled(
+    JNIEnv* env, jclass, jlong handle, jboolean enabled, jint port) {
+	return GuardNativeString(env, "nativeSetGdbStubEnabled", [handle, enabled, port] {
+		if (AndroidCoreRunner* runner = FromHandle(handle)) {
+			return runner->setGdbStubEnabled(enabled == JNI_TRUE, port);
+		}
+		return std::string("{\"ok\":false,\"supported\":false,\"enabled\":false,\"port\":0,\"message\":\"Native runner is unavailable\"}");
+	}, [](const char* message) {
+		return std::string("{\"ok\":false,\"supported\":false,\"enabled\":false,\"port\":0,\"message\":\"") +
+		    JsonEscape(message) + "\"}";
 	});
 }
 

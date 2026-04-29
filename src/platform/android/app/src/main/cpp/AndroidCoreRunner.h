@@ -15,6 +15,12 @@
 #include <mgba/core/rewind.h>
 #include <mgba/gba/interface.h>
 #include <mgba-util/image.h>
+#ifdef ENABLE_DEBUGGERS
+#include <mgba/debugger/debugger.h>
+#endif
+#ifdef ENABLE_GDB_STUB
+#include <mgba/internal/debugger/gdb-stub.h>
+#endif
 #include <mutex>
 #include <string>
 #include <thread>
@@ -92,6 +98,7 @@ public:
 	void setBiosOverridePaths(std::string defaultPath, std::string gbaPath, std::string gbPath, std::string gbcPath);
 	void setLogLevel(int levels);
 	void setRtcMode(int mode, int64_t valueMs);
+	std::string setGdbStubEnabled(bool enabled, int port);
 	std::string statsJson();
 	std::string takeScreenshot();
 	bool takeScreenshotFd(int fd);
@@ -125,6 +132,7 @@ private:
 	void renderFrameLocked();
 	bool flushBatterySave();
 	void dropAudioLocked();
+	void shutdownGdbStubLocked();
 	void resetRewindContextLocked();
 	std::chrono::microseconds frameDurationLocked() const;
 	void runLoop();
@@ -174,6 +182,8 @@ private:
 	std::atomic<int> m_logLevel{0};
 	std::atomic<int> m_rtcMode{0};
 	std::atomic<int64_t> m_rtcValueMs{946684800000LL};
+	std::atomic<bool> m_gdbStubEnabled{false};
+	std::atomic<int> m_gdbStubPort{0};
 	std::atomic<uint64_t> m_frameCounter{0};
 	std::atomic<int64_t> m_frameTargetUs{0};
 	std::atomic<int64_t> m_frameActualUs{0};
@@ -199,6 +209,12 @@ private:
 	mCoreRewindContext m_rewind = {};
 	bool m_rewindReady = false;
 	bool m_blendFrameReady = false;
+#ifdef ENABLE_GDB_STUB
+	mDebugger m_debugger = {};
+	GDBStub m_gdbStub = {};
+	bool m_debuggerInitialized = false;
+	bool m_gdbStubModuleAttached = false;
+#endif
 
 	ANativeWindow* m_window = nullptr;
 	EGLDisplay m_display = EGL_NO_DISPLAY;

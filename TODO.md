@@ -198,7 +198,7 @@
 - [x] 已补齐 Android 虚拟手柄编辑模式双指缩放：编辑时 pinch 可实时调整按钮大小并保存。
 - [x] 已新增 Android 输入同步延迟诊断：虚拟/实体输入到 `nativeSetKeys` 的事件年龄、JNI 调用耗时、最大耗时和 slow sample 计数会进入 Input debug 与诊断导出，并用 instrumented test 锁定虚拟触摸事件时间传递。
 - [x] 已完成 Android link cable 首轮调研：Qt MultiplayerController 依赖 `mCoreThread` wait/wake、GBA/GB lockstep driver、save player id 分配和多实例 CoreController 编排；Android 首版不接联机，后续需先抽象多 runner lockstep 调度层。
-- [x] 已新增 Android GDB stub 原生构建开关：默认关闭，内部开发可用 `-PmgbaAndroidEnableGdbStub=true` / `MGBA_ANDROID_ENABLE_GDB_STUB=true` 编译 debugger/GDB stub，并已验证 arm64 native build 通过。
+- [x] 已新增 Android GDB stub 原生构建和运行时开关：默认关闭，内部开发可用 `-PmgbaAndroidEnableGdbStub=true` / `MGBA_ANDROID_ENABLE_GDB_STUB=true` 编译 debugger/GDB stub；编译后 Run Options 的 GDB 按钮可监听 `127.0.0.1:2345`，诊断导出会记录支持状态、启用状态和端口，release/non-debuggable 构建开启前需要确认。
 
 ## 1. 产品目标和范围
 
@@ -1007,11 +1007,11 @@ object NativeBridge {
 ### 13.4 Debug / GDB
 
 - [x] Native build 支持可选编译 GDB stub：默认 `OFF`，需要内部开发调试时显式打开 `mgbaAndroidEnableGdbStub`。
-- [ ] 开发者模式里开启 GDB stub。
-- [ ] 显示监听端口。
-- [ ] 仅 debug build 默认允许。
-- [ ] release build 需要明确用户确认。
-- [ ] 桌面完整调试 UI 不作为首版目标。
+- [x] 开发者模式里开启 GDB stub：当前作为游戏内 Run Options 的 `GDB` 开关暴露，仅在 native 编译进 GDB stub 时真正启用，否则安全返回 unsupported。
+- [x] 显示监听端口：启用后按钮显示 `GDB:2345`，诊断导出记录 `nativeGdb supported/enabled/port`。
+- [x] 仅 debug build 默认允许：debuggable build 点击 `GDB` 后直接尝试启用。
+- [x] release build 需要明确用户确认：non-debuggable build 启用前弹确认框。
+- [x] 桌面完整调试 UI 不作为首版目标：Android 首版只提供 localhost GDB stub，不复刻 Qt debugger console / memory inspector。
 
 ### 13.5 Link cable
 

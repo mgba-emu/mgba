@@ -132,6 +132,9 @@ object NativeBridge {
     external fun nativeSetRtcMode(handle: Long, mode: Int, valueMs: Long)
 
     @JvmStatic
+    external fun nativeSetGdbStubEnabled(handle: Long, enabled: Boolean, port: Int): String
+
+    @JvmStatic
     external fun nativeGetStats(handle: Long): String
 
     @JvmStatic
@@ -245,6 +248,12 @@ object NativeBridge {
     fun stats(handle: Long): NativeStats {
         return NativeStats.fromJson(
             runCatching { nativeGetStats(handle) }.getOrDefault("{}"),
+        )
+    }
+
+    fun setGdbStubEnabled(handle: Long, enabled: Boolean, port: Int): NativeGdbStubResult {
+        return NativeGdbStubResult.fromJson(
+            runCatching { nativeSetGdbStubEnabled(handle, enabled, port) }.getOrDefault("{}"),
         )
     }
 }

@@ -69,6 +69,8 @@ target_compile_definitions(mgba-android
         ENABLE_VFS
         ENABLE_VFS_FD
         ENABLE_DIRECTORIES
+        $<$<BOOL:${MGBA_ANDROID_ENABLE_GDB_STUB}>:ENABLE_DEBUGGERS>
+        $<$<BOOL:${MGBA_ANDROID_ENABLE_GDB_STUB}>:ENABLE_GDB_STUB>
 )
 
 if(MGBA_ANDROID_WARNINGS_AS_ERRORS)

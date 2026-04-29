@@ -72,6 +72,9 @@ data class NativeStats(
     val romPlatform: String,
     val gameTitle: String,
     val skipBios: Boolean,
+    val gdbStubSupported: Boolean,
+    val gdbStubEnabled: Boolean,
+    val gdbStubPort: Int,
 ) {
     companion object {
         private const val InputMask = 0x3FF
@@ -117,6 +120,30 @@ data class NativeStats(
                 romPlatform = json.optString("romPlatform"),
                 gameTitle = json.optString("gameTitle"),
                 skipBios = json.optBoolean("skipBios", false),
+                gdbStubSupported = json.optBoolean("gdbStubSupported", false),
+                gdbStubEnabled = json.optBoolean("gdbStubEnabled", false),
+                gdbStubPort = json.optInt("gdbStubPort", 0).coerceIn(0, 65535),
+            )
+        }
+    }
+}
+
+data class NativeGdbStubResult(
+    val ok: Boolean,
+    val supported: Boolean,
+    val enabled: Boolean,
+    val port: Int,
+    val message: String,
+) {
+    companion object {
+        fun fromJson(raw: String): NativeGdbStubResult {
+            val json = runCatching { JSONObject(raw) }.getOrDefault(JSONObject())
+            return NativeGdbStubResult(
+                ok = json.optBoolean("ok", false),
+                supported = json.optBoolean("supported", false),
+                enabled = json.optBoolean("enabled", false),
+                port = json.optInt("port", 0).coerceIn(0, 65535),
+                message = json.optString("message").ifBlank { "GDB stub unavailable" },
             )
         }
     }

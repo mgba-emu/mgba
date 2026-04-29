@@ -65,6 +65,9 @@ public class NativeTypesTest {
         assertEquals("OpenSL ES", stats.getAudioBackend());
         assertEquals(0, stats.getInputKeys());
         assertEquals(0, stats.getSeenInputKeys());
+        assertFalse(stats.getGdbStubSupported());
+        assertFalse(stats.getGdbStubEnabled());
+        assertEquals(0, stats.getGdbStubPort());
     }
 
     @Test
@@ -90,7 +93,10 @@ public class NativeTypesTest {
                 + "\"audioBackend\":\"AAudio\","
                 + "\"audioLowPassRange\":120,"
                 + "\"inputKeys\":2049,"
-                + "\"seenInputKeys\":1073"
+                + "\"seenInputKeys\":1073,"
+                + "\"gdbStubSupported\":true,"
+                + "\"gdbStubEnabled\":true,"
+                + "\"gdbStubPort\":70000"
                 + "}"
         );
 
@@ -114,5 +120,27 @@ public class NativeTypesTest {
         assertEquals(95, stats.getAudioLowPassRange());
         assertEquals(1, stats.getInputKeys());
         assertEquals(49, stats.getSeenInputKeys());
+        assertTrue(stats.getGdbStubSupported());
+        assertTrue(stats.getGdbStubEnabled());
+        assertEquals(65535, stats.getGdbStubPort());
+    }
+
+    @Test
+    public void parsesGdbStubResultJson() {
+        NativeGdbStubResult result = NativeGdbStubResult.Companion.fromJson(
+            "{"
+                + "\"ok\":true,"
+                + "\"supported\":true,"
+                + "\"enabled\":true,"
+                + "\"port\":2345,"
+                + "\"message\":\"GDB stub listening\""
+                + "}"
+        );
+
+        assertTrue(result.getOk());
+        assertTrue(result.getSupported());
+        assertTrue(result.getEnabled());
+        assertEquals(2345, result.getPort());
+        assertEquals("GDB stub listening", result.getMessage());
     }
 }

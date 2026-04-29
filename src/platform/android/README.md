@@ -48,7 +48,7 @@ The Android native build keeps mGBA debugger and GDB stub support disabled by de
   -PmgbaAndroidAbiFilters=arm64-v8a
 ```
 
-The same switch is available as `MGBA_ANDROID_ENABLE_GDB_STUB=true`. This only enables the native debugger objects at build time; a runtime developer-mode UI and port lifecycle are intentionally tracked separately before exposing the stub in an installable APK.
+The same switch is available as `MGBA_ANDROID_ENABLE_GDB_STUB=true`. When compiled in, the emulator Run Options panel exposes a `GDB` control for the active game. It listens on `127.0.0.1:2345`, reports the active port in the button label and diagnostics export, and asks for explicit confirmation in non-debuggable builds before enabling the listener.
 
 ## Third-party notices
 
