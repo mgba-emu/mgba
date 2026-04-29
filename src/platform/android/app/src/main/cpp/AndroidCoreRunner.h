@@ -88,6 +88,7 @@ private:
 	void applyTextureFilterLocked();
 	void destroyEglLocked();
 	void renderFrameLocked();
+	bool flushBatterySave();
 	std::chrono::microseconds frameDurationLocked() const;
 	void runLoop();
 	std::string romIdFromSavePath() const;

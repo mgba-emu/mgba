@@ -16,6 +16,7 @@
 #include <cerrno>
 #include <chrono>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <cstring>
@@ -927,6 +928,7 @@ void AndroidCoreRunner::pause() {
 	m_paused = true;
 	m_rumbleActive = false;
 	m_audioOutput.pause();
+	flushBatterySave();
 }
 
 void AndroidCoreRunner::resume() {
@@ -1143,6 +1145,44 @@ void AndroidCoreRunner::renderFrameLocked() {
 	eglSwapBuffers(m_display, m_surface);
 }
 
+bool AndroidCoreRunner::flushBatterySave() {
+	void* savedata = nullptr;
+	size_t savedataSize = 0;
+	std::string savePath;
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (!m_core || !m_core->savedataClone || m_savePath.empty()) {
+			return false;
+		}
+		savedataSize = m_core->savedataClone(m_core, &savedata);
+		savePath = m_savePath;
+	}
+	if (!savedata || !savedataSize) {
+		free(savedata);
+		return false;
+	}
+
+	const std::string tmpPath = savePath + ".tmp";
+	bool ok = false;
+	{
+		std::ofstream out(tmpPath, std::ios::binary | std::ios::trunc);
+		if (out) {
+			out.write(static_cast<const char*>(savedata), static_cast<std::streamsize>(savedataSize));
+			ok = out.good();
+		}
+	}
+	free(savedata);
+	if (!ok) {
+		std::remove(tmpPath.c_str());
+		return false;
+	}
+	if (std::rename(tmpPath.c_str(), savePath.c_str()) != 0) {
+		std::remove(tmpPath.c_str());
+		return false;
+	}
+	return true;
+}
+
 std::chrono::microseconds AndroidCoreRunner::frameDurationLocked() const {
 	if (!m_core || !m_core->frameCycles || !m_core->frequency) {
 		return std::chrono::microseconds(16667);
@@ -1233,6 +1273,7 @@ void AndroidCoreRunner::unloadCore() {
 	m_tiltY = 0;
 	m_gyroZ = 0;
 	m_solarLevel = 0xFF;
+	flushBatterySave();
 	m_core->unloadROM(m_core);
 	m_core->deinit(m_core);
 	m_core = nullptr;
