@@ -146,6 +146,7 @@
 - [x] 已新增 Android ABI smoke CI matrix：支持 `mgbaAndroidAbiFilters` 单 ABI native warning 构建。
 - [x] 已增强 Android 日志/诊断导出：Android 6-9 通过 SAF 创建文档 fallback 导出。
 - [x] 已增强 Android 日志导出韧性：`logcat` 不可用时仍导出 App ring buffer。
+- [x] 已增强 Android 电池存档导出：Android 6-9 通过 SAF 创建 `.sav` fallback 导出。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -710,7 +711,7 @@ object NativeBridge {
 ### 8.4 导入导出
 
 - [ ] 从用户选择的 `.sav` 导入到当前 ROM。
-- [ ] 导出当前 ROM `.sav`。
+- [x] 导出当前 ROM `.sav`。
 - [ ] 导出/导入单个 savestate。
 - [ ] 导出截图。
 - [x] 导出完整游戏数据包：

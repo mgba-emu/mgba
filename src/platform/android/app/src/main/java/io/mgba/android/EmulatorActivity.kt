@@ -177,6 +177,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var pendingImportStateSlot = 1
     private var pendingGameBiosSlot = BiosSlot.Default
     private var pendingHardwareMappingMask = 0
+    private var pendingExportSavePath = ""
     private var playAccountingStartedAtMs = 0L
     private var scaleMode = 0
     private var filterMode = 0
@@ -346,6 +347,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             REQUEST_IMPORT_CAMERA_IMAGE -> importCameraImage(uri)
             REQUEST_IMPORT_GAME_BIOS -> importGameBios(uri)
             REQUEST_EXPORT_DIAGNOSTICS -> exportDiagnosticsToUri(uri)
+            REQUEST_EXPORT_SAVE -> exportBatterySaveToUri(uri)
         }
     }
 
@@ -1205,13 +1207,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             stateRow.addView(Button(context).apply {
                 text = "Backup"
                 setOnClickListener {
-                    val path = controller?.exportBatterySave()
-                    val uri = path?.let { SaveExporter.exportToDocuments(context, it) }
-                    Toast.makeText(
-                        context,
-                        if (uri != null) "Save exported" else "Export failed",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    exportBatterySave()
                 }
             })
             stateRow.addView(Button(context).apply {
@@ -2401,6 +2397,39 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         Toast.makeText(this, if (ok) "State exported" else "State export failed", Toast.LENGTH_SHORT).show()
     }
 
+    private fun exportBatterySave() {
+        val path = controller?.exportBatterySave()
+        if (path == null) {
+            Toast.makeText(this, "Export failed", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val uri = SaveExporter.exportToDocuments(this, path)
+        if (uri != null) {
+            Toast.makeText(this, "Save exported", Toast.LENGTH_SHORT).show()
+        } else {
+            openSaveExportPicker(path)
+        }
+    }
+
+    private fun openSaveExportPicker(path: String) {
+        pendingExportSavePath = path
+        val fileName = File(path).name.ifBlank { "mgba-save.sav" }
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/octet-stream"
+            putExtra(Intent.EXTRA_TITLE, fileName)
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_EXPORT_SAVE)
+    }
+
+    private fun exportBatterySaveToUri(uri: Uri) {
+        val path = pendingExportSavePath
+        pendingExportSavePath = ""
+        val ok = SaveExporter.writeToUri(this, path, uri)
+        Toast.makeText(this, if (ok) "Save exported" else "Export failed", Toast.LENGTH_SHORT).show()
+    }
+
     private fun openGameDataExportPicker() {
         val game = EmulatorSession.currentGame()
         if (game == null) {
@@ -3223,6 +3252,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val REQUEST_IMPORT_GAME_DATA = 2010
         private const val REQUEST_IMPORT_GAME_BIOS = 2011
         private const val REQUEST_EXPORT_DIAGNOSTICS = 2012
+        private const val REQUEST_EXPORT_SAVE = 2013
         private const val RUMBLE_POLL_MS = 50L
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L

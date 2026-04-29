@@ -42,4 +42,19 @@ object SaveExporter {
             null
         }
     }
+
+    fun writeToUri(context: Context, path: String, uri: Uri): Boolean {
+        val source = File(path)
+        if (!source.isFile) {
+            return false
+        }
+        return runCatching {
+            context.contentResolver.openOutputStream(uri)?.use { output ->
+                source.inputStream().use { input ->
+                    input.copyTo(output)
+                }
+            } ?: return@runCatching false
+            true
+        }.getOrDefault(false)
+    }
 }
