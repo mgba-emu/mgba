@@ -45,6 +45,7 @@ class RomScanner(private val context: Context) {
                         displayName = name,
                         title = probe?.title.orEmpty(),
                         platform = probe?.platform.orEmpty(),
+                        crc32 = probe?.crc32.orEmpty(),
                     )
                 }
             }

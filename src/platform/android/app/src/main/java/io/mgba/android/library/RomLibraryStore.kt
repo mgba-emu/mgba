@@ -10,6 +10,7 @@ data class LibraryRom(
     val displayName: String,
     val title: String = "",
     val platform: String = "",
+    val crc32: String = "",
     val lastPlayedAt: Long = 0L,
     val favorite: Boolean = false,
 )
@@ -30,6 +31,7 @@ class RomLibraryStore(context: Context) {
                         displayName = item.optString("displayName", uri),
                         title = item.optString("title"),
                         platform = item.optString("platform"),
+                        crc32 = item.optString("crc32"),
                         lastPlayedAt = item.optLong("lastPlayedAt", 0L),
                         favorite = item.optBoolean("favorite", false),
                     ),
@@ -46,6 +48,7 @@ class RomLibraryStore(context: Context) {
             val merged = item.copy(
                 title = item.title.ifBlank { previous?.title.orEmpty() },
                 platform = item.platform.ifBlank { previous?.platform.orEmpty() },
+                crc32 = item.crc32.ifBlank { previous?.crc32.orEmpty() },
                 lastPlayedAt = previous?.lastPlayedAt ?: item.lastPlayedAt,
                 favorite = previous?.favorite ?: item.favorite,
             )
@@ -88,6 +91,7 @@ class RomLibraryStore(context: Context) {
             .put("displayName", item.displayName)
             .put("title", item.title)
             .put("platform", item.platform)
+            .put("crc32", item.crc32)
             .put("lastPlayedAt", item.lastPlayedAt)
             .put("favorite", item.favorite)
     }

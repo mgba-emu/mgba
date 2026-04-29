@@ -8,6 +8,7 @@ data class NativeLoadResult(
     val platform: String,
     val title: String,
     val displayName: String,
+    val crc32: String,
 ) {
     companion object {
         fun fromJson(raw: String): NativeLoadResult {
@@ -18,6 +19,7 @@ data class NativeLoadResult(
                 platform = json.optString("platform"),
                 title = json.optString("title"),
                 displayName = json.optString("displayName"),
+                crc32 = json.optString("crc32"),
             )
         }
     }

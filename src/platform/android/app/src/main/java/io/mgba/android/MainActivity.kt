@@ -285,7 +285,8 @@ class MainActivity : Activity() {
             allRoms.filter {
                 it.displayName.contains(query, ignoreCase = true) ||
                     it.title.contains(query, ignoreCase = true) ||
-                    it.platform.contains(query, ignoreCase = true)
+                    it.platform.contains(query, ignoreCase = true) ||
+                    it.crc32.contains(query, ignoreCase = true)
             }
         }
 

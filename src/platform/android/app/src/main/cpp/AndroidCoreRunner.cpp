@@ -89,13 +89,18 @@ std::string BoundedString(const char* value, size_t maxLength) {
 }
 
 std::string LoadResult(bool ok, const std::string& message, const std::string& platform, const std::string& title,
-                       const std::string& displayName) {
+                       const std::string& displayName, uint32_t crc32 = 0) {
 	std::ostringstream out;
+	std::ostringstream checksum;
+	if (crc32) {
+		checksum << std::hex << std::setfill('0') << std::setw(8) << crc32;
+	}
 	out << "{\"ok\":" << (ok ? "true" : "false")
 	    << ",\"message\":\"" << JsonEscape(message)
 	    << "\",\"platform\":\"" << JsonEscape(platform)
 	    << "\",\"title\":\"" << JsonEscape(title)
 	    << "\",\"displayName\":\"" << JsonEscape(displayName)
+	    << "\",\"crc32\":\"" << checksum.str()
 	    << "\"}";
 	return out.str();
 }
@@ -311,9 +316,13 @@ std::string ProbeRomFd(int fd, const std::string& displayName) {
 	if (title.empty()) {
 		title = displayName;
 	}
+	uint32_t crc32 = 0;
+	if (core->checksum) {
+		core->checksum(core, &crc32, mCHECKSUM_CRC32);
+	}
 	const std::string platform = PlatformName(core);
 	core->deinit(core);
-	return LoadResult(true, "Probed", platform, title, displayName);
+	return LoadResult(true, "Probed", platform, title, displayName, crc32);
 }
 
 AndroidCoreRunner::~AndroidCoreRunner() {
@@ -417,8 +426,12 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	if (title.empty()) {
 		title = displayName;
 	}
+	uint32_t crc32 = 0;
+	if (m_core->checksum) {
+		m_core->checksum(m_core, &crc32, mCHECKSUM_CRC32);
+	}
 
-	return LoadResult(true, "Loaded", PlatformName(m_core), title, displayName);
+	return LoadResult(true, "Loaded", PlatformName(m_core), title, displayName, crc32);
 }
 
 void AndroidCoreRunner::setSurface(ANativeWindow* window) {
