@@ -117,6 +117,7 @@
 - [x] 已新增 Android 音量控制：工具条 100/75/50/25% 循环、per-game 持久化、JNI/native PCM 输出缩放和 stats overlay 展示。
 - [x] 已新增 Android 音频 buffer 模式：Low/Balanced/Stable 三档、全局启动前应用、运行时 per-game 覆盖和 stats overlay 展示。
 - [x] 已新增 Android 音频 underrun 计数，OpenSL 输出补零时累计并在 debug stats overlay 展示。
+- [x] 已扩展 Android debug stats overlay：展示 FPS、frame time、core frame counter、ROM platform/title、音频 buffer 和 underrun。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -982,11 +983,11 @@ object NativeBridge {
   - [ ] 设置。
   - [ ] 退出。
 - [ ] Debug overlay：
-  - [ ] FPS。
-  - [ ] frame time。
+  - [x] FPS。
+  - [x] frame time。
   - [x] audio underrun。
-  - [ ] ROM platform。
-  - [ ] core frame counter。
+  - [x] ROM platform。
+  - [x] core frame counter。
 
 ### 15.3 Settings
 

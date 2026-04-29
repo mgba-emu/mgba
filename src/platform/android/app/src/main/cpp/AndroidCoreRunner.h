@@ -101,6 +101,8 @@ private:
 	std::string m_basePath;
 	std::string m_cachePath;
 	std::string m_savePath;
+	std::string m_platformName;
+	std::string m_gameTitle;
 	mCore* m_core = nullptr;
 	std::vector<mColor> m_videoBuffer;
 	unsigned m_videoWidth = 0;

@@ -37,6 +37,8 @@ data class NativeStats(
     val volumePercent: Int,
     val audioBufferSamples: Int,
     val audioUnderruns: Long,
+    val romPlatform: String,
+    val gameTitle: String,
     val skipBios: Boolean,
 ) {
     companion object {
@@ -54,6 +56,8 @@ data class NativeStats(
                 volumePercent = json.optInt("volumePercent", 100).coerceIn(0, 100),
                 audioBufferSamples = json.optInt("audioBufferSamples", 1024).coerceIn(512, 4096),
                 audioUnderruns = json.optLong("audioUnderruns", 0L),
+                romPlatform = json.optString("romPlatform"),
+                gameTitle = json.optString("gameTitle"),
                 skipBios = json.optBoolean("skipBios", false),
             )
         }

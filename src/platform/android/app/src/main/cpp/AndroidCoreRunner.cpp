@@ -515,8 +515,10 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	if (m_core->checksum) {
 		m_core->checksum(m_core, &crc32, mCHECKSUM_CRC32);
 	}
+	m_platformName = PlatformName(m_core);
+	m_gameTitle = title;
 
-	return LoadResult(true, "Loaded", PlatformName(m_core), title, displayName, crc32);
+	return LoadResult(true, "Loaded", m_platformName, title, displayName, crc32);
 }
 
 void AndroidCoreRunner::setSurface(ANativeWindow* window) {
@@ -774,6 +776,8 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"volumePercent\":" << m_volumePercent.load()
 	    << ",\"audioBufferSamples\":" << m_audioBufferSamples.load()
 	    << ",\"audioUnderruns\":" << m_audioOutput.underrunCount()
+	    << ",\"romPlatform\":\"" << JsonEscape(m_platformName) << "\""
+	    << ",\"gameTitle\":\"" << JsonEscape(m_gameTitle) << "\""
 	    << ",\"scaleMode\":" << m_scaleMode.load()
 	    << ",\"filterMode\":" << m_filterMode.load()
 	    << ",\"skipBios\":" << (m_skipBios.load() ? "true" : "false")
@@ -1308,6 +1312,8 @@ void AndroidCoreRunner::unloadCore() {
 	m_core->deinit(m_core);
 	m_core = nullptr;
 	m_savePath.clear();
+	m_platformName.clear();
+	m_gameTitle.clear();
 }
 
 } // namespace mgba::android

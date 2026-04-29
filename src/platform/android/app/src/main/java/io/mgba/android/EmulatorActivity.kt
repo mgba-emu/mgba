@@ -1406,18 +1406,24 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun updateStatsOverlay() {
         val stats = controller?.stats() ?: return
         val now = SystemClock.elapsedRealtime()
-        val fps = if (lastStatsAtMs > 0L && now > lastStatsAtMs) {
-            (stats.frames - lastStatsFrames).coerceAtLeast(0L) * 1000.0 / (now - lastStatsAtMs)
+        val frameDelta = (stats.frames - lastStatsFrames).coerceAtLeast(0L)
+        val elapsedMs = now - lastStatsAtMs
+        val fps = if (lastStatsAtMs > 0L && elapsedMs > 0L) {
+            frameDelta * 1000.0 / elapsedMs
         } else {
             0.0
         }
+        val frameTimeMs = if (lastStatsAtMs > 0L && frameDelta > 0L) elapsedMs.toDouble() / frameDelta else 0.0
         lastStatsFrames = stats.frames
         lastStatsAtMs = now
         statsOverlay?.text = String.format(
             Locale.US,
-            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nAudio %s  Vol %d%%  Buf %d  Und %d\nScale %s  Filter %s  BIOS %s",
+            "FPS %.1f  Frame %.2fms\nFrames %d\nROM %s  %s\nVideo %dx%d\nRun %s  Fast %s  Skip %d\nAudio %s  Vol %d%%  Buf %d  Und %d\nScale %s  Filter %s  BIOS %s",
             fps,
+            frameTimeMs,
             stats.frames,
+            stats.romPlatform.ifBlank { "unknown" },
+            stats.gameTitle.ifBlank { "untitled" },
             stats.videoWidth,
             stats.videoHeight,
             if (stats.running && !stats.paused) "on" else "off",
