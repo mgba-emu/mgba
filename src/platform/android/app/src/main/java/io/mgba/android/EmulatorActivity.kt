@@ -60,6 +60,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var lastStatsFrames = 0L
     private var lastStatsAtMs = 0L
     private var pendingExportStateSlot = 1
+    private var pendingImportStateSlot = 1
     private var scaleMode = 0
     private var hasSurface = false
     private val statsHandler = Handler(Looper.getMainLooper())
@@ -177,6 +178,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
             REQUEST_IMPORT_SAVE -> importBatterySave(uri)
             REQUEST_IMPORT_CHEATS -> importCheats(uri)
             REQUEST_EXPORT_STATE -> exportStateSlot(uri, pendingExportStateSlot)
+            REQUEST_IMPORT_STATE -> importStateSlot(uri, pendingImportStateSlot)
         }
     }
 
@@ -428,6 +430,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 }
             })
             stateRow.addView(Button(context).apply {
+                text = "StateIn"
+                setOnClickListener {
+                    importStateWithConfirmation()
+                }
+            })
+            stateRow.addView(Button(context).apply {
                 text = "Backup"
                 setOnClickListener {
                     val path = controller?.exportBatterySave()
@@ -562,6 +570,38 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         Toast.makeText(this, if (ok) "State exported" else "State export failed", Toast.LENGTH_SHORT).show()
     }
 
+    private fun importStateWithConfirmation() {
+        if (controller?.hasStateSlot(stateSlot) != true) {
+            openStateImportPicker()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Overwrite state?")
+            .setMessage("Slot $stateSlot already has a save state.")
+            .setPositiveButton("Overwrite") { _, _ -> openStateImportPicker() }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun openStateImportPicker() {
+        pendingImportStateSlot = stateSlot
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_IMPORT_STATE)
+    }
+
+    private fun importStateSlot(uri: Uri, slot: Int) {
+        val ok = runCatching {
+            contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
+                controller?.importStateSlotFd(slot, descriptor.fd) == true
+            } == true
+        }.getOrDefault(false)
+        Toast.makeText(this, if (ok) "State imported" else "State import failed", Toast.LENGTH_SHORT).show()
+    }
+
     private fun saveStateNow() {
         val ok = controller?.saveStateSlot(stateSlot) == true
         Toast.makeText(this, if (ok) "State saved" else "Save failed", Toast.LENGTH_SHORT).show()
@@ -647,6 +687,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         private const val REQUEST_IMPORT_SAVE = 2001
         private const val REQUEST_IMPORT_CHEATS = 2002
         private const val REQUEST_EXPORT_STATE = 2003
+        private const val REQUEST_IMPORT_STATE = 2004
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int")
     }
 }

@@ -44,6 +44,9 @@ object NativeBridge {
     external fun nativeExportStateSlotFd(handle: Long, slot: Int, fd: Int): Boolean
 
     @JvmStatic
+    external fun nativeImportStateSlotFd(handle: Long, slot: Int, fd: Int): Boolean
+
+    @JvmStatic
     external fun nativeReset(handle: Long)
 
     @JvmStatic

@@ -555,6 +555,51 @@ bool AndroidCoreRunner::exportStateSlotFd(int slot, int fd) {
 	return ok;
 }
 
+bool AndroidCoreRunner::importStateSlotFd(int slot, int fd) {
+	if (fd < 0) {
+		return false;
+	}
+
+	std::lock_guard<std::mutex> lock(m_mutex);
+	const std::string path = statePathForSlot(slot);
+	if (path.empty()) {
+		return false;
+	}
+
+	int ownedFd = dup(fd);
+	if (ownedFd < 0) {
+		return false;
+	}
+	std::ofstream output(path, std::ios::binary | std::ios::trunc);
+	if (!output) {
+		close(ownedFd);
+		return false;
+	}
+
+	char buffer[8192];
+	bool ok = true;
+	while (true) {
+		const ssize_t count = read(ownedFd, buffer, sizeof(buffer));
+		if (count == 0) {
+			break;
+		}
+		if (count < 0) {
+			ok = false;
+			break;
+		}
+		output.write(buffer, count);
+		if (!output) {
+			ok = false;
+			break;
+		}
+	}
+	close(ownedFd);
+	if (!ok) {
+		unlink(path.c_str());
+	}
+	return ok;
+}
+
 void AndroidCoreRunner::reset() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (m_core) {
