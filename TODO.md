@@ -131,6 +131,7 @@
 - [x] 已补齐 patch 自动搜索文件名：除 CRC32 外也查找 `<romName>.ips/.ups/.bps` 和完整显示名派生的补丁名。
 - [x] 已新增 Android internal release signing config：支持 keystore 文件或 base64 secret，并在 README 中记录本地/CI 配置变量。
 - [x] 已新增 Android crash symbolication 文档，串起 log export、CI native symbols artifact、`ndk-stack` 和 `llvm-addr2line` 排查流程。
+- [x] 已完善 Android release R8/Proguard：开启 resource shrink，保留 manifest 入口、ContentProvider 和 JNI native 方法。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -1249,7 +1250,7 @@ object NativeBridge {
 
 - [x] Debug overlay。
 - [x] Crash/log export。
-- [ ] Proguard/R8。
+- [x] Proguard/R8。
 - [ ] Native symbols。
 - [x] License 页面。
 - [x] Release APK/AAB 构建输出。
