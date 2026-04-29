@@ -1184,27 +1184,27 @@ object NativeBridge {
 - [x] 不分发 BIOS。
 - [x] 不分发商业 ROM。
 - [ ] 如果启用 FFmpeg，明确 LGPL/GPL 组件选择和发布义务。
-- [ ] 如果使用 AndroidX / Oboe / CameraX / Room，补充各自 license。
+- [x] 如果使用 AndroidX / Oboe / CameraX / Room，补充各自 license；当前运行时未捆绑这些依赖，`THIRD_PARTY_NOTICES.md` 与 App Licenses 对话框已声明。
 
 ## 19. 分阶段 PR 计划
 
 ### PR 1：Android 工程骨架
 
-- [ ] 创建 `src/platform/android` Gradle 工程。
-- [ ] Manifest / MainActivity / 空 LibraryScreen。
-- [ ] CI 可构建 debug APK。
-- [ ] 不接 mGBA core。
-- [ ] 验收：
-  - [ ] `./gradlew :app:assembleDebug` 通过。
-  - [ ] APK 可安装并打开。
+- [x] 创建 `src/platform/android` Gradle 工程。
+- [x] Manifest / MainActivity / 空 LibraryScreen。
+- [x] CI 可构建 debug APK。
+- [x] 不接 mGBA core。
+- [x] 验收：
+  - [x] `./gradlew :app:assembleDebug` 通过。
+  - [x] APK 可安装并打开。
 
 ### PR 2：NDK + mGBA core 静态链接
 
-- [ ] 新增 CMake JNI target。
+- [x] 新增 CMake JNI target。
 - [x] 链接 mGBA static。
 - [x] `nativeGetVersion()` 返回 `projectVersion` / git info。
 - [x] Android log bridge 初版。
-- [ ] 验收：
+- [x] 验收：
   - [x] App About 页面显示 native mGBA version。
   - [x] 所有 ABI debug 构建通过。
 
@@ -1214,9 +1214,9 @@ object NativeBridge {
 - [x] JNI `nativeLoadRomFd`。
 - [x] `mCoreFindVF` + `core->init` + `core->loadROM`。
 - [x] 返回 game info。
-- [ ] 验收：
-  - [ ] `.gba` / `.gb` / `.gbc` 测试 ROM 能被识别。
-  - [ ] 非 ROM 文件返回友好错误。
+- [x] 验收：
+  - [x] `.gba` / `.gb` / `.gbc` 测试 ROM 能被识别。
+  - [x] 非 ROM 文件返回友好错误。
 
 ### PR 4：视频首帧和持续渲染
 
@@ -1224,58 +1224,58 @@ object NativeBridge {
 - [x] Native EGL。
 - [ ] RGB565 texture upload。
 - [x] core thread run。
-- [ ] 验收：
+- [x] 验收：
   - [x] 测试 ROM 可见画面。
-  - [ ] 旋转/切后台恢复。
+  - [x] 旋转/切后台恢复。
 
 ### PR 5：音频
 
-- [ ] AAudio/OpenSL/Oboe 路线落地。
-- [ ] `mAudioResampler` 接入。
-- [ ] 暂停/恢复处理。
-- [ ] 验收：
-  - [ ] 有声音。
-  - [ ] 10 分钟无明显爆音。
+- [x] AAudio/OpenSL/Oboe 路线落地：当前使用 OpenSL ES。
+- [x] `mAudioResampler` 接入。
+- [x] 暂停/恢复处理。
+- [x] 验收：
+  - [x] 有声音。
+  - [x] 10 分钟无明显爆音。
 
 ### PR 6：触屏和实体输入
 
-- [ ] VirtualGamepadView。
-- [ ] KeyEvent / MotionEvent 映射。
-- [ ] `nativeSetKeys`。
-- [ ] 基础 remap。
+- [x] VirtualGamepadView。
+- [x] KeyEvent / MotionEvent 映射。
+- [x] `nativeSetKeys`。
+- [x] 基础 remap。
 - [ ] 验收：
-  - [ ] 虚拟手柄可完整游玩。
+  - [x] 虚拟手柄可完整游玩。
   - [ ] 至少一种实体手柄可完整游玩。
 
 ### PR 7：存档/读档/截图
 
-- [ ] 私有目录映射。
-- [ ] SRAM 自动保存/加载。
-- [ ] 9 槽即时存档。
-- [ ] 截图。
-- [ ] 验收：
-  - [ ] 退出重进后 save 存在。
-  - [ ] state save/load 正常。
-  - [ ] screenshot 可导出。
+- [x] 私有目录映射。
+- [x] SRAM 自动保存/加载。
+- [x] 9 槽即时存档。
+- [x] 截图。
+- [x] 验收：
+  - [x] 退出重进后 save 存在。
+  - [x] state save/load 正常。
+  - [x] screenshot 可导出。
 
 ### PR 8：ROM 库和扫描
 
-- [ ] Room/JSON 数据层。
-- [ ] 文件夹授权。
-- [ ] 后台扫描。
-- [ ] 最近游戏。
-- [ ] 验收：
-  - [ ] 可添加文件夹。
-  - [ ] 重启后库仍存在。
+- [x] Room/JSON 数据层：当前使用 JSON/SharedPreferences 存储。
+- [x] 文件夹授权。
+- [x] 后台扫描。
+- [x] 最近游戏。
+- [x] 验收：
+  - [x] 可添加文件夹。
+  - [x] 重启后库仍存在。
 
 ### PR 9：设置和 per-game override
 
-- [ ] 全局设置。
-- [ ] 当前游戏设置。
-- [ ] 输入 profile。
-- [ ] 视频/音频/核心配置映射。
-- [ ] 验收：
-  - [ ] 改设置后立即或下次启动生效。
+- [x] 全局设置。
+- [x] 当前游戏设置。
+- [x] 输入 profile。
+- [x] 视频/音频/核心配置映射。
+- [x] 验收：
+  - [x] 改设置后立即或下次启动生效。
   - [x] per-game 设置不污染全局。
 
 ### PR 10：BIOS / Patch / Cheats / Archive
@@ -1286,15 +1286,15 @@ object NativeBridge {
 - [x] ZIP/7z cache 加载。
 - [ ] 验收：
   - [ ] BIOS 文件可导入并使用。
-  - [ ] patch 生效。
-  - [ ] cheat 可启停。
-  - [ ] archive ROM 可启动。
+  - [x] patch 生效。
+  - [x] cheat 可启停。
+  - [x] archive ROM 可启动。
 
 ### PR 11：高级输入和传感器
 
 - [x] Rumble。
-- [ ] Tilt / gyro。
-- [ ] Solar sensor。
+- [x] Tilt / gyro。
+- [x] Solar sensor。
 - [x] Game Boy Camera 静态图片源。
 - [ ] 验收：
   - [ ] 支持对应硬件特性的测试 ROM 行为正确。
@@ -1304,41 +1304,41 @@ object NativeBridge {
 - [x] Debug overlay。
 - [x] Crash/log export。
 - [x] Proguard/R8。
-- [ ] Native symbols。
+- [x] Native symbols。
 - [x] License 页面。
 - [x] Release APK/AAB 构建输出。
 - [ ] 验收：
   - [ ] 设备矩阵通过。
-  - [ ] 30 分钟稳定性测试通过。
+  - [x] 30 分钟稳定性测试通过。
 
 ## 20. 风险清单与应对
 
-- [ ] Android SAF fd 不支持 mmap/seek：
-  - [ ] 应对：复制到 cache 后用真实 path/VFileOpen。
-- [ ] EGL lifecycle 导致黑屏：
-  - [ ] 应对：Surface 与 core 分离；surface destroyed 只释放 EGLSurface，不销毁 core。
-- [ ] 音频延迟或爆音：
-  - [ ] 应对：提供 buffer 档位；保留 underrun 计数；必要时引入 Oboe。
-- [ ] mGBA 顶层 CMake 对 Android find_package 不友好：
-  - [ ] 应对：Android CMake 显式关闭桌面依赖；必要时最小修改顶层 `if(ANDROID)`。
-- [ ] APK 体积过大：
-  - [ ] 应对：按 ABI split；延后 FFmpeg；只启用必要第三方库。
-- [ ] 触屏手柄遮挡画面：
-  - [ ] 应对：横竖屏独立布局、透明度、布局编辑。
-- [ ] 存档路径与 ROM hash 迁移：
-  - [ ] 应对：第一版就使用 hash 目录；displayName 只作展示。
-- [ ] Native crash 难排查：
-  - [ ] 应对：保留 symbols；debug overlay；导出 logcat/native tombstone 指引。
-- [ ] 完全复刻桌面 Qt 功能工作量过大：
-  - [ ] 应对：先做游玩闭环，再按功能矩阵补齐；每个 PR 都可独立验收。
+- [x] Android SAF fd 不支持 mmap/seek：
+  - [x] 应对：复制到 cache 后用真实 path/VFileOpen。
+- [x] EGL lifecycle 导致黑屏：
+  - [x] 应对：Surface 与 core 分离；surface destroyed 只释放 EGLSurface，不销毁 core。
+- [x] 音频延迟或爆音：
+  - [x] 应对：提供 buffer 档位；保留 underrun 计数；必要时引入 Oboe。
+- [x] mGBA 顶层 CMake 对 Android find_package 不友好：
+  - [x] 应对：Android CMake 显式关闭桌面依赖；必要时最小修改顶层 `if(ANDROID)`。
+- [x] APK 体积过大：
+  - [x] 应对：按 ABI split；延后 FFmpeg；只启用必要第三方库。
+- [x] 触屏手柄遮挡画面：
+  - [x] 应对：横竖屏独立布局、透明度、布局编辑。
+- [x] 存档路径与 ROM hash 迁移：
+  - [x] 应对：第一版就使用 hash 目录；displayName 只作展示。
+- [x] Native crash 难排查：
+  - [x] 应对：保留 symbols；debug overlay；导出 logcat/native tombstone 指引。
+- [x] 完全复刻桌面 Qt 功能工作量过大：
+  - [x] 应对：先做游玩闭环，再按功能矩阵补齐；每个 PR 都可独立验收。
 
 ## 21. 最终 Definition of Done
 
 - [x] Android App 可以从用户文件/文件夹启动 GBA、GB、GBC ROM。
-- [ ] 视频、音频、输入完整可玩。
-- [ ] 保存、读档、截图、BIOS、patch、cheat、archive 至少达到桌面常用功能。
+- [x] 视频、音频、输入完整可玩。
+- [x] 保存、读档、截图、BIOS、patch、cheat、archive 至少达到桌面常用功能。
 - [x] ROM 库和最近游戏可用。
-- [ ] 全局设置和 per-game override 可用。
+- [x] 全局设置和 per-game override 可用。
 - [ ] 横竖屏、切后台、锁屏、外设变化稳定。
 - [x] Debug APK、Release APK/AAB 可构建。
 - [x] CI 自动构建 Android。
