@@ -47,6 +47,8 @@ public class NativeTypesTest {
         assertTrue(stats.getPaused());
         assertEquals(100, stats.getVolumePercent());
         assertEquals(1024, stats.getAudioBufferSamples());
+        assertEquals(0, stats.getInputKeys());
+        assertEquals(0, stats.getSeenInputKeys());
     }
 
     @Test
@@ -56,7 +58,9 @@ public class NativeTypesTest {
                 + "\"fastForwardMultiplier\":99,"
                 + "\"volumePercent\":200,"
                 + "\"audioBufferSamples\":64,"
-                + "\"audioLowPassRange\":120"
+                + "\"audioLowPassRange\":120,"
+                + "\"inputKeys\":2049,"
+                + "\"seenInputKeys\":1073"
                 + "}"
         );
 
@@ -64,5 +68,7 @@ public class NativeTypesTest {
         assertEquals(100, stats.getVolumePercent());
         assertEquals(512, stats.getAudioBufferSamples());
         assertEquals(95, stats.getAudioLowPassRange());
+        assertEquals(1, stats.getInputKeys());
+        assertEquals(49, stats.getSeenInputKeys());
     }
 }

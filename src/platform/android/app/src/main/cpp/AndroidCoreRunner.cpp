@@ -700,8 +700,11 @@ void AndroidCoreRunner::setSurface(ANativeWindow* window) {
 
 void AndroidCoreRunner::setKeys(uint32_t keys) {
 	std::lock_guard<std::mutex> lock(m_mutex);
+	const uint32_t maskedKeys = keys & 0x3FF;
+	m_inputKeys = maskedKeys;
+	m_seenInputKeys |= maskedKeys;
 	if (m_core) {
-		m_core->setKeys(m_core, keys & 0x3FF);
+		m_core->setKeys(m_core, maskedKeys);
 	}
 }
 
@@ -1099,6 +1102,8 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"audioBufferSamples\":" << m_audioBufferSamples.load()
 	    << ",\"audioUnderruns\":" << m_audioOutput.underrunCount()
 	    << ",\"audioLowPassRange\":" << m_lowPassRangePercent.load()
+	    << ",\"inputKeys\":" << m_inputKeys
+	    << ",\"seenInputKeys\":" << m_seenInputKeys
 	    << ",\"romPlatform\":\"" << JsonEscape(m_platformName) << "\""
 	    << ",\"gameTitle\":\"" << JsonEscape(m_gameTitle) << "\""
 	    << ",\"scaleMode\":" << m_scaleMode.load()

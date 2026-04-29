@@ -281,9 +281,9 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         root.addView(
             createStateToolbar(),
             FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                android.view.Gravity.TOP or android.view.Gravity.CENTER_HORIZONTAL,
+                android.view.Gravity.TOP,
             ).apply {
                 topMargin = dp(12)
             },
@@ -1279,6 +1279,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun scrollableToolbarRow(row: LinearLayout): HorizontalScrollView {
         return HorizontalScrollView(this).apply {
             isHorizontalScrollBarEnabled = false
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            )
             addView(row)
         }
     }
@@ -2362,6 +2366,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 appendLine("nativeVideo=${stats.videoWidth}x${stats.videoHeight}")
                 appendLine("nativeRun running=${stats.running} paused=${stats.paused} fast=${stats.fastForward} rewind=${stats.rewinding}")
                 appendLine("nativeAudio volume=${stats.volumePercent} buffer=${stats.audioBufferSamples} lowPass=${stats.audioLowPassRange} underruns=${stats.audioUnderruns}")
+                appendLine("nativeInput current=${formatGbaMask(stats.inputKeys)} seen=${formatGbaMask(stats.seenInputKeys)}")
                 appendLine("nativeRom platform=${stats.romPlatform} title=${stats.gameTitle} skipBios=${stats.skipBios}")
             }
         }

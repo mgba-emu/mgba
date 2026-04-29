@@ -172,6 +172,8 @@ private:
 	std::atomic<int> m_rtcMode{0};
 	std::atomic<int64_t> m_rtcValueMs{946684800000LL};
 	std::atomic<uint64_t> m_frameCounter{0};
+	uint32_t m_inputKeys = 0;
+	uint32_t m_seenInputKeys = 0;
 	std::atomic<bool> m_rumbleActive{false};
 	std::atomic<int32_t> m_tiltX{0};
 	std::atomic<int32_t> m_tiltY{0};

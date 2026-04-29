@@ -51,11 +51,15 @@ data class NativeStats(
     val audioBufferSamples: Int,
     val audioUnderruns: Long,
     val audioLowPassRange: Int,
+    val inputKeys: Int,
+    val seenInputKeys: Int,
     val romPlatform: String,
     val gameTitle: String,
     val skipBios: Boolean,
 ) {
     companion object {
+        private const val InputMask = 0x3FF
+
         fun fromJson(raw: String): NativeStats {
             val json = runCatching { JSONObject(raw) }.getOrDefault(JSONObject())
             return NativeStats(
@@ -78,6 +82,8 @@ data class NativeStats(
                 audioBufferSamples = json.optInt("audioBufferSamples", 1024).coerceIn(512, 4096),
                 audioUnderruns = json.optLong("audioUnderruns", 0L),
                 audioLowPassRange = json.optInt("audioLowPassRange", 0).coerceIn(0, 95),
+                inputKeys = json.optInt("inputKeys", 0) and InputMask,
+                seenInputKeys = json.optInt("seenInputKeys", 0) and InputMask,
                 romPlatform = json.optString("romPlatform"),
                 gameTitle = json.optString("gameTitle"),
                 skipBios = json.optBoolean("skipBios", false),
