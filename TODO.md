@@ -174,6 +174,7 @@
 - [x] 已收紧 Android 文件夹扫描入口：只有成功持久化 SAF tree 读授权后才扫描并保存 Library source。
 - [x] 已增强 Android 文件夹扫描授权校验：tree picker 请求并要求 prefix grant，确保持久授权可覆盖子 ROM。
 - [x] 已增强 Android Storage 管理：清理 cache 时同步释放封面缩略图内存缓存，并在 Storage 摘要显示缩略图内存占用。
+- [x] 已增强 Android cache 清理：`Clear Cache` 会递归清理 archive/import cache 子目录并按删除文件数统计。
 - [x] 已完成 OnePlus7 真机首帧验证：通过 ACTION_VIEW 打开仓库 homebrew GB/GBA 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 已完成 OnePlus7 真机 GBC 验证：通过 ACTION_VIEW 打开仓库 homebrew GBC 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 已修复 Android 竖屏游戏内工具栏溢出：运行/存档两行可横向滚动，Save/Load 等按钮在 OnePlus7 上可访问。

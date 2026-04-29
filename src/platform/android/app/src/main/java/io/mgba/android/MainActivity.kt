@@ -2734,7 +2734,19 @@ class MainActivity : Activity() {
 
     private fun clearCacheDirectory(name: String): Int {
         val directory = File(cacheDir, name)
-        return directory.listFiles()?.count { it.delete() } ?: 0
+        return directory.listFiles()?.sumOf { entry -> deleteCacheEntry(entry) } ?: 0
+    }
+
+    private fun deleteCacheEntry(file: File): Int {
+        if (!file.exists()) {
+            return 0
+        }
+        if (file.isFile) {
+            return if (file.delete()) 1 else 0
+        }
+        val deletedFiles = file.listFiles()?.sumOf { child -> deleteCacheEntry(child) } ?: 0
+        file.delete()
+        return deletedFiles
     }
 
     private fun trimArchiveCache(keep: File? = null, maxBytes: Long = ARCHIVE_CACHE_MAX_BYTES) {
