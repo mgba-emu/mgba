@@ -58,6 +58,7 @@ import io.mgba.android.storage.CheatStore
 import io.mgba.android.storage.LogExporter
 import io.mgba.android.storage.PatchStore
 import io.mgba.android.storage.UriPermissionPolicy
+import io.mgba.android.storage.replaceFileAtomically
 import java.io.File
 import java.security.MessageDigest
 import java.util.Locale
@@ -1107,51 +1108,46 @@ class MainActivity : Activity() {
 
     private fun extractZipRomEntry(uri: Uri, entryName: String): File? {
         val target = archiveCacheFile(uri, entryName)
-        val tmp = File(target.parentFile, "${target.name}.tmp")
-        target.parentFile?.mkdirs()
-        contentResolver.openInputStream(uri)?.buffered()?.use { input ->
-            ZipInputStream(input).use { zip ->
-                while (true) {
-                    val entry = zip.nextEntry ?: break
-                    if (!entry.isDirectory && entry.name == entryName) {
-                        tmp.outputStream().use { output ->
-                            zip.copyTo(output)
+        val written = replaceFileAtomically(target) { temp ->
+            val input = contentResolver.openInputStream(uri)?.buffered() ?: error("Archive input unavailable")
+            input.use {
+                ZipInputStream(it).use { zip ->
+                    while (true) {
+                        val entry = zip.nextEntry ?: break
+                        if (!entry.isDirectory && entry.name == entryName) {
+                            temp.outputStream().use { output ->
+                                zip.copyTo(output)
+                            }
+                            zip.closeEntry()
+                            return@replaceFileAtomically
                         }
                         zip.closeEntry()
-                        if (target.exists()) {
-                            target.delete()
-                        }
-                        if (!tmp.renameTo(target)) {
-                            return null
-                        }
-                        target.setLastModified(System.currentTimeMillis())
-                        trimArchiveCache(keep = target)
-                        return target
                     }
-                    zip.closeEntry()
                 }
             }
+            error("Archive entry unavailable")
         }
-        tmp.delete()
-        return null
+        if (!written) {
+            return null
+        }
+        target.setLastModified(System.currentTimeMillis())
+        trimArchiveCache(keep = target)
+        return target
     }
 
     private fun cacheArchiveFile(uri: Uri, name: String): File? {
         val extension = name.substringAfterLast('.', "").takeIf { it.isNotBlank() }?.let { ".$it" } ?: ".archive"
         val directory = File(cacheDir, "archive-files")
         val target = File(directory, "${sha1(uri.toString())}$extension")
-        val tmp = File(directory, "${target.name}.tmp")
-        directory.mkdirs()
-        contentResolver.openInputStream(uri)?.use { input ->
-            tmp.outputStream().use { output ->
-                input.copyTo(output)
+        val written = replaceFileAtomically(target) { temp ->
+            val input = contentResolver.openInputStream(uri) ?: error("Archive input unavailable")
+            input.use {
+                temp.outputStream().use { output ->
+                    it.copyTo(output)
+                }
             }
-        } ?: return null
-        if (target.exists()) {
-            target.delete()
         }
-        if (!tmp.renameTo(target)) {
-            tmp.delete()
+        if (!written) {
             return null
         }
         target.setLastModified(System.currentTimeMillis())
@@ -1161,17 +1157,12 @@ class MainActivity : Activity() {
 
     private fun extractNativeArchiveRomEntry(archive: File, uri: Uri, entryName: String): File? {
         val target = archiveCacheFile(uri, entryName)
-        val tmp = File(target.parentFile, "${target.name}.tmp")
-        target.parentFile?.mkdirs()
-        if (!NativeBridge.extractArchiveRomEntry(archive.absolutePath, entryName, tmp.absolutePath)) {
-            tmp.delete()
-            return null
+        val written = replaceFileAtomically(target) { temp ->
+            if (!NativeBridge.extractArchiveRomEntry(archive.absolutePath, entryName, temp.absolutePath)) {
+                error("Native archive entry unavailable")
+            }
         }
-        if (target.exists()) {
-            target.delete()
-        }
-        if (!tmp.renameTo(target)) {
-            tmp.delete()
+        if (!written) {
             return null
         }
         target.setLastModified(System.currentTimeMillis())
@@ -1188,18 +1179,15 @@ class MainActivity : Activity() {
         val extension = name.substringAfterLast('.', "").takeIf { it.isNotBlank() }?.let { ".$it" } ?: ".rom"
         val directory = File(cacheDir, "imports")
         val target = File(directory, "${sha1(uri.toString())}$extension")
-        val tmp = File(directory, "${target.name}.tmp")
-        directory.mkdirs()
-        contentResolver.openInputStream(uri)?.use { input ->
-            tmp.outputStream().use { output ->
-                input.copyTo(output)
+        val written = replaceFileAtomically(target) { temp ->
+            val input = contentResolver.openInputStream(uri) ?: error("Import input unavailable")
+            input.use {
+                temp.outputStream().use { output ->
+                    it.copyTo(output)
+                }
             }
-        } ?: return null
-        if (target.exists()) {
-            target.delete()
         }
-        if (!tmp.renameTo(target)) {
-            tmp.delete()
+        if (!written) {
             return null
         }
         target.setLastModified(System.currentTimeMillis())
@@ -1960,16 +1948,21 @@ class MainActivity : Activity() {
             val coversDir = File(filesDir, "covers")
             coversDir.mkdirs()
             val target = File(coversDir, "${sha1(romUri.toString())}.cover")
-            contentResolver.openInputStream(imageUri)?.use { input ->
-                target.outputStream().use { output ->
-                    input.copyTo(output)
+            val copied = replaceFileAtomically(target) { temp ->
+                val input = contentResolver.openInputStream(imageUri) ?: error("Cover input unavailable")
+                input.use {
+                    temp.outputStream().use { output ->
+                        it.copyTo(output)
+                    }
                 }
-            } ?: return@runCatching null
-            if (BitmapFactory.decodeFile(target.absolutePath) == null) {
-                target.delete()
-                null
-            } else {
+                if (BitmapFactory.decodeFile(temp.absolutePath) == null) {
+                    error("Invalid cover image")
+                }
+            }
+            if (copied) {
                 target.absolutePath
+            } else {
+                null
             }
         }.getOrNull()
     }
