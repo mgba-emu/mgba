@@ -445,6 +445,13 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetFilterMode(JNIEnv*, jclass, jl
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetInterframeBlending(JNIEnv*, jclass, jlong handle, jboolean enabled) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setInterframeBlending(enabled == JNI_TRUE);
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeSetSkipBios(JNIEnv*, jclass, jlong handle, jboolean enabled) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
 		runner->setSkipBios(enabled == JNI_TRUE);

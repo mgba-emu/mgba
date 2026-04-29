@@ -67,6 +67,7 @@ class MainActivity : Activity() {
     private lateinit var skipBiosButton: Button
     private lateinit var scaleButton: Button
     private lateinit var filterButton: Button
+    private lateinit var interframeBlendButton: Button
     private lateinit var audioBufferButton: Button
     private lateinit var audioLowPassButton: Button
     private lateinit var fastForwardModeButton: Button
@@ -193,6 +194,12 @@ class MainActivity : Activity() {
         filterButton = Button(this).apply {
             setOnClickListener {
                 preferences.filterMode = (preferences.filterMode + 1) % FILTER_LABELS.size
+                updateVideoButtons()
+            }
+        }
+        interframeBlendButton = Button(this).apply {
+            setOnClickListener {
+                preferences.interframeBlending = !preferences.interframeBlending
                 updateVideoButtons()
             }
         }
@@ -379,6 +386,7 @@ class MainActivity : Activity() {
         root.addView(skipBiosButton)
         root.addView(scaleButton)
         root.addView(filterButton)
+        root.addView(interframeBlendButton)
         root.addView(audioBufferButton)
         root.addView(audioLowPassButton)
         root.addView(fastForwardModeButton)
@@ -591,6 +599,9 @@ class MainActivity : Activity() {
                 ),
             )
             emulator.setFrameSkip(perGameOverrides.frameSkip(gameId, preferences.frameSkip))
+            emulator.setInterframeBlending(
+                perGameOverrides.interframeBlending(gameId, preferences.interframeBlending),
+            )
             emulator.setLogLevelMode(preferences.logLevelMode)
             emulator.setRtcMode(preferences.rtcMode, rtcValueForMode(preferences.rtcMode))
             emulator.setRewindConfig(
@@ -902,6 +913,11 @@ class MainActivity : Activity() {
     private fun updateVideoButtons() {
         scaleButton.text = "Scale: ${SCALE_LABELS[preferences.scaleMode]}"
         filterButton.text = "Filter: ${FILTER_LABELS[preferences.filterMode]}"
+        interframeBlendButton.text = if (preferences.interframeBlending) {
+            "Interframe: On"
+        } else {
+            "Interframe: Off"
+        }
     }
 
     private fun updateAudioBufferButton() {

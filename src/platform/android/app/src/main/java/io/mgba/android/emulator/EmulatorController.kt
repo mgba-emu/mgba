@@ -142,6 +142,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setInterframeBlending(enabled: Boolean) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetInterframeBlending(handle.value, enabled)
+        }
+    }
+
     fun setSkipBios(enabled: Boolean) {
         if (handle.isValid) {
             NativeBridge.nativeSetSkipBios(handle.value, enabled)

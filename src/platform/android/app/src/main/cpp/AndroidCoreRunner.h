@@ -84,6 +84,7 @@ public:
 	void setLowPassRangePercent(int percent);
 	void setScaleMode(int mode);
 	void setFilterMode(int mode);
+	void setInterframeBlending(bool enabled);
 	void setSkipBios(bool enabled);
 	void setLogLevel(int levels);
 	void setRtcMode(int mode, int64_t valueMs);
@@ -137,6 +138,8 @@ private:
 	unsigned m_videoHeight = 0;
 	unsigned m_videoStride = 256;
 	unsigned m_textureHeight = 224;
+	std::vector<mColor> m_previousVideoBuffer;
+	std::vector<mColor> m_blendedVideoBuffer;
 	AndroidAudioOutput m_audioOutput;
 
 	std::mutex m_mutex;
@@ -155,6 +158,7 @@ private:
 	std::atomic<int> m_lowPassRangePercent{0};
 	std::atomic<int> m_scaleMode{0};
 	std::atomic<int> m_filterMode{0};
+	std::atomic<bool> m_interframeBlending{false};
 	std::atomic<bool> m_skipBios{false};
 	std::atomic<int> m_logLevel{0};
 	std::atomic<int> m_rtcMode{0};
@@ -176,6 +180,7 @@ private:
 	unsigned m_cameraRequestHeight = 112;
 	mCoreRewindContext m_rewind = {};
 	bool m_rewindReady = false;
+	bool m_blendFrameReady = false;
 
 	ANativeWindow* m_window = nullptr;
 	EGLDisplay m_display = EGL_NO_DISPLAY;

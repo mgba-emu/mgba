@@ -106,6 +106,10 @@ void ApplyRtcMode(mCore* core, int mode, int64_t valueMs) {
 	}
 }
 
+mColor BlendPixel(mColor current, mColor previous) {
+	return (((current ^ previous) & 0xFEFEFEFEu) >> 1) + (current & previous);
+}
+
 std::string BoundedString(const char* value, size_t maxLength) {
 	size_t length = 0;
 	while (length < maxLength && value[length]) {
@@ -570,6 +574,9 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	resetRewindContextLocked();
 	m_audioOutput.clear();
 	m_audioOutput.resetUnderrunCount();
+	m_previousVideoBuffer.clear();
+	m_blendedVideoBuffer.clear();
+	m_blendFrameReady = false;
 	m_frameCounter = 0;
 	m_rumbleActive = false;
 	m_rumble = {};
@@ -679,6 +686,9 @@ bool AndroidCoreRunner::loadStateSlot(int slot) {
 	vf->close(vf);
 	if (ok) {
 		resetRewindContextLocked();
+		m_previousVideoBuffer.clear();
+		m_blendedVideoBuffer.clear();
+		m_blendFrameReady = false;
 		m_core->currentVideoSize(m_core, &m_videoWidth, &m_videoHeight);
 		m_audioOutput.clear();
 	}
@@ -816,6 +826,9 @@ void AndroidCoreRunner::reset() {
 		m_rumbleActive = false;
 		m_core->reset(m_core);
 		resetRewindContextLocked();
+		m_previousVideoBuffer.clear();
+		m_blendedVideoBuffer.clear();
+		m_blendFrameReady = false;
 		m_audioOutput.clear();
 	}
 }
@@ -917,6 +930,14 @@ void AndroidCoreRunner::setFilterMode(int mode) {
 		mode = 0;
 	}
 	m_filterMode = mode;
+}
+
+void AndroidCoreRunner::setInterframeBlending(bool enabled) {
+	m_interframeBlending = enabled;
+	std::lock_guard<std::mutex> lock(m_mutex);
+	m_previousVideoBuffer.clear();
+	m_blendedVideoBuffer.clear();
+	m_blendFrameReady = false;
 }
 
 void AndroidCoreRunner::setSkipBios(bool enabled) {
@@ -1463,7 +1484,29 @@ void AndroidCoreRunner::renderFrameLocked() {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 	applyTextureFilterLocked();
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_videoStride, m_videoHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_videoBuffer.data());
+	const size_t pixelCount = static_cast<size_t>(m_videoStride) * m_videoHeight;
+	const mColor* uploadBuffer = m_videoBuffer.data();
+	if (m_interframeBlending.load() && pixelCount && pixelCount <= m_videoBuffer.size()) {
+		if (m_previousVideoBuffer.size() != pixelCount) {
+			m_previousVideoBuffer.resize(pixelCount);
+			m_blendedVideoBuffer.resize(pixelCount);
+			m_blendFrameReady = false;
+		}
+		if (m_blendFrameReady) {
+			for (size_t i = 0; i < pixelCount; ++i) {
+				m_blendedVideoBuffer[i] = BlendPixel(m_videoBuffer[i], m_previousVideoBuffer[i]);
+			}
+			uploadBuffer = m_blendedVideoBuffer.data();
+		} else {
+			m_blendFrameReady = true;
+		}
+		std::copy_n(m_videoBuffer.data(), pixelCount, m_previousVideoBuffer.data());
+	} else if (!m_interframeBlending.load()) {
+		m_previousVideoBuffer.clear();
+		m_blendedVideoBuffer.clear();
+		m_blendFrameReady = false;
+	}
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_videoStride, m_videoHeight, GL_RGBA, GL_UNSIGNED_BYTE, uploadBuffer);
 	glUniform1i(m_textureLocation, 0);
 
 	const float u = m_videoWidth / static_cast<float>(m_videoStride);

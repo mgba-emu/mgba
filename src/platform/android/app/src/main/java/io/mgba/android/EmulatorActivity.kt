@@ -109,6 +109,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var audioLowPassButton: Button? = null
     private var scaleButton: Button? = null
     private var filterButton: Button? = null
+    private var interframeBlendButton: Button? = null
     private var orientationButton: Button? = null
     private var skipBiosButton: Button? = null
     private var padButton: Button? = null
@@ -161,6 +162,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var playAccountingStartedAtMs = 0L
     private var scaleMode = 0
     private var filterMode = 0
+    private var interframeBlending = false
     private var orientationMode = 0
     private var skipBios = false
     private var hasSurface = false
@@ -199,6 +201,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         currentGameId = EmulatorSession.currentGame()?.uri
         scaleMode = perGameOverrides.scaleMode(currentGameId, preferences.scaleMode)
         filterMode = perGameOverrides.filterMode(currentGameId, preferences.filterMode)
+        interframeBlending = perGameOverrides.interframeBlending(currentGameId, preferences.interframeBlending)
         orientationMode = perGameOverrides.orientationMode(currentGameId, preferences.orientationMode)
         skipBios = perGameOverrides.skipBios(currentGameId, preferences.skipBios)
         frameSkip = perGameOverrides.frameSkip(currentGameId, preferences.frameSkip)
@@ -260,6 +263,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
         controller?.setScaleMode(scaleMode)
         controller?.setFilterMode(filterMode)
+        controller?.setInterframeBlending(interframeBlending)
         controller?.setSkipBios(skipBios)
         controller?.setFrameSkip(frameSkip)
         controller?.setAudioEnabled(!muted)
@@ -529,6 +533,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun saveFilterModePreference() {
         if (!perGameOverrides.setFilterMode(currentGameId, filterMode)) {
             preferences.filterMode = filterMode
+        }
+    }
+
+    private fun saveInterframeBlendingPreference() {
+        if (!perGameOverrides.setInterframeBlending(currentGameId, interframeBlending)) {
+            preferences.interframeBlending = interframeBlending
         }
     }
 
@@ -880,6 +890,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(filterButton)
+            interframeBlendButton = Button(context).apply {
+                setOnClickListener {
+                    interframeBlending = !interframeBlending
+                    controller?.setInterframeBlending(interframeBlending)
+                    saveInterframeBlendingPreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(interframeBlendButton)
             orientationButton = Button(context).apply {
                 setOnClickListener {
                     orientationMode = (orientationMode + 1) % ORIENTATION_LABELS.size
@@ -1238,6 +1257,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         audioLowPassButton?.text = AudioLowPassModes.labelFor(audioLowPassMode)
         scaleButton?.text = SCALE_LABELS[scaleMode]
         filterButton?.text = FILTER_LABELS[filterMode]
+        interframeBlendButton?.text = if (interframeBlending) "Blend" else "NoBlend"
         orientationButton?.text = ORIENTATION_LABELS[orientationMode]
         skipBiosButton?.text = if (skipBios) "SkipBIOS" else "BIOS"
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"

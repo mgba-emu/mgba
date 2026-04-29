@@ -17,6 +17,12 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putInt(KEY_FILTER_MODE, value.coerceIn(0, 1)).apply()
         }
 
+    var interframeBlending: Boolean
+        get() = preferences.getBoolean(KEY_INTERFRAME_BLENDING, false)
+        set(value) {
+            preferences.edit().putBoolean(KEY_INTERFRAME_BLENDING, value).apply()
+        }
+
     var orientationMode: Int
         get() = preferences.getInt(KEY_ORIENTATION_MODE, 0).coerceIn(0, 2)
         set(value) {
@@ -168,6 +174,7 @@ class EmulatorPreferences(context: Context) {
     private companion object {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_FILTER_MODE = "filterMode"
+        const val KEY_INTERFRAME_BLENDING = "interframeBlending"
         const val KEY_ORIENTATION_MODE = "orientationMode"
         const val KEY_SKIP_BIOS = "skipBios"
         const val KEY_MUTED = "muted"
