@@ -24,6 +24,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import io.mgba.android.bridge.NativeBridge
+import io.mgba.android.bridge.NativeLoadResult
 import io.mgba.android.emulator.EmulatorController
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.library.LibraryRom
@@ -370,6 +371,7 @@ class MainActivity : Activity() {
         super.onTrimMemory(level)
         if (level >= TRIM_MEMORY_RUNNING_LOW_LEVEL) {
             trimArchiveCache(maxBytes = ARCHIVE_CACHE_TRIM_BYTES)
+            trimImportCache(maxBytes = ARCHIVE_CACHE_TRIM_BYTES)
         }
     }
 
@@ -453,6 +455,7 @@ class MainActivity : Activity() {
             entryName.substringAfterLast('/').ifBlank { archiveName },
             shouldStoreRecent,
             recentDisplayName = archiveName,
+            allowImportFallback = false,
         ) {
             ParcelFileDescriptor.open(extracted, ParcelFileDescriptor.MODE_READ_ONLY)
         }
@@ -463,39 +466,58 @@ class MainActivity : Activity() {
         name: String,
         shouldStoreRecent: Boolean,
         recentDisplayName: String = name,
+        allowImportFallback: Boolean = true,
         openDescriptor: () -> ParcelFileDescriptor?,
     ) {
         val gameId = uri.toString()
         var patchApplied: Boolean? = null
         var cheatsApplied: Boolean? = null
-        val result = runCatching {
-            openDescriptor()?.use { descriptor ->
-                val emulator = EmulatorSession.controller(this)
-                emulator.setSkipBios(perGameOverrides.skipBios(gameId, preferences.skipBios))
-                emulator.setAudioBufferSamples(
-                    AudioBufferModes.samplesFor(
-                        perGameOverrides.audioBufferMode(gameId, preferences.audioBufferMode),
-                    ),
-                )
-                emulator.setLowPassRangePercent(
-                    AudioLowPassModes.rangeFor(
-                        perGameOverrides.audioLowPassMode(gameId, preferences.audioLowPassMode),
-                    ),
-                )
-                emulator.setFrameSkip(perGameOverrides.frameSkip(gameId, preferences.frameSkip))
-                emulator.setRewindConfig(
-                    perGameOverrides.rewindEnabled(gameId, preferences.rewindEnabled),
-                    perGameOverrides.rewindBufferCapacity(gameId, preferences.rewindBufferCapacity),
-                    perGameOverrides.rewindBufferInterval(gameId, preferences.rewindBufferInterval),
-                )
-                emulator.loadRomFd(descriptor.fd, name).also { loadResult ->
-                    if (loadResult.ok) {
-                        patchApplied = applyStoredPatch(emulator, gameId, name, loadResult.crc32)
-                        cheatsApplied = applyStoredCheats(emulator, gameId)
-                    }
+        var usedImportFallback = false
+        fun loadDescriptor(descriptor: ParcelFileDescriptor): NativeLoadResult {
+            val emulator = EmulatorSession.controller(this)
+            emulator.setSkipBios(perGameOverrides.skipBios(gameId, preferences.skipBios))
+            emulator.setAudioBufferSamples(
+                AudioBufferModes.samplesFor(
+                    perGameOverrides.audioBufferMode(gameId, preferences.audioBufferMode),
+                ),
+            )
+            emulator.setLowPassRangePercent(
+                AudioLowPassModes.rangeFor(
+                    perGameOverrides.audioLowPassMode(gameId, preferences.audioLowPassMode),
+                ),
+            )
+            emulator.setFrameSkip(perGameOverrides.frameSkip(gameId, preferences.frameSkip))
+            emulator.setRewindConfig(
+                perGameOverrides.rewindEnabled(gameId, preferences.rewindEnabled),
+                perGameOverrides.rewindBufferCapacity(gameId, preferences.rewindBufferCapacity),
+                perGameOverrides.rewindBufferInterval(gameId, preferences.rewindBufferInterval),
+            )
+            return emulator.loadRomFd(descriptor.fd, name).also { loadResult ->
+                if (loadResult.ok) {
+                    patchApplied = applyStoredPatch(emulator, gameId, name, loadResult.crc32)
+                    cheatsApplied = applyStoredCheats(emulator, gameId)
                 }
             }
+        }
+
+        var result = runCatching {
+            openDescriptor()?.use { descriptor ->
+                loadDescriptor(descriptor)
+            }
         }.getOrNull()
+        if (allowImportFallback && result?.ok != true) {
+            val cached = runCatching { cacheImportFile(uri, name) }.getOrNull()
+            if (cached != null) {
+                usedImportFallback = true
+                patchApplied = null
+                cheatsApplied = null
+                result = runCatching {
+                    ParcelFileDescriptor.open(cached, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                        loadDescriptor(descriptor)
+                    }
+                }.getOrNull()
+            }
+        }
         nativeStatus.text = if (result?.ok == true) {
             val patchStatus = when (patchApplied) {
                 true -> " + patch"
@@ -508,14 +530,15 @@ class MainActivity : Activity() {
                 null -> ""
             }
             val hardware = if (result.system.equals("CGB", ignoreCase = true)) "GBC" else result.platform
-            "${getString(R.string.native_version_label)}: $hardware ${result.title}$patchStatus$cheatStatus"
+            val fallbackStatus = if (usedImportFallback) " + cache" else ""
+            "${getString(R.string.native_version_label)}: $hardware ${result.title}$patchStatus$cheatStatus$fallbackStatus"
         } else {
             "${getString(R.string.native_version_label)}: ${result?.message ?: "Unable to open ROM"}"
         }
         AppLogStore.append(
             this,
             if (result?.ok == true) {
-                "Loaded ROM $name (${result.platform}/${result.system.ifBlank { "unknown" }})"
+                "Loaded ROM $name (${result.platform}/${result.system.ifBlank { "unknown" }}, cacheFallback=$usedImportFallback)"
             } else {
                 "Failed to load ROM $name: ${result?.message ?: "Unable to open ROM"}"
             },
@@ -605,6 +628,29 @@ class MainActivity : Activity() {
     private fun archiveCacheFile(uri: Uri, entryName: String): File {
         val extension = entryName.substringAfterLast('.', "").takeIf { it.isNotBlank() }?.let { ".$it" } ?: ".rom"
         return File(File(cacheDir, "archive-roms"), "${sha1("${uri}\n$entryName")}$extension")
+    }
+
+    private fun cacheImportFile(uri: Uri, name: String): File? {
+        val extension = name.substringAfterLast('.', "").takeIf { it.isNotBlank() }?.let { ".$it" } ?: ".rom"
+        val directory = File(cacheDir, "imports")
+        val target = File(directory, "${sha1(uri.toString())}$extension")
+        val tmp = File(directory, "${target.name}.tmp")
+        directory.mkdirs()
+        contentResolver.openInputStream(uri)?.use { input ->
+            tmp.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        } ?: return null
+        if (target.exists()) {
+            target.delete()
+        }
+        if (!tmp.renameTo(target)) {
+            tmp.delete()
+            return null
+        }
+        target.setLastModified(System.currentTimeMillis())
+        trimImportCache(keep = target)
+        return target
     }
 
     private fun isZipArchive(name: String): Boolean {
@@ -1152,6 +1198,25 @@ class MainActivity : Activity() {
             }
     }
 
+    private fun trimImportCache(keep: File? = null, maxBytes: Long = IMPORT_CACHE_MAX_BYTES) {
+        val directory = File(cacheDir, "imports")
+        val files = directory.listFiles()?.filter { it.isFile } ?: return
+        val keepPath = keep?.absolutePath
+        var totalBytes = files.sumOf { it.length() }
+        files
+            .filter { it.absolutePath != keepPath }
+            .sortedBy { it.lastModified() }
+            .forEach { file ->
+                if (totalBytes <= maxBytes) {
+                    return@forEach
+                }
+                val size = file.length()
+                if (file.delete()) {
+                    totalBytes -= size
+                }
+            }
+    }
+
     companion object {
         private const val REQUEST_OPEN_ROM = 1001
         private const val REQUEST_IMPORT_BIOS = 1002
@@ -1164,6 +1229,7 @@ class MainActivity : Activity() {
         private const val TRIM_MEMORY_RUNNING_LOW_LEVEL = 10
         private const val ARCHIVE_CACHE_MAX_BYTES = 256L * 1024L * 1024L
         private const val ARCHIVE_CACHE_TRIM_BYTES = 64L * 1024L * 1024L
+        private const val IMPORT_CACHE_MAX_BYTES = 256L * 1024L * 1024L
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Integer", "Original", "Stretch")
         private val FILTER_LABELS = arrayOf("Pixel", "Smooth")
         private val FRAME_SKIP_LABELS = arrayOf("0", "1", "2", "3")

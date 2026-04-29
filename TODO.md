@@ -654,9 +654,9 @@ object NativeBridge {
   - [x] Native `dup(fd)`。
   - [x] Native `VFileFromFD(dupFd)`。
   - [x] Native `mCoreFindVF(vf)`。
-- [ ] 对不支持 seek/mmap 的 provider：
-  - [ ] 探测 `vf->seek` 和 `vf->size` 是否可用。
-  - [ ] 失败时复制到 `cache/imports/<hash>.<ext>` 再 `VFileOpen`。
+- [x] 对不支持 seek/mmap 的 provider：
+  - [x] 直接 SAF fd 加载失败时触发 fallback。
+  - [x] 失败时复制到 `cache/imports/<hash>.<ext>` 再用真实文件 fd 加载。
 - [ ] 对 archive：
   - [ ] 如果 `VDirOpenArchive(path)` 只能走路径，先复制 archive 到 cache，再用现有 archive VFS。
   - [ ] 后续可实现 `VDirOpenArchiveVF`，减少大文件复制。
@@ -958,7 +958,7 @@ object NativeBridge {
 - [ ] 内存压力：
   - [x] `onTrimMemory` 清理 ROM archive cache。
   - [ ] `onTrimMemory` 清理封面 cache。
-  - [ ] 不在内存里长期保留大型 ROM，除非 provider 不支持 seek。
+  - [x] 不在内存里长期保留大型 ROM，除非 provider 不支持 seek。
 - [ ] 崩溃恢复：
   - [ ] native crash 无法完全恢复，但下次启动提示导出日志。
   - [x] Java exception 写入 app log。
