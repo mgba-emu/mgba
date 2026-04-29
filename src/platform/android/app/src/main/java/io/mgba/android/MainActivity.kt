@@ -21,6 +21,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import io.mgba.android.bridge.NativeBridge
 import io.mgba.android.emulator.EmulatorSession
 import io.mgba.android.library.LibraryRom
@@ -31,6 +32,7 @@ import io.mgba.android.storage.BiosStore
 import io.mgba.android.storage.LogExporter
 import io.mgba.android.storage.PatchStore
 import java.io.File
+import java.security.MessageDigest
 
 class MainActivity : Activity() {
     private lateinit var nativeStatus: TextView
@@ -47,6 +49,7 @@ class MainActivity : Activity() {
     private lateinit var libraryContainer: LinearLayout
     private var libraryFilter = ""
     private var libraryMode = LibraryMode.All
+    private var pendingCoverRomUri: Uri? = null
     private var scanThread: Thread? = null
     @Volatile
     private var scanGeneration = 0
@@ -233,6 +236,7 @@ class MainActivity : Activity() {
                 }
                 scanLibraryInBackground(uri)
             }
+            REQUEST_IMPORT_COVER -> importCover(uri)
         }
     }
 
@@ -347,6 +351,12 @@ class MainActivity : Activity() {
                     }
                 })
                 addView(Button(context).apply {
+                    text = "Cover"
+                    setOnClickListener {
+                        showCoverActions(rom)
+                    }
+                })
+                addView(Button(context).apply {
                     text = "Del"
                     setOnClickListener {
                         confirmRemoveLibraryRom(rom)
@@ -362,6 +372,82 @@ class MainActivity : Activity() {
                 setPadding(0, dp(6), 0, 0)
             })
         }
+    }
+
+    private fun showCoverActions(rom: LibraryRom) {
+        val actions = if (rom.coverPath.isBlank()) {
+            arrayOf("Import")
+        } else {
+            arrayOf("Import", "Clear")
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Cover")
+            .setItems(actions) { _, which ->
+                when (actions[which]) {
+                    "Import" -> openCoverPicker(rom)
+                    "Clear" -> clearCover(rom)
+                }
+            }
+            .show()
+    }
+
+    private fun openCoverPicker(rom: LibraryRom) {
+        pendingCoverRomUri = rom.uri
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "image/*"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQUEST_IMPORT_COVER)
+    }
+
+    private fun importCover(imageUri: Uri) {
+        val romUri = pendingCoverRomUri ?: return
+        pendingCoverRomUri = null
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Importing cover"
+        Thread {
+            val coverPath = copyCoverImage(romUri, imageUri)
+            runOnUiThread {
+                if (coverPath == null) {
+                    nativeStatus.text = "${getString(R.string.native_version_label)}: Cover import failed"
+                    Toast.makeText(this, "Cover import failed", Toast.LENGTH_SHORT).show()
+                } else {
+                    libraryStore.setCoverPath(romUri, coverPath)
+                    renderLibrary()
+                    nativeStatus.text = "${getString(R.string.native_version_label)}: Cover imported"
+                    Toast.makeText(this, "Cover imported", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
+    private fun copyCoverImage(romUri: Uri, imageUri: Uri): String? {
+        return runCatching {
+            val coversDir = File(filesDir, "covers")
+            coversDir.mkdirs()
+            val target = File(coversDir, "${sha1(romUri.toString())}.cover")
+            contentResolver.openInputStream(imageUri)?.use { input ->
+                target.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            } ?: return@runCatching null
+            if (BitmapFactory.decodeFile(target.absolutePath) == null) {
+                target.delete()
+                null
+            } else {
+                target.absolutePath
+            }
+        }.getOrNull()
+    }
+
+    private fun clearCover(rom: LibraryRom) {
+        val path = rom.coverPath
+        if (path.isNotBlank()) {
+            File(path).delete()
+        }
+        libraryStore.setCoverPath(rom.uri, "")
+        renderLibrary()
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Cover cleared"
     }
 
     private fun thumbnailView(rom: LibraryRom): ImageView? {
@@ -518,6 +604,11 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun sha1(value: String): String {
+        val bytes = MessageDigest.getInstance("SHA-1").digest(value.toByteArray(Charsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it.toInt() and 0xff) }
+    }
+
     private fun showAboutDialog() {
         val message = listOf(
             "Native core: ${NativeBridge.versionLabel()}",
@@ -548,6 +639,7 @@ class MainActivity : Activity() {
         private const val REQUEST_IMPORT_BIOS = 1002
         private const val REQUEST_IMPORT_PATCH = 1003
         private const val REQUEST_SCAN_FOLDER = 1004
+        private const val REQUEST_IMPORT_COVER = 1005
         private const val MAX_LIBRARY_ITEMS = 24
     }
 }

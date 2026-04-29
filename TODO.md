@@ -89,8 +89,8 @@
 - [x] 已接入 Android accelerometer/gyroscope 到 native `mPERIPH_ROTATION`，并提供 Tilt 开关和 Cal 校准。
 - [x] 已接入 GBA solar luminance 外设，提供手动 Solar 滑条和可选 Android light sensor。
 - [x] 已新增硬件输入 profile JSON 导入/导出，支持通过 SAF 备份/迁移当前映射。
+- [x] 已新增 ROM 库手动封面导入/清除，封面复制到 app 私有 `covers/` 并按 ROM 稳定 hash 保存。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
-- [ ] ROM 库封面仍待后续阶段实现。
 
 ## 1. 产品目标和范围
 
