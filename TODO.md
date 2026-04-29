@@ -136,6 +136,7 @@
 - [x] 已新增当前游戏数据包导入：导入前校验 metadata CRC/stable id，不匹配时提示但允许继续覆盖。
 - [x] 已增强当前游戏数据包迁移：包含 Game Boy Camera 静态图，导入后立即刷新当前会话设置、输入映射、cheat 和 patch。
 - [x] 已新增 Android native wrapper 警告检查：CI 使用 `mgbaAndroidWarningsAsErrors=true` 将端口层 native warning 作为失败处理。
+- [x] 已新增 Android 第三方声明文档，并同步 README 与 App 内 Licenses 文案。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -1296,6 +1297,6 @@ object NativeBridge {
 - [ ] 横竖屏、切后台、锁屏、外设变化稳定。
 - [x] Debug APK、Release APK/AAB 可构建。
 - [x] CI 自动构建 Android。
-- [ ] License / 第三方声明完整。
+- [x] License / 第三方声明完整。
 - [ ] 没有提交商业 ROM、BIOS 或不可分发资源。
 - [ ] 有一套可重复执行的手工验收清单和至少基础自动化测试。

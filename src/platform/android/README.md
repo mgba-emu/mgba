@@ -32,6 +32,10 @@ CI treats Android platform native warnings as errors with:
 
 This strict mode applies to the Android JNI/native wrapper target. It can also be enabled with `MGBA_ANDROID_WARNINGS_AS_ERRORS=true`.
 
+## Third-party notices
+
+Android-specific release notices are tracked in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Keep that file and the in-app Licenses dialog in sync whenever runtime or bundled source dependencies change.
+
 ## Release signing
 
 Release builds are unsigned unless signing inputs are provided. Configure either Gradle properties or matching environment variables:

@@ -1600,7 +1600,7 @@ class MainActivity : Activity() {
             "Native core: ${NativeBridge.versionLabel()}",
             "mGBA copyright (c) 2013-2026 Jeffrey Pfau.",
             "mGBA is distributed under the Mozilla Public License 2.0.",
-            "Third-party notices are preserved in the source tree and release artifacts.",
+            "Android third-party notices are preserved in src/platform/android/THIRD_PARTY_NOTICES.md.",
             "No commercial ROMs or BIOS files are bundled.",
         ).joinToString(separator = "\n\n")
         AlertDialog.Builder(this)
@@ -1619,7 +1619,9 @@ class MainActivity : Activity() {
             "Android Gradle Plugin and Gradle wrapper: Apache License 2.0.",
             "zlib and MiniZip: zlib license.",
             "LZMA SDK: public domain by Igor Pavlov.",
+            "inih: BSD 3-clause license.",
             "libpng source is preserved under the libpng license when enabled by a build.",
+            "No AndroidX, Oboe, CameraX, Room, Flutter, React Native, Unity, Electron, or libretro runtime app dependency is currently bundled.",
             "No commercial ROMs or BIOS files are bundled.",
         ).joinToString(separator = "\n\n")
         AlertDialog.Builder(this)
