@@ -388,7 +388,8 @@ class MainActivity : Activity() {
             System.currentTimeMillis(),
             DateUtils.MINUTE_IN_MILLIS,
         )
-        return "${libraryTitleLine(rom)}\nLast played $relative"
+        val playTime = rom.playTimeSeconds.takeIf { it > 0L }?.let { "\nPlayed ${formatDuration(it)}" }.orEmpty()
+        return "${libraryTitleLine(rom)}\nLast played $relative$playTime"
     }
 
     private fun libraryTitleLine(rom: LibraryRom): String {
@@ -402,6 +403,16 @@ class MainActivity : Activity() {
     private fun formatBytes(bytes: Long): String {
         val mib = bytes / (1024.0 * 1024.0)
         return String.format(java.util.Locale.US, "%.1f MiB", mib)
+    }
+
+    private fun formatDuration(seconds: Long): String {
+        val hours = seconds / 3600
+        val minutes = (seconds % 3600) / 60
+        return if (hours > 0) {
+            "${hours}h ${minutes}m"
+        } else {
+            "${minutes.coerceAtLeast(1)}m"
+        }
     }
 
     private fun confirmRemoveLibraryRom(rom: LibraryRom) {

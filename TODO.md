@@ -80,6 +80,7 @@
 - [x] 已新增即时存档槽位删除 native/JNI/UI 链路，并带删除确认。
 - [x] 已新增单个即时存档槽位 SAF 导出链路。
 - [x] 已新增单个即时存档槽位 SAF 导入链路，并在覆盖前确认。
+- [x] 已为 ROM 库记录并显示累计 play time。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -669,7 +670,7 @@ object NativeBridge {
   - [x] sha1。
   - [x] file size。
   - [x] lastPlayedAt。
-  - [ ] playTimeSeconds。
+  - [x] playTimeSeconds。
   - [x] favorite。
   - [x] coverPath 或 screenshot thumbnail。
 - [ ] 数据存储：

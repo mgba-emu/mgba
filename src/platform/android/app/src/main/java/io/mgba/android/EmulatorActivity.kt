@@ -61,6 +61,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     private var lastStatsAtMs = 0L
     private var pendingExportStateSlot = 1
     private var pendingImportStateSlot = 1
+    private var playAccountingStartedAtMs = 0L
     private var scaleMode = 0
     private var hasSurface = false
     private val statsHandler = Handler(Looper.getMainLooper())
@@ -158,6 +159,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         enterImmersiveMode()
         if (hasSurface && !userPaused) {
             controller?.resume()
+            startPlayAccounting()
         }
     }
 
@@ -184,6 +186,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
     override fun onPause() {
         clearInput()
+        recordPlayTime()
         stopStatsOverlay()
         controller?.pause()
         super.onPause()
@@ -191,6 +194,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
 
     override fun onDestroy() {
         clearInput()
+        recordPlayTime()
         stopStatsOverlay()
         controller?.setSurface(null)
         super.onDestroy()
@@ -202,6 +206,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         controller?.start()
         if (userPaused) {
             controller?.pause()
+        } else {
+            startPlayAccounting()
         }
     }
 
@@ -212,6 +218,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         hasSurface = false
         clearInput()
+        recordPlayTime()
         controller?.pause()
         controller?.setSurface(null)
     }
@@ -280,6 +287,25 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
         }
     }
 
+    private fun startPlayAccounting() {
+        if (playAccountingStartedAtMs == 0L) {
+            playAccountingStartedAtMs = SystemClock.elapsedRealtime()
+        }
+    }
+
+    private fun recordPlayTime() {
+        val startedAt = playAccountingStartedAtMs
+        if (startedAt == 0L) {
+            return
+        }
+        playAccountingStartedAtMs = 0L
+        val seconds = ((SystemClock.elapsedRealtime() - startedAt) / 1000L).coerceAtLeast(0L)
+        val gameId = currentGameId ?: return
+        runCatching {
+            RomLibraryStore(this).addPlayTime(Uri.parse(gameId), seconds)
+        }
+    }
+
     private fun createStateToolbar(): LinearLayout {
         return LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -294,9 +320,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback {
                 setOnClickListener {
                     userPaused = !userPaused
                     if (userPaused) {
+                        recordPlayTime()
                         controller?.pause()
                     } else {
                         controller?.resume()
+                        startPlayAccounting()
                     }
                     updateRunButtons()
                 }

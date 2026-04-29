@@ -14,6 +14,7 @@ data class LibraryRom(
     val sha1: String = "",
     val fileSize: Long = 0L,
     val lastPlayedAt: Long = 0L,
+    val playTimeSeconds: Long = 0L,
     val favorite: Boolean = false,
     val coverPath: String = "",
 )
@@ -38,6 +39,7 @@ class RomLibraryStore(context: Context) {
                         sha1 = item.optString("sha1"),
                         fileSize = item.optLong("fileSize", 0L),
                         lastPlayedAt = item.optLong("lastPlayedAt", 0L),
+                        playTimeSeconds = item.optLong("playTimeSeconds", 0L),
                         favorite = item.optBoolean("favorite", false),
                         coverPath = item.optString("coverPath"),
                     ),
@@ -58,6 +60,7 @@ class RomLibraryStore(context: Context) {
                 sha1 = item.sha1.ifBlank { previous?.sha1.orEmpty() },
                 fileSize = if (item.fileSize > 0L) item.fileSize else previous?.fileSize ?: 0L,
                 lastPlayedAt = previous?.lastPlayedAt ?: item.lastPlayedAt,
+                playTimeSeconds = previous?.playTimeSeconds ?: item.playTimeSeconds,
                 favorite = previous?.favorite ?: item.favorite,
                 coverPath = item.coverPath.ifBlank { previous?.coverPath.orEmpty() },
             )
@@ -103,6 +106,22 @@ class RomLibraryStore(context: Context) {
         preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
     }
 
+    fun addPlayTime(uri: Uri, seconds: Long) {
+        if (seconds <= 0L) {
+            return
+        }
+        val array = JSONArray()
+        list().forEach { item ->
+            val updated = if (item.uri == uri) {
+                item.copy(playTimeSeconds = item.playTimeSeconds + seconds)
+            } else {
+                item
+            }
+            array.put(toJson(updated))
+        }
+        preferences.edit().putString(KEY_ITEMS, array.toString()).apply()
+    }
+
     private fun toJson(item: LibraryRom): JSONObject {
         return JSONObject()
             .put("uri", item.uri.toString())
@@ -113,6 +132,7 @@ class RomLibraryStore(context: Context) {
             .put("sha1", item.sha1)
             .put("fileSize", item.fileSize)
             .put("lastPlayedAt", item.lastPlayedAt)
+            .put("playTimeSeconds", item.playTimeSeconds)
             .put("favorite", item.favorite)
             .put("coverPath", item.coverPath)
     }
