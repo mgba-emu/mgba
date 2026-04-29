@@ -73,6 +73,7 @@ class MainActivity : Activity() {
     private lateinit var patchStore: PatchStore
     private lateinit var scanButton: Button
     private lateinit var rescanFoldersButton: Button
+    private lateinit var libraryFoldersButton: Button
     private lateinit var biosButton: Button
     private lateinit var clearBiosButton: Button
     private lateinit var skipBiosButton: Button
@@ -187,6 +188,12 @@ class MainActivity : Activity() {
             }
         }
         updateRescanFoldersButton()
+        libraryFoldersButton = Button(this).apply {
+            setOnClickListener {
+                showLibraryFoldersDialog()
+            }
+        }
+        updateLibraryFoldersButton()
 
         biosButton = Button(this).apply {
             setOnClickListener {
@@ -423,6 +430,7 @@ class MainActivity : Activity() {
         root.addView(openButton)
         root.addView(scanButton)
         root.addView(rescanFoldersButton)
+        root.addView(libraryFoldersButton)
         root.addView(biosButton)
         root.addView(clearBiosButton)
         root.addView(skipBiosButton)
@@ -1468,6 +1476,7 @@ class MainActivity : Activity() {
                         libraryStore.mergeScan(uri, roms)
                         renderLibrary()
                         updateRescanFoldersButton()
+                        updateLibraryFoldersButton()
                         nativeStatus.text = "${getString(R.string.native_version_label)}: ${roms.size} ROMs indexed"
                     }
                     .onFailure {
@@ -1513,6 +1522,7 @@ class MainActivity : Activity() {
                 scanThread = null
                 scanButton.text = "Scan Folder"
                 updateRescanFoldersButton()
+                updateLibraryFoldersButton()
                 renderLibrary()
                 val failedStatus = if (failed > 0) " ($failed failed)" else ""
                 nativeStatus.text = "${getString(R.string.native_version_label)}: $total ROMs indexed$failedStatus"
@@ -1528,6 +1538,7 @@ class MainActivity : Activity() {
         scanThread = null
         scanButton.text = "Scan Folder"
         updateRescanFoldersButton()
+        updateLibraryFoldersButton()
         nativeStatus.text = "${getString(R.string.native_version_label)}: Scan canceled"
     }
 
@@ -1535,6 +1546,70 @@ class MainActivity : Activity() {
         val count = libraryStore.sourceFolders().size
         rescanFoldersButton.text = if (count > 0) "Rescan Folders ($count)" else "Rescan Folders"
         rescanFoldersButton.isEnabled = count > 0 || scanThread?.isAlive == true
+    }
+
+    private fun updateLibraryFoldersButton() {
+        val count = libraryStore.sourceFolders().size
+        libraryFoldersButton.text = if (count > 0) "Library Folders ($count)" else "Library Folders"
+        libraryFoldersButton.isEnabled = count > 0
+    }
+
+    private fun showLibraryFoldersDialog() {
+        val sources = libraryStore.sourceFolders()
+        if (sources.isEmpty()) {
+            updateLibraryFoldersButton()
+            nativeStatus.text = "${getString(R.string.native_version_label)}: No folders added"
+            return
+        }
+        val labels = sources.map { it.lastPathSegment ?: it.toString() }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Library Folders")
+            .setItems(labels) { _, which ->
+                confirmRemoveLibraryFolder(sources[which])
+            }
+            .setNeutralButton("Clear All") { _, _ ->
+                confirmClearLibraryFolders(sources)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun confirmRemoveLibraryFolder(source: Uri) {
+        AlertDialog.Builder(this)
+            .setTitle("Remove folder?")
+            .setMessage(source.toString())
+            .setPositiveButton("Remove") { _, _ ->
+                val removed = libraryStore.removeSourceFolder(source)
+                releaseLibraryFolder(source)
+                renderLibrary()
+                updateRescanFoldersButton()
+                updateLibraryFoldersButton()
+                nativeStatus.text = "${getString(R.string.native_version_label)}: Folder removed ($removed ROMs)"
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun confirmClearLibraryFolders(sources: List<Uri>) {
+        AlertDialog.Builder(this)
+            .setTitle("Clear library folders?")
+            .setMessage("Remove all scanned folders and their indexed ROMs.")
+            .setPositiveButton("Clear") { _, _ ->
+                val removed = libraryStore.clearSourceFolders()
+                sources.forEach(::releaseLibraryFolder)
+                renderLibrary()
+                updateRescanFoldersButton()
+                updateLibraryFoldersButton()
+                nativeStatus.text = "${getString(R.string.native_version_label)}: Folders cleared ($removed ROMs)"
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun releaseLibraryFolder(source: Uri) {
+        runCatching {
+            contentResolver.releasePersistableUriPermission(source, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
     }
 
     private fun dp(value: Int): Int {

@@ -140,6 +140,7 @@
 - [x] 已新增 Android per-game BIOS 覆盖：当前游戏可导入/清除专属 BIOS，启动时优先于全局 BIOS，并随游戏数据包导入导出。
 - [x] 已增强 Android Settings 备份：全局导入/导出现在包含硬件输入映射。
 - [x] 已增强 Android Settings 备份：全局导入/导出现在包含 ROM 库索引和最近打开列表。
+- [x] 已新增 Android ROM 库文件夹管理：可移除单个/全部扫描来源并释放 SAF 持久授权。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
