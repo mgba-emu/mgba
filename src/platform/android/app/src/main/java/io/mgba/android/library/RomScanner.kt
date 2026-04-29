@@ -5,6 +5,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import io.mgba.android.bridge.NativeBridge
 import io.mgba.android.bridge.NativeLoadResult
+import java.security.MessageDigest
 
 class RomScanner(private val context: Context) {
     fun scan(treeUri: Uri): List<LibraryRom> {
@@ -43,12 +44,14 @@ class RomScanner(private val context: Context) {
                 } else if (RomFileSupport.isSupportedRomName(name)) {
                     val documentUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childId)
                     val probe = probeRom(documentUri, name)
+                    val sha1 = sha1(documentUri)
                     results += LibraryRom(
                         uri = documentUri,
                         displayName = name,
                         title = probe?.title.orEmpty(),
                         platform = probe?.platform.orEmpty(),
                         crc32 = probe?.crc32.orEmpty(),
+                        sha1 = sha1,
                         fileSize = size,
                     )
                 }
@@ -64,6 +67,25 @@ class RomScanner(private val context: Context) {
                 NativeBridge.probeRomFd(descriptor.fd, displayName).takeIf { it.ok }
             }
         }.getOrNull()
+    }
+
+    private fun sha1(uri: Uri): String {
+        throwIfInterrupted()
+        return runCatching {
+            val digest = MessageDigest.getInstance("SHA-1")
+            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                while (true) {
+                    throwIfInterrupted()
+                    val read = input.read(buffer)
+                    if (read < 0) {
+                        break
+                    }
+                    digest.update(buffer, 0, read)
+                }
+            } ?: return@runCatching ""
+            digest.digest().joinToString(separator = "") { byte -> "%02x".format(byte) }
+        }.getOrDefault("")
     }
 
     private fun throwIfInterrupted() {

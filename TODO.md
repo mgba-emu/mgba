@@ -74,6 +74,7 @@
 - [x] 已为 ROM 文件夹扫描接入 native 探测，库条目可保存并显示 mGBA 读取到的标题和平台。
 - [x] 已将 native CRC32 透传到 ROM 库模型，并支持按 CRC32 搜索。
 - [x] 已为 ROM 库记录并显示 DocumentsProvider 文件大小。
+- [x] 已为 ROM 库扫描计算 SHA1，并支持按 SHA1 搜索。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -660,7 +661,7 @@ object NativeBridge {
   - [ ] maker。
   - [ ] version。
   - [x] crc32。
-  - [ ] sha1。
+  - [x] sha1。
   - [x] file size。
   - [x] lastPlayedAt。
   - [ ] playTimeSeconds。
@@ -681,7 +682,7 @@ object NativeBridge {
   - [x] native 探测 `mCoreFindVF`。
   - [x] 读取 `mGameInfo`。
   - [x] 计算 CRC32。
-  - [ ] 计算 SHA1。
+  - [x] 计算 SHA1。
   - [x] 入库。
 - [x] 扫描进度可取消。
 - [x] 扫描不应阻塞 UI。

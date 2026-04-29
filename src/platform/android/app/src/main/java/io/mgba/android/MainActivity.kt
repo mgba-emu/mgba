@@ -286,7 +286,8 @@ class MainActivity : Activity() {
                 it.displayName.contains(query, ignoreCase = true) ||
                     it.title.contains(query, ignoreCase = true) ||
                     it.platform.contains(query, ignoreCase = true) ||
-                    it.crc32.contains(query, ignoreCase = true)
+                    it.crc32.contains(query, ignoreCase = true) ||
+                    it.sha1.contains(query, ignoreCase = true)
             }
         }
 
