@@ -8,6 +8,8 @@ import org.json.JSONObject
 data class LibraryRom(
     val uri: Uri,
     val displayName: String,
+    val title: String = "",
+    val platform: String = "",
     val lastPlayedAt: Long = 0L,
     val favorite: Boolean = false,
 )
@@ -26,6 +28,8 @@ class RomLibraryStore(context: Context) {
                     LibraryRom(
                         uri = Uri.parse(uri),
                         displayName = item.optString("displayName", uri),
+                        title = item.optString("title"),
+                        platform = item.optString("platform"),
                         lastPlayedAt = item.optLong("lastPlayedAt", 0L),
                         favorite = item.optBoolean("favorite", false),
                     ),
@@ -40,6 +44,8 @@ class RomLibraryStore(context: Context) {
         items.distinctBy { it.uri }.sortedWith(librarySort).forEach { item ->
             val previous = existing[item.uri]
             val merged = item.copy(
+                title = item.title.ifBlank { previous?.title.orEmpty() },
+                platform = item.platform.ifBlank { previous?.platform.orEmpty() },
                 lastPlayedAt = previous?.lastPlayedAt ?: item.lastPlayedAt,
                 favorite = previous?.favorite ?: item.favorite,
             )
@@ -80,6 +86,8 @@ class RomLibraryStore(context: Context) {
         return JSONObject()
             .put("uri", item.uri.toString())
             .put("displayName", item.displayName)
+            .put("title", item.title)
+            .put("platform", item.platform)
             .put("lastPlayedAt", item.lastPlayedAt)
             .put("favorite", item.favorite)
     }

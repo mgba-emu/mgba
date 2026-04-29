@@ -261,6 +261,61 @@ GLuint LinkProgram(const char* vertexSource, const char* fragmentSource) {
 
 } // namespace
 
+std::string ProbeRomFd(int fd, const std::string& displayName) {
+	if (fd < 0) {
+		return LoadResult(false, "Invalid file descriptor", "", "", displayName);
+	}
+
+	int ownedFd = dup(fd);
+	if (ownedFd < 0) {
+		return LoadResult(false, "Could not duplicate file descriptor", "", "", displayName);
+	}
+
+	struct VFile* vf = VFileFromFD(ownedFd);
+	if (!vf) {
+		return LoadResult(false, "Could not open selected file", "", "", displayName);
+	}
+
+	struct mCore* core = mCoreFindVF(vf);
+	if (!core) {
+		vf->close(vf);
+		return LoadResult(false, "Selected file is not a supported ROM", "", "", displayName);
+	}
+
+	if (!core->init(core)) {
+		vf->close(vf);
+		return LoadResult(false, "Could not initialize emulator core", "", "", displayName);
+	}
+
+	struct mCoreOptions options = {};
+	options.useBios = false;
+	options.videoSync = false;
+	options.audioSync = false;
+	options.logLevel = mLOG_WARN | mLOG_ERROR | mLOG_FATAL;
+	mCoreInitConfig(core, "android-probe");
+	mCoreConfigLoadDefaults(&core->config, &options);
+	mCoreLoadConfig(core);
+
+	if (vf->seek) {
+		vf->seek(vf, 0, SEEK_SET);
+	}
+	if (!core->loadROM(core, vf)) {
+		core->deinit(core);
+		return LoadResult(false, "Could not load ROM", "", "", displayName);
+	}
+
+	struct mGameInfo info;
+	std::memset(&info, 0, sizeof(info));
+	core->getGameInfo(core, &info);
+	std::string title = BoundedString(info.title, sizeof(info.title));
+	if (title.empty()) {
+		title = displayName;
+	}
+	const std::string platform = PlatformName(core);
+	core->deinit(core);
+	return LoadResult(true, "Probed", platform, title, displayName);
+}
+
 AndroidCoreRunner::~AndroidCoreRunner() {
 	stop();
 	setSurface(nullptr);

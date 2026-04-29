@@ -61,6 +61,12 @@ Java_io_mgba_android_bridge_NativeBridge_nativeLoadRomFd(JNIEnv* env, jclass, jl
 	return env->NewStringUTF(result.c_str());
 }
 
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeProbeRomFd(JNIEnv* env, jclass, jint fd, jstring displayName) {
+	std::string result = mgba::android::ProbeRomFd(fd, JStringToString(env, displayName));
+	return env->NewStringUTF(result.c_str());
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeSetSurface(JNIEnv* env, jclass, jlong handle, jobject surface) {
 	AndroidCoreRunner* runner = FromHandle(handle);

@@ -20,6 +20,8 @@ struct mCore;
 
 namespace mgba::android {
 
+std::string ProbeRomFd(int fd, const std::string& displayName);
+
 class AndroidCoreRunner {
 public:
 	AndroidCoreRunner(std::string basePath, std::string cachePath);

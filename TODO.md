@@ -71,6 +71,7 @@
 - [x] 已新增 Emulator debug stats overlay：native 帧计数、视频尺寸、运行状态和 Kotlin 侧 FPS 估算。
 - [x] 已新增 Android logcat 导出入口，导出最近日志到 `Documents/mGBA`。
 - [x] 已新增 per-game override 基础存储，当前游戏的缩放、静音和虚拟手柄显示不再污染全局设置。
+- [x] 已为 ROM 文件夹扫描接入 native 探测，库条目可保存并显示 mGBA 读取到的标题和平台。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -651,8 +652,8 @@ object NativeBridge {
   - [ ] id。
   - [ ] uri。
   - [ ] displayName。
-  - [ ] platform: GBA / GB / GBC。
-  - [ ] title from `mGameInfo`。
+  - [x] platform: GBA / GB（GBC 细分待 native metadata 扩展）。
+  - [x] title from `mGameInfo`。
   - [ ] game code。
   - [ ] maker。
   - [ ] version。
@@ -673,11 +674,11 @@ object NativeBridge {
 - [x] 后台遍历文档树。
 - [x] 过滤扩展名：`.gba`、`.agb`、`.gb`、`.gbc`、`.sgb`、`.zip`、`.7z`。
 - [ ] 对每个候选文件：
-  - [ ] 打开 fd。
-  - [ ] native 探测 `mCoreFindVF`。
-  - [ ] 读取 `mGameInfo`。
+  - [x] 打开 fd。
+  - [x] native 探测 `mCoreFindVF`。
+  - [x] 读取 `mGameInfo`。
   - [ ] 计算 hash。
-  - [ ] 入库。
+  - [x] 入库。
 - [x] 扫描进度可取消。
 - [x] 扫描不应阻塞 UI。
 
@@ -692,8 +693,8 @@ object NativeBridge {
   - [x] 搜索。
   - [ ] 网格/列表切换。
 - [ ] 每个 ROM item 显示：
-  - [ ] 标题。
-  - [ ] 平台。
+  - [x] 标题。
+  - [x] 平台。
   - [x] 最近游玩。
   - [ ] 缩略图。
   - [ ] 菜单：

@@ -3,6 +3,8 @@ package io.mgba.android.library
 import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
+import io.mgba.android.bridge.NativeBridge
+import io.mgba.android.bridge.NativeLoadResult
 
 class RomScanner(private val context: Context) {
     fun scan(treeUri: Uri): List<LibraryRom> {
@@ -36,14 +38,27 @@ class RomScanner(private val context: Context) {
                 if (mime == DocumentsContract.Document.MIME_TYPE_DIR) {
                     results += scanDocument(treeUri, childId, depth + 1)
                 } else if (RomFileSupport.isSupportedRomName(name)) {
+                    val documentUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childId)
+                    val probe = probeRom(documentUri, name)
                     results += LibraryRom(
-                        uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childId),
+                        uri = documentUri,
                         displayName = name,
+                        title = probe?.title.orEmpty(),
+                        platform = probe?.platform.orEmpty(),
                     )
                 }
             }
         }
         return results
+    }
+
+    private fun probeRom(uri: Uri, displayName: String): NativeLoadResult? {
+        throwIfInterrupted()
+        return runCatching {
+            context.contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
+                NativeBridge.probeRomFd(descriptor.fd, displayName).takeIf { it.ok }
+            }
+        }.getOrNull()
     }
 
     private fun throwIfInterrupted() {

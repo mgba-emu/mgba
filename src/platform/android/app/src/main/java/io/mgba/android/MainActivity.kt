@@ -282,7 +282,11 @@ class MainActivity : Activity() {
         val roms = if (query.isEmpty()) {
             allRoms
         } else {
-            allRoms.filter { it.displayName.contains(query, ignoreCase = true) }
+            allRoms.filter {
+                it.displayName.contains(query, ignoreCase = true) ||
+                    it.title.contains(query, ignoreCase = true) ||
+                    it.platform.contains(query, ignoreCase = true)
+            }
         }
 
         libraryContainer.addView(TextView(this).apply {
@@ -337,15 +341,21 @@ class MainActivity : Activity() {
 
     private fun libraryButtonLabel(rom: LibraryRom): String {
         if (rom.lastPlayedAt <= 0L) {
-            return if (rom.favorite) "[*] ${rom.displayName}" else rom.displayName
+            return libraryTitleLine(rom)
         }
         val relative = DateUtils.getRelativeTimeSpanString(
             rom.lastPlayedAt,
             System.currentTimeMillis(),
             DateUtils.MINUTE_IN_MILLIS,
         )
-        val title = if (rom.favorite) "[*] ${rom.displayName}" else rom.displayName
-        return "$title\nLast played $relative"
+        return "${libraryTitleLine(rom)}\nLast played $relative"
+    }
+
+    private fun libraryTitleLine(rom: LibraryRom): String {
+        val marker = if (rom.favorite) "[*] " else ""
+        val title = rom.title.ifBlank { rom.displayName }
+        val platform = rom.platform.takeIf { it.isNotBlank() }?.let { " [$it]" }.orEmpty()
+        return "$marker$title$platform"
     }
 
     private fun confirmRemoveLibraryRom(rom: LibraryRom) {

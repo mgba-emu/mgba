@@ -20,6 +20,9 @@ object NativeBridge {
     external fun nativeLoadRomFd(handle: Long, fd: Int, displayName: String): String
 
     @JvmStatic
+    external fun nativeProbeRomFd(fd: Int, displayName: String): String
+
+    @JvmStatic
     external fun nativeSetSurface(handle: Long, surface: Surface?)
 
     @JvmStatic
@@ -82,6 +85,14 @@ object NativeBridge {
     fun loadRomFd(handle: Long, fd: Int, displayName: String): NativeLoadResult {
         return NativeLoadResult.fromJson(
             runCatching { nativeLoadRomFd(handle, fd, displayName) }.getOrElse { error ->
+                """{"ok":false,"message":"${error.javaClass.simpleName}"}"""
+            },
+        )
+    }
+
+    fun probeRomFd(fd: Int, displayName: String): NativeLoadResult {
+        return NativeLoadResult.fromJson(
+            runCatching { nativeProbeRomFd(fd, displayName) }.getOrElse { error ->
                 """{"ok":false,"message":"${error.javaClass.simpleName}"}"""
             },
         )
