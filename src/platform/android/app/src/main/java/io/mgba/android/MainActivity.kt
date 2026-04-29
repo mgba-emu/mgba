@@ -2217,12 +2217,15 @@ class MainActivity : Activity() {
             .setMessage(source.toString())
             .setPositiveButton("Remove") { _, _ ->
                 val removed = libraryStore.removeSourceFolder(source)
+                val removedRecent = removeRecentReferencesForRoms(removed)
                 deleteCoverPaths(removed)
                 releaseLibraryFolder(source)
+                renderRecentGames()
                 renderLibrary()
                 updateRescanFoldersButton()
                 updateLibraryFoldersButton()
-                nativeStatus.text = "${getString(R.string.native_version_label)}: Folder removed (${removed.size} ROMs)"
+                val recentStatus = if (removedRecent > 0) ", $removedRecent recent" else ""
+                nativeStatus.text = "${getString(R.string.native_version_label)}: Folder removed (${removed.size} ROMs$recentStatus)"
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -2234,12 +2237,15 @@ class MainActivity : Activity() {
             .setMessage("Remove all scanned folders and their indexed ROMs.")
             .setPositiveButton("Clear") { _, _ ->
                 val removed = libraryStore.clearSourceFolders()
+                val removedRecent = removeRecentReferencesForRoms(removed)
                 deleteCoverPaths(removed)
                 sources.forEach(::releaseLibraryFolder)
+                renderRecentGames()
                 renderLibrary()
                 updateRescanFoldersButton()
                 updateLibraryFoldersButton()
-                nativeStatus.text = "${getString(R.string.native_version_label)}: Folders cleared (${removed.size} ROMs)"
+                val recentStatus = if (removedRecent > 0) ", $removedRecent recent" else ""
+                nativeStatus.text = "${getString(R.string.native_version_label)}: Folders cleared (${removed.size} ROMs$recentStatus)"
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -2254,6 +2260,12 @@ class MainActivity : Activity() {
     private fun deleteCoverPaths(roms: List<LibraryRom>) {
         roms.map { it.coverPath }.distinct().forEach(::deleteCoverPath)
         coverThumbnailCache.evictAll()
+    }
+
+    private fun removeRecentReferencesForRoms(roms: List<LibraryRom>): Int {
+        return roms.map { it.uri }.distinct().count { uri ->
+            recentStore.remove(uri)
+        }
     }
 
     private fun deleteCoverPath(path: String) {

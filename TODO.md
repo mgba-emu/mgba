@@ -170,6 +170,7 @@
 - [x] 已增强 Android `file://` 历史 ROM 容错：设置恢复或历史记录中不存在/不可读的文件路径会被清理。
 - [x] 已统一 Android 不可用 ROM 引用清理：Recent、Library 和 Settings 导入发现同一失效 URI 时会同步移除两边记录和封面。
 - [x] 已增强 Android 手动删除库记录：从 Library 删除 ROM 索引时同步移除同 URI 的 Recent 入口和封面缓存。
+- [x] 已增强 Android 扫描来源移除：移除单个/全部 Library Folder 时同步清理对应 ROM 的 Recent 入口。
 - [x] 已完成 OnePlus7 真机首帧验证：通过 ACTION_VIEW 打开仓库 homebrew GB/GBA 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 已完成 OnePlus7 真机 GBC 验证：通过 ACTION_VIEW 打开仓库 homebrew GBC 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 已修复 Android 竖屏游戏内工具栏溢出：运行/存档两行可横向滚动，Save/Load 等按钮在 OnePlus7 上可访问。
