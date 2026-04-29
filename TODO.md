@@ -166,6 +166,7 @@
 - [x] 已增强 Android Recent 容错：点击历史遗留的失效 `content://` 记录时会自动移除并提示，不再反复保留打不开的入口。
 - [x] 已增强 Android ROM Library 容错：导入设置或授权丢失后，点击失效库条目会自动移除索引/封面并提示。
 - [x] 已增强 Android Settings 导入容错：恢复备份后会立即清理当前设备没有授权的 Recent、Library source 和库条目。
+- [x] 已为 Android SAF tree 授权覆盖规则新增单测，锁定文件夹授权覆盖子 ROM 且不误匹配同名前缀 sibling。
 - [x] 已完成 OnePlus7 真机首帧验证：通过 ACTION_VIEW 打开仓库 homebrew GB/GBA 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 已完成 OnePlus7 真机 GBC 验证：通过 ACTION_VIEW 打开仓库 homebrew GBC 测试 ROM，进入 EmulatorActivity、渲染非黑帧且 crash buffer 为空。
 - [x] 已修复 Android 竖屏游戏内工具栏溢出：运行/存档两行可横向滚动，Save/Load 等按钮在 OnePlus7 上可访问。

@@ -21,4 +21,26 @@ object UriPermissionPolicy {
         }
         return scheme == "content" && hasPersistedReadPermission
     }
+
+    fun documentTreeCoversTarget(
+        treeScheme: String?,
+        treeAuthority: String?,
+        treeDocumentId: String?,
+        targetScheme: String?,
+        targetAuthority: String?,
+        targetDocumentId: String?,
+    ): Boolean {
+        if (treeScheme != targetScheme || treeAuthority != targetAuthority) {
+            return false
+        }
+        if (treeDocumentId.isNullOrBlank() || targetDocumentId.isNullOrBlank()) {
+            return false
+        }
+        return targetDocumentId == treeDocumentId ||
+            if (treeDocumentId.endsWith(":")) {
+                targetDocumentId.startsWith(treeDocumentId)
+            } else {
+                targetDocumentId.startsWith("$treeDocumentId/")
+            }
+    }
 }

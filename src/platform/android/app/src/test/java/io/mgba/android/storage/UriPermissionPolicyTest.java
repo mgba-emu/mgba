@@ -58,4 +58,84 @@ public class UriPermissionPolicyTest {
         assertFalse(UriPermissionPolicy.INSTANCE.canOpenStoredRecent(null, true));
         assertFalse(UriPermissionPolicy.INSTANCE.canOpenStoredRecent("http", true));
     }
+
+    @Test
+    public void documentTreeCoversItselfAndChildren() {
+        assertTrue(UriPermissionPolicy.INSTANCE.documentTreeCoversTarget(
+            "content",
+            "com.android.externalstorage.documents",
+            "primary:Games",
+            "content",
+            "com.android.externalstorage.documents",
+            "primary:Games"
+        ));
+        assertTrue(UriPermissionPolicy.INSTANCE.documentTreeCoversTarget(
+            "content",
+            "com.android.externalstorage.documents",
+            "primary:Games",
+            "content",
+            "com.android.externalstorage.documents",
+            "primary:Games/mgba/test.gba"
+        ));
+    }
+
+    @Test
+    public void rootDocumentTreeCoversSameVolumeChildren() {
+        assertTrue(UriPermissionPolicy.INSTANCE.documentTreeCoversTarget(
+            "content",
+            "com.android.externalstorage.documents",
+            "primary:",
+            "content",
+            "com.android.externalstorage.documents",
+            "primary:Games/mgba/test.gba"
+        ));
+    }
+
+    @Test
+    public void documentTreeDoesNotCoverSiblingsOrOtherProviders() {
+        assertFalse(UriPermissionPolicy.INSTANCE.documentTreeCoversTarget(
+            "content",
+            "com.android.externalstorage.documents",
+            "primary:Games",
+            "content",
+            "com.android.externalstorage.documents",
+            "primary:Games2/test.gba"
+        ));
+        assertFalse(UriPermissionPolicy.INSTANCE.documentTreeCoversTarget(
+            "content",
+            "com.android.externalstorage.documents",
+            "primary:Games",
+            "content",
+            "com.example.documents",
+            "primary:Games/test.gba"
+        ));
+        assertFalse(UriPermissionPolicy.INSTANCE.documentTreeCoversTarget(
+            "content",
+            "com.android.externalstorage.documents",
+            "primary:Games",
+            "file",
+            "com.android.externalstorage.documents",
+            "primary:Games/test.gba"
+        ));
+    }
+
+    @Test
+    public void documentTreeNeedsDocumentIds() {
+        assertFalse(UriPermissionPolicy.INSTANCE.documentTreeCoversTarget(
+            "content",
+            "com.android.externalstorage.documents",
+            "",
+            "content",
+            "com.android.externalstorage.documents",
+            "primary:Games/test.gba"
+        ));
+        assertFalse(UriPermissionPolicy.INSTANCE.documentTreeCoversTarget(
+            "content",
+            "com.android.externalstorage.documents",
+            "primary:Games",
+            "content",
+            "com.android.externalstorage.documents",
+            null
+        ));
+    }
 }

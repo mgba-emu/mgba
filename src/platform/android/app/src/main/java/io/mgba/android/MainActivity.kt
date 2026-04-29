@@ -1277,12 +1277,14 @@ class MainActivity : Activity() {
             }
             val treeDocumentId = DocumentsContract.getTreeDocumentId(persistedUri)
             val targetDocumentId = DocumentsContract.getDocumentId(targetUri)
-            targetDocumentId == treeDocumentId ||
-                if (treeDocumentId.endsWith(":")) {
-                    targetDocumentId.startsWith(treeDocumentId)
-                } else {
-                    targetDocumentId.startsWith("$treeDocumentId/")
-                }
+            UriPermissionPolicy.documentTreeCoversTarget(
+                persistedUri.scheme,
+                persistedUri.authority,
+                treeDocumentId,
+                targetUri.scheme,
+                targetUri.authority,
+                targetDocumentId,
+            )
         }.getOrDefault(false)
     }
 
