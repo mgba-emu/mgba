@@ -1,0 +1,1 @@
+-keep class io.mgba.android.bridge.NativeBridge { *; }
