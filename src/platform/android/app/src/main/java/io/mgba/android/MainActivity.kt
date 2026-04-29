@@ -572,11 +572,9 @@ class MainActivity : Activity() {
         val uri = data?.data ?: return
         when (requestCode) {
             REQUEST_OPEN_ROM -> {
-                runCatching {
-                    contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
+                val shouldStoreRecent = persistReadPermissionIfAvailable(uri, data.flags)
                 val name = displayName(uri)
-                openRomUri(uri, name, shouldStoreRecent = true)
+                openRomUri(uri, name, shouldStoreRecent)
             }
             REQUEST_IMPORT_BIOS -> {
                 val name = displayName(uri)
@@ -624,19 +622,32 @@ class MainActivity : Activity() {
             return false
         }
         val uri = intent.data ?: return false
-        runCatching {
-            val flags = intent.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION
-            if (flags != 0) {
-                contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-        }
+        val shouldStoreRecent = persistReadPermissionIfAvailable(uri, intent.flags)
         val name = displayName(uri)
         if (!RomFileSupport.isSupportedRomName(name)) {
             nativeStatus.text = "${getString(R.string.native_version_label)}: Unsupported ROM file"
             return true
         }
-        openRomUri(uri, name, shouldStoreRecent = true)
+        if (!shouldStoreRecent) {
+            AppLogStore.append(this, "Opening transient external ROM without storing recent: $name")
+        }
+        openRomUri(uri, name, shouldStoreRecent)
         return true
+    }
+
+    private fun persistReadPermissionIfAvailable(uri: Uri, flags: Int): Boolean {
+        if (uri.scheme == "file") {
+            return true
+        }
+        val hasReadGrant = flags and Intent.FLAG_GRANT_READ_URI_PERMISSION != 0
+        val hasPersistableGrant = flags and Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION != 0
+        if (!hasReadGrant || !hasPersistableGrant) {
+            return false
+        }
+        return runCatching {
+            contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            true
+        }.getOrDefault(false)
     }
 
     private fun maybeResumeActiveSessionFromLauncher(intent: Intent?) {
