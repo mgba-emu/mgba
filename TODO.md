@@ -871,11 +871,11 @@ object NativeBridge {
 ### 12.2 Patch
 
 - [x] 支持手动给当前 ROM 选择 `.ips` / `.ups` / `.bps`。
-- [ ] 自动 patch 搜索：
-  - [ ] `<romName>.ips`
-  - [ ] `<romName>.ups`
-  - [ ] `<romName>.bps`
-  - [ ] `<romHash>.<ext>`
+- [x] 自动 patch 搜索：
+  - [x] `<romName>.ips`
+  - [x] `<romName>.ups`
+  - [x] `<romName>.bps`
+  - [x] `<romHash>.<ext>`
 - [ ] 加载 ROM 后调用 `mCoreAutoloadPatch(core)`。
 - [x] 手动 patch 则直接 `core->loadPatch(core, vf)`。
 

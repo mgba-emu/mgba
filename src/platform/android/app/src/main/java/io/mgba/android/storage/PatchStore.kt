@@ -62,6 +62,30 @@ class PatchStore(context: Context) {
         return file.takeIf { it.isFile }
     }
 
+    fun autoPatchFile(displayName: String, crc32: String): File? {
+        val directory = File(appContext.filesDir, PATCH_DIRECTORY)
+        if (!directory.isDirectory) {
+            return null
+        }
+        val romName = displayName
+            .substringAfterLast('/')
+            .substringBeforeLast('.', displayName.substringAfterLast('/'))
+            .takeIf { it.isNotBlank() }
+        val normalizedCrc = crc32.trim().lowercase().takeIf { it.isNotBlank() }
+        val names = buildList {
+            romName?.let { base ->
+                PATCH_EXTENSIONS.forEach { extension -> add("$base.$extension") }
+            }
+            normalizedCrc?.let { hash ->
+                PATCH_EXTENSIONS.forEach { extension -> add("$hash.$extension") }
+            }
+        }
+        return names
+            .asSequence()
+            .map { File(directory, it) }
+            .firstOrNull { it.isFile }
+    }
+
     fun displayNameForGame(gameId: String?): String? {
         val id = patchId(gameId) ?: return null
         return preferences.getString(gameDisplayNameKey(id), null)
@@ -120,5 +144,6 @@ class PatchStore(context: Context) {
         private const val KEY_GAME_FILE_NAME_PREFIX = "gameFileName:"
         private const val PATCH_DIRECTORY = "patches"
         private const val DEFAULT_PATCH_NAME = "default.patch"
+        private val PATCH_EXTENSIONS = arrayOf("ips", "ups", "bps")
     }
 }

@@ -462,7 +462,7 @@ class MainActivity : Activity() {
                 )
                 emulator.loadRomFd(descriptor.fd, name).also { loadResult ->
                     if (loadResult.ok) {
-                        patchApplied = applyStoredPatch(emulator, gameId)
+                        patchApplied = applyStoredPatch(emulator, gameId, name, loadResult.crc32)
                         cheatsApplied = applyStoredCheats(emulator, gameId)
                     }
                 }
@@ -495,8 +495,13 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun applyStoredPatch(emulator: EmulatorController, gameId: String): Boolean? {
-        val file = patchStore.fileForGame(gameId) ?: return null
+    private fun applyStoredPatch(
+        emulator: EmulatorController,
+        gameId: String,
+        displayName: String,
+        crc32: String,
+    ): Boolean? {
+        val file = patchStore.fileForGame(gameId) ?: patchStore.autoPatchFile(displayName, crc32) ?: return null
         return runCatching {
             ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
                 emulator.importPatchFd(descriptor.fd)
