@@ -111,6 +111,7 @@
 - [x] 已新增 Android Skip BIOS 全局/每游戏设置，启动前传入 native 并可在 reset/下次启动生效。
 - [x] 已新增 Android ZIP archive ROM 启动：单 ROM 自动解压，多 ROM 弹出选择列表，解压结果写入 cache。
 - [x] 已新增 Android ZIP cache 手动清理入口。
+- [x] 已新增 Android ZIP cache 256 MiB 上限清理，解压后自动删除较旧 cache 文件。
 - [x] 已新增 Android 画面 Pix/Smooth 过滤切换，JNI 透传到 GLES texture filtering 并按游戏持久化。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
@@ -878,7 +879,7 @@ object NativeBridge {
 - [ ] cache 清理策略：
   - [ ] 最近使用保留。
   - [x] 可手动清空。
-  - [ ] 超过大小上限自动清理旧文件。
+  - [x] 超过大小上限自动清理旧文件。
 
 ## 13. 高级功能复刻
 

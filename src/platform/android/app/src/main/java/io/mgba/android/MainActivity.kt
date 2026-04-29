@@ -376,7 +376,12 @@ class MainActivity : Activity() {
                         if (target.exists()) {
                             target.delete()
                         }
-                        return if (tmp.renameTo(target)) target else null
+                        if (!tmp.renameTo(target)) {
+                            return null
+                        }
+                        target.setLastModified(System.currentTimeMillis())
+                        trimArchiveCache(target)
+                        return target
                     }
                     zip.closeEntry()
                 }
@@ -780,6 +785,25 @@ class MainActivity : Activity() {
         nativeStatus.text = "${getString(R.string.native_version_label)}: ZIP cache cleared ($deleted files)"
     }
 
+    private fun trimArchiveCache(keep: File? = null) {
+        val directory = File(cacheDir, "archive-roms")
+        val files = directory.listFiles()?.filter { it.isFile } ?: return
+        val keepPath = keep?.absolutePath
+        var totalBytes = files.sumOf { it.length() }
+        files
+            .filter { it.absolutePath != keepPath }
+            .sortedBy { it.lastModified() }
+            .forEach { file ->
+                if (totalBytes <= ARCHIVE_CACHE_MAX_BYTES) {
+                    return@forEach
+                }
+                val size = file.length()
+                if (file.delete()) {
+                    totalBytes -= size
+                }
+            }
+    }
+
     companion object {
         private const val REQUEST_OPEN_ROM = 1001
         private const val REQUEST_IMPORT_BIOS = 1002
@@ -787,6 +811,7 @@ class MainActivity : Activity() {
         private const val REQUEST_SCAN_FOLDER = 1004
         private const val REQUEST_IMPORT_COVER = 1005
         private const val MAX_LIBRARY_ITEMS = 24
+        private const val ARCHIVE_CACHE_MAX_BYTES = 256L * 1024L * 1024L
         private val ROM_ENTRY_EXTENSIONS = arrayOf(".gba", ".agb", ".gb", ".gbc", ".sgb")
     }
 }
