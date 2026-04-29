@@ -38,6 +38,18 @@ CI treats Android platform native warnings as errors with:
 
 This strict mode applies to the Android JNI/native wrapper target. It can also be enabled with `MGBA_ANDROID_WARNINGS_AS_ERRORS=true`.
 
+## Optional GDB stub build
+
+The Android native build keeps mGBA debugger and GDB stub support disabled by default so ordinary debug and release APKs do not expose a listening debug server or carry the extra debugger surface. For internal development builds, compile the native core with debugger support by passing:
+
+```bash
+./gradlew :app:externalNativeBuildDebug \
+  -PmgbaAndroidEnableGdbStub=true \
+  -PmgbaAndroidAbiFilters=arm64-v8a
+```
+
+The same switch is available as `MGBA_ANDROID_ENABLE_GDB_STUB=true`. This only enables the native debugger objects at build time; a runtime developer-mode UI and port lifecycle are intentionally tracked separately before exposing the stub in an installable APK.
+
 ## Third-party notices
 
 Android-specific release notices are tracked in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Keep that file and the in-app Licenses dialog in sync whenever runtime or bundled source dependencies change.

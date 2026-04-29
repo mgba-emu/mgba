@@ -29,6 +29,7 @@ val releaseKeystorePassword = signingValue("mgbaAndroidKeystorePassword", "MGBA_
 val releaseKeyAlias = signingValue("mgbaAndroidKeyAlias", "MGBA_ANDROID_KEY_ALIAS")
 val releaseKeyPassword = signingValue("mgbaAndroidKeyPassword", "MGBA_ANDROID_KEY_PASSWORD")
 val nativeWarningsAsErrors = booleanValue("mgbaAndroidWarningsAsErrors", "MGBA_ANDROID_WARNINGS_AS_ERRORS")
+val nativeGdbStub = booleanValue("mgbaAndroidEnableGdbStub", "MGBA_ANDROID_ENABLE_GDB_STUB")
 val androidAbiFilters = listValue("mgbaAndroidAbiFilters", "MGBA_ANDROID_ABI_FILTERS")
     .ifEmpty { listOf("arm64-v8a", "armeabi-v7a", "x86_64") }
 val generatedReleaseKeystore = layout.buildDirectory.file("generated/signing/mgba-release.jks").get().asFile
@@ -60,6 +61,7 @@ android {
                 arguments += listOf(
                     "-DANDROID_STL=c++_shared",
                     "-DMGBA_ANDROID_WARNINGS_AS_ERRORS=$nativeWarningsAsErrors",
+                    "-DMGBA_ANDROID_ENABLE_GDB_STUB=$nativeGdbStub",
                 )
             }
         }

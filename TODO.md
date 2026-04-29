@@ -198,6 +198,7 @@
 - [x] 已补齐 Android 虚拟手柄编辑模式双指缩放：编辑时 pinch 可实时调整按钮大小并保存。
 - [x] 已新增 Android 输入同步延迟诊断：虚拟/实体输入到 `nativeSetKeys` 的事件年龄、JNI 调用耗时、最大耗时和 slow sample 计数会进入 Input debug 与诊断导出，并用 instrumented test 锁定虚拟触摸事件时间传递。
 - [x] 已完成 Android link cable 首轮调研：Qt MultiplayerController 依赖 `mCoreThread` wait/wake、GBA/GB lockstep driver、save player id 分配和多实例 CoreController 编排；Android 首版不接联机，后续需先抽象多 runner lockstep 调度层。
+- [x] 已新增 Android GDB stub 原生构建开关：默认关闭，内部开发可用 `-PmgbaAndroidEnableGdbStub=true` / `MGBA_ANDROID_ENABLE_GDB_STUB=true` 编译 debugger/GDB stub，并已验证 arm64 native build 通过。
 
 ## 1. 产品目标和范围
 
@@ -1005,6 +1006,7 @@ object NativeBridge {
 
 ### 13.4 Debug / GDB
 
+- [x] Native build 支持可选编译 GDB stub：默认 `OFF`，需要内部开发调试时显式打开 `mgbaAndroidEnableGdbStub`。
 - [ ] 开发者模式里开启 GDB stub。
 - [ ] 显示监听端口。
 - [ ] 仅 debug build 默认允许。
