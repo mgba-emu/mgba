@@ -26,6 +26,7 @@ import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.library.RomScanner
 import io.mgba.android.library.RecentGameStore
 import io.mgba.android.storage.BiosStore
+import io.mgba.android.storage.LogExporter
 import io.mgba.android.storage.PatchStore
 
 class MainActivity : Activity() {
@@ -130,6 +131,13 @@ class MainActivity : Activity() {
             }
         }
 
+        val logButton = Button(this).apply {
+            text = "Export Logs"
+            setOnClickListener {
+                exportLogs()
+            }
+        }
+
         recentContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(0, dp(24), 0, 0)
@@ -165,6 +173,7 @@ class MainActivity : Activity() {
         root.addView(biosButton)
         root.addView(patchButton)
         root.addView(aboutButton)
+        root.addView(logButton)
         root.addView(recentContainer)
         root.addView(librarySearch)
         root.addView(libraryContainer)
@@ -454,6 +463,16 @@ class MainActivity : Activity() {
             .setMessage(message)
             .setPositiveButton("OK", null)
             .show()
+    }
+
+    private fun exportLogs() {
+        nativeStatus.text = "${getString(R.string.native_version_label)}: Exporting logs"
+        Thread {
+            val uri = LogExporter.exportRecent(this)
+            runOnUiThread {
+                nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (uri != null) "Logs exported" else "Log export unavailable"}"
+            }
+        }.start()
     }
 
     companion object {
