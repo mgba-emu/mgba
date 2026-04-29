@@ -223,6 +223,13 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetRotation(JNIEnv*, jclass, jlon
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetSolarLevel(JNIEnv*, jclass, jlong handle, jint level) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setSolarLevel(level);
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeStart(JNIEnv*, jclass, jlong handle) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
 		runner->start();

@@ -11,6 +11,7 @@
 #include <chrono>
 #include <cstdint>
 #include <mgba/core/interface.h>
+#include <mgba/gba/interface.h>
 #include <mgba-util/image.h>
 #include <mutex>
 #include <string>
@@ -32,6 +33,11 @@ struct AndroidRumbleState {
 
 struct AndroidRotationState {
 	mRotationSource d = {};
+	AndroidCoreRunner* runner = nullptr;
+};
+
+struct AndroidLuminanceState {
+	GBALuminanceSource d = {};
 	AndroidCoreRunner* runner = nullptr;
 };
 
@@ -66,6 +72,8 @@ public:
 	int32_t readTiltX() const;
 	int32_t readTiltY() const;
 	int32_t readGyroZ() const;
+	void setSolarLevel(int level);
+	uint8_t readSolarLevel() const;
 	void start();
 	void pause();
 	void resume();
@@ -104,8 +112,10 @@ private:
 	std::atomic<int32_t> m_tiltX{0};
 	std::atomic<int32_t> m_tiltY{0};
 	std::atomic<int32_t> m_gyroZ{0};
+	std::atomic<uint8_t> m_solarLevel{0xFF};
 	AndroidRumbleState m_rumble;
 	AndroidRotationState m_rotation;
+	AndroidLuminanceState m_luminance;
 
 	ANativeWindow* m_window = nullptr;
 	EGLDisplay m_display = EGL_NO_DISPLAY;

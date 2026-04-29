@@ -125,6 +125,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setSolarLevel(level: Int) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetSolarLevel(handle.value, level.coerceIn(0, 255))
+        }
+    }
+
     fun start() {
         if (handle.isValid) {
             NativeBridge.nativeStart(handle.value)

@@ -87,8 +87,9 @@
 - [x] 已新增 ROM 库按 SAF 文件夹来源增量合并扫描，避免重扫一个目录时冲掉其他库来源。
 - [x] 已接入 native `mPERIPH_RUMBLE` 到 Android `Vibrator` 的运行时震动反馈。
 - [x] 已接入 Android accelerometer/gyroscope 到 native `mPERIPH_ROTATION`，并提供 Tilt 开关和 Cal 校准。
+- [x] 已接入 GBA solar luminance 外设，提供手动 Solar 滑条和可选 Android light sensor。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
-- [ ] ROM 库封面、profile 导入/导出和 solar 传感器输入仍待后续阶段实现。
+- [ ] ROM 库封面和 profile 导入/导出仍待后续阶段实现。
 
 ## 1. 产品目标和范围
 
@@ -579,8 +580,8 @@ object NativeBridge {
   - [x] Kotlin 监听 accelerometer / gyroscope。
   - [x] 提供校准按钮。
 - [ ] Solar sensor：
-  - [ ] 默认提供手动亮度滑条。
-  - [ ] 可选使用 Android light sensor。
+  - [x] 默认提供手动亮度滑条。
+  - [x] 可选使用 Android light sensor。
 - [ ] Game Boy Camera：
   - [ ] 后期接 CameraX。
   - [ ] 先提供静态图片导入作为 image source。

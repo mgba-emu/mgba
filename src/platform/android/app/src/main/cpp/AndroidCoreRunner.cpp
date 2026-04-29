@@ -273,6 +273,14 @@ int32_t RotationValueFromFloat(float value) {
 	return static_cast<int32_t>(value * static_cast<float>(std::numeric_limits<int32_t>::max()));
 }
 
+void AndroidLuminanceSample(GBALuminanceSource*) {
+}
+
+uint8_t AndroidLuminanceRead(GBALuminanceSource* luminance) {
+	auto* state = reinterpret_cast<AndroidLuminanceState*>(luminance);
+	return state && state->runner ? state->runner->readSolarLevel() : 0xFF;
+}
+
 GLuint CompileShader(GLenum type, const char* source) {
 	GLuint shader = glCreateShader(type);
 	glShaderSource(shader, 1, &source, nullptr);
@@ -483,6 +491,14 @@ std::string AndroidCoreRunner::loadRomFd(int fd, const std::string& displayName)
 	m_rotation.d.readGyroZ = AndroidRotationReadGyroZ;
 	if (m_core->setPeripheral) {
 		m_core->setPeripheral(m_core, mPERIPH_ROTATION, &m_rotation.d);
+	}
+	m_solarLevel = 0xFF;
+	m_luminance = {};
+	m_luminance.runner = this;
+	m_luminance.d.sample = AndroidLuminanceSample;
+	m_luminance.d.readLuminance = AndroidLuminanceRead;
+	if (m_core->setPeripheral) {
+		m_core->setPeripheral(m_core, mPERIPH_GBA_LUMINANCE, &m_luminance.d);
 	}
 
 	struct mGameInfo info;
@@ -853,6 +869,19 @@ int32_t AndroidCoreRunner::readGyroZ() const {
 	return m_gyroZ.load();
 }
 
+void AndroidCoreRunner::setSolarLevel(int level) {
+	if (level < 0) {
+		level = 0;
+	} else if (level > 255) {
+		level = 255;
+	}
+	m_solarLevel = static_cast<uint8_t>(level);
+}
+
+uint8_t AndroidCoreRunner::readSolarLevel() const {
+	return m_solarLevel.load();
+}
+
 void AndroidCoreRunner::start() {
 	if (m_running.exchange(true)) {
 		m_paused = false;
@@ -1145,11 +1174,13 @@ void AndroidCoreRunner::unloadCore() {
 	if (m_core->setPeripheral) {
 		m_core->setPeripheral(m_core, mPERIPH_RUMBLE, nullptr);
 		m_core->setPeripheral(m_core, mPERIPH_ROTATION, nullptr);
+		m_core->setPeripheral(m_core, mPERIPH_GBA_LUMINANCE, nullptr);
 	}
 	m_rumbleActive = false;
 	m_tiltX = 0;
 	m_tiltY = 0;
 	m_gyroZ = 0;
+	m_solarLevel = 0xFF;
 	m_core->unloadROM(m_core);
 	m_core->deinit(m_core);
 	m_core = nullptr;

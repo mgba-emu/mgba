@@ -80,6 +80,9 @@ object NativeBridge {
     external fun nativeSetRotation(handle: Long, tiltX: Float, tiltY: Float, gyroZ: Float)
 
     @JvmStatic
+    external fun nativeSetSolarLevel(handle: Long, level: Int)
+
+    @JvmStatic
     external fun nativeStart(handle: Long)
 
     @JvmStatic

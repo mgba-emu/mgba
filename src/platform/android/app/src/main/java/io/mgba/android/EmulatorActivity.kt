@@ -25,10 +25,12 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import io.mgba.android.emulator.EmulatorController
@@ -70,6 +72,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var scaleButton: Button? = null
     private var padButton: Button? = null
     private var tiltButton: Button? = null
+    private var solarButton: Button? = null
     private var statsButton: Button? = null
     private var statsOverlay: TextView? = null
     private var userPaused = false
@@ -82,6 +85,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var tiltOffsetX = 0f
     private var tiltOffsetY = 0f
     private var gyroZ = 0f
+    private var solarLevel = 255
+    private var useLightSensor = false
     private var showStats = false
     private var lastStatsFrames = 0L
     private var lastStatsAtMs = 0L
@@ -99,6 +104,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private val sensorManager: SensorManager? by lazy { getSystemService(SensorManager::class.java) }
     private val accelerometer: Sensor? by lazy { sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
     private val gyroscope: Sensor? by lazy { sensorManager?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
+    private val lightSensor: Sensor? by lazy { sensorManager?.getDefaultSensor(Sensor.TYPE_LIGHT) }
     private var lastRumbleAtMs = 0L
     private val statsRunnable = object : Runnable {
         override fun run() {
@@ -274,19 +280,29 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        if (!tiltEnabled) {
-            return
-        }
         when (event.sensor.type) {
             Sensor.TYPE_ACCELEROMETER -> {
+                if (!tiltEnabled) {
+                    return
+                }
                 lastRawTiltX = clamp(event.values[0] / SensorManager.GRAVITY_EARTH)
                 lastRawTiltY = clamp(event.values[1] / SensorManager.GRAVITY_EARTH)
+                syncRotation()
             }
             Sensor.TYPE_GYROSCOPE -> {
+                if (!tiltEnabled) {
+                    return
+                }
                 gyroZ = clamp(event.values[2] / MAX_GYRO_RADIANS)
+                syncRotation()
+            }
+            Sensor.TYPE_LIGHT -> {
+                if (useLightSensor) {
+                    solarLevel = luxToSolarLevel(event.values[0])
+                    controller?.setSolarLevel(solarLevel)
+                }
             }
         }
-        syncRotation()
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
@@ -472,6 +488,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     calibrateTilt()
                 }
             })
+            solarButton = Button(context).apply {
+                setOnClickListener {
+                    showSolarDialog()
+                }
+            }
+            runRow.addView(solarButton)
             runRow.addView(Button(context).apply {
                 text = "Keys"
                 setOnClickListener {
@@ -638,17 +660,23 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         scaleButton?.text = SCALE_LABELS[scaleMode]
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
         tiltButton?.text = if (tiltEnabled) "Tilt*" else "Tilt"
+        solarButton?.text = if (useLightSensor) "Solar*" else "Solar"
         statsButton?.text = if (showStats) "Stats*" else "Stats"
     }
 
     private fun updateSensorRegistration() {
         unregisterSensors()
-        if (!tiltEnabled || userPaused || !hasSurface) {
+        if (userPaused || !hasSurface) {
             controller?.setRotation(0f, 0f, 0f)
             return
         }
-        accelerometer?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
-        gyroscope?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
+        if (tiltEnabled) {
+            accelerometer?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
+            gyroscope?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
+        }
+        if (useLightSensor) {
+            lightSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
+        }
     }
 
     private fun unregisterSensors() {
@@ -672,6 +700,69 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun clamp(value: Float): Float {
         return max(-1f, min(1f, value))
+    }
+
+    private fun showSolarDialog() {
+        val label = TextView(this).apply {
+            textSize = 16f
+            setTextColor(getColor(R.color.mgba_text_primary))
+        }
+        fun updateLabel() {
+            label.text = "Solar level: $solarLevel"
+        }
+        updateLabel()
+
+        val seekBar = SeekBar(this).apply {
+            max = 255
+            progress = solarLevel
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        useLightSensor = false
+                        solarLevel = progress
+                        controller?.setSolarLevel(solarLevel)
+                        updateLabel()
+                        updateSensorRegistration()
+                        updateRunButtons()
+                    }
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
+            })
+        }
+        val lightCheck = CheckBox(this).apply {
+            text = if (lightSensor == null) "Light sensor unavailable" else "Use light sensor"
+            isEnabled = lightSensor != null
+            isChecked = useLightSensor
+            setTextColor(getColor(R.color.mgba_text_primary))
+            setOnCheckedChangeListener { _, checked ->
+                useLightSensor = checked
+                if (!checked) {
+                    controller?.setSolarLevel(solarLevel)
+                }
+                updateSensorRegistration()
+                updateRunButtons()
+            }
+        }
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(8), dp(16), dp(4))
+            addView(label)
+            addView(seekBar)
+            addView(lightCheck)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Solar sensor")
+            .setView(content)
+            .setPositiveButton("Close", null)
+            .show()
+    }
+
+    private fun luxToSolarLevel(lux: Float): Int {
+        val normalized = (lux / MAX_SOLAR_LUX).coerceIn(0f, 1f)
+        return (normalized * 255f).toInt().coerceIn(0, 255)
     }
 
     private fun showInputMappingDialog() {
@@ -1067,6 +1158,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val RUMBLE_INTERVAL_MS = 90L
         private const val RUMBLE_PULSE_MS = 45L
         private const val MAX_GYRO_RADIANS = 8f
+        private const val MAX_SOLAR_LUX = 10000f
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int")
     }
 }
