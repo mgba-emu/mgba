@@ -37,6 +37,10 @@ class PerGameOverrideStore(context: Context) {
         return booleanOverride(gameId, KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED, fallback)
     }
 
+    fun virtualGamepadLeftHanded(gameId: String?, fallback: Boolean): Boolean {
+        return booleanOverride(gameId, KEY_VIRTUAL_GAMEPAD_LEFT_HANDED, fallback)
+    }
+
     fun setScaleMode(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_SCALE_MODE, value.coerceIn(0, 2))
     }
@@ -67,6 +71,10 @@ class PerGameOverrideStore(context: Context) {
 
     fun setVirtualGamepadHapticsEnabled(gameId: String?, value: Boolean): Boolean {
         return putBooleanOverride(gameId, KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED, value)
+    }
+
+    fun setVirtualGamepadLeftHanded(gameId: String?, value: Boolean): Boolean {
+        return putBooleanOverride(gameId, KEY_VIRTUAL_GAMEPAD_LEFT_HANDED, value)
     }
 
     private fun intOverride(gameId: String?, name: String, fallback: Int): Int {
@@ -107,5 +115,6 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
         const val KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT = "virtualGamepadOpacityPercent"
         const val KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED = "virtualGamepadHapticsEnabled"
+        const val KEY_VIRTUAL_GAMEPAD_LEFT_HANDED = "virtualGamepadLeftHanded"
     }
 }

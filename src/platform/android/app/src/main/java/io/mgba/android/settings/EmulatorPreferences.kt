@@ -41,6 +41,12 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putBoolean(KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED, value).apply()
         }
 
+    var virtualGamepadLeftHanded: Boolean
+        get() = preferences.getBoolean(KEY_VIRTUAL_GAMEPAD_LEFT_HANDED, false)
+        set(value) {
+            preferences.edit().putBoolean(KEY_VIRTUAL_GAMEPAD_LEFT_HANDED, value).apply()
+        }
+
     private companion object {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_MUTED = "muted"
@@ -48,5 +54,6 @@ class EmulatorPreferences(context: Context) {
         const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
         const val KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT = "virtualGamepadOpacityPercent"
         const val KEY_VIRTUAL_GAMEPAD_HAPTICS_ENABLED = "virtualGamepadHapticsEnabled"
+        const val KEY_VIRTUAL_GAMEPAD_LEFT_HANDED = "virtualGamepadLeftHanded"
     }
 }

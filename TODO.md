@@ -97,6 +97,7 @@
 - [x] 已新增实体输入 debug 面板，显示最后输入设备、按键码、轴值、映射结果和 deadzone。
 - [x] 已新增虚拟手柄大小/透明度设置，并按全局或 per-game override 持久化。
 - [x] 已新增虚拟手柄触控震动反馈开关，并复用全局/per-game 设置链路。
+- [x] 已新增虚拟手柄左右手布局开关，可互换 D-pad 和 A/B 两侧。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围
@@ -532,10 +533,10 @@ object NativeBridge {
 - [ ] Kotlin 层维护一个 `Int keys` bitmask。
 - [ ] 每次触摸/手柄事件变化时调用 `nativeSetKeys(handle, keys)`。
 - [ ] Native 侧最终调用 `core->setKeys(core, keys)`。
-- [ ] 防止 Android 多点触控事件丢点导致按键卡住：
-  - [ ] `ACTION_CANCEL` 清空所有触摸按键。
-  - [ ] Activity pause 清空所有按键。
-  - [ ] Surface destroyed 清空所有按键。
+- [x] 防止 Android 多点触控事件丢点导致按键卡住：
+  - [x] `ACTION_CANCEL` 清空所有触摸按键。
+  - [x] Activity pause 清空所有按键。
+  - [x] Surface destroyed 清空所有按键。
 
 ### 7.2 虚拟手柄
 
@@ -550,7 +551,7 @@ object NativeBridge {
   - [x] 透明度。
   - [x] 大小。
   - [ ] 间距。
-  - [ ] 左右手模式。
+  - [x] 左右手模式。
   - [ ] 横屏布局。
   - [ ] 竖屏布局。
   - [x] 震动反馈开关。

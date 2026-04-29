@@ -40,6 +40,7 @@ class VirtualGamepadView(context: Context) : View(context) {
     private var sizePercent = 100
     private var opacityPercent = 100
     private var hapticsEnabled = true
+    private var leftHanded = false
 
     init {
         isFocusable = true
@@ -55,18 +56,20 @@ class VirtualGamepadView(context: Context) : View(context) {
         updateKeys(0)
     }
 
-    fun setStyle(sizePercent: Int, opacityPercent: Int, hapticsEnabled: Boolean) {
+    fun setStyle(sizePercent: Int, opacityPercent: Int, hapticsEnabled: Boolean, leftHanded: Boolean) {
         val newSizePercent = sizePercent.coerceIn(60, 140)
         val newOpacityPercent = opacityPercent.coerceIn(35, 100)
         if (this.sizePercent == newSizePercent &&
             this.opacityPercent == newOpacityPercent &&
-            this.hapticsEnabled == hapticsEnabled
+            this.hapticsEnabled == hapticsEnabled &&
+            this.leftHanded == leftHanded
         ) {
             return
         }
         this.sizePercent = newSizePercent
         this.opacityPercent = newOpacityPercent
         this.hapticsEnabled = hapticsEnabled
+        this.leftHanded = leftHanded
         rebuildRegions(width, height)
         invalidate()
     }
@@ -147,8 +150,10 @@ class VirtualGamepadView(context: Context) : View(context) {
         val smallButton = button * 0.86f
         val padding = dp(24f) * scale
         val controlsY = height - padding - button * 1.65f
-        val dpadX = padding + button * 1.75f
-        val faceX = width - padding - button * 1.65f
+        val leftClusterX = padding + button * 1.75f
+        val rightClusterX = width - padding - button * 1.65f
+        val dpadX = if (leftHanded) rightClusterX else leftClusterX
+        val faceX = if (leftHanded) leftClusterX else rightClusterX
 
         addCircle("UP", GbaKeyMask.Up, dpadX, controlsY - button, smallButton)
         addCircle("DOWN", GbaKeyMask.Down, dpadX, controlsY + button, smallButton)
