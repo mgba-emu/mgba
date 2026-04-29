@@ -68,6 +68,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var stateThumbnailView: ImageView? = null
     private var pauseButton: Button? = null
     private var fastButton: Button? = null
+    private var frameSkipButton: Button? = null
     private var muteButton: Button? = null
     private var scaleButton: Button? = null
     private var padButton: Button? = null
@@ -77,6 +78,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var statsOverlay: TextView? = null
     private var userPaused = false
     private var fastForward = false
+    private var frameSkip = 0
     private var muted = false
     private var showVirtualGamepad = true
     private var tiltEnabled = false
@@ -128,6 +130,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         inputMappingStore = InputMappingStore(this)
         currentGameId = EmulatorSession.currentGame()?.uri
         scaleMode = perGameOverrides.scaleMode(currentGameId, preferences.scaleMode)
+        frameSkip = perGameOverrides.frameSkip(currentGameId, 0)
         muted = perGameOverrides.muted(currentGameId, preferences.muted)
         showVirtualGamepad = perGameOverrides.showVirtualGamepad(currentGameId, preferences.showVirtualGamepad)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -138,6 +141,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             return
         }
         controller?.setScaleMode(scaleMode)
+        controller?.setFrameSkip(frameSkip)
         controller?.setAudioEnabled(!muted)
 
         val root = FrameLayout(this).apply {
@@ -384,6 +388,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
+    private fun saveFrameSkipPreference() {
+        perGameOverrides.setFrameSkip(currentGameId, frameSkip)
+    }
+
     private fun startPlayAccounting() {
         if (playAccountingStartedAtMs == 0L) {
             playAccountingStartedAtMs = SystemClock.elapsedRealtime()
@@ -445,6 +453,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             runRow.addView(fastButton)
+            frameSkipButton = Button(context).apply {
+                setOnClickListener {
+                    frameSkip = (frameSkip + 1) % FRAME_SKIP_LABELS.size
+                    controller?.setFrameSkip(frameSkip)
+                    saveFrameSkipPreference()
+                    updateRunButtons()
+                }
+            }
+            runRow.addView(frameSkipButton)
             muteButton = Button(context).apply {
                 setOnClickListener {
                     muted = !muted
@@ -658,6 +675,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun updateRunButtons() {
         pauseButton?.text = if (userPaused) "Resume" else "Pause"
         fastButton?.text = if (fastForward) "1x" else "Fast"
+        frameSkipButton?.text = FRAME_SKIP_LABELS[frameSkip]
         muteButton?.text = if (muted) "Sound" else "Mute"
         scaleButton?.text = SCALE_LABELS[scaleMode]
         padButton?.text = if (showVirtualGamepad) "Pad" else "No Pad"
@@ -960,13 +978,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         lastStatsAtMs = now
         statsOverlay?.text = String.format(
             Locale.US,
-            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s",
+            "FPS %.1f\nFrames %d\nVideo %dx%d\nRun %s  Fast %s  Skip %d",
             fps,
             stats.frames,
             stats.videoWidth,
             stats.videoHeight,
             if (stats.running && !stats.paused) "on" else "off",
             if (stats.fastForward) "on" else "off",
+            frameSkip,
         )
     }
 
@@ -1219,6 +1238,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         private const val RUMBLE_PULSE_MS = 45L
         private const val MAX_GYRO_RADIANS = 8f
         private const val MAX_SOLAR_LUX = 10000f
+        private val FRAME_SKIP_LABELS = arrayOf("Skip0", "Skip1", "Skip2", "Skip3")
         private val SCALE_LABELS = arrayOf("Fit", "Fill", "Int")
     }
 }

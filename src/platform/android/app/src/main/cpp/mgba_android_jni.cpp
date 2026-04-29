@@ -150,6 +150,13 @@ Java_io_mgba_android_bridge_NativeBridge_nativeSetFastForward(JNIEnv*, jclass, j
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_io_mgba_android_bridge_NativeBridge_nativeSetFrameSkip(JNIEnv*, jclass, jlong handle, jint frames) {
+	if (AndroidCoreRunner* runner = FromHandle(handle)) {
+		runner->setFrameSkip(frames);
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_io_mgba_android_bridge_NativeBridge_nativeSetAudioEnabled(JNIEnv*, jclass, jlong handle, jboolean enabled) {
 	if (AndroidCoreRunner* runner = FromHandle(handle)) {
 		runner->setAudioEnabled(enabled == JNI_TRUE);

@@ -90,6 +90,7 @@
 - [x] 已接入 GBA solar luminance 外设，提供手动 Solar 滑条和可选 Android light sensor。
 - [x] 已新增硬件输入 profile JSON 导入/导出，支持通过 SAF 备份/迁移当前映射。
 - [x] 已新增 ROM 库手动封面导入/清除，封面复制到 app 私有 `covers/` 并按 ROM 稳定 hash 保存。
+- [x] 已新增 per-game frame skip 0-3 档运行控制，并在 native run loop 中跳过部分渲染帧。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 
 ## 1. 产品目标和范围

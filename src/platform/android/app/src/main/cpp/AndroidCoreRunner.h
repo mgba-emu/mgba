@@ -59,6 +59,7 @@ public:
 	bool importStateSlotFd(int slot, int fd);
 	void reset();
 	void setFastForward(bool enabled);
+	void setFrameSkip(int frames);
 	void setAudioEnabled(bool enabled);
 	void setScaleMode(int mode);
 	std::string statsJson();
@@ -106,6 +107,7 @@ private:
 	std::atomic<bool> m_running{false};
 	std::atomic<bool> m_paused{true};
 	std::atomic<bool> m_fastForward{false};
+	std::atomic<int> m_frameSkip{0};
 	std::atomic<int> m_scaleMode{0};
 	std::atomic<uint64_t> m_frameCounter{0};
 	std::atomic<bool> m_rumbleActive{false};

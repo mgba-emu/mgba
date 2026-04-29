@@ -695,6 +695,15 @@ void AndroidCoreRunner::setFastForward(bool enabled) {
 	m_fastForward = enabled;
 }
 
+void AndroidCoreRunner::setFrameSkip(int frames) {
+	if (frames < 0) {
+		frames = 0;
+	} else if (frames > 3) {
+		frames = 3;
+	}
+	m_frameSkip = frames;
+}
+
 void AndroidCoreRunner::setAudioEnabled(bool enabled) {
 	m_audioOutput.setEnabled(enabled);
 }
@@ -715,6 +724,7 @@ std::string AndroidCoreRunner::statsJson() {
 	    << ",\"running\":" << (m_running.load() ? "true" : "false")
 	    << ",\"paused\":" << (m_paused.load() ? "true" : "false")
 	    << ",\"fastForward\":" << (m_fastForward.load() ? "true" : "false")
+	    << ",\"frameSkip\":" << m_frameSkip.load()
 	    << ",\"scaleMode\":" << m_scaleMode.load()
 	    << "}";
 	return out.str();
@@ -1121,8 +1131,11 @@ void AndroidCoreRunner::runLoop() {
 			if (m_core) {
 				m_core->runFrame(m_core);
 				m_audioOutput.enqueueFromCore(m_core);
-				renderFrameLocked();
-				++m_frameCounter;
+				const uint64_t frame = ++m_frameCounter;
+				const int skip = m_frameSkip.load();
+				if (skip <= 0 || frame % static_cast<uint64_t>(skip + 1) == 0) {
+					renderFrameLocked();
+				}
 				nextFrame += frameDurationLocked();
 			}
 		}

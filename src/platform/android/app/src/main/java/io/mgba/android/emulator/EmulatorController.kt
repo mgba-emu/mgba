@@ -74,6 +74,12 @@ class EmulatorController(context: Context) : AutoCloseable {
         }
     }
 
+    fun setFrameSkip(frames: Int) {
+        if (handle.isValid) {
+            NativeBridge.nativeSetFrameSkip(handle.value, frames.coerceIn(0, 3))
+        }
+    }
+
     fun setAudioEnabled(enabled: Boolean) {
         if (handle.isValid) {
             NativeBridge.nativeSetAudioEnabled(handle.value, enabled)

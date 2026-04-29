@@ -17,6 +17,10 @@ class PerGameOverrideStore(context: Context) {
         return booleanOverride(gameId, KEY_SHOW_VIRTUAL_GAMEPAD, fallback)
     }
 
+    fun frameSkip(gameId: String?, fallback: Int): Int {
+        return intOverride(gameId, KEY_FRAME_SKIP, fallback).coerceIn(0, 3)
+    }
+
     fun setScaleMode(gameId: String?, value: Int): Boolean {
         return putIntOverride(gameId, KEY_SCALE_MODE, value.coerceIn(0, 2))
     }
@@ -27,6 +31,10 @@ class PerGameOverrideStore(context: Context) {
 
     fun setShowVirtualGamepad(gameId: String?, value: Boolean): Boolean {
         return putBooleanOverride(gameId, KEY_SHOW_VIRTUAL_GAMEPAD, value)
+    }
+
+    fun setFrameSkip(gameId: String?, value: Int): Boolean {
+        return putIntOverride(gameId, KEY_FRAME_SKIP, value.coerceIn(0, 3))
     }
 
     private fun intOverride(gameId: String?, name: String, fallback: Int): Int {
@@ -62,5 +70,6 @@ class PerGameOverrideStore(context: Context) {
         const val KEY_SCALE_MODE = "scaleMode"
         const val KEY_MUTED = "muted"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
+        const val KEY_FRAME_SKIP = "frameSkip"
     }
 }
