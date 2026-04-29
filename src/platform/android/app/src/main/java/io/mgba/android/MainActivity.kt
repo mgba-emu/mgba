@@ -163,6 +163,13 @@ class MainActivity : Activity() {
             }
         }
 
+        val clearArchiveCacheButton = Button(this).apply {
+            text = "Clear ZIP Cache"
+            setOnClickListener {
+                clearArchiveCache()
+            }
+        }
+
         recentContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(0, dp(24), 0, 0)
@@ -207,6 +214,7 @@ class MainActivity : Activity() {
         root.addView(patchButton)
         root.addView(aboutButton)
         root.addView(logButton)
+        root.addView(clearArchiveCacheButton)
         root.addView(recentContainer)
         root.addView(librarySearch)
         root.addView(libraryFilterButton)
@@ -764,6 +772,12 @@ class MainActivity : Activity() {
                 nativeStatus.text = "${getString(R.string.native_version_label)}: ${if (uri != null) "Logs exported" else "Log export unavailable"}"
             }
         }.start()
+    }
+
+    private fun clearArchiveCache() {
+        val directory = File(cacheDir, "archive-roms")
+        val deleted = directory.listFiles()?.count { it.delete() } ?: 0
+        nativeStatus.text = "${getString(R.string.native_version_label)}: ZIP cache cleared ($deleted files)"
     }
 
     companion object {
