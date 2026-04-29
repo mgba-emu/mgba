@@ -60,8 +60,9 @@
 - [x] 已修复 Android backup/data-extraction XML 规则，并验证 `:app:bundleRelease` 可生成 release AAB。
 - [x] 已扩展 GitHub Actions Android build：debug APK、release APK、release AAB 和 native symbols artifacts。
 - [x] 已新增 Android 输入映射单元测试，并验证 `:app:testDebugUnitTest`。
+- [x] 已为 ROM 库首页新增搜索过滤、结果计数和空匹配状态。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
-- [ ] ROM 库封面/搜索/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
+- [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
 ## 1. 产品目标和范围
 
@@ -672,13 +673,13 @@ object NativeBridge {
 
 ### 9.3 Library UI
 
-- [ ] 首页不是营销页，直接显示 ROM 库。
+- [x] 首页不是营销页，直接显示 ROM 库。
 - [ ] 空状态提供“打开 ROM”和“添加文件夹”两个动作。
 - [ ] ROM 列表支持：
-  - [ ] 最近。
+  - [x] 最近。
   - [ ] 收藏。
   - [ ] GBA / GB / GBC 筛选。
-  - [ ] 搜索。
+  - [x] 搜索。
   - [ ] 网格/列表切换。
 - [ ] 每个 ROM item 显示：
   - [ ] 标题。
@@ -886,7 +887,7 @@ object NativeBridge {
 
 ### 15.1 MainActivity / Library
 
-- [ ] ROM 库首页。
+- [x] ROM 库首页。
 - [ ] 顶部操作：搜索、添加、设置。
 - [ ] 最近游戏横向区或列表排序。
 - [ ] 空状态。
@@ -1191,11 +1192,11 @@ object NativeBridge {
 - [ ] Android App 可以从用户文件/文件夹启动 GBA、GB、GBC ROM。
 - [ ] 视频、音频、输入完整可玩。
 - [ ] 保存、读档、截图、BIOS、patch、cheat、archive 至少达到桌面常用功能。
-- [ ] ROM 库和最近游戏可用。
+- [x] ROM 库和最近游戏可用。
 - [ ] 全局设置和 per-game override 可用。
 - [ ] 横竖屏、切后台、锁屏、外设变化稳定。
 - [x] Debug APK、Release APK/AAB 可构建。
-- [ ] CI 自动构建 Android。
+- [x] CI 自动构建 Android。
 - [ ] License / 第三方声明完整。
 - [ ] 没有提交商业 ROM、BIOS 或不可分发资源。
 - [ ] 有一套可重复执行的手工验收清单和至少基础自动化测试。

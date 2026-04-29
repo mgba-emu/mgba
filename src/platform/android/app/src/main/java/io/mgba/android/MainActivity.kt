@@ -6,9 +6,14 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.text.Editable
+import android.text.InputType
+import android.text.TextWatcher
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -29,7 +34,9 @@ class MainActivity : Activity() {
     private lateinit var biosButton: Button
     private lateinit var patchButton: Button
     private lateinit var recentContainer: LinearLayout
+    private lateinit var librarySearch: EditText
     private lateinit var libraryContainer: LinearLayout
+    private var libraryFilter = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,6 +120,24 @@ class MainActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             setPadding(0, dp(16), 0, 0)
         }
+        librarySearch = EditText(this).apply {
+            hint = "Search Library"
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            setSingleLine(true)
+            setTextColor(getColor(R.color.mgba_text_primary))
+            setHintTextColor(getColor(R.color.mgba_text_secondary))
+            visibility = View.GONE
+            addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    libraryFilter = s?.toString().orEmpty()
+                    renderLibrary()
+                }
+
+                override fun afterTextChanged(s: Editable?) = Unit
+            })
+        }
 
         root.addView(title)
         root.addView(subtitle)
@@ -122,6 +147,7 @@ class MainActivity : Activity() {
         root.addView(biosButton)
         root.addView(patchButton)
         root.addView(recentContainer)
+        root.addView(librarySearch)
         root.addView(libraryContainer)
         scroll.addView(root)
         setContentView(scroll)
@@ -218,23 +244,48 @@ class MainActivity : Activity() {
 
     private fun renderLibrary() {
         libraryContainer.removeAllViews()
-        val roms = libraryStore.list()
-        if (roms.isEmpty()) {
+        val allRoms = libraryStore.list()
+        librarySearch.visibility = if (allRoms.isEmpty()) View.GONE else View.VISIBLE
+        if (allRoms.isEmpty()) {
             return
         }
 
+        val query = libraryFilter.trim()
+        val roms = if (query.isEmpty()) {
+            allRoms
+        } else {
+            allRoms.filter { it.displayName.contains(query, ignoreCase = true) }
+        }
+
         libraryContainer.addView(TextView(this).apply {
-            text = "Library"
+            text = if (query.isEmpty()) "Library (${allRoms.size})" else "Library (${roms.size}/${allRoms.size})"
             textSize = 14f
             setTextColor(getColor(R.color.mgba_text_secondary))
             setPadding(0, 0, 0, dp(8))
         })
+        if (roms.isEmpty()) {
+            libraryContainer.addView(TextView(this).apply {
+                text = "No matches"
+                textSize = 14f
+                setTextColor(getColor(R.color.mgba_text_secondary))
+                setPadding(0, 0, 0, dp(8))
+            })
+            return
+        }
         roms.take(MAX_LIBRARY_ITEMS).forEach { rom ->
             libraryContainer.addView(Button(this).apply {
                 text = rom.displayName
                 setOnClickListener {
                     openRomUri(rom.uri, rom.displayName, shouldStoreRecent = true)
                 }
+            })
+        }
+        if (roms.size > MAX_LIBRARY_ITEMS) {
+            libraryContainer.addView(TextView(this).apply {
+                text = "Showing $MAX_LIBRARY_ITEMS of ${roms.size}"
+                textSize = 13f
+                setTextColor(getColor(R.color.mgba_text_secondary))
+                setPadding(0, dp(6), 0, 0)
             })
         }
     }
