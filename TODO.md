@@ -73,6 +73,7 @@
 - [x] 已新增 per-game override 基础存储，当前游戏的缩放、静音和虚拟手柄显示不再污染全局设置。
 - [x] 已为 ROM 文件夹扫描接入 native 探测，库条目可保存并显示 mGBA 读取到的标题和平台。
 - [x] 已将 native CRC32 透传到 ROM 库模型，并支持按 CRC32 搜索。
+- [x] 已为 ROM 库记录并显示 DocumentsProvider 文件大小。
 - [ ] 首帧真机/模拟器截图验证待连接 Android 设备后执行。
 - [ ] ROM 库封面/增量扫描、即时存档缩略图、可配置重映射和传感器输入仍待后续阶段实现。
 
@@ -660,7 +661,7 @@ object NativeBridge {
   - [ ] version。
   - [x] crc32。
   - [ ] sha1。
-  - [ ] file size。
+  - [x] file size。
   - [x] lastPlayedAt。
   - [ ] playTimeSeconds。
   - [x] favorite。

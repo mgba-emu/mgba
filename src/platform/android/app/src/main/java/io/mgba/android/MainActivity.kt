@@ -356,7 +356,13 @@ class MainActivity : Activity() {
         val marker = if (rom.favorite) "[*] " else ""
         val title = rom.title.ifBlank { rom.displayName }
         val platform = rom.platform.takeIf { it.isNotBlank() }?.let { " [$it]" }.orEmpty()
-        return "$marker$title$platform"
+        val size = rom.fileSize.takeIf { it > 0L }?.let { " ${formatBytes(it)}" }.orEmpty()
+        return "$marker$title$platform$size"
+    }
+
+    private fun formatBytes(bytes: Long): String {
+        val mib = bytes / (1024.0 * 1024.0)
+        return String.format(java.util.Locale.US, "%.1f MiB", mib)
     }
 
     private fun confirmRemoveLibraryRom(rom: LibraryRom) {

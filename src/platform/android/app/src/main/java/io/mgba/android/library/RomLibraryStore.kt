@@ -11,6 +11,7 @@ data class LibraryRom(
     val title: String = "",
     val platform: String = "",
     val crc32: String = "",
+    val fileSize: Long = 0L,
     val lastPlayedAt: Long = 0L,
     val favorite: Boolean = false,
 )
@@ -32,6 +33,7 @@ class RomLibraryStore(context: Context) {
                         title = item.optString("title"),
                         platform = item.optString("platform"),
                         crc32 = item.optString("crc32"),
+                        fileSize = item.optLong("fileSize", 0L),
                         lastPlayedAt = item.optLong("lastPlayedAt", 0L),
                         favorite = item.optBoolean("favorite", false),
                     ),
@@ -49,6 +51,7 @@ class RomLibraryStore(context: Context) {
                 title = item.title.ifBlank { previous?.title.orEmpty() },
                 platform = item.platform.ifBlank { previous?.platform.orEmpty() },
                 crc32 = item.crc32.ifBlank { previous?.crc32.orEmpty() },
+                fileSize = if (item.fileSize > 0L) item.fileSize else previous?.fileSize ?: 0L,
                 lastPlayedAt = previous?.lastPlayedAt ?: item.lastPlayedAt,
                 favorite = previous?.favorite ?: item.favorite,
             )
@@ -92,6 +95,7 @@ class RomLibraryStore(context: Context) {
             .put("title", item.title)
             .put("platform", item.platform)
             .put("crc32", item.crc32)
+            .put("fileSize", item.fileSize)
             .put("lastPlayedAt", item.lastPlayedAt)
             .put("favorite", item.favorite)
     }

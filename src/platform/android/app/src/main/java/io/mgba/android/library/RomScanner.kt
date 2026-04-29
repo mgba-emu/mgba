@@ -25,16 +25,19 @@ class RomScanner(private val context: Context) {
             DocumentsContract.Document.COLUMN_DOCUMENT_ID,
             DocumentsContract.Document.COLUMN_DISPLAY_NAME,
             DocumentsContract.Document.COLUMN_MIME_TYPE,
+            DocumentsContract.Document.COLUMN_SIZE,
         )
         context.contentResolver.query(childrenUri, columns, null, null, null)?.use { cursor ->
             val idIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
             val nameIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
             val mimeIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
+            val sizeIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_SIZE)
             while (cursor.moveToNext()) {
                 throwIfInterrupted()
                 val childId = cursor.getString(idIndex) ?: continue
                 val name = cursor.getString(nameIndex) ?: continue
                 val mime = cursor.getString(mimeIndex)
+                val size = if (cursor.isNull(sizeIndex)) 0L else cursor.getLong(sizeIndex)
                 if (mime == DocumentsContract.Document.MIME_TYPE_DIR) {
                     results += scanDocument(treeUri, childId, depth + 1)
                 } else if (RomFileSupport.isSupportedRomName(name)) {
@@ -46,6 +49,7 @@ class RomScanner(private val context: Context) {
                         title = probe?.title.orEmpty(),
                         platform = probe?.platform.orEmpty(),
                         crc32 = probe?.crc32.orEmpty(),
+                        fileSize = size,
                     )
                 }
             }
