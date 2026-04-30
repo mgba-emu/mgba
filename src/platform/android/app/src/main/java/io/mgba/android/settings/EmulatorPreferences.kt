@@ -114,6 +114,16 @@ class EmulatorPreferences(context: Context) {
             preferences.edit().putBoolean(KEY_AUTO_STATE_ON_EXIT, value).apply()
         }
 
+    var autoStateIntervalSeconds: Int
+        get() = AutoStateSettings.coerceIntervalSeconds(
+            preferences.getInt(KEY_AUTO_STATE_INTERVAL_SECONDS, AutoStateSettings.DefaultIntervalSeconds),
+        )
+        set(value) {
+            preferences.edit()
+                .putInt(KEY_AUTO_STATE_INTERVAL_SECONDS, AutoStateSettings.coerceIntervalSeconds(value))
+                .apply()
+        }
+
     var showVirtualGamepad: Boolean
         get() = preferences.getBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, true)
         set(value) {
@@ -206,6 +216,7 @@ class EmulatorPreferences(context: Context) {
             .put(KEY_REWIND_BUFFER_CAPACITY, rewindBufferCapacity)
             .put(KEY_REWIND_BUFFER_INTERVAL, rewindBufferInterval)
             .put(KEY_AUTO_STATE_ON_EXIT, autoStateOnExit)
+            .put(KEY_AUTO_STATE_INTERVAL_SECONDS, autoStateIntervalSeconds)
             .put(KEY_SHOW_VIRTUAL_GAMEPAD, showVirtualGamepad)
             .put(KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT, virtualGamepadSizePercent)
             .put(KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT, virtualGamepadOpacityPercent)
@@ -254,6 +265,12 @@ class EmulatorPreferences(context: Context) {
                 RewindSettings.coerceInterval(json.optInt(KEY_REWIND_BUFFER_INTERVAL, rewindBufferInterval)),
             )
             .putBoolean(KEY_AUTO_STATE_ON_EXIT, json.optBoolean(KEY_AUTO_STATE_ON_EXIT, autoStateOnExit))
+            .putInt(
+                KEY_AUTO_STATE_INTERVAL_SECONDS,
+                AutoStateSettings.coerceIntervalSeconds(
+                    json.optInt(KEY_AUTO_STATE_INTERVAL_SECONDS, autoStateIntervalSeconds),
+                ),
+            )
             .putBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, json.optBoolean(KEY_SHOW_VIRTUAL_GAMEPAD, showVirtualGamepad))
             .putInt(
                 KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT,
@@ -302,6 +319,7 @@ class EmulatorPreferences(context: Context) {
         const val KEY_REWIND_BUFFER_CAPACITY = "rewindBufferCapacity"
         const val KEY_REWIND_BUFFER_INTERVAL = "rewindBufferInterval"
         const val KEY_AUTO_STATE_ON_EXIT = "autoStateOnExit"
+        const val KEY_AUTO_STATE_INTERVAL_SECONDS = "autoStateIntervalSeconds"
         const val KEY_SHOW_VIRTUAL_GAMEPAD = "showVirtualGamepad"
         const val KEY_VIRTUAL_GAMEPAD_SIZE_PERCENT = "virtualGamepadSizePercent"
         const val KEY_VIRTUAL_GAMEPAD_OPACITY_PERCENT = "virtualGamepadOpacityPercent"

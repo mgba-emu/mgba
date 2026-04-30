@@ -60,6 +60,7 @@ import io.mgba.android.input.VirtualGamepadView
 import io.mgba.android.library.RomLibraryStore
 import io.mgba.android.settings.AudioBufferModes
 import io.mgba.android.settings.AudioLowPassModes
+import io.mgba.android.settings.AutoStateSettings
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.FastForwardModes
 import io.mgba.android.settings.InputMappingStore
@@ -144,6 +145,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var rewindBufferButton: Button? = null
     private var rewindIntervalButton: Button? = null
     private var autoStateButton: Button? = null
+    private var autoStateIntervalButton: Button? = null
     private var frameSkipButton: Button? = null
     private var muteButton: Button? = null
     private var volumeButton: Button? = null
@@ -174,6 +176,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var rewindBufferCapacity = 600
     private var rewindBufferInterval = 1
     private var autoStateOnExit = false
+    private var autoStateIntervalSeconds = AutoStateSettings.DefaultIntervalSeconds
     private var frameSkip = 0
     private var muted = false
     private var volumePercent = 100
@@ -223,6 +226,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var keyCaptureDialog: AlertDialog? = null
     private val statsHandler = Handler(Looper.getMainLooper())
     private val rumbleHandler = Handler(Looper.getMainLooper())
+    private val autoStateHandler = Handler(Looper.getMainLooper())
     private val vibrator: Vibrator? by lazy { getSystemService(Vibrator::class.java) }
     private val sensorManager: SensorManager? by lazy { getSystemService(SensorManager::class.java) }
     private val audioManager: AudioManager? by lazy { getSystemService(AudioManager::class.java) }
@@ -267,6 +271,15 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             rumbleHandler.postDelayed(this, RUMBLE_POLL_MS)
         }
     }
+    private val autoStateRunnable = object : Runnable {
+        override fun run() {
+            if (!autoStateOnExit) {
+                return
+            }
+            saveAutoStateNow(showToast = false)
+            scheduleAutoStateTimer()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -284,6 +297,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         inputMappingStore.migrateGameId(currentOverrideGameId, currentGameId)
         loadPerGameOverridesFromStore()
         autoStateOnExit = preferences.autoStateOnExit
+        autoStateIntervalSeconds = preferences.autoStateIntervalSeconds
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         applyOrientationMode()
         controller = EmulatorSession.current()
@@ -384,6 +398,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
         startRumblePolling()
         updateSensorRegistration()
+        scheduleAutoStateTimer()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -426,8 +441,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         recordPlayTime()
         unregisterAudioRouteCallback()
         stopRumblePolling()
+        stopAutoStateTimer()
         unregisterSensors()
         stopStatsOverlay()
+        if (autoStateOnExit) {
+            saveAutoStateNow(showToast = false)
+        }
         controller?.pause()
         super.onPause()
     }
@@ -437,6 +456,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         recordPlayTime()
         statsHandler.removeCallbacks(firstFrameRunnable)
         statsHandler.removeCallbacks(audioRouteRestartRunnable)
+        stopAutoStateTimer()
         stopRumblePolling()
         unregisterSensors()
         stopStatsOverlay()
@@ -908,6 +928,11 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         preferences.autoStateOnExit = autoStateOnExit
     }
 
+    private fun saveAutoStateIntervalPreference() {
+        preferences.autoStateIntervalSeconds = autoStateIntervalSeconds
+        autoStateIntervalSeconds = preferences.autoStateIntervalSeconds
+    }
+
     private fun saveGamepadPreference() {
         if (!perGameOverrides.setShowVirtualGamepad(currentOverrideGameId, showVirtualGamepad)) {
             preferences.showVirtualGamepad = showVirtualGamepad
@@ -1139,10 +1164,21 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 setOnClickListener {
                     autoStateOnExit = !autoStateOnExit
                     saveAutoStatePreference()
+                    if (autoStateOnExit) {
+                        scheduleAutoStateTimer()
+                    } else {
+                        stopAutoStateTimer()
+                    }
                     updateRunButtons()
                 }
             }
             autoStateButton?.let(runOptions::add)
+            autoStateIntervalButton = Button(context).apply {
+                setOnClickListener {
+                    showAutoStateIntervalDialog()
+                }
+            }
+            autoStateIntervalButton?.let(runOptions::add)
             frameSkipButton = Button(context).apply {
                 setOnClickListener {
                     frameSkip = (frameSkip + 1) % FRAME_SKIP_LABELS.size
@@ -1345,6 +1381,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     exportRuntimeDiagnostics()
                 }
             })
+            runOptions.add(Button(context).apply {
+                text = "Help"
+                setOnClickListener {
+                    showHelpDialog()
+                }
+            })
             gdbButton = Button(context).apply {
                 setOnClickListener {
                     toggleGdbStub()
@@ -1445,6 +1487,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 text = "NoPatch"
                 setOnClickListener {
                     clearPatchWithConfirmation()
+                }
+            })
+            stateOptions.add(Button(context).apply {
+                text = "Help"
+                setOnClickListener {
+                    showHelpDialog()
                 }
             })
             stateOptions.add(Button(context).apply {
@@ -1650,6 +1698,40 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             .show()
     }
 
+    private fun showAutoStateIntervalDialog() {
+        val input = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            setSingleLine(true)
+            setText(autoStateIntervalSeconds.toString())
+            selectAll()
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Auto State Interval")
+            .setMessage(
+                "Seconds between automatic autosaves. Range: " +
+                    "${AutoStateSettings.MinIntervalSeconds}-${AutoStateSettings.MaxIntervalSeconds}.",
+            )
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val value = input.text.toString().toIntOrNull()
+                if (value == null) {
+                    Toast.makeText(this, "Invalid interval", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                autoStateIntervalSeconds = value
+                saveAutoStateIntervalPreference()
+                scheduleAutoStateTimer()
+                updateRunButtons()
+                Toast.makeText(
+                    this,
+                    "Auto interval: ${AutoStateSettings.labelForInterval(autoStateIntervalSeconds)}",
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
     private fun stateListItems(includeAuto: Boolean, includeEmptySlots: Boolean): List<StateListItem> {
         val items = mutableListOf<StateListItem>()
         if (includeAuto) {
@@ -1762,6 +1844,17 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         return ok
     }
 
+    private fun scheduleAutoStateTimer() {
+        autoStateHandler.removeCallbacks(autoStateRunnable)
+        if (autoStateOnExit && controller != null && !isFinishing) {
+            autoStateHandler.postDelayed(autoStateRunnable, autoStateIntervalSeconds * 1000L)
+        }
+    }
+
+    private fun stopAutoStateTimer() {
+        autoStateHandler.removeCallbacks(autoStateRunnable)
+    }
+
     private fun saveAutoStateNow(showToast: Boolean): Boolean {
         val screenshotPath = controller?.takeScreenshot()
         val ok = controller?.saveAutoState() == true
@@ -1804,6 +1897,19 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         )
     }
 
+    private fun showHelpDialog() {
+        val content = TextView(this).apply {
+            setPadding(dp(16), dp(12), dp(16), dp(12))
+            setTextColor(getColor(R.color.mgba_text_primary))
+            text = HelpContent.text(autoStateIntervalSeconds)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Help")
+            .setView(ScrollView(this).apply { addView(content) })
+            .setPositiveButton("Close", null)
+            .show()
+    }
+
     private fun updateRunButtons() {
         pauseButton?.text = if (userPaused) "Resume" else "Pause"
         fastButton?.text = when {
@@ -1817,7 +1923,8 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         rewindEnabledButton?.text = if (rewindEnabled) "RwOn" else "RwOff"
         rewindBufferButton?.text = "RwB$rewindBufferCapacity"
         rewindIntervalButton?.text = "RwI$rewindBufferInterval"
-        autoStateButton?.text = if (autoStateOnExit) "AutoSt" else "NoAuto"
+        autoStateButton?.text = if (autoStateOnExit) "AutoOn" else "AutoOff"
+        autoStateIntervalButton?.text = "Auto:${AutoStateSettings.labelForInterval(autoStateIntervalSeconds)}"
         frameSkipButton?.text = FRAME_SKIP_LABELS[frameSkip]
         muteButton?.text = if (muted) "Sound" else "Mute"
         volumeButton?.text = "Vol$volumePercent"
@@ -2881,7 +2988,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
             }
             appendLine("paused=$userPaused fastForward=$fastForward rewinding=$rewinding")
-            appendLine("stateSlot=$stateSlot autoStateOnExit=$autoStateOnExit")
+            appendLine("stateSlot=$stateSlot autoStateOnExit=$autoStateOnExit autoStateIntervalSeconds=$autoStateIntervalSeconds")
             appendLine("video scale=${SCALE_LABELS.getOrElse(scaleMode) { SCALE_LABELS[0] }} filter=${FILTER_LABELS.getOrElse(filterMode) { FILTER_LABELS[0] }} interframe=$interframeBlending")
             appendLine("audio muted=$muted volume=$volumePercent buffer=${AudioBufferModes.nameFor(audioBufferMode)} lowPass=${AudioLowPassModes.nameFor(audioLowPassMode)}")
             appendLine("input virtual=$showVirtualGamepad deadzone=$deadzonePercent opposing=$allowOpposingDirections activeDevice=${activeInputDeviceName.orEmpty()}")

@@ -45,6 +45,7 @@ import io.mgba.android.library.RomScanner
 import io.mgba.android.library.RecentGameStore
 import io.mgba.android.settings.AudioBufferModes
 import io.mgba.android.settings.AudioLowPassModes
+import io.mgba.android.settings.AutoStateSettings
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.FastForwardModes
 import io.mgba.android.settings.InputMappingStore
@@ -101,6 +102,7 @@ class MainActivity : Activity() {
     private lateinit var rewindBufferButton: Button
     private lateinit var rewindIntervalButton: Button
     private lateinit var autoStateButton: Button
+    private lateinit var autoStateIntervalButton: Button
     private lateinit var opposingDirectionsButton: Button
     private lateinit var rumbleButton: Button
     private lateinit var logLevelButton: Button
@@ -338,6 +340,11 @@ class MainActivity : Activity() {
                 updateRewindButtons()
             }
         }
+        autoStateIntervalButton = Button(this).apply {
+            setOnClickListener {
+                showAutoStateIntervalDialog()
+            }
+        }
         updateRewindButtons()
 
         opposingDirectionsButton = Button(this).apply {
@@ -387,6 +394,12 @@ class MainActivity : Activity() {
             text = "About"
             setOnClickListener {
                 showAboutDialog()
+            }
+        }
+        val helpButton = Button(this).apply {
+            text = "Help"
+            setOnClickListener {
+                showHelpDialog()
             }
         }
 
@@ -524,12 +537,14 @@ class MainActivity : Activity() {
         settingsContainer.addView(rewindBufferButton)
         settingsContainer.addView(rewindIntervalButton)
         settingsContainer.addView(autoStateButton)
+        settingsContainer.addView(autoStateIntervalButton)
         settingsContainer.addView(opposingDirectionsButton)
         settingsContainer.addView(rumbleButton)
         settingsContainer.addView(logLevelButton)
         settingsContainer.addView(rtcButton)
         settingsContainer.addView(patchButton)
         settingsContainer.addView(aboutButton)
+        settingsContainer.addView(helpButton)
         settingsContainer.addView(logButton)
         settingsContainer.addView(storageButton)
         settingsContainer.addView(clearArchiveCacheButton)
@@ -1422,6 +1437,39 @@ class MainActivity : Activity() {
         rewindBufferButton.text = "Rewind Buffer: ${preferences.rewindBufferCapacity}"
         rewindIntervalButton.text = "Rewind Speed: ${preferences.rewindBufferInterval}"
         autoStateButton.text = if (preferences.autoStateOnExit) "Auto State: On" else "Auto State: Off"
+        autoStateIntervalButton.text = "Auto Interval: ${AutoStateSettings.labelForInterval(preferences.autoStateIntervalSeconds)}"
+    }
+
+    private fun showAutoStateIntervalDialog() {
+        val input = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            setSingleLine(true)
+            setText(preferences.autoStateIntervalSeconds.toString())
+            selectAll()
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Auto State Interval")
+            .setMessage(
+                "Seconds between automatic autosaves. Range: " +
+                    "${AutoStateSettings.MinIntervalSeconds}-${AutoStateSettings.MaxIntervalSeconds}.",
+            )
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val value = input.text.toString().toIntOrNull()
+                if (value == null) {
+                    Toast.makeText(this, "Invalid interval", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                preferences.autoStateIntervalSeconds = value
+                updateRewindButtons()
+                Toast.makeText(
+                    this,
+                    "Auto interval: ${AutoStateSettings.labelForInterval(preferences.autoStateIntervalSeconds)}",
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun updateOpposingDirectionsButton() {
@@ -2440,6 +2488,19 @@ class MainActivity : Activity() {
                 showLicensesDialog()
             }
             .setPositiveButton("OK", null)
+            .show()
+    }
+
+    private fun showHelpDialog() {
+        val content = TextView(this).apply {
+            setPadding(dp(16), dp(12), dp(16), dp(12))
+            setTextColor(getColor(R.color.mgba_text_primary))
+            text = HelpContent.text(preferences.autoStateIntervalSeconds)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Help")
+            .setView(ScrollView(this).apply { addView(content) })
+            .setPositiveButton("Close", null)
             .show()
     }
 
