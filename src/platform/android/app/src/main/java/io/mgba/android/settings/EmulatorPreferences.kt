@@ -109,7 +109,7 @@ class EmulatorPreferences(context: Context) {
         }
 
     var autoStateOnExit: Boolean
-        get() = preferences.getBoolean(KEY_AUTO_STATE_ON_EXIT, false)
+        get() = preferences.getBoolean(KEY_AUTO_STATE_ON_EXIT, true)
         set(value) {
             preferences.edit().putBoolean(KEY_AUTO_STATE_ON_EXIT, value).apply()
         }

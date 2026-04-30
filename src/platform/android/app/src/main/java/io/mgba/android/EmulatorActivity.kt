@@ -34,9 +34,11 @@ import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
+import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -86,6 +88,15 @@ import kotlin.math.min
 import org.json.JSONObject
 
 class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener {
+    private data class StateListItem(
+        val slot: Int?,
+        val title: String,
+        val detail: String,
+        val thumbnail: File?,
+        val hasState: Boolean,
+        val isAuto: Boolean,
+    )
+
     private var controller: EmulatorController? = null
     private var videoSurface: AspectRatioSurfaceView? = null
     private var gamepadView: VirtualGamepadView? = null
@@ -124,8 +135,6 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var hardwareButtonKeys = 0
     private var hardwareAxisKeys = 0
     private var stateSlot = 1
-    private var slotButton: Button? = null
-    private var stateThumbnailView: ImageView? = null
     private var pauseButton: Button? = null
     private var fastButton: Button? = null
     private var fastModeButton: Button? = null
@@ -431,12 +440,14 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         stopRumblePolling()
         unregisterSensors()
         stopStatsOverlay()
-        controller?.setSurface(null)
         if (isFinishing) {
             if (autoStateOnExit) {
-                controller?.saveAutoState()
+                saveAutoStateNow(showToast = false)
             }
+            controller?.setSurface(null)
             EmulatorSession.close()
+        } else {
+            controller?.setSurface(null)
         }
         super.onDestroy()
     }
@@ -980,9 +991,6 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             val runRow = LinearLayout(context).apply {
                 orientation = LinearLayout.HORIZONTAL
             }
-            val stateRow = LinearLayout(context).apply {
-                orientation = LinearLayout.HORIZONTAL
-            }
             val runOptions = mutableListOf<Button>()
             val stateOptions = mutableListOf<Button>()
             pauseButton = Button(context).apply {
@@ -1361,65 +1369,34 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     exportScreenshot()
                 }
             })
-            runRow.addView(Button(context).apply {
-                text = "More"
+            stateOptions.add(Button(context).apply {
+                text = "Load"
                 setOnClickListener {
-                    showToolbarOptionsDialog("Run Options", runOptions)
+                    showLoadStateDialog()
                 }
             })
             stateOptions.add(Button(context).apply {
-                text = "Slots"
+                text = "Save"
+                setOnClickListener {
+                    showSaveStateDialog()
+                }
+            })
+            stateOptions.add(Button(context).apply {
+                text = "States"
                 setOnClickListener {
                     showStateSlotsDialog()
                 }
             })
-            stateRow.addView(Button(context).apply {
-                text = "-"
+            stateOptions.add(Button(context).apply {
+                text = "AutoSave"
                 setOnClickListener {
-                    stateSlot = if (stateSlot == 1) 9 else stateSlot - 1
-                    updateSlotButton()
-                }
-            })
-            slotButton = Button(context).apply {
-                isEnabled = false
-            }
-            stateRow.addView(slotButton)
-            stateRow.addView(Button(context).apply {
-                text = "+"
-                setOnClickListener {
-                    stateSlot = if (stateSlot == 9) 1 else stateSlot + 1
-                    updateSlotButton()
-                }
-            })
-            stateRow.addView(Button(context).apply {
-                text = "Save"
-                setOnClickListener {
-                    saveStateWithConfirmation()
-                }
-            })
-            stateRow.addView(Button(context).apply {
-                text = "Load"
-                setOnClickListener {
-                    val ok = controller?.loadStateSlot(stateSlot) == true
-                    Toast.makeText(context, if (ok) "State loaded" else "Load failed", Toast.LENGTH_SHORT).show()
+                    saveAutoStateNow(showToast = true)
                 }
             })
             stateOptions.add(Button(context).apply {
-                text = "Del"
+                text = "AutoLoad"
                 setOnClickListener {
-                    deleteStateWithConfirmation()
-                }
-            })
-            stateOptions.add(Button(context).apply {
-                text = "StateOut"
-                setOnClickListener {
-                    openStateExportPicker()
-                }
-            })
-            stateOptions.add(Button(context).apply {
-                text = "StateIn"
-                setOnClickListener {
-                    importStateWithConfirmation()
+                    loadAutoStateWithToast()
                 }
             })
             stateOptions.add(Button(context).apply {
@@ -1476,29 +1453,20 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                     exitWithConfirmation()
                 }
             })
-            stateRow.addView(Button(context).apply {
-                text = "More"
+            runRow.addView(Button(context).apply {
+                text = "State"
                 setOnClickListener {
                     showToolbarOptionsDialog("State And Data", stateOptions)
                 }
             })
+            runRow.addView(Button(context).apply {
+                text = "More"
+                setOnClickListener {
+                    showToolbarOptionsDialog("Run Options", runOptions)
+                }
+            })
             styleToolbarRow(runRow)
-            styleToolbarRow(stateRow)
             addView(scrollableToolbarRow(runRow))
-            addView(scrollableToolbarRow(stateRow))
-            stateThumbnailView = ImageView(context).apply {
-                visibility = View.GONE
-                scaleType = ImageView.ScaleType.CENTER_CROP
-                setBackgroundColor(0x99000000.toInt())
-            }
-            addView(
-                stateThumbnailView,
-                LinearLayout.LayoutParams(dp(120), dp(80)).apply {
-                    gravity = android.view.Gravity.CENTER_HORIZONTAL
-                    topMargin = dp(4)
-                },
-            )
-            updateSlotButton()
             updateRunButtons()
         }
     }
@@ -1593,59 +1561,67 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }
     }
 
-    private fun updateSlotButton() {
-        slotButton?.text = "Slot $stateSlot"
-        updateStateThumbnail()
-    }
-
-    private fun updateStateThumbnail() {
-        val file = stateThumbnailFile(stateSlot)
-        if (file == null || !file.isFile) {
-            stateThumbnailView?.setImageDrawable(null)
-            stateThumbnailView?.visibility = View.GONE
-            return
-        }
-        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-        if (bitmap == null) {
-            stateThumbnailView?.setImageDrawable(null)
-            stateThumbnailView?.visibility = View.GONE
-        } else {
-            stateThumbnailView?.setImageBitmap(bitmap)
-            stateThumbnailView?.visibility = View.VISIBLE
-        }
-    }
-
     private fun showStateSlotsDialog() {
-        val labels = (1..9).map { slot -> stateSlotLabel(slot) }.toTypedArray()
+        val items = stateListItems(includeAuto = true, includeEmptySlots = true)
         AlertDialog.Builder(this)
             .setTitle("Save States")
-            .setItems(labels) { _, which ->
-                stateSlot = which + 1
-                updateSlotButton()
-                showStateSlotActionsDialog(stateSlot)
+            .setAdapter(stateListAdapter(items)) { _, which ->
+                showStateItemActionsDialog(items[which])
             }
             .setNegativeButton("Close", null)
             .show()
     }
 
-    private fun showStateSlotActionsDialog(slot: Int) {
-        val hasState = controller?.hasStateSlot(slot) == true
-        val actions = if (hasState) {
+    private fun showLoadStateDialog() {
+        val items = stateListItems(includeAuto = true, includeEmptySlots = false)
+        if (items.isEmpty()) {
+            Toast.makeText(this, "No save states yet", Toast.LENGTH_SHORT).show()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Load State")
+            .setAdapter(stateListAdapter(items)) { _, which ->
+                loadStateItem(items[which])
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showSaveStateDialog() {
+        val items = stateListItems(includeAuto = false, includeEmptySlots = true)
+        AlertDialog.Builder(this)
+            .setTitle("Save State")
+            .setAdapter(stateListAdapter(items)) { _, which ->
+                items[which].slot?.let { slot ->
+                    stateSlot = slot
+                    saveStateWithConfirmation()
+                }
+            }
+            .setNeutralButton("Autosave Now") { _, _ ->
+                saveAutoStateNow(showToast = true)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showStateItemActionsDialog(item: StateListItem) {
+        if (item.isAuto) {
+            showAutoStateActionsDialog(item)
+            return
+        }
+        val slot = item.slot ?: return
+        val actions = if (item.hasState) {
             arrayOf("Save", "Load", "Delete", "Export", "Import")
         } else {
             arrayOf("Save", "Import")
         }
         AlertDialog.Builder(this)
-            .setTitle("Slot $slot")
+            .setTitle(item.title)
             .setItems(actions) { _, which ->
                 stateSlot = slot
-                updateSlotButton()
                 when (actions[which]) {
                     "Save" -> saveStateWithConfirmation()
-                    "Load" -> {
-                        val ok = controller?.loadStateSlot(stateSlot) == true
-                        Toast.makeText(this, if (ok) "State loaded" else "Load failed", Toast.LENGTH_SHORT).show()
-                    }
+                    "Load" -> loadStateSlotWithToast(stateSlot)
                     "Delete" -> deleteStateWithConfirmation()
                     "Export" -> openStateExportPicker()
                     "Import" -> importStateWithConfirmation()
@@ -1655,18 +1631,177 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             .show()
     }
 
-    private fun stateSlotLabel(slot: Int): String {
-        val modifiedMs = controller?.stateSlotModifiedMs(slot) ?: 0L
-        if (modifiedMs <= 0L) {
-            return "Slot $slot - Empty"
+    private fun showAutoStateActionsDialog(item: StateListItem) {
+        val actions = if (item.hasState) {
+            arrayOf("Load", "Save Now", "Delete")
+        } else {
+            arrayOf("Save Now")
         }
-        val modified = DateUtils.formatDateTime(
+        AlertDialog.Builder(this)
+            .setTitle(item.title)
+            .setItems(actions) { _, which ->
+                when (actions[which]) {
+                    "Load" -> loadAutoStateWithToast()
+                    "Save Now" -> saveAutoStateNow(showToast = true)
+                    "Delete" -> deleteAutoStateWithConfirmation()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun stateListItems(includeAuto: Boolean, includeEmptySlots: Boolean): List<StateListItem> {
+        val items = mutableListOf<StateListItem>()
+        if (includeAuto) {
+            autoStateItem()?.let { item ->
+                if (includeEmptySlots || item.hasState) {
+                    items += item
+                }
+            }
+        }
+        (1..9).forEach { slot ->
+            val modifiedMs = controller?.stateSlotModifiedMs(slot) ?: 0L
+            val hasState = modifiedMs > 0L
+            if (includeEmptySlots || hasState) {
+                items += StateListItem(
+                    slot = slot,
+                    title = "Slot $slot",
+                    detail = if (hasState) modifiedStateLabel(modifiedMs) else "Empty",
+                    thumbnail = stateThumbnailFile(slot),
+                    hasState = hasState,
+                    isAuto = false,
+                )
+            }
+        }
+        return items
+    }
+
+    private fun autoStateItem(): StateListItem? {
+        val file = autoStateFile()
+        val hasState = file?.isFile == true
+        val modifiedMs = file?.takeIf { it.isFile }?.lastModified() ?: 0L
+        return StateListItem(
+            slot = null,
+            title = "Autosave",
+            detail = if (hasState) modifiedStateLabel(modifiedMs) else "Empty",
+            thumbnail = autoStateThumbnailFile(),
+            hasState = hasState,
+            isAuto = true,
+        )
+    }
+
+    private fun stateListAdapter(items: List<StateListItem>): BaseAdapter {
+        return object : BaseAdapter() {
+            override fun getCount(): Int = items.size
+            override fun getItem(position: Int): StateListItem = items[position]
+            override fun getItemId(position: Int): Long = position.toLong()
+
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val item = getItem(position)
+                val row = LinearLayout(this@EmulatorActivity).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = android.view.Gravity.CENTER_VERTICAL
+                    setPadding(dp(12), dp(8), dp(12), dp(8))
+                }
+                val thumbnail = ImageView(this@EmulatorActivity).apply {
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    setBackgroundColor(0xFF202020.toInt())
+                    item.thumbnail
+                        ?.takeIf { it.isFile }
+                        ?.let { BitmapFactory.decodeFile(it.absolutePath) }
+                        ?.let { setImageBitmap(it) }
+                }
+                row.addView(
+                    thumbnail,
+                    LinearLayout.LayoutParams(dp(96), dp(64)).apply {
+                        rightMargin = dp(12)
+                    },
+                )
+                val textColumn = LinearLayout(this@EmulatorActivity).apply {
+                    orientation = LinearLayout.VERTICAL
+                }
+                textColumn.addView(TextView(this@EmulatorActivity).apply {
+                    text = item.title
+                    textSize = 18f
+                    setTextColor(android.graphics.Color.WHITE)
+                })
+                textColumn.addView(TextView(this@EmulatorActivity).apply {
+                    text = item.detail
+                    textSize = 13f
+                    setTextColor(0xFFCCCCCC.toInt())
+                })
+                row.addView(
+                    textColumn,
+                    LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f),
+                )
+                return row
+            }
+        }
+    }
+
+    private fun loadStateItem(item: StateListItem) {
+        if (item.isAuto) {
+            loadAutoStateWithToast()
+            return
+        }
+        item.slot?.let { slot ->
+            stateSlot = slot
+            loadStateSlotWithToast(slot)
+        }
+    }
+
+    private fun loadStateSlotWithToast(slot: Int): Boolean {
+        val ok = controller?.loadStateSlot(slot) == true
+        Toast.makeText(this, if (ok) "State loaded" else "Load failed", Toast.LENGTH_SHORT).show()
+        return ok
+    }
+
+    private fun loadAutoStateWithToast(): Boolean {
+        val ok = controller?.loadAutoState() == true
+        Toast.makeText(this, if (ok) "Autosave loaded" else "Autosave load failed", Toast.LENGTH_SHORT).show()
+        return ok
+    }
+
+    private fun saveAutoStateNow(showToast: Boolean): Boolean {
+        val screenshotPath = controller?.takeScreenshot()
+        val ok = controller?.saveAutoState() == true
+        if (ok && screenshotPath != null) {
+            recordAutoStateThumbnail(screenshotPath)
+        } else {
+            screenshotPath?.let { File(it).delete() }
+        }
+        if (showToast) {
+            Toast.makeText(this, if (ok) "Autosave saved" else "Autosave failed", Toast.LENGTH_SHORT).show()
+        }
+        return ok
+    }
+
+    private fun deleteAutoStateWithConfirmation() {
+        val file = autoStateFile()
+        if (file?.isFile != true) {
+            Toast.makeText(this, "No autosave", Toast.LENGTH_SHORT).show()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Delete autosave?")
+            .setMessage("The autosave state will be removed.")
+            .setPositiveButton("Delete") { _, _ ->
+                val ok = file.delete()
+                if (ok) {
+                    deleteAutoStateThumbnail()
+                }
+                Toast.makeText(this, if (ok) "Autosave deleted" else "Delete failed", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun modifiedStateLabel(modifiedMs: Long): String {
+        return DateUtils.formatDateTime(
             this,
             modifiedMs,
             DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME,
         )
-        val thumbnail = if (stateThumbnailFile(slot)?.isFile == true) " + thumbnail" else ""
-        return "Slot $slot - $modified$thumbnail"
     }
 
     private fun updateRunButtons() {
@@ -2828,7 +2963,6 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 val ok = controller?.deleteStateSlot(stateSlot) == true
                 if (ok) {
                     deleteStateThumbnail(stateSlot)
-                    updateStateThumbnail()
                 }
                 Toast.makeText(this, if (ok) "State deleted" else "Delete failed", Toast.LENGTH_SHORT).show()
             }
@@ -2945,6 +3079,12 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
         controller?.exportBatterySave()?.let { savePath ->
             zipFile(zip, "save/battery.sav", File(savePath))
+        }
+        autoStateFile()?.takeIf { it.isFile }?.let { file ->
+            zipFile(zip, "states/autosave.ss", file)
+        }
+        autoStateThumbnailFile()?.let { file ->
+            zipFile(zip, "state-thumbnails/autosave.png", file)
         }
         cheatStore.fileForGame(cheatGameId())?.let { file ->
             zipFile(zip, "cheats/${file.name}", file)
@@ -3086,7 +3226,6 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                 }
                 val cheatsApplied = result.cheatsImported && applyStoredCheats()
                 val patchApplied = result.patchImported && applyStoredPatch()
-                updateStateThumbnail()
                 Toast.makeText(
                     this,
                     result.toastMessage(cheatsApplied, patchApplied),
@@ -3128,6 +3267,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                         result.saveImported = importBatterySaveFile(file) || result.saveImported
                         file.delete()
                     }
+                    name == "states/autosave.ss" -> {
+                        val file = extractZipEntryToFile(zip, File(importDirectory, "autosave.ss"))
+                        if (importAutoStateFile(file)) {
+                            result.statesImported += 1
+                        }
+                        file.delete()
+                    }
                     name.startsWith("states/slot-") && name.endsWith(".ss") -> {
                         val slot = name.substringAfter("slot-").substringBefore(".ss").toIntOrNull()
                         val file = extractZipEntryToFile(zip, File(importDirectory, "state-${slot ?: 0}.ss"))
@@ -3137,6 +3283,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
                             }
                         }
                         file.delete()
+                    }
+                    name == "state-thumbnails/autosave.png" -> {
+                        autoStateThumbnailFile(forWrite = true)?.let { target ->
+                            if (importStateThumbnailZipEntry(zip, target)) {
+                                result.stateThumbnailsImported += 1
+                            }
+                        }
                     }
                     name.startsWith("state-thumbnails/slot-") && name.endsWith(".png") -> {
                         val slot = name.substringAfter("slot-").substringBefore(".png").toIntOrNull()
@@ -3241,6 +3394,13 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }.getOrDefault(false)
     }
 
+    private fun importAutoStateFile(file: File): Boolean {
+        val target = autoStateFile() ?: return false
+        return replaceFileAtomically(target) { temp ->
+            file.copyTo(temp, overwrite = true)
+        }
+    }
+
     private fun importStateWithConfirmation() {
         if (controller?.hasStateSlot(stateSlot) != true) {
             openStateImportPicker()
@@ -3272,7 +3432,6 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         }.getOrDefault(false)
         if (ok) {
             deleteStateThumbnail(slot)
-            updateStateThumbnail()
         }
         Toast.makeText(this, if (ok) "State imported" else "State import failed", Toast.LENGTH_SHORT).show()
     }
@@ -3280,10 +3439,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun saveStateNow() {
         val ok = controller?.saveStateSlot(stateSlot) == true
         if (ok) {
-            val thumbnailUpdated = controller?.takeScreenshot()?.let { recordStateThumbnail(it, stateSlot) } == true
-            if (thumbnailUpdated) {
-                updateStateThumbnail()
-            }
+            controller?.takeScreenshot()?.let { recordStateThumbnail(it, stateSlot) }
         }
         Toast.makeText(this, if (ok) "State saved" else "Save failed", Toast.LENGTH_SHORT).show()
     }
@@ -3301,9 +3457,28 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
             .also { File(sourcePath).delete() }
     }
 
+    private fun recordAutoStateThumbnail(sourcePath: String): Boolean {
+        val target = autoStateThumbnailFile(forWrite = true) ?: return false
+        return runCatching {
+            replaceFileAtomically(target) { temp ->
+                File(sourcePath).copyTo(temp, overwrite = true)
+                if (!isDecodableImageFile(temp)) {
+                    error("Invalid autosave thumbnail")
+                }
+            }
+        }.getOrDefault(false)
+            .also { File(sourcePath).delete() }
+    }
+
     private fun deleteStateThumbnail(slot: Int) {
         artifactGameIds().forEach { gameId ->
             stateThumbnailFileForGame(gameId, slot).delete()
+        }
+    }
+
+    private fun deleteAutoStateThumbnail() {
+        artifactGameIds().forEach { gameId ->
+            autoStateThumbnailFileForGame(gameId).delete()
         }
     }
 
@@ -3321,6 +3496,40 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
 
     private fun stateThumbnailFileForGame(gameId: String, slot: Int): File {
         return File(File(filesDir, "state-thumbnails"), "${sha1(gameId)}-slot-$slot.png")
+    }
+
+    private fun autoStateThumbnailFile(forWrite: Boolean = false): File? {
+        if (!forWrite) {
+            artifactGameIds()
+                .asSequence()
+                .map { autoStateThumbnailFileForGame(it) }
+                .firstOrNull { it.isFile }
+                ?.let { return it }
+        }
+        val gameId = artifactGameId() ?: return null
+        return autoStateThumbnailFileForGame(gameId)
+    }
+
+    private fun autoStateThumbnailFileForGame(gameId: String): File {
+        return File(File(filesDir, "state-thumbnails"), "${sha1(gameId)}-auto.png")
+    }
+
+    private fun autoStateFile(): File? {
+        val baseName = saveBaseNameForCurrentGame() ?: return null
+        return File(File(filesDir, "states"), "$baseName-auto.ss")
+    }
+
+    private fun saveBaseNameForCurrentGame(): String? {
+        val crc32 = EmulatorSession.currentGame()
+            ?.crc32
+            ?.trim()
+            ?.takeIf { it.isNotBlank() }
+            ?: return null
+        val platform = when (controller?.stats()?.romPlatform?.uppercase(Locale.US)) {
+            "GB", "GBC" -> "GB"
+            else -> "GBA"
+        }
+        return "$platform-${crc32.uppercase(Locale.US)}"
     }
 
     private fun isDecodableImageFile(file: File): Boolean {

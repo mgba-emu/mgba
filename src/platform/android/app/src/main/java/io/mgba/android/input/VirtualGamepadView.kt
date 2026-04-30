@@ -360,7 +360,7 @@ class VirtualGamepadView(context: Context) : View(context) {
         val dpadX = if (leftHanded) rightClusterX else leftClusterX
         val faceX = if (leftHanded) leftClusterX else rightClusterX
         val dpadGap = button * spacing
-        val faceGap = button * (0.85f + 0.2f * spacing)
+        val faceGap = button * (0.78f + 0.18f * spacing)
         val centerGap = button * (1.45f + 0.3f * spacing)
         val shoulderWidth = button * 1.55f
         val shoulderHeight = button * 0.62f
@@ -376,8 +376,8 @@ class VirtualGamepadView(context: Context) : View(context) {
         addCircle("LEFT", GbaKeyMask.Left, dpadX - dpadGap + dpad.first, controlsY + dpad.second, smallButton, Cluster.Dpad)
         addCircle("RIGHT", GbaKeyMask.Right, dpadX + dpadGap + dpad.first, controlsY + dpad.second, smallButton, Cluster.Dpad)
 
-        addCircle("B", GbaKeyMask.B, faceX - faceGap + face.first, controlsY + button * 0.35f * spacing + face.second, button, Cluster.Face)
-        addCircle("A", GbaKeyMask.A, faceX + face.first, controlsY - button * 0.45f * spacing + face.second, button, Cluster.Face)
+        addCircle("B", GbaKeyMask.B, faceX - faceGap + face.first, controlsY + button * 0.28f * spacing + face.second, button, Cluster.Face)
+        addCircle("A", GbaKeyMask.A, faceX + button * 0.28f + face.first, controlsY - button * 0.28f * spacing + face.second, button, Cluster.Face)
         addRoundRect("SELECT", GbaKeyMask.Select, width / 2f - centerGap + center.first, controlsY + button * 1.05f * spacing + center.second, button * 1.55f, button * 0.58f, Cluster.Center)
         addRoundRect("START", GbaKeyMask.Start, width / 2f + button * 0.2f * spacing + center.first, controlsY + button * 1.05f * spacing + center.second, button * 1.55f, button * 0.58f, Cluster.Center)
         addRoundRect("L", GbaKeyMask.L, padding + leftShoulder.first, shoulderTop + leftShoulder.second, shoulderWidth, shoulderHeight, Cluster.LeftShoulder)
@@ -398,7 +398,7 @@ class VirtualGamepadView(context: Context) : View(context) {
         val dpadX = if (leftHanded) rightClusterX else leftClusterX
         val faceX = if (leftHanded) leftClusterX else rightClusterX
         val dpadGap = button * spacing
-        val faceGap = button * (0.75f + 0.18f * spacing)
+        val faceGap = button * (0.72f + 0.16f * spacing)
         val centerY = height - padding - button * 0.72f
         val shoulderWidth = button * 1.55f
         val shoulderHeight = button * 0.62f
@@ -424,8 +424,8 @@ class VirtualGamepadView(context: Context) : View(context) {
         addCircle("LEFT", GbaKeyMask.Left, dpadX - dpadGap + dpad.first, controlsY + dpad.second, smallButton, Cluster.Dpad)
         addCircle("RIGHT", GbaKeyMask.Right, dpadX + dpadGap + dpad.first, controlsY + dpad.second, smallButton, Cluster.Dpad)
 
-        addCircle("B", GbaKeyMask.B, faceX - faceGap + face.first, controlsY + button * 0.3f * spacing + face.second, button, Cluster.Face)
-        addCircle("A", GbaKeyMask.A, faceX + face.first, controlsY - button * 0.42f * spacing + face.second, button, Cluster.Face)
+        addCircle("B", GbaKeyMask.B, faceX - faceGap + face.first, controlsY + button * 0.32f * spacing + face.second, button, Cluster.Face)
+        addCircle("A", GbaKeyMask.A, faceX + button * 0.25f + face.first, controlsY - button * 0.30f * spacing + face.second, button, Cluster.Face)
         addRoundRect("SELECT", GbaKeyMask.Select, width / 2f - button * 1.75f + center.first, centerY + center.second, button * 1.55f, button * 0.58f, Cluster.Center)
         addRoundRect("START", GbaKeyMask.Start, width / 2f + button * 0.2f + center.first, centerY + center.second, button * 1.55f, button * 0.58f, Cluster.Center)
         addRoundRect("L", GbaKeyMask.L, padding + leftShoulder.first, shoulderTop + leftShoulder.second, shoulderWidth, shoulderHeight, Cluster.LeftShoulder)
