@@ -68,7 +68,7 @@ class EmulatorPreferences(context: Context) {
 
     var fastForwardMultiplier: Int
         get() = FastForwardModes.coerceMultiplier(
-            preferences.getInt(KEY_FAST_FORWARD_MULTIPLIER, FastForwardModes.MultiplierMax),
+            preferences.getInt(KEY_FAST_FORWARD_MULTIPLIER, FastForwardModes.MultiplierDefault),
         )
         set(value) {
             preferences.edit()

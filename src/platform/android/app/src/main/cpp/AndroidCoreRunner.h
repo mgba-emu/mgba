@@ -132,6 +132,7 @@ private:
 	void renderFrameLocked();
 	bool flushBatterySave();
 	void dropAudioLocked();
+	void dropCoreAudioLocked();
 	void shutdownGdbStubLocked();
 	void resetRewindContextLocked();
 	std::chrono::microseconds frameDurationLocked() const;

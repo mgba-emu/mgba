@@ -56,8 +56,8 @@ public final class NativeSmokeInstrumentedTest {
 
             NativeBridge.nativeStart(handle);
             Thread.sleep(RUN_LOOP_SMOKE_MS);
-            NativeBridge.nativePause(handle);
             NativeStats pacingStats = NativeBridge.INSTANCE.stats(handle);
+            NativeBridge.nativePause(handle);
             assertTrue("Run loop should advance frames", pacingStats.getFrames() > 30L);
             assertTrue("Frame target should be reported", pacingStats.getFrameTargetUs() > 0L);
             assertTrue("Frame actual should be reported", pacingStats.getFrameActualUs() > 0L);

@@ -1838,6 +1838,10 @@ bool AndroidCoreRunner::flushBatterySave() {
 
 void AndroidCoreRunner::dropAudioLocked() {
 	m_audioOutput.clear();
+	dropCoreAudioLocked();
+}
+
+void AndroidCoreRunner::dropCoreAudioLocked() {
 	if (!m_core || !m_core->getAudioBuffer) {
 		return;
 	}
@@ -1946,7 +1950,7 @@ void AndroidCoreRunner::runLoop() {
 					continue;
 				}
 				if (rewinding || m_fastForward.load()) {
-					dropAudioLocked();
+					dropCoreAudioLocked();
 				} else {
 					m_audioOutput.enqueueFromCore(m_core);
 				}

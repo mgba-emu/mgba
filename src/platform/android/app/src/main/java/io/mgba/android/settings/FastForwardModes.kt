@@ -4,6 +4,7 @@ object FastForwardModes {
     const val ModeToggle = 0
     const val ModeHold = 1
     const val MultiplierMax = 0
+    const val MultiplierDefault = 2
 
     val modeLabels = arrayOf("Toggle", "Hold")
     val multiplierValues = intArrayOf(MultiplierMax, 2, 3, 4)
