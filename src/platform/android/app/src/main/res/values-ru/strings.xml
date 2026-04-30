@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">mGBA</string>
+    <string name="app_subtitle">Эмулятор Game Boy Advance и Game Boy</string>
+    <string name="native_version_label">Нативное ядро</string>
+    <string name="open_emulator_placeholder">Открыть ROM</string>
+    <string name="language_setting_format">Язык: %1$s</string>
+</resources>

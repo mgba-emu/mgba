@@ -1,5 +1,6 @@
 package io.mgba.android.bridge
 
+import io.mgba.android.settings.FastForwardModes
 import org.json.JSONObject
 
 data class NativeLoadResult(
@@ -94,9 +95,7 @@ data class NativeStats(
                 running = json.optBoolean("running", false),
                 paused = json.optBoolean("paused", true),
                 fastForward = json.optBoolean("fastForward", false),
-                fastForwardMultiplier = json.optInt("fastForwardMultiplier", 0).let {
-                    if (it in 2..4) it else 0
-                },
+                fastForwardMultiplier = FastForwardModes.coerceMultiplier(json.optInt("fastForwardMultiplier", 0)),
                 rewinding = json.optBoolean("rewinding", false),
                 rewindEnabled = json.optBoolean("rewindEnabled", true),
                 rewindBufferCapacity = json.optInt("rewindBufferCapacity", 600),

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.app.AlertDialog
 import android.app.ApplicationExitInfo
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.database.Cursor
@@ -47,6 +48,7 @@ import io.mgba.android.settings.AudioLowPassModes
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.FastForwardModes
 import io.mgba.android.settings.InputMappingStore
+import io.mgba.android.settings.LanguageModes
 import io.mgba.android.settings.LogLevelModes
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.settings.RewindSettings
@@ -93,6 +95,7 @@ class MainActivity : Activity() {
     private lateinit var audioLowPassButton: Button
     private lateinit var fastForwardModeButton: Button
     private lateinit var fastForwardSpeedButton: Button
+    private lateinit var languageButton: Button
     private lateinit var frameSkipButton: Button
     private lateinit var rewindButton: Button
     private lateinit var rewindBufferButton: Button
@@ -120,6 +123,10 @@ class MainActivity : Activity() {
     private var scanThread: Thread? = null
     @Volatile
     private var scanGeneration = 0
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LanguageModes.wrapContext(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -289,6 +296,15 @@ class MainActivity : Activity() {
             }
         }
         updateFastForwardButtons()
+
+        languageButton = Button(this).apply {
+            setOnClickListener {
+                preferences.languageCode = LanguageModes.nextCode(preferences.languageCode)
+                LanguageModes.applyProcessLocale(this@MainActivity)
+                recreate()
+            }
+        }
+        updateLanguageButton()
 
         frameSkipButton = Button(this).apply {
             setOnClickListener {
@@ -502,6 +518,7 @@ class MainActivity : Activity() {
         settingsContainer.addView(audioLowPassButton)
         settingsContainer.addView(fastForwardModeButton)
         settingsContainer.addView(fastForwardSpeedButton)
+        settingsContainer.addView(languageButton)
         settingsContainer.addView(frameSkipButton)
         settingsContainer.addView(rewindButton)
         settingsContainer.addView(rewindBufferButton)
@@ -1389,6 +1406,13 @@ class MainActivity : Activity() {
         fastForwardSpeedButton.text = "Fast Speed: ${FastForwardModes.labelForMultiplier(preferences.fastForwardMultiplier)}"
     }
 
+    private fun updateLanguageButton() {
+        languageButton.text = getString(
+            R.string.language_setting_format,
+            LanguageModes.labelForCode(preferences.languageCode),
+        )
+    }
+
     private fun updateFrameSkipButton() {
         frameSkipButton.text = "Frame Skip: ${FRAME_SKIP_LABELS[preferences.frameSkip]}"
     }
@@ -1426,6 +1450,7 @@ class MainActivity : Activity() {
         updateAudioBufferButton()
         updateAudioLowPassButton()
         updateFastForwardButtons()
+        updateLanguageButton()
         updateFrameSkipButton()
         updateRewindButtons()
         updateOpposingDirectionsButton()

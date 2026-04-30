@@ -69,6 +69,7 @@ public final class NativeSmokeInstrumentedTest {
 
             long readFramesBeforeFastForward = pacingStats.getAudioReadFrames();
             long framesBeforeFastForward = pacingStats.getFrames();
+            NativeBridge.nativeSetFastForwardMultiplier(handle, 200);
             NativeBridge.nativeSetFastForward(handle, true);
             NativeBridge.nativeStart(handle);
             Thread.sleep(FAST_FORWARD_SMOKE_MS);
@@ -76,10 +77,19 @@ public final class NativeSmokeInstrumentedTest {
             NativeBridge.nativeSetFastForward(handle, false);
             NativeStats fastForwardStats = NativeBridge.INSTANCE.stats(handle);
             assertTrue("Fast-forward should advance frames", fastForwardStats.getFrames() > framesBeforeFastForward);
+            assertTrue(
+                "Fast-forward should keep audio moving with accelerated video",
+                fastForwardStats.getAudioReadFrames() > readFramesBeforeFastForward
+            );
             assertEquals(
-                "Fast-forward should discard audio instead of queueing stale samples",
-                readFramesBeforeFastForward,
+                "Fast-forward speed should be reported as percent",
+                200,
+                fastForwardStats.getFastForwardMultiplier()
+            );
+            assertTrue(
+                "Fast-forward audio queue should remain bounded",
                 fastForwardStats.getAudioReadFrames()
+                    <= fastForwardStats.getAudioEnqueuedOutputFrames() * 3
             );
 
             for (int frame = 0; frame < 300; ++frame) {

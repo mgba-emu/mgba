@@ -257,7 +257,7 @@ void AndroidAudioOutput::resetUnderrunCount() {
 	m_underrunCount = 0;
 }
 
-void AndroidAudioOutput::enqueueFromCore(mCore* core) {
+void AndroidAudioOutput::enqueueFromCore(mCore* core, int speedPercent) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	if (!m_started || m_paused || !m_enabled || !core) {
 		return;
@@ -276,7 +276,7 @@ void AndroidAudioOutput::enqueueFromCore(mCore* core) {
 		int64_t queuedFrames = std::max<int64_t>(0, framesWritten - framesRead);
 		while (queuedFrames + static_cast<int64_t>(kFramesPerBuffer) <= std::max<int32_t>(streamBufferSize, requestedBufferSize)) {
 			auto& buffer = m_buffers[m_nextBuffer];
-			const size_t readFrames = fillBufferLocked(core, buffer.data(), kFramesPerBuffer);
+			const size_t readFrames = fillBufferLocked(core, buffer.data(), kFramesPerBuffer, speedPercent);
 			const aaudio_result_t written = m_aaudioApi->streamWrite(
 			    m_aaudioStream,
 			    buffer.data(),
@@ -309,7 +309,7 @@ void AndroidAudioOutput::enqueueFromCore(mCore* core) {
 
 	while (state.count < kQueueDepth) {
 		auto& buffer = m_buffers[m_nextBuffer];
-		const size_t readFrames = fillBufferLocked(core, buffer.data(), kFramesPerBuffer);
+		const size_t readFrames = fillBufferLocked(core, buffer.data(), kFramesPerBuffer, speedPercent);
 		const SLresult result = (*m_bufferQueue)->Enqueue(
 			m_bufferQueue,
 			buffer.data(),
@@ -535,7 +535,7 @@ const char* AndroidAudioOutput::backendNameLocked() const {
 	return m_backend == AudioBackend::AAudio ? "AAudio" : "OpenSL ES";
 }
 
-size_t AndroidAudioOutput::fillBufferLocked(mCore* core, int16_t* output, size_t frames) {
+size_t AndroidAudioOutput::fillBufferLocked(mCore* core, int16_t* output, size_t frames, int speedPercent) {
 	std::fill(output, output + frames * kChannels, 0);
 	if (!m_resamplerReady || !core || !core->getAudioBuffer || !core->audioSampleRate) {
 		return 0;
@@ -547,7 +547,10 @@ size_t AndroidAudioOutput::fillBufferLocked(mCore* core, int16_t* output, size_t
 		return 0;
 	}
 
-	mAudioResamplerSetSource(&m_resampler, source, sampleRate, true);
+	const int clampedSpeed = std::clamp(speedPercent, 100, 800);
+	const unsigned speedAdjustedSampleRate = static_cast<unsigned>(
+	    std::max<uint64_t>(1, (static_cast<uint64_t>(sampleRate) * static_cast<uint64_t>(clampedSpeed)) / 100));
+	mAudioResamplerSetSource(&m_resampler, source, speedAdjustedSampleRate, true);
 	mAudioResamplerProcess(&m_resampler);
 	const size_t readFrames = mAudioBufferRead(&m_resampledBuffer, output, frames);
 	if (readFrames < frames) {

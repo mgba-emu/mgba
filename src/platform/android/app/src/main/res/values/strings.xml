@@ -4,4 +4,5 @@
     <string name="app_subtitle">Game Boy Advance and Game Boy emulator</string>
     <string name="native_version_label">Native core</string>
     <string name="open_emulator_placeholder">Open ROM</string>
+    <string name="language_setting_format">Language: %1$s</string>
 </resources>

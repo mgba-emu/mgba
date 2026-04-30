@@ -163,7 +163,7 @@ private:
 	std::atomic<bool> m_running{false};
 	std::atomic<bool> m_paused{true};
 	std::atomic<bool> m_fastForward{false};
-	std::atomic<int> m_fastForwardMultiplier{0};
+	std::atomic<int> m_fastForwardMultiplier{200};
 	std::atomic<bool> m_rewindEnabled{true};
 	std::atomic<bool> m_rewinding{false};
 	std::atomic<int> m_rewindBufferCapacity{600};

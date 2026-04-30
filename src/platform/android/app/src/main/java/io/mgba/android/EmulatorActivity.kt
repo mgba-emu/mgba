@@ -3,6 +3,7 @@ package io.mgba.android
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.Intent
@@ -60,6 +61,7 @@ import io.mgba.android.settings.AudioLowPassModes
 import io.mgba.android.settings.EmulatorPreferences
 import io.mgba.android.settings.FastForwardModes
 import io.mgba.android.settings.InputMappingStore
+import io.mgba.android.settings.LanguageModes
 import io.mgba.android.settings.PerGameOverrideStore
 import io.mgba.android.settings.RewindSettings
 import io.mgba.android.storage.AppLogStore
@@ -157,7 +159,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private var userPaused = false
     private var fastForward = false
     private var fastForwardMode = FastForwardModes.ModeToggle
-    private var fastForwardMultiplier = FastForwardModes.MultiplierMax
+    private var fastForwardMultiplier = FastForwardModes.MultiplierDefault
     private var rewinding = false
     private var rewindEnabled = true
     private var rewindBufferCapacity = 600
@@ -237,6 +239,10 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
         override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
             handleAudioRouteChange("removed", removedDevices)
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LanguageModes.wrapContext(newBase))
     }
     private val statsRunnable = object : Runnable {
         override fun run() {
@@ -1666,7 +1672,7 @@ class EmulatorActivity : Activity(), SurfaceHolder.Callback, SensorEventListener
     private fun updateRunButtons() {
         pauseButton?.text = if (userPaused) "Resume" else "Pause"
         fastButton?.text = when {
-            fastForward -> "1x"
+            fastForward -> FastForwardModes.labelForMultiplier(fastForwardMultiplier)
             fastForwardMode == FastForwardModes.ModeHold -> "Hold"
             else -> "Fast"
         }

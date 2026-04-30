@@ -45,7 +45,7 @@ public:
 	uint64_t underrunCount() const;
 	AndroidAudioStats stats() const;
 	void resetUnderrunCount();
-	void enqueueFromCore(mCore* core);
+	void enqueueFromCore(mCore* core, int speedPercent);
 
 private:
 	struct AAudioApi;
@@ -65,7 +65,7 @@ private:
 	void setOutputPlayingLocked(bool playing);
 	void flushOutputLocked();
 	const char* backendNameLocked() const;
-	size_t fillBufferLocked(mCore* core, int16_t* output, size_t frames);
+	size_t fillBufferLocked(mCore* core, int16_t* output, size_t frames, int speedPercent);
 
 	mutable std::mutex m_mutex;
 	AudioBackend m_backend = AudioBackend::OpenSl;

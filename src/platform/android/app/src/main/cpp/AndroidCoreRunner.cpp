@@ -993,8 +993,33 @@ void AndroidCoreRunner::setFastForward(bool enabled) {
 }
 
 void AndroidCoreRunner::setFastForwardMultiplier(int multiplier) {
-	if (multiplier != 2 && multiplier != 3 && multiplier != 4) {
-		multiplier = 0;
+	switch (multiplier) {
+	case 0:
+		multiplier = 200;
+		break;
+	case 1:
+		multiplier = 100;
+		break;
+	case 2:
+		multiplier = 200;
+		break;
+	case 3:
+		multiplier = 300;
+		break;
+	case 4:
+		multiplier = 400;
+		break;
+	case 100:
+	case 125:
+	case 150:
+	case 200:
+	case 300:
+	case 400:
+	case 800:
+		break;
+	default:
+		multiplier = 200;
+		break;
 	}
 	m_fastForwardMultiplier = multiplier;
 }
@@ -1909,7 +1934,6 @@ void AndroidCoreRunner::runLoop() {
 			continue;
 		}
 		bool frameRan = false;
-		bool maxFastForward = false;
 		auto pacingTarget = std::chrono::microseconds(0);
 		const auto frameStart = clock::now();
 		{
@@ -1949,21 +1973,20 @@ void AndroidCoreRunner::runLoop() {
 					frameRan = false;
 					continue;
 				}
-				if (rewinding || m_fastForward.load()) {
+				const bool fastForward = m_fastForward.load();
+				const int speedPercent = fastForward ? m_fastForwardMultiplier.load() : 100;
+				if (rewinding) {
 					dropCoreAudioLocked();
 				} else {
-					m_audioOutput.enqueueFromCore(m_core);
+					m_audioOutput.enqueueFromCore(m_core, speedPercent);
 				}
 				const uint64_t frame = ++m_frameCounter;
 				const int skip = m_frameSkip.load();
 				if (skip <= 0 || frame % static_cast<uint64_t>(skip + 1) == 0) {
 					renderFrameLocked();
 				}
-				const int fastMultiplier = m_fastForward.load() ? m_fastForwardMultiplier.load() : 1;
 				const auto frameDuration = frameDurationLocked();
-				maxFastForward = m_fastForward.load() && fastMultiplier == 0;
-				pacingTarget = maxFastForward ? std::chrono::microseconds(0) :
-				    (fastMultiplier > 1 ? frameDuration / fastMultiplier : frameDuration);
+				pacingTarget = (frameDuration * 100) / std::clamp(speedPercent, 100, 800);
 				m_frameTargetUs = pacingTarget.count();
 				if (previousFrameStart.time_since_epoch().count() > 0 && pacingTarget.count() > 0) {
 					const auto actualUs = std::chrono::duration_cast<std::chrono::microseconds>(frameStart - previousFrameStart).count();
@@ -1984,17 +2007,12 @@ void AndroidCoreRunner::runLoop() {
 			previousFrameStart = {};
 			continue;
 		}
-		if (maxFastForward) {
-			nextFrame = clock::now();
-			m_frameLateUs = 0;
-		} else {
-			std::this_thread::sleep_until(nextFrame);
-			const auto wake = clock::now();
-			const auto lateUs = std::chrono::duration_cast<std::chrono::microseconds>(wake - nextFrame).count();
-			m_frameLateUs = std::max<int64_t>(0, lateUs);
-			if (wake - nextFrame > std::chrono::milliseconds(100)) {
-				nextFrame = wake;
-			}
+		std::this_thread::sleep_until(nextFrame);
+		const auto wake = clock::now();
+		const auto lateUs = std::chrono::duration_cast<std::chrono::microseconds>(wake - nextFrame).count();
+		m_frameLateUs = std::max<int64_t>(0, lateUs);
+		if (wake - nextFrame > std::chrono::milliseconds(100)) {
+			nextFrame = wake;
 		}
 	}
 	std::lock_guard<std::mutex> lock(m_mutex);

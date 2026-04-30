@@ -106,7 +106,7 @@ public class NativeTypesTest {
         assertEquals(53L, stats.getFrameJitterUs());
         assertEquals(20L, stats.getFrameLateUs());
         assertEquals(120L, stats.getFramePacingSamples());
-        assertEquals(0, stats.getFastForwardMultiplier());
+        assertEquals(200, stats.getFastForwardMultiplier());
         assertEquals(100, stats.getVolumePercent());
         assertEquals(512, stats.getAudioBufferSamples());
         assertTrue(stats.getAudioStarted());

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">mGBA</string>
+    <string name="app_subtitle">Game Boy Advance 和 Game Boy 模拟器</string>
+    <string name="native_version_label">原生核心</string>
+    <string name="open_emulator_placeholder">打开 ROM</string>
+    <string name="language_setting_format">语言：%1$s</string>
+</resources>

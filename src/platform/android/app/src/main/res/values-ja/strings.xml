@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">mGBA</string>
+    <string name="app_subtitle">Game Boy Advance と Game Boy エミュレーター</string>
+    <string name="native_version_label">ネイティブコア</string>
+    <string name="open_emulator_placeholder">ROM を開く</string>
+    <string name="language_setting_format">言語: %1$s</string>
+</resources>

@@ -76,6 +76,14 @@ class EmulatorPreferences(context: Context) {
                 .apply()
         }
 
+    var languageCode: String
+        get() = LanguageModes.coerceCode(
+            preferences.getString(LanguageModes.PreferenceKey, LanguageModes.CodeEnglish),
+        )
+        set(value) {
+            preferences.edit().putString(LanguageModes.PreferenceKey, LanguageModes.coerceCode(value)).apply()
+        }
+
     var frameSkip: Int
         get() = preferences.getInt(KEY_FRAME_SKIP, 0).coerceIn(0, 3)
         set(value) {
@@ -192,6 +200,7 @@ class EmulatorPreferences(context: Context) {
             .put(KEY_AUDIO_LOW_PASS_MODE, audioLowPassMode)
             .put(KEY_FAST_FORWARD_MODE, fastForwardMode)
             .put(KEY_FAST_FORWARD_MULTIPLIER, fastForwardMultiplier)
+            .put(LanguageModes.PreferenceKey, languageCode)
             .put(KEY_FRAME_SKIP, frameSkip)
             .put(KEY_REWIND_ENABLED, rewindEnabled)
             .put(KEY_REWIND_BUFFER_CAPACITY, rewindBufferCapacity)
@@ -229,6 +238,10 @@ class EmulatorPreferences(context: Context) {
             .putInt(
                 KEY_FAST_FORWARD_MULTIPLIER,
                 FastForwardModes.coerceMultiplier(json.optInt(KEY_FAST_FORWARD_MULTIPLIER, fastForwardMultiplier)),
+            )
+            .putString(
+                LanguageModes.PreferenceKey,
+                LanguageModes.coerceCode(json.optString(LanguageModes.PreferenceKey, languageCode)),
             )
             .putInt(KEY_FRAME_SKIP, json.optInt(KEY_FRAME_SKIP, frameSkip).coerceIn(0, 3))
             .putBoolean(KEY_REWIND_ENABLED, json.optBoolean(KEY_REWIND_ENABLED, rewindEnabled))
