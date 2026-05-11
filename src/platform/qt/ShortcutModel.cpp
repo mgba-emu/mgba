@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ShortcutModel.h"
+#include "moc_ShortcutModel.cpp"
 
 #include "ShortcutController.h"
 #include "utils.h"

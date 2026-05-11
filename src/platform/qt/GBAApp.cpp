@@ -36,6 +36,8 @@
 #include "input/SDLInputDriver.h"
 #endif
 
+#include "moc_GBAApp.cpp"
+
 using namespace QGBA;
 
 static GBAApp* g_app = nullptr;

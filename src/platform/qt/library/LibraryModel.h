@@ -14,7 +14,7 @@
 #include <memory>
 #include <vector>
 
-#include "LibraryEntry.h"
+#include "library/LibraryEntry.h"
 
 class QTreeView;
 class LibraryModelTest;

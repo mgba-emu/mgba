@@ -26,6 +26,8 @@
 #include <mgba-util/math.h>
 #include <mgba-util/string.h>
 
+#include "scripting/moc_ScriptingController.cpp"
+
 using namespace QGBA;
 
 ScriptingController::ScriptingController(ConfigController* config, QObject* parent)

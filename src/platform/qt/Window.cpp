@@ -89,6 +89,8 @@
 
 #include <mgba-util/convolve.h>
 
+#include "moc_Window.cpp"
+
 using namespace QGBA;
 
 Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWidget* parent)

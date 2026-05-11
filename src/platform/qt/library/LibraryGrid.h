@@ -7,7 +7,7 @@
 
 #include <QListWidget>
 
-#include "LibraryController.h"
+#include "library/LibraryController.h"
 
 namespace QGBA {
 

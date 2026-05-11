@@ -23,6 +23,8 @@
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
+#include "moc_CoreManager.cpp"
+
 using namespace QGBA;
 
 void CoreManager::setConfig(const mCoreConfig* config) {
