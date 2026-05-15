@@ -6,27 +6,27 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="427"/>
         <source>Name</source>
-        <translation type="unfinished">Nome</translation>
+        <translation>Nome</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished">Local</translation>
+        <translation>Local</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
         <source>Platform</source>
-        <translation type="unfinished">Plataforma</translation>
+        <translation>Plataforma</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished">Tamanho</translation>
+        <translation>Tamanho</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
         <source>CRC32</source>
-        <translation type="unfinished">CRC32</translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -244,7 +244,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="81"/>
         <source>Audio outputting to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Saída de áudio em %1</translation>
     </message>
 </context>
 <context>
@@ -273,12 +273,12 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished">Adicionar</translation>
+        <translation>Adicionar</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
         <source>Remove</source>
-        <translation type="unfinished">Remover</translation>
+        <translation>Remover</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="53"/>
@@ -522,7 +522,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="77"/>
         <source>The ROM appears to be loaded from a temporary directory. This will likely lead to data loss (e.g. saves, screenshots, etc.) if you continue. Please put the ROM in a more suitable location and then re-open it. If you are loading the ROM from an archive, please extract the archive first.</source>
-        <translation type="unfinished"></translation>
+        <translation>A ROM aparenta ser carregada de um diretório temporário. Isto provavelmente levará a perda de dados (ex: gravações, screenshots, etc.) se continuar. Por favor ponha a ROM num local mais adequado e depois abra-a de novo. Se carrega a ROM de um arquivo, por favor extraia o arquivo primeiro.</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="95"/>
@@ -1112,7 +1112,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
         <source>%1 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + Rumble</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
@@ -3011,12 +3011,12 @@ Tamanho da descarga: %3</translation>
         <location filename="../InputController.cpp" line="732"/>
         <location filename="../InputController.cpp" line="753"/>
         <source>Could not find a valid camera format!</source>
-        <translation type="unfinished"></translation>
+        <translation>Não pôde achar um formato de câmara válido!</translation>
     </message>
     <message>
         <location filename="../InputController.cpp" line="734"/>
         <source>Camera supported format: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Formato suportado da câmara: %1</translation>
     </message>
 </context>
 <context>
@@ -3630,7 +3630,7 @@ Tamanho da descarga: %3</translation>
         <location filename="../MemoryDump.ui" line="108"/>
         <source>Dump across banks within region</source>
         <comment>Generate dump with bytes all within the same region of memory, even if it crosses the bank boundary</comment>
-        <translation type="unfinished">Dumpar através dos bancos</translation>
+        <translation>Dumpar através dos bancos dentro da região</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="24"/>
@@ -3972,7 +3972,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="313"/>
         <source>Couldn&apos;t find available save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Não pôde achar a ID do gravação disponível</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="367"/>
@@ -4811,12 +4811,12 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="279"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished">Scripts do lua (*.lua)</translation>
+        <translation>Scripts do lua (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="281"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished">Todos os ficheiros (*.*)</translation>
+        <translation>Todos os ficheiros (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4852,7 +4852,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="108"/>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>Visualizar</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="118"/>
@@ -4882,7 +4882,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="143"/>
         <source>Clear console</source>
-        <translation type="unfinished"></translation>
+        <translation>Limpar o console</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="66"/>
@@ -5529,7 +5529,7 @@ Se estiver definido como OpenGL e ainda ver isto, a sua placa gráfica ou driver
     <message>
         <location filename="../SettingsView.ui" line="575"/>
         <source>Edit autorun scripts</source>
-        <translation type="unfinished">Editar scripts de execução automática</translation>
+        <translation>Editar scripts de execução automática</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="589"/>
@@ -6515,7 +6515,7 @@ Se estiver definido como OpenGL e ainda ver isto, a sua placa gráfica ou driver
     <message>
         <location filename="../Window.cpp" line="1155"/>
         <source>Failed to start audio processor</source>
-        <translation type="unfinished"></translation>
+        <translation>Falhou em iniciar o processador de áudio</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1205"/>
@@ -6800,7 +6800,7 @@ Se estiver definido como OpenGL e ainda ver isto, a sua placa gráfica ou driver
     <message>
         <location filename="../Window.cpp" line="1740"/>
         <source>Hide &amp;menu</source>
-        <translation type="unfinished"></translation>
+        <translation>Esconder &amp;menu</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1745"/>
