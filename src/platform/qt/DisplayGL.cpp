@@ -199,7 +199,6 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 #ifdef USE_SHARE_WIDGET
 	bool useShareWidget = true;
 #else
-	// TODO: Does using this on Wayland help?
 	bool useShareWidget = false;
 #endif
 
@@ -508,6 +507,9 @@ bool DisplayGL::shouldDisableUpdates() {
 		return true;
 	}
 	if (QGuiApplication::platformName() == "xcb") {
+		return true;
+	}
+	if (QGuiApplication::platformName() == "wayland") {
 		return true;
 	}
 	return false;
