@@ -480,6 +480,18 @@ const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(const struct mCore* core,
 	return NULL;
 }
 
+const struct mCoreRegisterInfo* mCoreGetRegisterInfo(const struct mCore* core, const char* name) {
+	const struct mCoreRegisterInfo* registers;
+	size_t nRegisters = core->listRegisters(core, &registers);
+	size_t i;
+	for (i = 0; i < nRegisters; ++i) {
+		if (strcmp(name, registers[i].name) == 0) {
+			return &registers[i];
+		}
+	}
+	return NULL;
+}
+
 double mCoreCalculateFramerateRatio(const struct mCore* core, double desiredFrameRate) {
 	uint32_t clockRate = core->frequency(core);
 	uint32_t frameCycles = core->frameCycles(core);
