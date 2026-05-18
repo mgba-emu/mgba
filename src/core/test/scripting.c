@@ -328,6 +328,57 @@ M_TEST_DEFINE(screenshot) {
 	TEARDOWN_CORE;
 }
 
+#ifdef M_CORE_GBA
+M_TEST_DEFINE(readWriteRegisterGBA) {
+	SETUP_LUA;
+	struct mCore* core = mCoreCreate(mPLATFORM_GBA);
+	assert_non_null(core);
+	assert_true(core->init(core));
+	mCoreInitConfig(core, NULL);
+	core->busWrite32(core, 0x020000C0, 0xEAFFFFFE);
+	core->reset(core);
+	mScriptContextAttachCore(&context, core);
+
+	TEST_PROGRAM("emu:writeRegister('r0', 0x12345678)");
+	TEST_PROGRAM("emu:writeRegister('r16', 0x12345678)");
+	TEST_PROGRAM("assert(emu:readRegister('r0') == 0x12345678)");
+	TEST_PROGRAM("assert(emu:readRegister('r16') == nil)");
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+}
+#endif
+
+#ifdef M_CORE_GB
+M_TEST_DEFINE(readWriteRegisterGB) {
+	SETUP_LUA;
+	struct mCore* core = mCoreCreate(mPLATFORM_GB);
+	assert_non_null(core);
+	assert_true(core->init(core));
+	mCoreInitConfig(core, NULL);
+	assert_true(core->loadROM(core, VFileFromConstMemory(_fakeGBROM, sizeof(_fakeGBROM))));
+	core->reset(core);
+	mScriptContextAttachCore(&context, core);
+
+	TEST_PROGRAM("emu:writeRegister('b', 0x1234)");
+	TEST_PROGRAM("assert(emu:readRegister('b') == 0x34)");
+	TEST_PROGRAM("emu:writeRegister('c', 0x5678)");
+	TEST_PROGRAM("assert(emu:readRegister('c') == 0x78)");
+	TEST_PROGRAM("assert(emu:readRegister('bc') == 0x3478)");
+
+	TEST_PROGRAM("emu:writeRegister('bc', 0x1234)");
+	TEST_PROGRAM("assert(emu:readRegister('b') == 0x12)");
+	TEST_PROGRAM("assert(emu:readRegister('c') == 0x34)");
+
+	TEST_PROGRAM("emu:writeRegister('bc', 0x89ab)");
+	TEST_PROGRAM("assert(emu:readRegister('b') == 0x89)");
+	TEST_PROGRAM("assert(emu:readRegister('c') == 0xab)");
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+}
+#endif
+
 #ifdef ENABLE_DEBUGGERS
 void _setupBp(struct mCore* core) {
 	switch (core->platform(core)) {
@@ -860,6 +911,12 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(memoryWrite),
 	cmocka_unit_test(logging),
 	cmocka_unit_test(screenshot),
+#ifdef M_CORE_GBA
+	cmocka_unit_test(readWriteRegisterGBA),
+#endif
+#ifdef M_CORE_GB
+	cmocka_unit_test(readWriteRegisterGB),
+#endif
 #ifdef ENABLE_DEBUGGERS
 #ifdef M_CORE_GBA
 	cmocka_unit_test(basicBreakpointGBA),

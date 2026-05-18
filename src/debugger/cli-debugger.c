@@ -486,7 +486,7 @@ static void _writeRegister(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
 		return;
 	}
-	if (!debugger->d.p->core->writeRegister(debugger->d.p->core, dv->charValue, &dv->next->intValue)) {
+	if (!debugger->d.p->core->writeRegister(debugger->d.p->core, dv->charValue, dv->next->intValue)) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
 	}
 }

@@ -979,130 +979,127 @@ static size_t _GBCoreListRegisters(const struct mCore* core, const struct mCoreR
 	return sizeof(_GBRegisters) / sizeof(*_GBRegisters);
 }
 
-static bool _GBCoreReadRegister(const struct mCore* core, const char* name, void* out) {
+static bool _GBCoreReadRegister(const struct mCore* core, const char* name, int32_t* out) {
 	struct SM83Core* cpu = core->cpu;
-	uint16_t* value16 = out;
-	uint8_t* value8 = out;
 
 	if (strcasecmp(name, "b") == 0) {
-		*value8 = cpu->b;
+		*out = cpu->b;
 		return true;
 	}
 	if (strcasecmp(name, "c") == 0) {
-		*value8 = cpu->c;
+		*out = cpu->c;
 		return true;
 	}
 	if (strcasecmp(name, "d") == 0) {
-		*value8 = cpu->d;
+		*out = cpu->d;
 		return true;
 	}
 	if (strcasecmp(name, "e") == 0) {
-		*value8 = cpu->e;
+		*out = cpu->e;
 		return true;
 	}
 	if (strcasecmp(name, "a") == 0) {
-		*value8 = cpu->a;
+		*out = cpu->a;
 		return true;
 	}
 	if (strcasecmp(name, "f") == 0) {
-		*value8 = cpu->f.packed;
+		*out = cpu->f.packed;
 		return true;
 	}
 	if (strcasecmp(name, "h") == 0) {
-		*value8 = cpu->h;
+		*out = cpu->h;
 		return true;
 	}
 	if (strcasecmp(name, "l") == 0) {
-		*value8 = cpu->l;
+		*out = cpu->l;
 		return true;
 	}
 	if (strcasecmp(name, "bc") == 0) {
-		*value16 = cpu->bc;
+		*out = cpu->bc;
 		return true;
 	}
 	if (strcasecmp(name, "de") == 0) {
-		*value16 = cpu->de;
+		*out = cpu->de;
 		return true;
 	}
 	if (strcasecmp(name, "hl") == 0) {
-		*value16 = cpu->hl;
+		*out = cpu->hl;
 		return true;
 	}
 	if (strcasecmp(name, "af") == 0) {
-		*value16 = cpu->af;
+		*out = cpu->af;
 		return true;
 	}
 	if (strcasecmp(name, "pc") == 0) {
-		*value16 = cpu->pc;
+		*out = cpu->pc;
 		return true;
 	}
 	if (strcasecmp(name, "sp") == 0) {
-		*value16 = cpu->sp;
+		*out = cpu->sp;
 		return true;
 	}
 	return false;
 }
 
-static bool _GBCoreWriteRegister(struct mCore* core, const char* name, const void* in) {
+static bool _GBCoreWriteRegister(struct mCore* core, const char* name, int32_t in) {
 	struct SM83Core* cpu = core->cpu;
-	uint32_t value = *(uint32_t*) in;
 
 	if (strcmp(name, "b") == 0) {
-		cpu->b = value;
+		cpu->b = in & 0xFF;
 		return true;
 	}
 	if (strcmp(name, "c") == 0) {
-		cpu->c = value;
+		cpu->c = in & 0xFF;
 		return true;
 	}
 	if (strcmp(name, "d") == 0) {
-		cpu->d = value;
+		cpu->d = in & 0xFF;
 		return true;
 	}
 	if (strcmp(name, "e") == 0) {
-		cpu->e = value;
+		cpu->e = in & 0xFF;
 		return true;
 	}
 	if (strcmp(name, "h") == 0) {
-		cpu->h = value;
+		cpu->h = in & 0xFF;
 		return true;
 	}
 	if (strcmp(name, "l") == 0) {
-		cpu->l = value;
+		cpu->l = in & 0xFF;
 		return true;
 	}
 	if (strcmp(name, "a") == 0) {
-		cpu->a = value;
+		cpu->a = in & 0xFF;
 		return true;
 	}
 	if (strcmp(name, "f") == 0) {
-		cpu->f.packed = value & 0xF0;
+		cpu->f.packed = in & 0xF0;
 		return true;
 	}
 	if (strcmp(name, "bc") == 0) {
-		cpu->bc = value;
+		cpu->bc = in & 0xFFFF;
 		return true;
 	}
 	if (strcmp(name, "de") == 0) {
-		cpu->de = value;
+		cpu->de = in & 0xFFFF;
 		return true;
 	}
 	if (strcmp(name, "hl") == 0) {
-		cpu->hl = value;
+		cpu->hl = in & 0xFFFF;
 		return true;
 	}
 	if (strcmp(name, "af") == 0) {
-		cpu->af = value;
+		cpu->af = in & 0xFFFF;
 		cpu->f.packed &= 0xF0;
 		return true;
 	}
 	if (strcmp(name, "pc") == 0) {
-		cpu->pc = value;
+		cpu->pc = in & 0xFFFF;
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
 		return true;
 	}
 	if (strcmp(name, "sp") == 0) {
-		cpu->sp = value;
+		cpu->sp = in & 0xFFFF;
 		return true;
 	}
 	return false;

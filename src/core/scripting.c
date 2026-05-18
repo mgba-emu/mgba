@@ -408,7 +408,7 @@ static struct mScriptValue* _mScriptCoreReadRegister(const struct mCore* core, c
 }
 
 static void _mScriptCoreWriteRegister(struct mCore* core, const char* regName, int32_t in) {
-	core->writeRegister(core, regName, &in);
+	core->writeRegister(core, regName, in);
 }
 
 static struct mScriptValue* _mScriptCoreSaveState(struct mCore* core, int32_t flags) {
