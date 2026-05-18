@@ -398,7 +398,7 @@ static struct mScriptValue* _mScriptCoreReadRange(struct mCore* core, uint32_t a
 }
 
 static struct mScriptValue* _mScriptCoreReadRegister(const struct mCore* core, const char* regName) {
-	int32_t out;
+	int32_t out = 0;
 	if (!core->readRegister(core, regName, &out)) {
 		return &mScriptValueNull;
 	}
