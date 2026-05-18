@@ -461,7 +461,7 @@ void* mCoreGetMemoryBlockMasked(struct mCore* core, uint32_t start, size_t* size
 	return out;
 }
 
-const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(struct mCore* core, uint32_t address) {
+const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(const struct mCore* core, uint32_t address) {
 	const struct mCoreMemoryBlock* blocks;
 	size_t nBlocks = core->listMemoryBlocks(core, &blocks);
 	size_t i;
