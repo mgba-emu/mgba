@@ -487,6 +487,10 @@ void retro_init(void) {
 	lux.readLuminance = _readLux;
 	lux.sample = _updateLux;
 	_updateLux(&lux);
+	if (luxSensorUsed && !luxSensorEnabled) {
+		// No illuminance sensor was found during startup, but it might finish setup before the first frame
+		sensorsInitDone = false;
+	}
 
 	struct retro_log_callback log;
 	if (environCallback(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log)) {
