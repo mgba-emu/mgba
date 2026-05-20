@@ -62,7 +62,8 @@
 #endif
 
 #ifdef USE_FREETYPE
-#include <freetype/freetype.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 #endif
 
 #ifdef USE_JSON_C
