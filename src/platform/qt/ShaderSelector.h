@@ -37,6 +37,7 @@ public slots:
 private slots:
 	void selectShader();
 	void loadShader(const QString& path, bool saveToSettings = false);
+	void reloadShaders();
 	void clearShader(bool saveToSettings = false);
 	void buttonPressed(QAbstractButton*);
 
