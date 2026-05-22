@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include "CorePointer.h"
 #include "ui_AssetTile.h"
 
 #include <memory>
@@ -15,12 +16,11 @@ namespace QGBA {
 
 class CoreController;
 
-class AssetTile : public AssetInfo {
+class AssetTile : public AssetInfo, public CoreConsumer {
 Q_OBJECT
 
 public:
 	AssetTile(QWidget* parent = nullptr);
-	void setController(std::shared_ptr<CoreController>);
 	QImage activeTile() const { return m_activeTile; }
 
 public slots:
@@ -35,6 +35,8 @@ protected:
 	int customLocation(const QString& id = {}) override;
 
 private:
+	void onCoreAttached(std::shared_ptr<CoreController>);
+
 	Ui::AssetTile m_ui;
 
 	mCacheSet* m_cacheSet;
