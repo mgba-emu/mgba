@@ -2708,7 +2708,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1049"/>
         <source>Transfer active</source>
-        <translation>传输处于活跃状态</translation>
+        <translation>正在传输</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1067"/>
@@ -3630,7 +3630,7 @@ Download size: %3</source>
         <location filename="../MemoryDump.ui" line="108"/>
         <source>Dump across banks within region</source>
         <comment>Generate dump with bytes all within the same region of memory, even if it crosses the bank boundary</comment>
-        <translation type="unfinished">跨 bank 转储</translation>
+        <translation>区域内跨存储库转储</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="24"/>
@@ -4241,12 +4241,12 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="136"/>
         <source>Flash 512kb</source>
-        <translation>FLASH 64kB(/512kbit)</translation>
+        <translation>Flash 512kb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="141"/>
         <source>Flash 1Mb</source>
-        <translation>FLASH 128kB(/1Mbit)</translation>
+        <translation>Flash 1Mb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="146"/>
@@ -4599,7 +4599,7 @@ Download size: %3</source>
     <message>
         <location filename="../ReportView.ui" line="67"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;要提交错误报告，请首先生成报告文件并将其附加到要提交的错误报告当中。推荐您包含存档文件，因为这些存档通常会有助于调试问题。报告文件会收集一些信息，包括正在运行的 {projectName} 版本、配置、计算机以及当前已打开的游戏（若存在）。一旦收集完成，您可以查看下方收集的所有信息，并将其保存为 ZIP 文件。信息收集会自动尝试抹消所有的个人信息，例如您的用户名（如果它位于所收集的任意路径中），但以防万一，您之后可以对其进行编辑。生成并保存报告文件后，请单击下方按钮或转到 &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; 在 GitHub 上提交错误报告。请确保您附加所生成的报告！&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;要提交错误报告，请先生成一个报告文件并将其附加到您即将提交的错误报告中。建议您包含存档文件，因为它们通常有助于调试问题。此文件将收集一些关于您正在运行的 {projectName} 版本、您的配置、您的计算机以及您当前打开的游戏（如有）的信息。收集完成后，您可以查看下方收集的所有信息并将其保存到 zip 文件中。收集过程会自动尝试删除任何个人信息，例如您的用户名（如果包含在任何收集到的路径中），但以防万一，您之后可以进行编辑。生成并保存后，请点击下方按钮或访问 &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; 在 GitHub 上提交错误报告。请务必附加您生成的报告！&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="85"/>
@@ -4773,7 +4773,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="511"/>
         <source>MBC6 combined SRAM + flash</source>
-        <translation>MBC6组合SRAM+闪存</translation>
+        <translation>MBC6 组合 SRAM + 闪存</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="513"/>
@@ -4852,7 +4852,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="108"/>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>查看</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="118"/>
@@ -4882,7 +4882,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="143"/>
         <source>Clear console</source>
-        <translation type="unfinished"></translation>
+        <translation>清除控制台</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="66"/>
