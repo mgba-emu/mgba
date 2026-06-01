@@ -166,7 +166,9 @@ CoreController* CoreManager::loadGame(VFile* vf, const QString& path, const QStr
 	if (m_multiplayer) {
 		cc->setMultiplayerController(m_multiplayer);
 	}
-	cc->setPath(path, info.dir().canonicalPath());
+
+	info = QFileInfo(base);
+	cc->setPath(path, info.canonicalFilePath());
 	emit coreLoaded(cc);
 	return cc;
 }
