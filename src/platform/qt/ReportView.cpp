@@ -548,6 +548,39 @@ void ReportView::addGLInfo(QStringList& report) {
 	format.setProfile(QSurfaceFormat::CoreProfile);
 	report << QString("OpenGL supports core contexts: %1").arg(yesNo[DisplayGL::supportsFormat(format)]);
 
+	format = QSurfaceFormat();
+	format.setRenderableType(QSurfaceFormat::OpenGL);
+	format.setVersion(3, 3);
+	report << QString("Supports OpenGL 3.3: %1").arg(yesNo[DisplayGL::supportsFormat(format)]);
+
+	format = QSurfaceFormat();
+	format.setRenderableType(QSurfaceFormat::OpenGLES);
+	format.setVersion(2, 0);
+	report << QString("Supports OpenGL|ES 2.0: %1").arg(yesNo[DisplayGL::supportsFormat(format)]);
+
+	format = QSurfaceFormat();
+	format.setRenderableType(QSurfaceFormat::OpenGLES);
+	format.setVersion(3, 1);
+	report << QString("Supports OpenGL|ES 3.1: %1").arg(yesNo[DisplayGL::supportsFormat(format)]);
+
+	format = QSurfaceFormat();
+	if (DisplayGL::highestCompatible(format)) {
+		QString version;
+		switch (format.renderableType()) {
+		case QSurfaceFormat::OpenGL:
+			version = "OpenGL ";
+			break;
+		case QSurfaceFormat::OpenGLES:
+			version = "OpenGL|ES ";
+			break;
+		default:
+			break;
+		}
+		report << QString("Highest compatible OpenGL version: %1%2.%3").arg(version).arg(format.majorVersion()).arg(format.minorVersion());
+	} else {
+		report << QString("Could not detect highest compatible OpenGL version");
+	}
+
 	QOpenGLContext context;
 	if (context.create()) {
 		QOffscreenSurface surface;
