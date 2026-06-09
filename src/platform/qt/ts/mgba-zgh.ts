@@ -5459,7 +5459,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="709"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation>ⵜⵓⵜⵍⴰⵢⵜ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="726"/>
