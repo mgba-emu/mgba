@@ -768,17 +768,17 @@ Yeni sürüm: %2
     <message>
         <location filename="../ForwarderView.cpp" line="23"/>
         <source>Select output filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Çıktı dosya adını seçin</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="24"/>
         <source>Select base file</source>
-        <translation type="unfinished"></translation>
+        <translation>Temel dosyayı seçin</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="36"/>
         <source>Build finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Derleme tamamlandı</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="37"/>
