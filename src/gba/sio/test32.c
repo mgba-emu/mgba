@@ -181,11 +181,12 @@ static bool GBASIOTest32Start(struct GBASIODriver* driver) {
 	struct GBA* gba = driver->p->p;
 	uint32_t word;
 
-	// ONE-TRANSFER LAG: match the physical Pico bridge, which (as SPI master) can only answer a
-	// word on the NEXT transfer. So FinishNormal32 returns the reply we computed LAST transfer;
-	// the reply we compute below for the current word goes out on the next transfer instead.
-	test->returnValue = test->haveReply ? test->sendValue : TEST32_NO_DATA;
-	test->returnHave  = test->haveReply;
+	// IMMEDIATE REPLY: the GBA-side Normal32Transfer reads word N's answer on word N's own
+	// transfer (no lag compensation), so FinishNormal32 returns the reply we compute below for
+	// THIS word. (The one-transfer-lag emulation of the real Pico SPI master was removed: that
+	// hardware path is moving to UART, and the lag desynced this ROM's session framing -- the GBA
+	// bailed before draining the reply, leaving respRemaining>0 so the next OPEN/header/payload
+	// words got eaten as reply polls, which leaked session words into forwarded frames.)
 	test->haveReply = false; // default: this word's reply is open bus unless set below
 
 	// Only NORMAL_32 is ours; ignore other modes entirely.
@@ -299,7 +300,7 @@ static bool GBASIOTest32Start(struct GBASIODriver* driver) {
 
 static uint32_t GBASIOTest32FinishNormal32(struct GBASIODriver* driver) {
 	struct GBASIOTest32* test = (struct GBASIOTest32*) driver;
-	uint32_t value = test->returnHave ? test->returnValue : TEST32_NO_DATA;
+	uint32_t value = test->haveReply ? test->sendValue : TEST32_NO_DATA;
 	mLOG(GBA_SIO, INFO, "[test32] finishNormal32 -> %08X", value);
 	return value;
 }
