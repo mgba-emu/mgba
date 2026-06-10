@@ -988,9 +988,6 @@ void GBProcessEvents(struct SM83Core* cpu) {
 
 			nextEvent = cycles;
 			do {
-#ifdef ENABLE_DEBUGGERS
-				gb->timing.globalCycles += nextEvent;
-#endif
 				nextEvent = mTimingTick(&gb->timing, nextEvent);
 			} while (gb->cpuBlocked);
 			// This loop cannot early exit until the SM83 run loop properly handles mid-M-cycle-exits
