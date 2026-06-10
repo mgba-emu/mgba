@@ -32,6 +32,7 @@ set(SOURCE_FILES
 	sharkport.c
 	sio.c
 	sio/gbp.c
+	sio/test32.c
 	timer.c
 	video.c)
 

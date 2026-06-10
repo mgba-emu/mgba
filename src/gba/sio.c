@@ -8,8 +8,13 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/sio/gbp.h>
+#include <mgba/internal/gba/sio/test32.h>
 
 mLOG_DEFINE_CATEGORY(GBA_SIO, "GBA Serial I/O", "gba.sio");
+
+// Default NORMAL_32 test driver, attached at init. Overridden if another driver
+// (GB Player, link cable, etc.) attaches later. Only active in NORMAL_8/32 mode.
+static struct GBASIOTest32 sTest32;
 
 static const int GBASIOCyclesPerTransfer[4][MAX_GBAS] = {
 	{ 31976, 63427, 94884, 125829 },
@@ -79,6 +84,9 @@ void GBASIOInit(struct GBASIO* sio) {
 
 	sio->gbp.p = sio->p;
 	GBASIOPlayerInit(&sio->gbp);
+
+	GBASIOTest32Create(&sTest32);
+	GBASIOSetDriver(sio, &sTest32.d);
 
 	GBASIOReset(sio);
 }
