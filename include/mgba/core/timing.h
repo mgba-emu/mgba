@@ -17,6 +17,7 @@ struct mTimingEvent {
 	const char* name;
 	uint32_t when;
 	unsigned priority;
+	bool scheduled;
 
 	struct mTimingEvent* next;
 };
