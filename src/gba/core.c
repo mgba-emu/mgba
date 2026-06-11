@@ -388,6 +388,8 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	mCoreConfigCopyValue(&core->config, config, "gba.bios");
 	mCoreConfigCopyValue(&core->config, config, "gba.forceGbp");
 	mCoreConfigCopyValue(&core->config, config, "vbaBugCompat");
+	mCoreConfigCopyValue(&core->config, config, "everdrive.sd.enable");
+	mCoreConfigCopyValue(&core->config, config, "everdrive.sd.image");
 
 #ifndef DISABLE_THREADING
 	mCoreConfigCopyValue(&core->config, config, "threadedVideo");
@@ -783,6 +785,10 @@ static void _GBACoreReset(struct mCore* core) {
 	if (!vbaBugCompat) {
 		gba->vbaBugCompat = false;
 	}
+	bool everdriveSDEnable = false;
+	mCoreConfigGetBoolValue(&core->config, "everdrive.sd.enable", &everdriveSDEnable);
+	const char* everdriveSDPath = mCoreConfigGetValue(&core->config, "everdrive.sd.image");
+	GBAEverdriveSDConfigure(&gba->memory.everdrive, everdriveSDEnable, everdriveSDPath);
 	gbacore->memoryBlockType = -2;
 
 #ifdef ENABLE_VFS
