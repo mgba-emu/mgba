@@ -265,23 +265,6 @@ static void* _loadPNGState(struct mCore* core, struct VFile* vf, struct mStateEx
 		return false;
 	}
 
-	if (!PNGReadHeader(png, info)) {
-		PNGReadClose(png, info, end);
-		return false;
-	}
-	unsigned width = png_get_image_width(png, info);
-	unsigned height = png_get_image_height(png, info);
-	if (width > 0x4000 || height > 0x4000) {
-		// These images are ridiculously large...let's assume a DOS attempt and reject
-		PNGReadClose(png, info, end);
-		return false;
-	}
-	uint32_t* pixels = malloc(width * height * 4);
-	if (!pixels) {
-		PNGReadClose(png, info, end);
-		return false;
-	}
-
 	size_t stateSize = core->stateSize(core);
 	void* state = anonymousMemoryMap(stateSize);
 	struct mBundledState bundle = {
@@ -290,8 +273,28 @@ static void* _loadPNGState(struct mCore* core, struct VFile* vf, struct mStateEx
 		.extdata = extdata
 	};
 
-	bool success = true;
 	PNGInstallChunkHandler(png, &bundle, _loadPNGChunkHandler, "gbAs gbAx");
+	if (!PNGReadHeader(png, info)) {
+		PNGReadClose(png, info, end);
+		mappedMemoryFree(state, stateSize);
+		return false;
+	}
+	unsigned width = png_get_image_width(png, info);
+	unsigned height = png_get_image_height(png, info);
+	if (width > 0x4000 || height > 0x4000) {
+		// These images are ridiculously large...let's assume a DOS attempt and reject
+		PNGReadClose(png, info, end);
+		mappedMemoryFree(state, stateSize);
+		return false;
+	}
+	uint32_t* pixels = malloc(width * height * 4);
+	if (!pixels) {
+		PNGReadClose(png, info, end);
+		mappedMemoryFree(state, stateSize);
+		return false;
+	}
+
+	bool success = true;
 	success = success && PNGReadPixels(png, info, pixels, width, height, width);
 	success = success && PNGReadFooter(png, end);
 	PNGReadClose(png, info, end);
