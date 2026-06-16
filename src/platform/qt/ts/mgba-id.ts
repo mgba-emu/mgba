@@ -11,7 +11,7 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Lokasi</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
@@ -49,7 +49,7 @@
     <message>
         <location filename="../utils.cpp" line="142"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%1 Log Video (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -1800,34 +1800,34 @@ Ukuran unduhan: %3</translation>
         <location filename="../IOViewer.cpp" line="375"/>
         <location filename="../IOViewer.cpp" line="1157"/>
         <source>Volume</source>
-        <translation type="unfinished"></translation>
+        <translation>Volume</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="376"/>
         <location filename="../IOViewer.cpp" line="1158"/>
         <source>0%</source>
-        <translation type="unfinished"></translation>
+        <translation>0%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="377"/>
         <location filename="../IOViewer.cpp" line="434"/>
         <location filename="../IOViewer.cpp" line="1159"/>
         <source>100%</source>
-        <translation type="unfinished"></translation>
+        <translation>100%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="378"/>
         <location filename="../IOViewer.cpp" line="433"/>
         <location filename="../IOViewer.cpp" line="1160"/>
         <source>50%</source>
-        <translation type="unfinished"></translation>
+        <translation>50%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="379"/>
         <location filename="../IOViewer.cpp" line="432"/>
         <location filename="../IOViewer.cpp" line="1161"/>
         <source>25%</source>
-        <translation type="unfinished"></translation>
+        <translation>25%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="380"/>
@@ -1835,7 +1835,7 @@ Ukuran unduhan: %3</translation>
         <location filename="../IOViewer.cpp" line="382"/>
         <location filename="../IOViewer.cpp" line="383"/>
         <source>75%</source>
-        <translation type="unfinished"></translation>
+        <translation>75%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="405"/>
@@ -2027,7 +2027,7 @@ Ukuran unduhan: %3</translation>
         <location filename="../IOViewer.cpp" line="460"/>
         <location filename="../IOViewer.cpp" line="1224"/>
         <source>Enable audio</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktifkan audio</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="466"/>
@@ -2372,7 +2372,7 @@ Ukuran unduhan: %3</translation>
         <location filename="../IOViewer.cpp" line="809"/>
         <location filename="../IOViewer.cpp" line="825"/>
         <source>Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Skala</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="780"/>
@@ -2381,7 +2381,7 @@ Ukuran unduhan: %3</translation>
         <location filename="../IOViewer.cpp" line="827"/>
         <location filename="../IOViewer.cpp" line="1070"/>
         <source>1/64</source>
-        <translation type="unfinished"></translation>
+        <translation>1/64</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="781"/>
@@ -2390,7 +2390,7 @@ Ukuran unduhan: %3</translation>
         <location filename="../IOViewer.cpp" line="828"/>
         <location filename="../IOViewer.cpp" line="1071"/>
         <source>1/256</source>
-        <translation type="unfinished"></translation>
+        <translation>1/256</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="782"/>
@@ -2399,7 +2399,7 @@ Ukuran unduhan: %3</translation>
         <location filename="../IOViewer.cpp" line="829"/>
         <location filename="../IOViewer.cpp" line="1068"/>
         <source>1/1024</source>
-        <translation type="unfinished"></translation>
+        <translation>1/1024</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="799"/>
@@ -2412,55 +2412,55 @@ Ukuran unduhan: %3</translation>
         <location filename="../IOViewer.cpp" line="869"/>
         <location filename="../IOViewer.cpp" line="882"/>
         <source>A</source>
-        <translation type="unfinished"></translation>
+        <translation>A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="871"/>
         <location filename="../IOViewer.cpp" line="884"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Select</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="872"/>
         <location filename="../IOViewer.cpp" line="885"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Start</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="873"/>
         <location filename="../IOViewer.cpp" line="886"/>
         <source>Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Kanan</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="874"/>
         <location filename="../IOViewer.cpp" line="887"/>
         <source>Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Kiri</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="875"/>
         <location filename="../IOViewer.cpp" line="888"/>
         <source>Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Atas</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="876"/>
         <location filename="../IOViewer.cpp" line="889"/>
         <source>Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Bawah</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="877"/>
         <location filename="../IOViewer.cpp" line="890"/>
         <source>R</source>
-        <translation type="unfinished"></translation>
+        <translation>R</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="878"/>
         <location filename="../IOViewer.cpp" line="891"/>
         <source>L</source>
-        <translation type="unfinished"></translation>
+        <translation>L</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="893"/>
@@ -2643,17 +2643,17 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1016"/>
         <source>4.19MHz</source>
-        <translation type="unfinished"></translation>
+        <translation>4,19 MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1017"/>
         <source>8.38MHz</source>
-        <translation type="unfinished"></translation>
+        <translation>8,38 MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1018"/>
         <source>16.78MHz</source>
-        <translation type="unfinished"></translation>
+        <translation>16,78 MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1020"/>
@@ -2668,22 +2668,22 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1034"/>
         <source>Right/A</source>
-        <translation type="unfinished"></translation>
+        <translation>Kanan/A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1035"/>
         <source>Left/B</source>
-        <translation type="unfinished"></translation>
+        <translation>Kiri/B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1036"/>
         <source>Up/Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Atas/Select</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1037"/>
         <source>Down/Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Bawah/Start</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1038"/>
@@ -2698,7 +2698,7 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1047"/>
         <source>Internal clock</source>
-        <translation type="unfinished"></translation>
+        <translation>Jam internal</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1048"/>
@@ -2976,23 +2976,23 @@ Ukuran unduhan: %3</translation>
         <location filename="../IOViewer.cpp" line="1498"/>
         <location filename="../IOViewer.cpp" line="1510"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>Merah</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1501"/>
         <location filename="../IOViewer.cpp" line="1513"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Biru</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1517"/>
         <source>Sprite ordering</source>
-        <translation type="unfinished"></translation>
+        <translation>Urutan sprite</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1518"/>
         <source>OAM order</source>
-        <translation type="unfinished"></translation>
+        <translation>Urutan OAM</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1519"/>
@@ -3011,12 +3011,12 @@ Ukuran unduhan: %3</translation>
         <location filename="../InputController.cpp" line="732"/>
         <location filename="../InputController.cpp" line="753"/>
         <source>Could not find a valid camera format!</source>
-        <translation type="unfinished"></translation>
+        <translation>Format kamera valid tidak ditemukan!</translation>
     </message>
     <message>
         <location filename="../InputController.cpp" line="734"/>
         <source>Camera supported format: %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Format yang didukung kamera: %1</translation>
     </message>
 </context>
 <context>
@@ -3025,7 +3025,7 @@ Ukuran unduhan: %3</translation>
         <location filename="../KeyEditor.cpp" line="45"/>
         <location filename="../KeyEditor.cpp" line="206"/>
         <source>---</source>
-        <translation type="unfinished"></translation>
+        <translation>---</translation>
     </message>
 </context>
 <context>
@@ -3052,52 +3052,52 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../LoadSaveState.ui" line="50"/>
         <source>5</source>
-        <translation type="unfinished"></translation>
+        <translation>5</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="94"/>
         <source>6</source>
-        <translation type="unfinished"></translation>
+        <translation>6</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="116"/>
         <source>8</source>
-        <translation type="unfinished"></translation>
+        <translation>8</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="138"/>
         <source>4</source>
-        <translation type="unfinished"></translation>
+        <translation>4</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="160"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="182"/>
         <source>3</source>
-        <translation type="unfinished"></translation>
+        <translation>3</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="204"/>
         <source>7</source>
-        <translation type="unfinished"></translation>
+        <translation>7</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="226"/>
         <source>9</source>
-        <translation type="unfinished"></translation>
+        <translation>9</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="248"/>
         <source>2</source>
-        <translation type="unfinished"></translation>
+        <translation>2</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="261"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Batal</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="75"/>
@@ -3112,17 +3112,17 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../LoadSaveState.cpp" line="184"/>
         <source>Empty</source>
-        <translation type="unfinished"></translation>
+        <translation>Kosong</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="193"/>
         <source>Corrupted</source>
-        <translation type="unfinished"></translation>
+        <translation>Korup</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="228"/>
         <source>Slot %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Slot %1</translation>
     </message>
 </context>
 <context>
@@ -3131,32 +3131,32 @@ Ukuran unduhan: %3</translation>
         <location filename="../LogConfigModel.cpp" line="90"/>
         <location filename="../LogConfigModel.cpp" line="111"/>
         <source>Default</source>
-        <translation type="unfinished"></translation>
+        <translation>Bawaan</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="92"/>
         <source>Fatal</source>
-        <translation type="unfinished"></translation>
+        <translation>Fatal</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="94"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Galat</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="96"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Peringatan</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="98"/>
         <source>Info</source>
-        <translation type="unfinished"></translation>
+        <translation>Info</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="100"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Awakutu</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="102"/>
@@ -3242,42 +3242,42 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation type="unfinished"></translation>
+        <translation>Info</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Peringatan</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="68"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Galat</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="78"/>
         <source>Fatal</source>
-        <translation type="unfinished"></translation>
+        <translation>Fatal</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="95"/>
         <source>Game Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Galat permainan</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="108"/>
         <source>Advanced settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Setelan lanjutan</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="128"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Bersihkan</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="137"/>
         <source>Max Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Baris maksimal</translation>
     </message>
 </context>
 <context>
@@ -3290,22 +3290,22 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../MapView.ui" line="43"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Pembesaran</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="124"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Ekspor</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="139"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Salin</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="48"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>Prioritas</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="49"/>
@@ -3477,7 +3477,7 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="111"/>
         <source>Invalid instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Instruksi tak valid</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="113"/>
@@ -3507,7 +3507,7 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>Kode ARM</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
@@ -3550,12 +3550,12 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="23"/>
         <source>Log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Berkas log</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="32"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>Telusuri</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="39"/>
@@ -3640,7 +3640,7 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../MemoryDump.cpp" line="30"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Gagal membuka berkas keluaran: %1</translation>
     </message>
 </context>
 <context>
@@ -3648,17 +3648,17 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../MemoryModel.cpp" line="45"/>
         <source>Copy selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Salin pilihan</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="50"/>
         <source>Save selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Simpan pilihan</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="55"/>
         <source>Paste</source>
-        <translation type="unfinished"></translation>
+        <translation>Tempel</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="60"/>
@@ -3668,7 +3668,7 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../MemoryModel.cpp" line="118"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>Semua</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="168"/>
@@ -3683,22 +3683,22 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../MemoryModel.cpp" line="228"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Gagal membuka berkas keluaran: %1</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="236"/>
         <source>Load memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Muat memori</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="242"/>
         <source>Failed to open input file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Gagal membuka berkas masukan: %1</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="357"/>
         <source>ISO-8859-1</source>
-        <translation type="unfinished"></translation>
+        <translation>ISO-8859-1</translation>
     </message>
 </context>
 <context>
@@ -3706,7 +3706,7 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../MemorySearch.ui" line="26"/>
         <source>Memory Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Cari di memori</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="51"/>
@@ -3768,72 +3768,72 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../MemorySearch.ui" line="178"/>
         <source>Number type</source>
-        <translation type="unfinished"></translation>
+        <translation>Jenis angka</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="195"/>
         <source>Decimal</source>
-        <translation type="unfinished"></translation>
+        <translation>Desimal</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="202"/>
         <source>Hexadecimal</source>
-        <translation type="unfinished"></translation>
+        <translation>Heksadesimal</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="216"/>
         <source>Search type</source>
-        <translation type="unfinished"></translation>
+        <translation>Jenis pencarian</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="223"/>
         <source>Equal to value</source>
-        <translation type="unfinished"></translation>
+        <translation>Sama dengan</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="236"/>
         <source>Greater than value</source>
-        <translation type="unfinished"></translation>
+        <translation>Lebih dari</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="246"/>
         <source>Less than value</source>
-        <translation type="unfinished"></translation>
+        <translation>Kurang dari</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="256"/>
         <source>Unknown/changed</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidak tahu/berubah</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="269"/>
         <source>Changed by value</source>
-        <translation type="unfinished"></translation>
+        <translation>Berubah sejumlah</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="282"/>
         <source>Unchanged</source>
-        <translation type="unfinished"></translation>
+        <translation>Tak berubah</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="295"/>
         <source>Increased</source>
-        <translation type="unfinished"></translation>
+        <translation>Bertambah</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="308"/>
         <source>Decreased</source>
-        <translation type="unfinished"></translation>
+        <translation>Berkurang</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="318"/>
         <source>Search ROM</source>
-        <translation type="unfinished"></translation>
+        <translation>Cari dalam ROM</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="336"/>
         <source>New Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Pencarian baru</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="343"/>
@@ -3916,17 +3916,17 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="120"/>
         <source>1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>1 bita</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="125"/>
         <source>2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>2 bita</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="130"/>
         <source>4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>4 bita</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="152"/>
@@ -4015,42 +4015,42 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../ObjView.ui" line="94"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Salin</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="122"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Pembesaran</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="137"/>
         <source>Geometry</source>
-        <translation type="unfinished"></translation>
+        <translation>Geometri</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="145"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Posisi</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="224"/>
         <source>Dimensions</source>
-        <translation type="unfinished"></translation>
+        <translation>Ukuran</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="316"/>
         <source>Matrix</source>
-        <translation type="unfinished"></translation>
+        <translation>Matriks</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="389"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Ekspor</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="402"/>
         <source>Attributes</source>
-        <translation type="unfinished"></translation>
+        <translation>Atribut</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="410"/>
@@ -4144,7 +4144,7 @@ Ukuran unduhan: %3</translation>
         <location filename="../ObjView.cpp" line="259"/>
         <location filename="../ObjView.cpp" line="260"/>
         <source>---</source>
-        <translation type="unfinished"></translation>
+        <translation>---</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="193"/>
@@ -4216,7 +4216,7 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="85"/>
         <source>Light sensor</source>
-        <translation type="unfinished"></translation>
+        <translation>Sensor cahaya</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="95"/>
@@ -4226,37 +4226,37 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="113"/>
         <source>Save type</source>
-        <translation type="unfinished"></translation>
+        <translation>Jenis penyimpanan</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="126"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidak ada</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="131"/>
         <source>SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="136"/>
         <source>Flash 512kb</source>
-        <translation type="unfinished"></translation>
+        <translation>Flash 512 kb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="141"/>
         <source>Flash 1Mb</source>
-        <translation type="unfinished"></translation>
+        <translation>Flash 1 Mb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="146"/>
         <source>EEPROM 8kB</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 8 kB</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="151"/>
         <source>EEPROM 512 bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 512 bita</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="156"/>
@@ -4271,7 +4271,7 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="190"/>
         <source>Game Boy Player features</source>
-        <translation type="unfinished"></translation>
+        <translation>Fitur Game Boy Player</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="197"/>
@@ -4354,17 +4354,17 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../PaletteView.ui" line="184"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>Merah</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="191"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>Hijau</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="198"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Biru</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="253"/>
@@ -4374,12 +4374,12 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../PaletteView.ui" line="260"/>
         <source>Hex code</source>
-        <translation type="unfinished"></translation>
+        <translation>Kode hex</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="267"/>
         <source>Palette index</source>
-        <translation type="unfinished"></translation>
+        <translation>Indeks palet</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="340"/>
@@ -4458,37 +4458,37 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../PrinterView.ui" line="14"/>
         <source>Game Boy Printer</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Printer</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="130"/>
         <source>Hurry up!</source>
-        <translation type="unfinished"></translation>
+        <translation>Buruan!</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="137"/>
         <source>Tear off</source>
-        <translation type="unfinished"></translation>
+        <translation>Robek</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="180"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Pembesaran</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="223"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Salin</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Save Printout</source>
-        <translation type="unfinished"></translation>
+        <translation>Simpan hasil cetak</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -4506,7 +4506,7 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../ROMInfo.cpp" line="56"/>
         <source> bytes</source>
-        <translation type="unfinished"></translation>
+        <translation> bita</translation>
     </message>
     <message>
         <location filename="../ROMInfo.cpp" line="91"/>
@@ -4516,27 +4516,27 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="14"/>
         <source>ROM Info</source>
-        <translation type="unfinished"></translation>
+        <translation>Info ROM</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>Informasi berkas</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
         <source>Game name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Nama gim:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="100"/>
         <source>SHA-1</source>
-        <translation type="unfinished"></translation>
+        <translation>SHA-1</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
@@ -4546,17 +4546,17 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="140"/>
         <source>Internal name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Nama internal:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="157"/>
         <source>Game ID:</source>
-        <translation type="unfinished"></translation>
+        <translation>ID gim:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="174"/>
         <source>Maker Code:</source>
-        <translation type="unfinished"></translation>
+        <translation>Kode pembuat:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="191"/>
@@ -4566,12 +4566,12 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="49"/>
         <source>File size:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ukuran berkas:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="66"/>
         <source>CRC32:</source>
-        <translation type="unfinished"></translation>
+        <translation>CRC32:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
@@ -4604,12 +4604,12 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../ReportView.ui" line="85"/>
         <source>Generate report</source>
-        <translation type="unfinished"></translation>
+        <translation>Buat laporan</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="99"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Simpan</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="113"/>
@@ -4652,7 +4652,7 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="73"/>
         <source>Conversion failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Konversi gagal</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="73"/>
@@ -4697,18 +4697,18 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../SaveConverter.ui" line="20"/>
         <source>Input file</source>
-        <translation type="unfinished"></translation>
+        <translation>Berkas masukan</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="29"/>
         <location filename="../SaveConverter.ui" line="55"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>Telusuri</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="46"/>
         <source>Output file</source>
-        <translation type="unfinished"></translation>
+        <translation>Berkas keluaran</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="454"/>
@@ -4811,12 +4811,12 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="279"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished"></translation>
+        <translation>Skrip Lua (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="281"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Semua berkas (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4967,12 +4967,12 @@ Ukuran unduhan: %3</translation>
     <message>
         <location filename="../SensorView.ui" line="268"/>
         <source>Gyroscope</source>
-        <translation type="unfinished"></translation>
+        <translation>Giroskop</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="296"/>
         <source>Sensitivity</source>
-        <translation type="unfinished"></translation>
+        <translation>Sensitivitas</translation>
     </message>
 </context>
 <context>
@@ -5047,27 +5047,27 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.cpp" line="468"/>
         <source>Select BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>Pilih BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="475"/>
         <source>Select directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Pilih direktori</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="483"/>
         <source>Select image</source>
-        <translation type="unfinished"></translation>
+        <translation>Pilih gambar</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="483"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Berkas gambar (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="877"/>
         <source>(%1×%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>(%1×%2)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="895"/>
@@ -5101,32 +5101,32 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="20"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Pengaturan</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="45"/>
         <source>Audio/Video</source>
-        <translation type="unfinished"></translation>
+        <translation>Audio/Video</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="50"/>
         <source>Gameplay</source>
-        <translation type="unfinished"></translation>
+        <translation>Permainan</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
         <source>Interface</source>
-        <translation type="unfinished"></translation>
+        <translation>Antarmuka</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>Pembaruan</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
         <source>Emulation</source>
-        <translation type="unfinished"></translation>
+        <translation>Emulasi</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="70"/>
@@ -5136,7 +5136,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="75"/>
         <source>BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="80"/>
@@ -5151,7 +5151,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="90"/>
         <source>Game Boy</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="111"/>
@@ -5167,78 +5167,78 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.ui" line="140"/>
         <location filename="../SettingsView.ui" line="162"/>
         <source>1536</source>
-        <translation type="unfinished"></translation>
+        <translation>1536</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="147"/>
         <source>512</source>
-        <translation type="unfinished"></translation>
+        <translation>512</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="152"/>
         <source>768</source>
-        <translation type="unfinished"></translation>
+        <translation>768</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="157"/>
         <source>1024</source>
-        <translation type="unfinished"></translation>
+        <translation>1024</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="167"/>
         <source>2048</source>
-        <translation type="unfinished"></translation>
+        <translation>2048</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="172"/>
         <source>3072</source>
-        <translation type="unfinished"></translation>
+        <translation>3072</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="177"/>
         <source>4096</source>
-        <translation type="unfinished"></translation>
+        <translation>4096</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="185"/>
         <source>samples</source>
-        <translation type="unfinished"></translation>
+        <translation>sampel</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="194"/>
         <source>Sample rate:</source>
-        <translation type="unfinished"></translation>
+        <translation>Laju sampel:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="206"/>
         <location filename="../SettingsView.ui" line="223"/>
         <source>44100</source>
-        <translation type="unfinished"></translation>
+        <translation>44100</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="213"/>
         <source>22050</source>
-        <translation type="unfinished"></translation>
+        <translation>22050</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="218"/>
         <source>32000</source>
-        <translation type="unfinished"></translation>
+        <translation>32000</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="228"/>
         <source>48000</source>
-        <translation type="unfinished"></translation>
+        <translation>48000</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="236"/>
         <source>Hz</source>
-        <translation type="unfinished"></translation>
+        <translation>Hz</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="245"/>
         <source>Volume:</source>
-        <translation type="unfinished"></translation>
+        <translation>Volume:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="276"/>
@@ -5246,7 +5246,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.ui" line="811"/>
         <location filename="../SettingsView.ui" line="836"/>
         <source>Mute</source>
-        <translation type="unfinished"></translation>
+        <translation>Senyapkan</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="285"/>
@@ -5385,7 +5385,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="973"/>
         <source>Current version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Versi saat ini:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="997"/>
@@ -5395,7 +5395,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="1007"/>
         <source>Available version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Versi tersedia:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1014"/>
@@ -5405,17 +5405,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="1024"/>
         <source>Last checked:</source>
-        <translation type="unfinished"></translation>
+        <translation>Terakhir dicek:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1045"/>
         <source>Automatically check on start</source>
-        <translation type="unfinished"></translation>
+        <translation>Cek otomatis saat membuka aplikasi</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1052"/>
         <source>Check now</source>
-        <translation type="unfinished"></translation>
+        <translation>Cek sekarang</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2174"/>
@@ -5465,7 +5465,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="709"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Bahasa</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="726"/>
@@ -5891,17 +5891,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.ui" line="35"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nama</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="45"/>
         <source>Author</source>
-        <translation type="unfinished"></translation>
+        <translation>Pembuat</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="62"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>Deskripsi</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="88"/>
@@ -5991,17 +5991,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../TileView.ui" line="40"/>
         <source>256 colors</source>
-        <translation type="unfinished"></translation>
+        <translation>256 warna</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="33"/>
         <source>Palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Palet</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="73"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>Pembesaran</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="96"/>
@@ -6031,7 +6031,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../TileView.ui" line="145"/>
         <source>Both</source>
-        <translation type="unfinished"></translation>
+        <translation>Keduanya</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="163"/>
@@ -6064,22 +6064,22 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.ui" line="20"/>
         <source>Record Video</source>
-        <translation type="unfinished"></translation>
+        <translation>Rekam video</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="40"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Mulai</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="56"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Berhenti</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="69"/>
         <source>Select File</source>
-        <translation type="unfinished"></translation>
+        <translation>Pilih berkas</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="101"/>
@@ -6189,12 +6189,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../Window.cpp" line="372"/>
         <location filename="../Window.cpp" line="399"/>
         <source>Select ROM</source>
-        <translation type="unfinished"></translation>
+        <translation>Pilih ROM</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="390"/>
         <source>Select folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Pilih folder</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="534"/>
@@ -6220,17 +6220,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="457"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Kartu e-Reader (*.raw *.bin *.bmp)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="527"/>
         <source>Select image</source>
-        <translation type="unfinished"></translation>
+        <translation>Pilih gambar</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="527"/>
         <source>Image file (*.png *.gif *.jpg *.jpeg);;All files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Berkas gambar (*.png *.gif *.jpg *.jpeg);;Semua berkas (*)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="541"/>
@@ -6307,42 +6307,42 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1245"/>
         <source> -  Player %1 of %2</source>
-        <translation type="unfinished"></translation>
+        <translation> -  Pemain %1 dari %2</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1256"/>
         <source>%1 - %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1258"/>
         <source>%1 - %2 - %3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2 - %3</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1260"/>
         <source>%1 - %2 (%3 fps) - %4</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2 (%3 fps) - %4</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1324"/>
         <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation>Berkas (&amp;F)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1326"/>
         <source>Load &amp;ROM...</source>
-        <translation type="unfinished"></translation>
+        <translation>Muat &amp;ROM ...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1329"/>
         <source>Load ROM in archive...</source>
-        <translation type="unfinished"></translation>
+        <translation>Muat ROM dalam arsip ...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1330"/>
         <source>Add folder to library...</source>
-        <translation type="unfinished"></translation>
+        <translation>Tambah folder ke dalam pustaka ...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="407"/>
@@ -6423,7 +6423,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1381"/>
         <source>ROM &amp;info...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Informasi ROM ...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1383"/>
@@ -6509,7 +6509,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1155"/>
         <source>Failed to start audio processor</source>
-        <translation type="unfinished"></translation>
+        <translation>Gagal memulai pemroses audio</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1205"/>
@@ -6554,27 +6554,27 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1447"/>
         <source>Connect to Dolphin...</source>
-        <translation type="unfinished"></translation>
+        <translation>Hubungkan ke Dolphin ...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1453"/>
         <source>Report bug...</source>
-        <translation type="unfinished"></translation>
+        <translation>Laporkan kutu ...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1459"/>
         <source>About...</source>
-        <translation type="unfinished"></translation>
+        <translation>Tentang ...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1460"/>
         <source>E&amp;xit</source>
-        <translation type="unfinished"></translation>
+        <translation>Keluar (&amp;X)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1462"/>
         <source>&amp;Emulation</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Emulasi</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1463"/>
