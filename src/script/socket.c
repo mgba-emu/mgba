@@ -107,6 +107,7 @@ struct mScriptValue* _mScriptSocketCreate() {
 void _mScriptSocketClose(struct mScriptSocket* ssock) {
 	if (!SOCKET_FAILED(ssock->socket)) {
 		SocketClose(ssock->socket);
+		ssock->socket = INVALID_SOCKET;
 	}
 }
 
