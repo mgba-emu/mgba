@@ -37,7 +37,7 @@ DebuggerConsoleController::DebuggerConsoleController(QObject* parent)
 }
 
 void DebuggerConsoleController::enterLine(const QString& line) {
-	CoreController::Interrupter interrupter(m_gameController);
+	CoreController::Interrupter interrupter(m_controller);
 	QMutexLocker lock(&m_mutex);
 	m_lines.append(line);
 	if (m_cliDebugger.d.p && m_cliDebugger.d.p->state == DEBUGGER_RUNNING) {
@@ -48,7 +48,7 @@ void DebuggerConsoleController::enterLine(const QString& line) {
 
 void DebuggerConsoleController::detach() {
 	{
-		CoreController::Interrupter interrupter(m_gameController);
+		CoreController::Interrupter interrupter(m_controller);
 		QMutexLocker lock(&m_mutex);
 		if (m_cliDebugger.d.p && m_cliDebugger.d.p->state != DEBUGGER_SHUTDOWN) {
 			m_lines.append(QString());
@@ -60,9 +60,9 @@ void DebuggerConsoleController::detach() {
 }
 
 void DebuggerConsoleController::attachInternal() {
-	CoreController::Interrupter interrupter(m_gameController);
+	CoreController::Interrupter interrupter(m_controller);
 	QMutexLocker lock(&m_mutex);
-	mCore* core = m_gameController->thread()->core;
+	mCore* core = m_controller->thread()->core;
 	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend);
 	CLIDebuggerAttachSystem(&m_cliDebugger, core->cliDebuggerSystem(core));
 }
@@ -125,7 +125,7 @@ void DebuggerConsoleController::lineAppend(struct CLIDebuggerBackend* be, const 
 const char* DebuggerConsoleController::historyLast(struct CLIDebuggerBackend* be, size_t* len) {
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
-	CoreController::Interrupter interrupter(self->m_gameController);
+	CoreController::Interrupter interrupter(self->m_controller);
 	QMutexLocker lock(&self->m_mutex);
 	int rowCount = self->m_history->rowCount();
 	if (rowCount == 0) {
@@ -141,7 +141,7 @@ const char* DebuggerConsoleController::historyLast(struct CLIDebuggerBackend* be
 void DebuggerConsoleController::historyAppend(struct CLIDebuggerBackend* be, const char* line) {
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
-	CoreController::Interrupter interrupter(self->m_gameController);
+	CoreController::Interrupter interrupter(self->m_controller);
 	QMutexLocker lock(&self->m_mutex);
 	int rowCount = self->m_history->rowCount();
 	self->m_history->insertRows(rowCount, 1);
