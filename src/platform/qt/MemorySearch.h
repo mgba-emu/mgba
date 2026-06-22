@@ -19,7 +19,7 @@ class MemorySearch : public QWidget {
 Q_OBJECT
 
 public:
-	static constexpr size_t LIMIT = 10000;
+	static constexpr size_t LIMIT = 0;
 
 	MemorySearch(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 	~MemorySearch();
