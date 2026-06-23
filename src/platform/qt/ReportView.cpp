@@ -537,6 +537,12 @@ void ReportView::addGLInfo(QStringList& report) {
 
 	report << QString("OpenGL type: %1").arg(QLatin1String(QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL ? "OpenGL" : "OpenGL|ES"));
 
+#ifdef USE_EPOXY
+	report << QString("Using libepoxy");
+#else
+	report << QString("Not using libepoxy");
+#endif
+
 	format.setVersion(1, 4);
 	report << QString("OpenGL supports legacy (1.x) contexts: %1").arg(yesNo[DisplayGL::supportsFormat(format)]);
 
@@ -582,6 +588,7 @@ void ReportView::addGLInfo(QStringList& report) {
 	}
 
 	QOpenGLContext context;
+	context.setFormat(format);
 	if (context.create()) {
 		QOffscreenSurface surface;
 		surface.create();
