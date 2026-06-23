@@ -704,7 +704,6 @@ void InputController::prepareCamSettings(QCamera::Status status) {
 #endif
 
 void InputController::prepareCamFormat() {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
 	QSize size(1280, 720);
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	QCameraViewfinderSettings settings;
@@ -754,7 +753,6 @@ void InputController::prepareCamFormat() {
 		LOG(QT, WARN) << tr("Could not find a valid camera format!");
 	}
 	m_camera->setCameraFormat(bestFormat);
-#endif
 #endif
 	m_camera->start();
 }

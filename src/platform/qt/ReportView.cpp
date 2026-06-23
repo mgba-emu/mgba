@@ -695,9 +695,7 @@ void ReportView::addScreenInfo(QStringList& report, const QScreen* screen) {
 	report << QString("Size: %1x%2").arg(geometry.width()).arg(geometry.height());
 	report << QString("Location: %1, %2").arg(geometry.x()).arg(geometry.y());
 	report << QString("Refresh rate: %1 Hz").arg(screen->refreshRate());
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
 	report << QString("Pixel ratio: %1").arg(screen->devicePixelRatio());
-#endif
 	report << QString("Logical DPI: %1x%2").arg(screen->logicalDotsPerInchX()).arg(screen->logicalDotsPerInchY());
 	report << QString("Physical DPI: %1x%2").arg(screen->physicalDotsPerInchX()).arg(screen->physicalDotsPerInchY());
 }

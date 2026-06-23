@@ -264,11 +264,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	showFrameCounter(isShowFrameCounter());
 	filter(isFiltered());
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	messagePainter()->resize(size(), devicePixelRatioF());
-#else
-	messagePainter()->resize(size(), devicePixelRatio());
-#endif
 
 	CoreController::Interrupter interrupter(m_context);
 	QMetaObject::invokeMethod(m_painter.get(), "start");

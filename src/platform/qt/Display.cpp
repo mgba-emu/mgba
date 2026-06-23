@@ -121,11 +121,7 @@ VideoBackend* QGBA::Display::videoBackend() {
 }
 
 void QGBA::Display::resizeEvent(QResizeEvent*) {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	m_messagePainter.resize(size(), devicePixelRatioF());
-#else
-	m_messagePainter.resize(size(), devicePixelRatio());
-#endif
 }
 
 void QGBA::Display::lockAspectRatio(bool lock) {
@@ -170,11 +166,7 @@ void QGBA::Display::mouseMoveEvent(QMouseEvent*) {
 
 QPoint QGBA::Display::normalizedPoint(CoreController* controller, const QPoint& localRef) {
 	QSize screen(controller->screenDimensions());
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	QSize newSize((QSizeF(size()) * devicePixelRatioF()).toSize());
-#else
-	QSize newSize((QSizeF(size()) * devicePixelRatio()).toSize());
-#endif
 
 	if (m_lockAspectRatio) {
 		QGBA::lockAspectRatio(screen, newSize);
@@ -188,11 +180,7 @@ QPoint QGBA::Display::normalizedPoint(CoreController* controller, const QPoint& 
 	newPos -= QPointF(width() / 2.0, height() / 2.0);
 	newPos = QPointF(newPos.x() * screen.width(), newPos.y() * screen.height());
 	newPos = QPointF(newPos.x() / newSize.width(), newPos.y() / newSize.height());
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	newPos *= devicePixelRatioF();
-#else
-	newPos *= devicePixelRatio();
-#endif
 	newPos += QPointF(screen.width() / 2.0, screen.height() / 2.0);
 	return newPos.toPoint();
 }
