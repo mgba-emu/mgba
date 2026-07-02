@@ -16,6 +16,7 @@ CXX_GUARD_START
 #include <mgba/internal/gba/dma.h>
 #include <mgba/internal/gba/savedata.h>
 #include <mgba/internal/gba/cart/ereader.h>
+#include <mgba/internal/gba/cart/everdrive-sd.h>
 #include <mgba/internal/gba/cart/gpio.h>
 #include <mgba/internal/gba/cart/matrix.h>
 #include <mgba/internal/gba/cart/unlicensed.h>
@@ -111,6 +112,7 @@ struct GBAMemory {
 	struct GBAMatrix matrix;
 	struct GBAUnlCart unl;
 	struct GBACartEReader ereader;
+	struct GBAEverdriveSD everdrive;
 	size_t romSize;
 	uint32_t romMask;
 	uint16_t romID;
