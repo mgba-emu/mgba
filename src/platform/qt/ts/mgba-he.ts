@@ -6,22 +6,22 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="427"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>שם</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>מיקום</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
         <source>Platform</source>
-        <translation type="unfinished"></translation>
+        <translation>פלטפורמה</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>גודל</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
@@ -34,22 +34,22 @@
     <message>
         <location filename="../utils.cpp" line="109"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>משחקי Game Boy Advance (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="135"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>משחקי Game Boy (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="140"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>כל המשחקים (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="142"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 Video Logs (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -57,22 +57,22 @@
     <message>
         <location filename="../AboutScreen.ui" line="14"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>אודות</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;אתר&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;פורום / תמיכה&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;תרומה&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;מקור&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
         <source>Branch: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revision: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>ענף: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;גרסה: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
         <source>{projectName} would like to thank the following patrons from Patreon:</source>
-        <translation type="unfinished"></translation>
+        <translation>{projectName} רוצה להודות לפטרונים הבאים מ Patreon:</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
@@ -83,7 +83,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation type="unfinished"></translation>
+        <translation>{projectName} הוא אימולטור open-source של Game Boy Advance</translation>
     </message>
 </context>
 <context>
@@ -91,47 +91,52 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>יש עדכון זמין</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>עדכון ל %1 זמין.
+</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="38"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+האם ברצונך להוריד ולהתקין אותו כעת? תצטרך להפעיל מחדש את האימולטור לאחר השלמת ההורדה.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+עדכון אוטומטי אינו זמין בפלטפורמה זו. אם ברצונך לעדכן תצטרך לעשות זאת באופן ידני.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="45"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>גרסה נוכחית: %1
+גרסה חדשה: %2
+נפח הורדה: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>מוריד עדכון...</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="79"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>ההורדה נכשלה. אנא עדכן ידנית.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>ההורדה הסתיימה. לחץ OK לאתחול %1 והתקנת העדכון.</translation>
     </message>
 </context>
 <context>
@@ -139,22 +144,22 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="90"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>יציב</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="93"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>מפתחים</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>לא ידוע</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="239"/>
         <source>(None)</source>
-        <translation type="unfinished"></translation>
+        <translation>(אין)</translation>
     </message>
 </context>
 <context>
@@ -162,12 +167,12 @@ Download size: %3</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation type="unfinished"></translation>
+        <translation>פתח בארכיון...</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation type="unfinished"></translation>
+        <translation>טוען...</translation>
     </message>
 </context>
 <context>
@@ -175,32 +180,32 @@ Download size: %3</source>
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation type="unfinished"></translation>
+        <translation>אריח #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
-        <translation type="unfinished"></translation>
+        <translation>לוח צבעים #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="89"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>כתובת</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="138"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>אדום</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="145"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>ירוק</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="152"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>כחול</translation>
     </message>
     <message>
         <location filename="../AssetTile.cpp" line="143"/>
@@ -215,17 +220,17 @@ Download size: %3</source>
     <message>
         <location filename="../AudioDevice.cpp" line="35"/>
         <source>Can&apos;t set format of context-less audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>לא ניתן להגדיר פורמט של התקן שמע ללא הקשר</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="56"/>
         <source>Audio device is missing its core</source>
-        <translation type="unfinished"></translation>
+        <translation>הליבה של התקן השמע חסרה</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="84"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>כתיבת נתונים להתקן שמע לקריאה בלבד</translation>
     </message>
 </context>
 <context>
@@ -233,12 +238,12 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="56"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>לא ניתן להפעיל מעבד שמע ללא קלט</translation>
     </message>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="81"/>
         <source>Audio outputting to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שמע מנותב אל %1</translation>
     </message>
 </context>
 <context>
@@ -246,7 +251,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>לא ניתן להפעיל מעבד שמע ללא קלט</translation>
     </message>
 </context>
 <context>
@@ -254,7 +259,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="31"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
-        <translation type="unfinished"></translation>
+        <translation>לא ניתן היה לטעון את הגדרות סקריפט ההפעלה האוטומטית: פורמט מידע סקריפט לא ידוע %1</translation>
     </message>
 </context>
 <context>
@@ -262,37 +267,37 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="14"/>
         <source>Autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>סקריפט הפעלה אוטומטית</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>הוסף</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>הסר</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="53"/>
         <source>Move up</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז למעלה</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="63"/>
         <source>Move down</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז למטה</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="73"/>
         <source>Run scripts when starting a game</source>
-        <translation type="unfinished"></translation>
+        <translation>הרץ סקריפט בהפעלת משחק</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="28"/>
         <source>Select a script</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר סקריפט</translation>
     </message>
 </context>
 <context>
@@ -305,83 +310,83 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.ui" line="67"/>
         <source>Chip name</source>
-        <translation type="unfinished"></translation>
+        <translation>שם Chip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
         <source>Insert</source>
-        <translation type="unfinished"></translation>
+        <translation>הכנס</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>שמור</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="94"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>טען</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="114"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>הוסף</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="121"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>הסר</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="138"/>
         <source>Gate type</source>
-        <translation type="unfinished"></translation>
+        <translation>סוג Gate</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="180"/>
         <source>Inserted</source>
-        <translation type="unfinished"></translation>
+        <translation>מוכנס</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
-        <translation type="unfinished"></translation>
+        <translation>מזהה Chip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
         <source>Update Chip data</source>
-        <translation type="unfinished"></translation>
+        <translation>עדכן נתוני Chip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
         <source>Show advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>הצג מתקדם</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="115"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>נתוני BattleChip חסרים</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="116"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>חסרים נתוני BattleChip. BattleChip Gates עדיין יעבדו, אך חלק מהתצוגה תחסר. האם ברצונך להוריד את הנתונים כעת?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="182"/>
         <location filename="../BattleChipView.cpp" line="201"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר קובץ חפיסה</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="213"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>חפיסה לא תואמת</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="214"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>החפיסה שנבחרה לא תואמת לChip Gate הנוכחי</translation>
     </message>
 </context>
 <context>
@@ -389,12 +394,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsModel.cpp" line="53"/>
         <source>(untitled)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ללא כותרת)</translation>
     </message>
     <message>
         <location filename="../CheatsModel.cpp" line="211"/>
         <source>Failed to open cheats file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>פתיחת קובץ צ&apos;יטים נכשלה: %1</translation>
     </message>
 </context>
 <context>
@@ -402,59 +407,59 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="14"/>
         <source>Cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>צ&apos;יטים</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished"></translation>
+        <translation>הוסף קוד חדש</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>הסר</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="93"/>
         <source>Add Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>הוסף שורות</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="100"/>
         <source>Code type</source>
-        <translation type="unfinished"></translation>
+        <translation>סוג קוד</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>שמור</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="46"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>טען</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="86"/>
         <source>Enter codes here...</source>
-        <translation type="unfinished"></translation>
+        <translation>הכנס קודים כאן...</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="49"/>
         <location filename="../CheatsView.cpp" line="57"/>
         <source>Autodetect (recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation>זיהוי אוטומטי (מומלץ)</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="87"/>
         <location filename="../CheatsView.cpp" line="94"/>
         <source>Select cheats file</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר קובץ צ&apos;יטים</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="186"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>לא ניתן היה להוסיף חלק מהצ&apos;יטים. אנא ודא שהם בפורמט הנכון ו/או נסה סוגי צ&apos;יטים אחרים.</translation>
     </message>
 </context>
 <context>
@@ -462,48 +467,48 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="104"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>אתחל r%1-%2 %3</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="552"/>
         <location filename="../CoreController.cpp" line="569"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>הרצה לאחור אינה מופעלת כרגע</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="608"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>לאתחל את המשחק?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="609"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation type="unfinished"></translation>
+        <translation>רוב המשחקים ידרשו אתחול כדי לטעון את השמירה החדשה. האם ברצונך לאפס עכשיו?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="827"/>
         <source>Failed to open save file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בפתיחת קובץ השמירה: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="885"/>
         <source>Failed to open game file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בפתיחת קובץ המשחק: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="915"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
-        <translation type="unfinished"></translation>
+        <translation>אי אפשר למשוך את החבילה בפלטפורמה בלתי צפויה!</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="1030"/>
         <source>Failed to open snapshot file for reading: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בפתיחת קובץ snapshot לקריאה: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="1047"/>
         <source>Failed to open snapshot file for writing: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בפתיחת קובץ snapshot לכתיבה: %1</translation>
     </message>
 </context>
 <context>
@@ -511,22 +516,22 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="52"/>
         <source>Failed to open game file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בפתיחת קובץ משחק: %1</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="77"/>
         <source>The ROM appears to be loaded from a temporary directory. This will likely lead to data loss (e.g. saves, screenshots, etc.) if you continue. Please put the ROM in a more suitable location and then re-open it. If you are loading the ROM from an archive, please extract the archive first.</source>
-        <translation type="unfinished"></translation>
+        <translation>נראה כי ה-ROM נטען מספרייה זמנית. סביר להניח שהדבר יוביל לאובדן נתונים (למשל, שמירות, screenshots וכו&apos;) במידה ותמשיך. אנא העבר את ה-ROM למיקום מתאים יותר ולאחר מכן פתח אותו מחדש. אם אתה טוען את ה-ROM מארכיון, אנא חלץ את הארכיון תחילה.</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="95"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
-        <translation type="unfinished"></translation>
+        <translation>לא ניתן היה לטעון את המשחק. האם אתה בטוח שהוא בפורמט הנכון?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="122"/>
         <source>Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).</source>
-        <translation type="unfinished"></translation>
+        <translation>פתיחת קובץ השמירה נכשלה; לא ניתן לעדכן שמירות בתוך המשחק. אנא ודא שתיקיית השמירה ניתנת לכתיבה גם ללא הרשאות גבוהות (למשל, UAC ב-Windows).</translation>
     </message>
 </context>
 <context>
@@ -539,12 +544,12 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsole.ui" line="20"/>
         <source>Enter command (try `help` for more info)</source>
-        <translation type="unfinished"></translation>
+        <translation>הזן פקודה (נסה `help` למידע נוסף)</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="27"/>
         <source>Break</source>
-        <translation type="unfinished"></translation>
+        <translation>הפסקה</translation>
     </message>
 </context>
 <context>
@@ -552,7 +557,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="183"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>לא ניתן לפתוח את היסטוריית CLI לכתיבה</translation>
     </message>
 </context>
 <context>
@@ -560,7 +565,7 @@ Download size: %3</source>
     <message>
         <location filename="../DisplayGL.cpp" line="314"/>
         <source>Failed to create an OpenGL 3 context, trying old-style...</source>
-        <translation type="unfinished"></translation>
+        <translation>נכשל ביצירת הקשר OpenGL 3, מנסה בסגנון ישן...</translation>
     </message>
 </context>
 <context>
@@ -568,47 +573,47 @@ Download size: %3</source>
     <message>
         <location filename="../DolphinConnector.ui" line="14"/>
         <source>Connect to Dolphin</source>
-        <translation type="unfinished"></translation>
+        <translation>מתחבר אל Dolphin</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="23"/>
         <source>Local computer</source>
-        <translation type="unfinished"></translation>
+        <translation>מחשב מקומי</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
         <source>IP address</source>
-        <translation type="unfinished"></translation>
+        <translation>כתובת IP</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>התחבר</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="68"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>התנתק</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="78"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>סגור</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="90"/>
         <source>Reset on connect</source>
-        <translation type="unfinished"></translation>
+        <translation>אתחל בהתחברות</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
         <source>Couldn&apos;t Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>לא מצליח להתחבר</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Could not connect to Dolphin.</source>
-        <translation type="unfinished"></translation>
+        <translation>לא מצליח להתחבר אל Dolphin.</translation>
     </message>
 </context>
 <context>
@@ -616,12 +621,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="83"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="85"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
 </context>
 <context>
@@ -629,12 +634,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="29"/>
         <source>Icon</source>
-        <translation type="unfinished"></translation>
+        <translation>אייקון</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="30"/>
         <source>Banner</source>
-        <translation type="unfinished"></translation>
+        <translation>באנר</translation>
     </message>
 </context>
 <context>
@@ -642,17 +647,17 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="25"/>
         <source>Bubble</source>
-        <translation type="unfinished"></translation>
+        <translation>בועה</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Background</source>
-        <translation type="unfinished"></translation>
+        <translation>רקע</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
         <source>Startup</source>
-        <translation type="unfinished"></translation>
+        <translation>הפעלה</translation>
     </message>
 </context>
 <context>
@@ -665,24 +670,24 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="20"/>
         <source>Files</source>
-        <translation type="unfinished"></translation>
+        <translation>קבצים</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="26"/>
         <source>ROM file:</source>
-        <translation type="unfinished"></translation>
+        <translation>קבצי ROM:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="36"/>
         <location filename="../ForwarderView.ui" line="53"/>
         <location filename="../ForwarderView.ui" line="112"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>עיון</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="43"/>
         <source>Output filename:</source>
-        <translation type="unfinished"></translation>
+        <translation>פלט שם קובץ:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="60"/>
@@ -692,27 +697,27 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="74"/>
         <source>Latest stable version</source>
-        <translation type="unfinished"></translation>
+        <translation>גרסה יציבה אחרונה</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="79"/>
         <source>Latest development build</source>
-        <translation type="unfinished"></translation>
+        <translation>גרסת מפתחים אחרונה</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="84"/>
         <source>Specific file</source>
-        <translation type="unfinished"></translation>
+        <translation>קובץ ספציפי</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="95"/>
         <source>Base file:</source>
-        <translation type="unfinished"></translation>
+        <translation>קובץ בסיסי:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="135"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>מערכת</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="141"/>
@@ -727,52 +732,52 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="174"/>
         <source>Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>הצגה</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="182"/>
         <source>Title:</source>
-        <translation type="unfinished"></translation>
+        <translation>כותרת:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="195"/>
         <source>Images:</source>
-        <translation type="unfinished"></translation>
+        <translation>תמונות:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="215"/>
         <source>Use default image</source>
-        <translation type="unfinished"></translation>
+        <translation>השתמש בתמונות ברירת מחדל</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="328"/>
         <source>Preferred size:</source>
-        <translation type="unfinished"></translation>
+        <translation>גודל מועדף:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="395"/>
         <source>Select image file</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר קובץ תמונה</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="22"/>
         <source>Select ROM file</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר קובץ ROM</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="23"/>
         <source>Select output filename</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר שם קובץ פלט</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="24"/>
         <source>Select base file</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר קובץ בסיס</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="36"/>
         <source>Build finished</source>
-        <translation type="unfinished"></translation>
+        <translation>סיום בניה</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="37"/>
@@ -782,7 +787,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.cpp" line="44"/>
         <source>Build failed</source>
-        <translation type="unfinished"></translation>
+        <translation>בניה נכשלה</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
@@ -792,12 +797,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.cpp" line="176"/>
         <source>%1 installable package (*.%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 חבילה ניתנת להתקנה (*.%2)</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Select an image</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר תמונה</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
@@ -898,7 +903,7 @@ Download size: %3</source>
     <message>
         <location filename="../GBAApp.cpp" line="82"/>
         <source>Enable Discord Rich Presence</source>
-        <translation type="unfinished"></translation>
+        <translation>הפעלת נוכחות עשירה בדיסקורד</translation>
     </message>
 </context>
 <context>
@@ -906,22 +911,22 @@ Download size: %3</source>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="69"/>
         <source>Clear Button</source>
-        <translation type="unfinished"></translation>
+        <translation>נקה לחצן</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="81"/>
         <source>Clear Analog</source>
-        <translation type="unfinished"></translation>
+        <translation>נקה אנלוגי</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="92"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>רענן</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="102"/>
         <source>Set all</source>
-        <translation type="unfinished"></translation>
+        <translation>הגדר הכל</translation>
     </message>
 </context>
 <context>
@@ -929,17 +934,17 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="31"/>
         <source>Server settings</source>
-        <translation type="unfinished"></translation>
+        <translation>הגדרות שרת</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="37"/>
         <source>Local port</source>
-        <translation type="unfinished"></translation>
+        <translation>פורט מקומי</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="39"/>
         <source>Bind address</source>
-        <translation type="unfinished"></translation>
+        <translation>קשר כתובת</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="52"/>
@@ -964,17 +969,17 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
         <source>Break</source>
-        <translation type="unfinished"></translation>
+        <translation>הפסקה</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="124"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>עצור</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="137"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>התחל</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="145"/>
