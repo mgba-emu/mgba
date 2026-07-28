@@ -132,7 +132,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="78"/>
         <source>Verifying download failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>A verificação do download falhou. Por favor atualize manualmente.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
@@ -244,7 +244,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../AudioProcessorDummy.cpp" line="31"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished">Não pôde iniciar um processador de áudio sem entrada</translation>
+        <translation>Não pôde iniciar um processador de áudio sem entrada</translation>
     </message>
 </context>
 <context>
@@ -319,7 +319,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../BattleChipModel.cpp" line="113"/>
         <source>Failed to open chip names list</source>
-        <translation type="unfinished"></translation>
+        <translation>Falhou em abrir a lista dos nomes dos chips</translation>
     </message>
 </context>
 <context>
@@ -543,42 +543,42 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="105"/>
         <source>Temporary file loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Arquivo temporário carregado</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="106"/>
         <source>The ROM appears to be loaded from a temporary directory, perhaps automatically extracted from an archive (e.g. a zip file).</source>
-        <translation type="unfinished"></translation>
+        <translation>A ROM aparenta ser carregada de um diretório temporário, talvez extraída automaticamente de um arquivo compactado (ex: arquivo zip).</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="154"/>
         <source>Could not open save file</source>
-        <translation type="unfinished"></translation>
+        <translation>Não pôde abrir o arquivo do save</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="155"/>
         <source>Failed to open save file; in-game saves cannot be updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>Falhou em abrir o arquivo do sae, os saves dentro do jogo não podem ser atualizados.</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="228"/>
         <source>Would you like to copy the ROM to a different location? If you don&apos;t, this will likely lead to data loss (e.g. saves, screenshots, etc.).</source>
-        <translation type="unfinished"></translation>
+        <translation>Você gostaria de copiar a ROM pra um local diferente? Se você não quiser isto provavelmente levará a perda dos dados (ex: saves, screenshots, etc).</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="235"/>
         <source>Copy failed</source>
-        <translation type="unfinished"></translation>
+        <translation>A cópia falhou</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="235"/>
         <source>Failed to copy ROM. Do you want to try again?</source>
-        <translation type="unfinished"></translation>
+        <translation>Falhou em copiar a ROM. Você quer tentar de novo?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="242"/>
         <source>New ROM location</source>
-        <translation type="unfinished"></translation>
+        <translation>Novo local da ROM</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="126"/>
@@ -606,7 +606,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DebuggerConsole.ui" line="44"/>
         <source>Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>Continuar</translation>
     </message>
 </context>
 <context>
@@ -4719,7 +4719,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="85"/>
         <source>Failed to open output file.</source>
-        <translation type="unfinished"></translation>
+        <translation>Falhou em abrir o arquivo da saída.</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="96"/>
