@@ -124,6 +124,7 @@ Misc:
  - Qt: Put fullscreen information in report view
  - Qt: Add "clear console" menu item for the scripting view
  - Qt: Replace save warning with a copy dialog (closes mgba.io/i/3637)
+ - Qt: Add "continue" button to debugger console
  - Res: Port hq2x and OmniScale shaders from SameBoy
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
  - Res: Update gba-colors shader (closes mgba.io/i/2976)

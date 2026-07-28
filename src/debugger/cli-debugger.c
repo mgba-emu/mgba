@@ -1138,6 +1138,12 @@ bool CLIDebuggerRunCommand(struct CLIDebugger* debugger, const char* line, size_
 	return result > 0;
 }
 
+void CLIDebuggerContinue(struct CLIDebugger* debugger) {
+	debugger->d.needsCallback = debugger->traceRemaining != 0;
+	debugger->d.isPaused = false;
+	mDebuggerUpdatePaused(debugger->d.p);
+}
+
 static void _commandLine(struct mDebuggerModule* debugger, int32_t timeoutMs) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	const char* line;

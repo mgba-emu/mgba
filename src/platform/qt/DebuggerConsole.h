@@ -20,6 +20,7 @@ public:
 private slots:
 	void postLine(const QString&);
 	void repeat();
+	void updatePaused();
 
 private:
 	Ui::DebuggerConsole m_ui;

@@ -36,6 +36,12 @@ DebuggerConsoleController::DebuggerConsoleController(QObject* parent)
 	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend);
 }
 
+bool DebuggerConsoleController::isPaused() {
+	CoreController::Interrupter interrupter(m_gameController);
+	QMutexLocker lock(&m_mutex);
+	return m_cliDebugger.d.isPaused;
+}
+
 void DebuggerConsoleController::enterLine(const QString& line) {
 	CoreController::Interrupter interrupter(m_gameController);
 	QMutexLocker lock(&m_mutex);
@@ -188,4 +194,10 @@ void DebuggerConsoleController::historySave() {
 		log.write(line.toUtf8());
 		log.write("\n");
 	}
+}
+
+void DebuggerConsoleController::doContinue() {
+	CoreController::Interrupter interrupter(m_gameController);
+	QMutexLocker lock(&m_mutex);
+	CLIDebuggerContinue(&m_cliDebugger);
 }
