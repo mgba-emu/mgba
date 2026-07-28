@@ -4,9 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "input/SDLInputDriver.h"
+#include "input/moc_SDLInputDriver.cpp"
 
 #include "ConfigController.h"
 #include "InputController.h"
+
+#include <QSet>
 
 #include <algorithm>
 
@@ -84,6 +87,13 @@ void SDLInputDriver::setPlayerId(int id) {
 }
 
 bool SDLInputDriver::supportsPolling() const {
+	// XXX: SDL_PumpEvents can cause the runloop to re-enter, at least on Windows
+	// So to avoic re-entering the SDL polling in the meantime, we have to reject
+	// polling while locked.
+	if (!s_eventsRwLock.tryLockForRead(0)) {
+		return false;
+	}
+	s_eventsRwLock.unlock();
 	return true;
 }
 
@@ -171,28 +181,26 @@ QList<std::shared_ptr<Gamepad>> SDLInputDriver::connectedGamepads() const {
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 void SDLInputDriver::updateGamepads() {
+	QSignalBlocker blocker(&m_gamepadTimer);
 	QWriteLocker locker(&s_eventsRwLock);
 	if (m_config) {
 		mSDLUpdateJoysticks(&s_sdlEvents, m_config->input());
 	}
+
+	QSet<size_t> knownGamepads;
 	for (int i = 0; i < m_gamepads.size(); ++i) {
-		if (m_gamepads.at(i)->updateIndex()) {
+		auto& gamepad = m_gamepads.at(i);
+		if (gamepad->updateIndex()) {
+			knownGamepads.insert(gamepad->m_index);
 			continue;
 		}
 		m_gamepads.removeAt(i);
 		--i;
 	}
-	std::sort(m_gamepads.begin(), m_gamepads.end(), [](const auto& a, const auto& b) {
-		return a->m_index < b->m_index;
-	});
 
-	for (size_t i = 0, j = 0; i < SDL_JoystickListSize(&s_sdlEvents.joysticks); ++i) {
-		if ((ssize_t) j < m_gamepads.size()) {
-			std::shared_ptr<SDLGamepad> gamepad = m_gamepads.at(j);
-			if (gamepad->m_index == i) {
-				++j;
-				continue;
-			}
+	for (size_t i = 0; i < SDL_JoystickListSize(&s_sdlEvents.joysticks); ++i) {
+		if (knownGamepads.contains(i)) {
+			continue;
 		}
 		// Can't use make_shared here due to friend restrictions
 		m_gamepads.append(std::shared_ptr<SDLGamepad>(new SDLGamepad(this, i)));
@@ -288,7 +296,7 @@ SDLGamepad::SDLGamepad(SDLInputDriver* driver, int index, QObject* parent)
 #endif
 }
 
-QList<bool> SDLGamepad::currentButtons() {
+QList<bool> SDLGamepad::currentButtons() const {
 	QReadLocker locker(&s_eventsRwLock);
 	if (!verify()) {
 		return {};
@@ -312,7 +320,7 @@ QList<bool> SDLGamepad::currentButtons() {
 	return buttons;
 }
 
-QList<int16_t> SDLGamepad::currentAxes() {
+QList<int16_t> SDLGamepad::currentAxes() const {
 	QReadLocker locker(&s_eventsRwLock);
 	if (!verify()) {
 		return {};
@@ -336,7 +344,7 @@ QList<int16_t> SDLGamepad::currentAxes() {
 	return axes;
 }
 
-QList<GamepadHatEvent::Direction> SDLGamepad::currentHats() {
+QList<GamepadHatEvent::Direction> SDLGamepad::currentHats() const {
 	QReadLocker locker(&s_eventsRwLock);
 	if (!verify()) {
 		return {};

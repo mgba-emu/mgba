@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "SettingsView.h"
+#include "moc_SettingsView.cpp"
 
 #include "AudioProcessor.h"
 #include "CheckBoxDelegate.h"
@@ -174,7 +175,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
 	}
 
-#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 	m_ui.displayDriver->addItem(tr("OpenGL"), static_cast<int>(Display::Driver::OPENGL));
 	if (displayDriver.isNull() || displayDriver.toInt() == static_cast<int>(Display::Driver::OPENGL)) {
 		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
@@ -410,7 +411,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	shortcutView->setInputController(inputController);
 	addPage(tr("Shortcuts"), shortcutView, Page::SHORTCUTS);
 
-#if defined(BUILD_GLES2) || defined(USE_EPOXY)
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 	m_dummyShader = new QLabel(tr("Shaders are not supported when the display driver is not OpenGL.\n\n"
 		"If it is set to OpenGL and you still see this, your graphics card or drivers may be too old."));
 	m_dummyShader->setWordWrap(true);
@@ -420,7 +421,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 }
 
 SettingsView::~SettingsView() {
-#if defined(BUILD_GLES2) || defined(USE_EPOXY)
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 	if (m_shader) {
 		m_shader->setParent(nullptr);
 	}
@@ -428,7 +429,7 @@ SettingsView::~SettingsView() {
 }
 
 void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
-#if  defined(BUILD_GLES2) || defined(USE_EPOXY)
+#if  defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 	auto items = m_ui.tabs->findItems(tr("Shaders"), Qt::MatchFixedString);
 	for (QListWidgetItem* item : items) {
 		delete item;

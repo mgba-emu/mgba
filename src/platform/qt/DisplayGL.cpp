@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "DisplayGL.h"
+#include "moc_DisplayGL.cpp"
 
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 
@@ -198,7 +199,6 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 #ifdef USE_SHARE_WIDGET
 	bool useShareWidget = true;
 #else
-	// TODO: Does using this on Wayland help?
 	bool useShareWidget = false;
 #endif
 
@@ -264,11 +264,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	showFrameCounter(isShowFrameCounter());
 	filter(isFiltered());
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	messagePainter()->resize(size(), devicePixelRatioF());
-#else
-	messagePainter()->resize(size(), devicePixelRatio());
-#endif
 
 	CoreController::Interrupter interrupter(m_context);
 	QMetaObject::invokeMethod(m_painter.get(), "start");
@@ -507,6 +503,9 @@ bool DisplayGL::shouldDisableUpdates() {
 		return true;
 	}
 	if (QGuiApplication::platformName() == "xcb") {
+		return true;
+	}
+	if (QGuiApplication::platformName() == "wayland") {
 		return true;
 	}
 	return false;

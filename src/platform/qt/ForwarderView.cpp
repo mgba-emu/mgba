@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/ */
 #include "ForwarderView.h"
+#include "moc_ForwarderView.cpp"
 
 #include <QMessageBox>
 #include <QResizeEvent>
@@ -136,9 +137,9 @@ void ForwarderView::validate() {
 			valid = false;
 		}
 	} else {
-		m_ui.baseFilename->setEnabled(true);
-		m_ui.baseLabel->setEnabled(true);
-		m_ui.baseBrowse->setEnabled(true);
+		m_ui.baseFilename->setEnabled(false);
+		m_ui.baseLabel->setEnabled(false);
+		m_ui.baseBrowse->setEnabled(false);
 	}
 	if (m_controller.inProgress()) {
 		valid = false;

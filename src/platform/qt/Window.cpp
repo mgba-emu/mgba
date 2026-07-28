@@ -25,6 +25,7 @@
 
 #include "AboutScreen.h"
 #include "AudioProcessor.h"
+#include "AudioProcessorDummy.h"
 #include "BattleChipView.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
@@ -89,6 +90,8 @@
 
 #include <mgba-util/convolve.h>
 
+#include "moc_Window.cpp"
+
 using namespace QGBA;
 
 Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWidget* parent)
@@ -148,7 +151,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 		VFile* output = m_libraryView->selectedVFile();
 		if (output) {
 			QPair<QString, QString> path = m_libraryView->selectedPath();
-			setController(m_manager->loadGame(output, path.second, path.first), path.first + "/" + path.second);
+			setController(m_manager->loadGame(output, path.second, path.first));
 		}
 	});
 #endif
@@ -250,7 +253,7 @@ void Window::argumentsPassed() {
 	}
 
 	if (args->fname) {
-		setController(m_manager->loadGame(args->fname), args->fname);
+		setController(m_manager->loadGame(args->fname));
 	}
 
 	if (m_config->graphicsOpts()->fullscreen) {
@@ -355,7 +358,7 @@ QString Window::getFiltersArchive() const {
 void Window::selectROM() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), romFilters(true));
 	if (!filename.isEmpty()) {
-		setController(m_manager->loadGame(filename), filename);
+		setController(m_manager->loadGame(filename));
 	}
 }
 
@@ -364,7 +367,7 @@ void Window::bootBIOS() {
 	if (bios.isEmpty()) {
 		bios = m_config->getOption("bios");
 	}
-	setController(m_manager->loadBIOS(mPLATFORM_GBA, bios), QString());
+	setController(m_manager->loadBIOS(mPLATFORM_GBA, bios));
 }
 
 #ifdef USE_SQLITE3
@@ -378,7 +381,7 @@ void Window::selectROMInArchive() {
 		VFile* output = archiveInspector->selectedVFile();
 		QPair<QString, QString> path = archiveInspector->selectedPath();
 		if (output) {
-			setController(m_manager->loadGame(output, path.second, path.first), path.first + "/" + path.second);
+			setController(m_manager->loadGame(output, path.second, path.first));
 		}
 		archiveInspector->close();
 	});
@@ -839,7 +842,7 @@ void Window::dropEvent(QDropEvent* event) {
 		return;
 	}
 	event->accept();
-	setController(m_manager->loadGame(url.toLocalFile()), url.toLocalFile());
+	setController(m_manager->loadGame(url.toLocalFile()));
 }
 
 #ifndef Q_OS_MAC
@@ -983,6 +986,7 @@ void Window::gameStopped() {
 	}
 	for (auto& action : m_gameActions) {
 		action->setEnabled(false);
+		action->setActive(false);
 	}
 	setWindowFilePath(QString());
 
@@ -1153,6 +1157,9 @@ void Window::reloadAudioDriver() {
 	m_audioProcessor->configure(m_config);
 	if (!m_audioProcessor->start()) {
 		LOG(QT, WARN) << tr("Failed to start audio processor");
+		m_audioProcessor = std::make_unique<AudioProcessorDummy>();
+		m_audioProcessor->setInput(m_controller);
+		m_audioProcessor->configure(m_config);
 	}
 }
 
@@ -2076,7 +2083,7 @@ void Window::updateMRU() {
 	for (const QString& file : m_mruFiles) {
 		QString displayName(QDir::toNativeSeparators(file).replace("&", "&&"));
 		m_actions.addAction(displayName, QString("mru.%1").arg(QString::number(i)), [this, file]() {
-			setController(m_manager->loadGame(file), file);
+			setController(m_manager->loadGame(file));
 		}, "mru", QString("Ctrl+%1").arg(i));
 		++i;
 	}
@@ -2175,7 +2182,7 @@ void Window::updateFrame() {
 	m_screenWidget->setPixmap(pixmap);
 }
 
-void Window::setController(CoreController* controller, const QString& fname) {
+void Window::setController(CoreController* controller) {
 	if (!controller) {
 		return;
 	}
@@ -2185,14 +2192,25 @@ void Window::setController(CoreController* controller, const QString& fname) {
 
 	if (m_controller) {
 		m_controller->stop();
-		QTimer::singleShot(0, this, [this, controller, fname]() {
-			setController(controller, fname);
+		QTimer::singleShot(0, this, [this, controller]() {
+			setController(controller);
 		});
 		return;
 	}
-	if (!fname.isEmpty()) {
-		setWindowFilePath(fname);
-		appendMRU(fname);
+
+	QString baseDirectory = controller->baseDirectory();
+	QString path = controller->path();
+	if (!path.isEmpty()) {
+		QString fname;
+		if (baseDirectory.isEmpty()) {
+			fname = path;
+		} else {
+			fname = QFileInfo(QDir(baseDirectory), path).filePath();
+		}
+		if (!fname.isEmpty()) {
+			setWindowFilePath(fname);
+			appendMRU(fname);
+		}
 	}
 
 	if (!m_display) {

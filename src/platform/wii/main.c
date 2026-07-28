@@ -50,6 +50,8 @@ static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, int 
 static enum ScreenMode {
 	SM_PA,
 	SM_SF,
+	SM_4_3,
+	SM_16_9,
 	SM_MAX
 } screenMode = SM_PA;
 
@@ -516,8 +518,10 @@ int main(int argc, char* argv[]) {
 				.validStates = (const char*[]) {
 					"Pixel-Accurate",
 					"Stretched",
+					"4:3 Optimized",
+					"16:9 Optimized",
 				},
-				.nStates = 2
+				.nStates = 4
 			},
 			{
 				.title = "Filtering",
@@ -1566,6 +1570,8 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 	s16 vertWidth = corew;
 	s16 vertHeight = coreh;
+	s16 vertX = 0;
+	s16 vertY = 0;
 
 	if (filterMode == FM_LINEAR_2x) {
 		Mtx44 proj;
@@ -1600,14 +1606,15 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		}
 	}
 
-	if (screenMode == SM_PA) {
-		unsigned factorWidth = corew;
-		unsigned factorHeight = coreh;
-		if (sgbCrop && factorWidth == 256 && factorHeight == 224) {
-			factorWidth = GB_VIDEO_HORIZONTAL_PIXELS;
-			factorHeight = GB_VIDEO_VERTICAL_PIXELS;
-		}
+	int factorWidth = corew;
+	int factorHeight = coreh;
+	if (sgbCrop && factorWidth == 256 && factorHeight == 224) {
+		factorWidth = GB_VIDEO_HORIZONTAL_PIXELS;
+		factorHeight = GB_VIDEO_VERTICAL_PIXELS;
+	}
 
+	switch (screenMode) {
+	case SM_PA: {
 		int hfactor = (vmode->fbWidth * wStretch) / (factorWidth * wAdjust);
 		int vfactor = (vmode->efbHeight * hStretch) / (factorHeight * hAdjust);
 		if (hfactor > vfactor) {
@@ -1619,25 +1626,59 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		vertWidth *= scaleFactor;
 		vertHeight *= scaleFactor;
 
-		_reproj(corew * scaleFactor, coreh * scaleFactor);
-	} else {
-		_reproj2(corew, coreh);
+		_reproj(vertWidth, vertHeight);
+		break;
+	}
+	case SM_SF:
+		_reproj2(vertWidth, vertHeight);
+		break;
+	case SM_4_3:
+		if (factorWidth * 3 > factorHeight * 4) {
+			// Wider than 4:3, letterbox
+			vertHeight = 640 * factorHeight * coreh / (factorWidth * factorHeight);
+			vertWidth = 640 * coreh / factorHeight;
+		} else {
+			// Taller than 4:3, pillarbox
+			vertWidth = 480 * factorWidth * corew / (factorHeight * factorWidth);
+			vertHeight = 480 * corew / factorWidth;
+		}
+		vertX = (640 - vertWidth) / 2;
+		vertY = (480 - vertHeight) / 2;
+		_reproj2(640, 480);
+		break;
+	case SM_16_9:
+		if (factorWidth * 9 > factorHeight * 16) {
+			// Wider than 16:9, letterbox
+			vertHeight = 960 * factorHeight * coreh / (factorWidth * factorHeight);
+			vertWidth = 960 * coreh / factorHeight;
+		} else {
+			// Taller than 16:9, pillarbox
+			vertWidth = 540 * factorWidth * corew / (factorHeight * factorWidth);
+			vertHeight = 540 * corew / factorWidth;
+			_reproj2(960, 540);
+		}
+		vertX = (960 - vertWidth) / 2;
+		vertY = (540 - vertHeight) / 2;
+		_reproj2(960, 540);
+		break;
+	case SM_MAX:
+		break;
 	}
 
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-	GX_Position2s16(0, vertHeight);
+	GX_Position2s16(vertX, vertHeight + vertY);
 	GX_Color1u32(color);
 	GX_TexCoord2f32(0, coreh / (float) TEX_H);
 
-	GX_Position2s16(vertWidth, vertHeight);
+	GX_Position2s16(vertWidth + vertX, vertHeight + vertY);
 	GX_Color1u32(color);
 	GX_TexCoord2f32(corew / (float) TEX_W, coreh / (float) TEX_H);
 
-	GX_Position2s16(vertWidth, 0);
+	GX_Position2s16(vertWidth + vertX, vertY);
 	GX_Color1u32(color);
 	GX_TexCoord2f32(corew / (float) TEX_W, 0);
 
-	GX_Position2s16(0, 0);
+	GX_Position2s16(vertX, vertY);
 	GX_Color1u32(color);
 	GX_TexCoord2f32(0, 0);
 	GX_End();

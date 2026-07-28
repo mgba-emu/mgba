@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "DebuggerConsoleController.h"
+#include "moc_DebuggerConsoleController.cpp"
 
 #include "ConfigController.h"
 #include "CoreController.h"
@@ -33,6 +34,12 @@ DebuggerConsoleController::DebuggerConsoleController(QObject* parent)
 
 	CLIDebuggerCreate(&m_cliDebugger);
 	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend);
+}
+
+bool DebuggerConsoleController::isPaused() {
+	CoreController::Interrupter interrupter(m_gameController);
+	QMutexLocker lock(&m_mutex);
+	return m_cliDebugger.d.isPaused;
 }
 
 void DebuggerConsoleController::enterLine(const QString& line) {
@@ -187,4 +194,10 @@ void DebuggerConsoleController::historySave() {
 		log.write(line.toUtf8());
 		log.write("\n");
 	}
+}
+
+void DebuggerConsoleController::doContinue() {
+	CoreController::Interrupter interrupter(m_gameController);
+	QMutexLocker lock(&m_mutex);
+	CLIDebuggerContinue(&m_cliDebugger);
 }

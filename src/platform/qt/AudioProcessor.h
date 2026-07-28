@@ -22,6 +22,7 @@ Q_OBJECT
 
 public:
 	enum class Driver {
+		DUMMY = -1,
 		QT_MULTIMEDIA = 0,
 		SDL = 1,
 	};

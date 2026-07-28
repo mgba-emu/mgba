@@ -486,7 +486,7 @@ static void _writeRegister(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
 		return;
 	}
-	if (!debugger->d.p->core->writeRegister(debugger->d.p->core, dv->charValue, &dv->next->intValue)) {
+	if (!debugger->d.p->core->writeRegister(debugger->d.p->core, dv->charValue, dv->next->intValue)) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
 	}
 }
@@ -1136,6 +1136,12 @@ bool CLIDebuggerRunCommand(struct CLIDebugger* debugger, const char* line, size_
 		debugger->backend->printf(debugger->backend, "Command not found\n");
 	}
 	return result > 0;
+}
+
+void CLIDebuggerContinue(struct CLIDebugger* debugger) {
+	debugger->d.needsCallback = debugger->traceRemaining != 0;
+	debugger->d.isPaused = false;
+	mDebuggerUpdatePaused(debugger->d.p);
 }
 
 static void _commandLine(struct mDebuggerModule* debugger, int32_t timeoutMs) {

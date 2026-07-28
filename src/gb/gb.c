@@ -988,9 +988,6 @@ void GBProcessEvents(struct SM83Core* cpu) {
 
 			nextEvent = cycles;
 			do {
-#ifdef ENABLE_DEBUGGERS
-				gb->timing.globalCycles += nextEvent;
-#endif
 				nextEvent = mTimingTick(&gb->timing, nextEvent);
 			} while (gb->cpuBlocked);
 			// This loop cannot early exit until the SM83 run loop properly handles mid-M-cycle-exits
@@ -1208,7 +1205,7 @@ void GBFrameEnded(struct GB* gb) {
 	struct mRumble* rumble = gb->memory.rumble;
 	if (rumble && rumble->integrate) {
 		gb->memory.lastRumble = mTimingCurrentTime(&gb->timing);
-		rumble->integrate(rumble, GB_VIDEO_TOTAL_LENGTH);
+		rumble->integrate(rumble, GB_VIDEO_TOTAL_LENGTH << 1);
 	}
 
 	// TODO: Move to common code

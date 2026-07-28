@@ -107,6 +107,7 @@ set(SOURCE_FILES
 	AssetTile.cpp
 	AssetView.cpp
 	AudioProcessor.cpp
+	AudioProcessorDummy.cpp
 	CheatsModel.cpp
 	CheatsView.cpp
 	CheckBoxDelegate.cpp
@@ -476,7 +477,7 @@ if(QT_STATIC)
 			set(QWINDOWS_DEPS ${QT}EventDispatcherSupport ${QT}FontDatabaseSupport ${QT}ThemeSupport ${QT}WindowsUIAutomationSupport)
 		endif()
 		list(APPEND QT_LIBRARIES ${QT}::QWindowsIntegrationPlugin ${QWINDOWS_DEPS} amstrmid uxtheme imm32 -static-libgcc -static-libstdc++)
-		set_target_properties(${QT}::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE};version;winmm;ssl;crypto;ws2_32;iphlpapi;crypt32;userenv;netapi32;wtsapi32")
+		set_target_properties(${QT}::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE};version;winmm;ssl;crypto;ws2_32;iphlpapi;crypt32;userenv;netapi32;wtsapi32;ncrypt;secur32")
 		set_target_properties(${QT}::Gui PROPERTIES INTERFACE_LINK_LIBRARIES ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 	elseif(APPLE)
 		find_package(Cups)
@@ -489,7 +490,7 @@ if(QT_STATIC)
 		list(APPEND QT_LIBRARIES "-framework AVFoundation" "-framework CoreMedia" "-framework SystemConfiguration" "-framework Security")
 		set_target_properties(${QT}::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE}")
 	elseif(UNIX)
-		list(APPEND QT_LIBRARIES ${QT}::FontDatabaseSupport ${QT}::XcbQpa ${QT}::QWaylandIntegrationPlugin)
+		list(APPEND QT_LIBRARIES ${QT}::QXcbIntegrationPlugin ${QT}::QWaylandIntegrationPlugin)
 	endif()
 endif()
 target_link_libraries(${BINARY_NAME}-qt ${PLATFORM_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES})

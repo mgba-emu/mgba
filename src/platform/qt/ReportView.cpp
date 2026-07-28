@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ReportView.h"
+#include "moc_ReportView.cpp"
 
 #include <QBuffer>
 #include <QDesktopServices>
@@ -21,6 +22,7 @@
 
 #include "CoreController.h"
 #include "GBAApp.h"
+#include "input/Gamepad.h"
 #include "Window.h"
 
 #include "ui_ReportView.h"
@@ -60,7 +62,8 @@
 #endif
 
 #ifdef USE_FREETYPE
-#include <freetype/freetype.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 #endif
 
 #ifdef USE_JSON_C
@@ -269,8 +272,22 @@ void ReportView::generateReport() {
 	addReport(QString("Hardware info"), hwReport.join('\n'));
 
 	QStringList controlsReport;
-	addGamepadInfo(controlsReport);
+	addControlsInfo(controlsReport);
 	addReport(QString("Controls"), controlsReport.join('\n'));
+
+	InputController* input = GBAApp::app()->windows()[0]->inputController();
+	InputDriver* gamepadDriver = input->gamepadDriver();
+	if (gamepadDriver) {
+		int i = 0;
+		auto gamepads = gamepadDriver->connectedGamepads();
+		for (const auto& gamepad : gamepads) {
+			++i;
+
+			QStringList gamepadReport;
+			addGamepadInfo(gamepadReport, gamepad.get());
+			addReport(QString("Gamepad %1").arg(i), gamepadReport.join('\n'));
+		}
+	}
 
 	QList<QScreen*> screens = QGuiApplication::screens();
 	std::sort(screens.begin(), screens.end(), [](const QScreen* a, const QScreen* b) {
@@ -520,6 +537,12 @@ void ReportView::addGLInfo(QStringList& report) {
 
 	report << QString("OpenGL type: %1").arg(QLatin1String(QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL ? "OpenGL" : "OpenGL|ES"));
 
+#ifdef USE_EPOXY
+	report << QString("Using libepoxy");
+#else
+	report << QString("Not using libepoxy");
+#endif
+
 	format.setVersion(1, 4);
 	report << QString("OpenGL supports legacy (1.x) contexts: %1").arg(yesNo[DisplayGL::supportsFormat(format)]);
 
@@ -531,7 +554,41 @@ void ReportView::addGLInfo(QStringList& report) {
 	format.setProfile(QSurfaceFormat::CoreProfile);
 	report << QString("OpenGL supports core contexts: %1").arg(yesNo[DisplayGL::supportsFormat(format)]);
 
+	format = QSurfaceFormat();
+	format.setRenderableType(QSurfaceFormat::OpenGL);
+	format.setVersion(3, 3);
+	report << QString("Supports OpenGL 3.3: %1").arg(yesNo[DisplayGL::supportsFormat(format)]);
+
+	format = QSurfaceFormat();
+	format.setRenderableType(QSurfaceFormat::OpenGLES);
+	format.setVersion(2, 0);
+	report << QString("Supports OpenGL|ES 2.0: %1").arg(yesNo[DisplayGL::supportsFormat(format)]);
+
+	format = QSurfaceFormat();
+	format.setRenderableType(QSurfaceFormat::OpenGLES);
+	format.setVersion(3, 1);
+	report << QString("Supports OpenGL|ES 3.1: %1").arg(yesNo[DisplayGL::supportsFormat(format)]);
+
+	format = QSurfaceFormat();
+	if (DisplayGL::highestCompatible(format)) {
+		QString version;
+		switch (format.renderableType()) {
+		case QSurfaceFormat::OpenGL:
+			version = "OpenGL ";
+			break;
+		case QSurfaceFormat::OpenGLES:
+			version = "OpenGL|ES ";
+			break;
+		default:
+			break;
+		}
+		report << QString("Highest compatible OpenGL version: %1%2.%3").arg(version).arg(format.majorVersion()).arg(format.minorVersion());
+	} else {
+		report << QString("Could not detect highest compatible OpenGL version");
+	}
+
 	QOpenGLContext context;
+	context.setFormat(format);
 	if (context.create()) {
 		QOffscreenSurface surface;
 		surface.create();
@@ -545,21 +602,50 @@ void ReportView::addGLInfo(QStringList& report) {
 #endif
 }
 
-void ReportView::addGamepadInfo(QStringList& report) {
+void ReportView::addControlsInfo(QStringList& report) {
 	InputController* input = GBAApp::app()->windows()[0]->inputController();
 	QStringList gamepads = input->connectedGamepads();
 	report << QString("Connected gamepads: %1").arg(gamepads.size());
-	int i = 0;
-	for (const auto& gamepad : gamepads) {
-		report << QString("Gamepad %1: %2").arg(i).arg(gamepad);
-		++i;
-	}
 	if (gamepads.size()) {
-		i = 0;
+		int i = 0;
 		for (Window* window : GBAApp::app()->windows()) {
 			++i;
-			report << QString("Window %1 gamepad: %2").arg(i).arg(window->inputController()->gamepadIndex());
+			report << QString("Window %1 gamepad: %2").arg(i).arg(window->inputController()->gamepadIndex() + 1);
 		}
+	}
+}
+
+void ReportView::addGamepadInfo(QStringList& report, const Gamepad* gamepad) {
+	int buttonCount = gamepad->buttonCount();
+	int axisCount = gamepad->axisCount();
+	int hatCount = gamepad->hatCount();
+	const QList<bool> buttonState = gamepad->currentButtons();
+	const QList<int16_t> axisState = gamepad->currentAxes();
+	const QList<GamepadHatEvent::Direction> hatState = gamepad->currentHats();
+
+	report << QString("Name: %1").arg(gamepad->visibleName());
+	report << QString("Internal name: %1").arg(gamepad->name());
+	report << QString("Button count: %1").arg(buttonCount);
+	report << QString("Axis count: %1").arg(axisCount);
+	report << QString("Hat count: %1").arg(hatCount);
+
+	int i;
+	for (i = 0; i < buttonCount; ++i) {
+		report << QString("Button %1 name: %2").arg(i).arg(gamepad->buttonHumanName(i));
+		if (i < buttonState.count()) {
+			report << QString("Button %1 state: %2").arg(i).arg(buttonState.at(i));
+		}
+	}
+
+	for (i = 0; i < axisCount; ++i) {
+		report << QString("Axis %1 name: %2").arg(i).arg(gamepad->axisHumanName(i));
+		if (i < axisState.count()) {
+			report << QString("Axis %1 state: %2").arg(i).arg(axisState.at(i));
+		}
+	}
+
+	for (i = 0; i < hatState.count(); ++i) {
+		report << QString("Hat %1 state: %2").arg(i).arg(hatState.at(i));
 	}
 }
 
@@ -609,9 +695,7 @@ void ReportView::addScreenInfo(QStringList& report, const QScreen* screen) {
 	report << QString("Size: %1x%2").arg(geometry.width()).arg(geometry.height());
 	report << QString("Location: %1, %2").arg(geometry.x()).arg(geometry.y());
 	report << QString("Refresh rate: %1 Hz").arg(screen->refreshRate());
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
 	report << QString("Pixel ratio: %1").arg(screen->devicePixelRatio());
-#endif
 	report << QString("Logical DPI: %1x%2").arg(screen->logicalDotsPerInchX()).arg(screen->logicalDotsPerInchY());
 	report << QString("Physical DPI: %1x%2").arg(screen->physicalDotsPerInchX()).arg(screen->physicalDotsPerInchY());
 }

@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "LogController.h"
+#include "moc_LogController.cpp"
 
 #include <QLoggingCategory>
 #include <QMessageBox>
@@ -52,9 +53,18 @@ LogController::LogController(int levels, QObject* parent)
 	mLogFilterSet(&m_filter, "gba.bios", mLOG_STUB | mLOG_FATAL);
 	mLogFilterSet(&m_filter, "core.status", mLOG_ALL & ~mLOG_DEBUG);
 	m_filter.defaultLevels = levels;
+	m_logger.self = this;
+	m_logger.filter = &m_filter;
+	m_logger.log = [](struct mLogger* logger, int category, mLogLevel level, const char* format, va_list args) {
+		Logger* logContext = static_cast<Logger*>(logger);
+
+		QString message = QString::vasprintf(format, args);
+		QMetaObject::invokeMethod(logContext->self, "logPosted", Q_ARG(int, level), Q_ARG(int, category), Q_ARG(const QString&, message));
+	};
 	s_qtCat = mLogCategoryById("platform.qt");
 
 	if (this == &s_global) {
+		mLogSetThreadLogger(&m_logger);
 		setDefaultTarget(this);
 	} else {
 		connect(this, static_cast<void (LogController::*)(int)>(&LogController::levelsSet), &s_global, static_cast<void (LogController::*)(int)>(&LogController::setLevels));
@@ -82,6 +92,10 @@ void LogController::load(const ConfigController* config) {
 	setLogFile(config->getOption("logFile"));
 	logToStdout(config->getOption("logToStdout").toInt());
 	logToFile(config->getOption("logToFile").toInt());
+
+	if (this != &s_global) {
+		s_global.load(config);
+	}
 }
 
 void LogController::save(ConfigController* config) const {

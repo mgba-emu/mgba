@@ -585,9 +585,21 @@ static size_t _GBACoreGetAudioBufferSize(struct mCore* core) {
 	return gba->audio.samples;
 }
 
-static void _GBACoreAddCoreCallbacks(struct mCore* core, struct mCoreCallbacks* coreCallbacks) {
+static void _GBACoreAddCoreCallbacks(struct mCore* core, const struct mCoreCallbacks* coreCallbacks) {
 	struct GBA* gba = core->board;
 	*mCoreCallbacksListAppend(&gba->coreCallbacks) = *coreCallbacks;
+}
+
+static void _GBACoreRemoveCoreCallbacks(struct mCore* core, const struct mCoreCallbacks* coreCallbacks) {
+	struct GBA* gba = core->board;
+	size_t i;
+
+	for (i = 0; i < mCoreCallbacksListSize(&gba->coreCallbacks); ++i) {
+		if (memcmp(mCoreCallbacksListGetConstPointer(&gba->coreCallbacks, i), coreCallbacks, sizeof(*coreCallbacks)) == 0) {
+			mCoreCallbacksListShift(&gba->coreCallbacks, i, 1);
+			break;
+		}
+	}
 }
 
 static void _GBACoreClearCoreCallbacks(struct mCore* core) {
@@ -1193,9 +1205,8 @@ static size_t _GBACoreListRegisters(const struct mCore* core, const struct mCore
 	return sizeof(_GBARegisters) / sizeof(*_GBARegisters);
 }
 
-static bool _GBACoreReadRegister(const struct mCore* core, const char* name, void* out) {
+static bool _GBACoreReadRegister(const struct mCore* core, const char* name, int32_t* out) {
 	struct ARMCore* cpu = core->cpu;
-	int32_t* value = out;
 	switch (name[0]) {
 	case 'r':
 	case 'R':
@@ -1204,7 +1215,7 @@ static bool _GBACoreReadRegister(const struct mCore* core, const char* name, voi
 	case 'c':
 	case 'C':
 		if (strcmp(name, "cpsr") == 0 || strcmp(name, "CPSR") == 0) {
-			*value = cpu->cpsr.packed;
+			*out = cpu->cpsr.packed;
 			_ARMReadCPSR(cpu);
 			return true;
 		}
@@ -1212,14 +1223,14 @@ static bool _GBACoreReadRegister(const struct mCore* core, const char* name, voi
 	case 'i':
 	case 'I':
 		if (strcmp(name, "ip") == 0 || strcmp(name, "IP") == 0) {
-			*value = cpu->gprs[12];
+			*out = cpu->gprs[12];
 			return true;
 		}
 		return false;
 	case 's':
 	case 'S':
 		if (strcmp(name, "sp") == 0 || strcmp(name, "SP") == 0) {
-			*value = cpu->gprs[ARM_SP];
+			*out = cpu->gprs[ARM_SP];
 			return true;
 		}
 		// TODO: SPSR
@@ -1227,14 +1238,14 @@ static bool _GBACoreReadRegister(const struct mCore* core, const char* name, voi
 	case 'l':
 	case 'L':
 		if (strcmp(name, "lr") == 0 || strcmp(name, "LR") == 0) {
-			*value = cpu->gprs[ARM_LR];
+			*out = cpu->gprs[ARM_LR];
 			return true;
 		}
 		return false;
 	case 'p':
 	case 'P':
 		if (strcmp(name, "pc") == 0 || strcmp(name, "PC") == 0) {
-			*value = cpu->gprs[ARM_PC];
+			*out = cpu->gprs[ARM_PC];
 			return true;
 		}
 		return false;
@@ -1248,13 +1259,12 @@ static bool _GBACoreReadRegister(const struct mCore* core, const char* name, voi
 	if (errno || regId > 15 || *parseEnd) {
 		return false;
 	}
-	*value = cpu->gprs[regId];
+	*out = cpu->gprs[regId];
 	return true;
 }
 
-static bool _GBACoreWriteRegister(struct mCore* core, const char* name, const void* in) {
+static bool _GBACoreWriteRegister(struct mCore* core, const char* name, int32_t in) {
 	struct ARMCore* cpu = core->cpu;
-	int32_t value = *(const int32_t*) in;
 	switch (name[0]) {
 	case 'r':
 	case 'R':
@@ -1265,7 +1275,7 @@ static bool _GBACoreWriteRegister(struct mCore* core, const char* name, const vo
 		if (strcmp(name, "cpsr") == 0) {
 			uint32_t pc = cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB;
 			enum ExecutionMode mode = cpu->cpsr.t;
-			cpu->cpsr.packed = value & 0xF00000FF;
+			cpu->cpsr.packed = in & 0xF00000FF;
 			_ARMReadCPSR(cpu);
 			if (mode != cpu->cpsr.t) {
 				// Mode changed, flush the prefetch
@@ -1284,14 +1294,14 @@ static bool _GBACoreWriteRegister(struct mCore* core, const char* name, const vo
 	case 'i':
 	case 'I':
 		if (strcmp(name, "ip") == 0 || strcmp(name, "IP") == 0) {
-			cpu->gprs[12] = value;
+			cpu->gprs[12] = in;
 			return true;
 		}
 		return false;
 	case 's':
 	case 'S':
 		if (strcmp(name, "sp") == 0 || strcmp(name, "SP") == 0) {
-			cpu->gprs[ARM_SP] = value;
+			cpu->gprs[ARM_SP] = in;
 			return true;
 		}
 		// TODO: SPSR
@@ -1299,7 +1309,7 @@ static bool _GBACoreWriteRegister(struct mCore* core, const char* name, const vo
 	case 'l':
 	case 'L':
 		if (strcmp(name, "lr") == 0 || strcmp(name, "LR") == 0) {
-			cpu->gprs[ARM_LR] = value;
+			cpu->gprs[ARM_LR] = in;
 			return true;
 		}
 		return false;
@@ -1320,7 +1330,7 @@ static bool _GBACoreWriteRegister(struct mCore* core, const char* name, const vo
 	if (errno || regId > 15 || *parseEnd) {
 		return false;
 	}
-	cpu->gprs[regId] = value;
+	cpu->gprs[regId] = in;
 	if (regId == ARM_PC) {
 		if (cpu->cpsr.t) {
 			ThumbWritePC(cpu);
@@ -1656,6 +1666,7 @@ struct mCore* GBACoreCreate(void) {
 	core->setAudioBufferSize = _GBACoreSetAudioBufferSize;
 	core->getAudioBufferSize = _GBACoreGetAudioBufferSize;
 	core->addCoreCallbacks = _GBACoreAddCoreCallbacks;
+	core->removeCoreCallbacks = _GBACoreRemoveCoreCallbacks;
 	core->clearCoreCallbacks = _GBACoreClearCoreCallbacks;
 	core->setAVStream = _GBACoreSetAVStream;
 	core->isROM = GBAIsROM;
@@ -1683,6 +1694,7 @@ struct mCore* GBACoreCreate(void) {
 	core->frameCounter = _GBACoreFrameCounter;
 	core->frameCycles = _GBACoreFrameCycles;
 	core->frequency = _GBACoreFrequency;
+	core->timingFrequency = _GBACoreFrequency;
 	core->getGameInfo = _GBACoreGetGameInfo;
 	core->setPeripheral = _GBACoreSetPeripheral;
 	core->getPeripheral = _GBACoreGetPeripheral;

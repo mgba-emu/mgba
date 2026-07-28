@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ApplicationUpdater.h"
+#include "moc_ApplicationUpdater.cpp"
 
 #include <QDir>
 #include <QFileInfo>
@@ -53,7 +54,11 @@ ApplicationUpdater::ApplicationUpdater(ConfigController* config, QObject* parent
 	});
 
 	connect(this, &AbstractUpdater::updateDone, this, [this, config]() {
+#ifndef Q_OS_LINUX
 		QByteArray exe = GBAApp::applicationFilePath().toUtf8();
+#else
+		QByteArray exe = qgetenv("APPIMAGE");
+#endif
 		QByteArray path = updateInfo().url.path().toUtf8();
 		mUpdateRegister(config->config(), exe.constData(), path.constData());
 		config->write();
@@ -170,6 +175,8 @@ const char* ApplicationUpdater::platform() {
 #endif
 #elif defined(Q_OS_LINUX) && defined(__x86_64__)
 	return "appimage-x64";
+#elif defined(Q_OS_LINUX) && defined(__aarch64__)
+	return "appimage-arm64";
 #else
 	// Return one that will be up to date, but we can't download
 	return "win64";

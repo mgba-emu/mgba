@@ -103,6 +103,9 @@ bool mTimingIsScheduled(const struct mTiming* timing, const struct mTimingEvent*
 
 int32_t mTimingTick(struct mTiming* timing, int32_t cycles) {
 	timing->masterCycles += cycles;
+#ifdef ENABLE_DEBUGGERS
+	timing->globalCycles += cycles;
+#endif
 	uint32_t masterCycles = timing->masterCycles;
 	while (timing->root) {
 		struct mTimingEvent* next = timing->root;

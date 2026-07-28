@@ -156,7 +156,7 @@ void mCoreConfigInit(struct mCoreConfig* config, const char* port) {
 		config->port = malloc(strlen("ports.") + strlen(port) + 1);
 		snprintf(config->port, strlen("ports.") + strlen(port) + 1, "ports.%s", port);
 	} else {
-		config->port = 0;
+		config->port = NULL;
 	}
 }
 

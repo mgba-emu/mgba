@@ -18,7 +18,6 @@
 
 #ifndef DISABLE_THREADING
 
-static const float _defaultFPSTarget = 60.f;
 static ThreadLocal _contextKey;
 
 #ifdef USE_PTHREADS
@@ -432,10 +431,6 @@ bool mCoreThreadStart(struct mCoreThread* threadContext) {
 	threadContext->logger.d.log = _mCoreLog;
 	threadContext->logger.d.filter = NULL;
 
-	if (!threadContext->impl->sync.fpsTarget) {
-		threadContext->impl->sync.fpsTarget = _defaultFPSTarget;
-	}
-
 	MutexInit(&threadContext->impl->stateMutex);
 	ConditionInit(&threadContext->impl->stateOnThreadCond);
 	ConditionInit(&threadContext->impl->stateOffThreadCond);
@@ -456,10 +451,7 @@ bool mCoreThreadStart(struct mCoreThread* threadContext) {
 	pthread_sigmask(SIG_BLOCK, &signals, 0);
 #endif
 
-	threadContext->impl->sync.audioWait = threadContext->core->opts.audioSync;
-	threadContext->impl->sync.videoFrameWait = threadContext->core->opts.videoSync;
-	threadContext->impl->sync.fpsTarget = threadContext->core->opts.fpsTarget;
-	threadContext->impl->sync.audioHighWater = 512;
+	mCoreSyncLoadCoreOpts(&threadContext->impl->sync, &threadContext->core->opts);
 
 	MutexLock(&threadContext->impl->stateMutex);
 	ThreadCreate(&threadContext->impl->thread, _mCoreThreadRun, threadContext);

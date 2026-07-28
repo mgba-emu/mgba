@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ForwarderController.h"
+#include "moc_ForwarderController.cpp"
 
 #include <QDir>
 #include <QFileInfo>
@@ -98,7 +99,10 @@ void ForwarderController::gotForwarderKit(QNetworkReply* reply) {
 	}
 
 	QFile fkZip(ConfigController::cacheDir() + "/forwarder-kit.zip");
-	fkZip.open(QIODevice::WriteOnly | QIODevice::Truncate);
+	if (!fkZip.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+		emit buildFailed();
+		return;
+	}
 	QByteArray arr;
 	do {
 		arr = reply->read(0x800);

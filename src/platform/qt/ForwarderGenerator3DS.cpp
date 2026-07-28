@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ForwarderGenerator3DS.h"
+#include "moc_ForwarderGenerator3DS.cpp"
 
 #include "ConfigController.h"
 

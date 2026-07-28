@@ -8,6 +8,7 @@ Features:
  - Cheats: Add support for additional, undocumented GameShark IF code types
  - 3DS: Add faster "loose" sync mode, default enabled
  - Vita: Allow using rear touch pads as L2/L3/R2/R3
+ - Wii: Add screen modes optimizing for a 4:3 or 16:9 display
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
  - Scripting: New `storage` API for saving data for a script, e.g. settings
  - Scripting: New `image` and `canvas` APIs for drawing images and displaying on-screen
@@ -34,6 +35,7 @@ Emulation fixes:
  - GBA: Add baseline CP0 (Wii U VC) and CP1 (DCC) implementations
  - GBA DMA: DMA addresses should be masked to "wrap" around the address space
  - GBA DMA: Fix invalid DMA latching behavior (fixes mgba.io/i/2105)
+ - GBA DMA: Fix DMA count latching behavior (fixes mgba.io/i/3619)
  - GBA Serialize: Fix some minor save state edge cases
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
  - GBA Video: Improve emulation of window start/end conditions (fixes mgba.io/i/1945)
@@ -48,6 +50,7 @@ Other fixes:
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
  - Core: Don't leave initial empty state in rewind queue
  - Debugger: Fix writing to specific segment in command-line debugger
+ - GB Overrides: Fix SGB color overrides bounds check
  - GB Video: Fix video log replaying freezing when video is disabled
  - GBA: Fix getting game info for multiboot ROMs
  - GBA Core: Flush pipeline if CPSR is directly written
@@ -61,7 +64,14 @@ Other fixes:
  - Qt: Fix unexpected mute when window becomes focused while fast-forwarding
  - Qt: Fix crashes when exiting with OpenGL renderer
  - Qt: Fix hiding menu if fullscreen is entered by WM itself (fixes mgba.io/i/3713)
+ - Qt: Fix updating AppImage on Linux (fixes mgba.io/i/3742)
+ - Qt: Fix fast forward toggling showing as still on after loading new game
+ - Qt: Fix audio channel/video layer menus not being cleared on unload
+ - Qt: Add fallback audio processor if init fails (fixes mgba.io/i/280)
+ - Scripting: Unset old callbacks when detaching emulator core
  - SDL: Use SDL_PumpEvents to ensure hotplug events are caught (fixes mgba.io/i/3406)
+ - SDL: Fix controllers getting duplicated
+ - SM83: Decode I/O-relative loads as ldh instead of ld (fixes mgba.io/i/3744)
 Misc:
  - 3DS: Change title ID to avoid conflict with commercial title (fixes mgba.io/i/3023)
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
@@ -88,6 +98,7 @@ Misc:
  - GBA Video: Add special circlular window handling in OpenGL renderer
  - GBA Video: Disable window interpolation at 1× scale (fixes mgba.io/i/1810)
  - Libretro: Add Super Game Boy Color support (closes mgba.io/i/3188)
+ - Libretro: Retry illuminance sensor initialization if it fails (fixes mgba.io/i/3786)
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
  - mGUI: Persist fast forwarding after closing menu (fixes mgba.io/i/2414)
  - mGUI: Wrap around menu cursor when navigating past end (closes mgba.io/i/3356)
@@ -112,6 +123,8 @@ Misc:
  - Qt: Prevent both gyro and RTC sensors from being enabled at the same time
  - Qt: Put fullscreen information in report view
  - Qt: Add "clear console" menu item for the scripting view
+ - Qt: Replace save warning with a copy dialog (closes mgba.io/i/3637)
+ - Qt: Add "continue" button to debugger console
  - Res: Port hq2x and OmniScale shaders from SameBoy
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
  - Res: Update gba-colors shader (closes mgba.io/i/2976)

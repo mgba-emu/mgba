@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "SaveConverter.h"
+#include "moc_SaveConverter.cpp"
 
 #include <QMessageBox>
 
@@ -77,9 +78,15 @@ void SaveConverter::convert() {
 		return;
 	}
 	QFile out(m_ui.outputFile->text());
-	out.open(QIODevice::WriteOnly | QIODevice::Truncate);
-	out.write(converted);
-	out.close();
+	if (out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+		out.write(converted);
+		out.close();
+	} else {
+		QMessageBox* failure = new QMessageBox(QMessageBox::Warning, tr("Conversion failed"), tr("Failed to open output file."),
+		                                       QMessageBox::Ok, this, Qt::Sheet);
+		failure->setAttribute(Qt::WA_DeleteOnClose);
+		failure->show();
+	}
 }
 
 void SaveConverter::refreshInputTypes() {

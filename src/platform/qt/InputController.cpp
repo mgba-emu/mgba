@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "InputController.h"
+#include "moc_InputController.cpp"
 
 #include "ConfigController.h"
 #include "input/Gamepad.h"
@@ -703,7 +704,6 @@ void InputController::prepareCamSettings(QCamera::Status status) {
 #endif
 
 void InputController::prepareCamFormat() {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
 	QSize size(1280, 720);
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	QCameraViewfinderSettings settings;
@@ -753,7 +753,6 @@ void InputController::prepareCamFormat() {
 		LOG(QT, WARN) << tr("Could not find a valid camera format!");
 	}
 	m_camera->setCameraFormat(bestFormat);
-#endif
 #endif
 	m_camera->start();
 }

@@ -7,6 +7,9 @@
 #include <mgba-util/vfs.h>
 
 int main(int argc, char** argv) {
+	if (argc != 3) {
+		return 1;
+	}
 	struct TextCodec codec;
 	struct VFile* vf = VFileOpen(argv[1], O_RDONLY);
 	TextCodecLoadTBL(&codec, vf, true);

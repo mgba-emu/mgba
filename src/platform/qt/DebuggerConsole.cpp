@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "DebuggerConsole.h"
+#include "moc_DebuggerConsole.cpp"
 
 #include "DebuggerConsoleController.h"
 #include "GBAApp.h"
@@ -24,8 +25,13 @@ DebuggerConsole::DebuggerConsole(DebuggerConsoleController* controller, QWidget*
 	connect(m_ui.prompt, &HistoryLineEdit::linePosted, this, &DebuggerConsole::postLine);
 	connect(m_ui.prompt, &HistoryLineEdit::emptyLinePosted, this, &DebuggerConsole::repeat);
 	connect(controller, &DebuggerConsoleController::log, m_ui.log, &LogWidget::log);
+	connect(controller, &DebuggerConsoleController::log, this, &DebuggerConsole::updatePaused);
 	connect(m_ui.breakpoint, &QAbstractButton::clicked, controller, &DebuggerController::attach);
 	connect(m_ui.breakpoint, &QAbstractButton::clicked, controller, &DebuggerController::breakInto);
+	connect(m_ui.breakpoint, &QAbstractButton::clicked, this, &DebuggerConsole::updatePaused);
+	connect(m_ui.doContinue, &QAbstractButton::clicked, controller, &DebuggerController::attach);
+	connect(m_ui.doContinue, &QAbstractButton::clicked, controller, &DebuggerConsoleController::doContinue);
+	connect(m_ui.doContinue, &QAbstractButton::clicked, this, &DebuggerConsole::updatePaused);
 
 	controller->historyLoad();
 }
@@ -34,9 +40,21 @@ void DebuggerConsole::postLine(const QString& line) {
 	m_consoleController->attach();
 	m_ui.log->log(QString("> %1\n").arg(line));
 	m_consoleController->enterLine(line);
+	updatePaused();
 }
 
 void DebuggerConsole::repeat() {
 	m_consoleController->attach();
 	m_consoleController->enterLine(QString("\n"));
+	updatePaused();
+}
+
+void DebuggerConsole::updatePaused() {
+	if (m_consoleController->isPaused()) {
+		m_ui.breakpoint->setEnabled(false);
+		m_ui.doContinue->setEnabled(true);
+	} else {
+		m_ui.breakpoint->setEnabled(true);
+		m_ui.doContinue->setEnabled(false);
+	}
 }

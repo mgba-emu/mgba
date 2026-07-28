@@ -311,7 +311,8 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 			dma->when = mTimingCurrentTime(&audio->p->timing) - cycles;
 			dma->nextCount = 4;
 			GBADMARecalculateCycles(audio->p);
-			GBADMASchedule(audio->p, channel->dmaSource, dma);
+			GBAAudioScheduleFifoDma(audio, channel->dmaSource, dma);
+			GBADMAUpdate(audio->p);
 		}
 	}
 	if (!channel->internalRemaining && fifoSize) {

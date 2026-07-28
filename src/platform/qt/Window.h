@@ -76,7 +76,7 @@ signals:
 	void shaderSelectorAdded(ShaderSelector*);
 
 public slots:
-	void setController(CoreController* controller, const QString& fname);
+	void setController(CoreController* controller);
 	void selectROM();
 	void bootBIOS();
 #ifdef USE_SQLITE3

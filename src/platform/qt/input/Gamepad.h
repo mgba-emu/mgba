@@ -18,9 +18,9 @@ Q_OBJECT
 public:
 	Gamepad(InputDriver* driver, QObject* parent = nullptr);
 
-	virtual QList<bool> currentButtons() = 0;
-	virtual QList<int16_t> currentAxes() = 0;
-	virtual QList<GamepadHatEvent::Direction> currentHats() = 0;
+	virtual QList<bool> currentButtons() const = 0;
+	virtual QList<int16_t> currentAxes() const = 0;
+	virtual QList<GamepadHatEvent::Direction> currentHats() const = 0;
 
 	virtual QString buttonHumanName(int) const = 0;
 	virtual QString axisHumanName(int) const = 0;

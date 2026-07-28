@@ -461,7 +461,7 @@ void* mCoreGetMemoryBlockMasked(struct mCore* core, uint32_t start, size_t* size
 	return out;
 }
 
-const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(struct mCore* core, uint32_t address) {
+const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(const struct mCore* core, uint32_t address) {
 	const struct mCoreMemoryBlock* blocks;
 	size_t nBlocks = core->listMemoryBlocks(core, &blocks);
 	size_t i;
@@ -476,6 +476,18 @@ const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(struct mCore* core, uint3
 			continue;
 		}
 		return &blocks[i];
+	}
+	return NULL;
+}
+
+const struct mCoreRegisterInfo* mCoreGetRegisterInfo(const struct mCore* core, const char* name) {
+	const struct mCoreRegisterInfo* registers;
+	size_t nRegisters = core->listRegisters(core, &registers);
+	size_t i;
+	for (i = 0; i < nRegisters; ++i) {
+		if (strcmp(name, registers[i].name) == 0) {
+			return &registers[i];
+		}
 	}
 	return NULL;
 }

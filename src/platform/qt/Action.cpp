@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "Action.h"
+#include "moc_Action.cpp"
 
 using namespace QGBA;
 
@@ -95,6 +96,9 @@ void Action::setActive(bool a) {
 		return;
 	}
 	m_active = a;
+	if (!m_enabled) {
+		return;
+	}
 	emit activated(a);
 }
 

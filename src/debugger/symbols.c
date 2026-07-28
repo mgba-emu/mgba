@@ -76,8 +76,8 @@ void mDebuggerLoadARMIPSSymbols(struct mDebuggerSymbols* st, struct VFile* vf) {
 			line[bytesRead - 1] = '\0';
 		}
 		uint32_t address = 0;
-		const char* buf = line;
-		buf = hex32(buf, &address);
+		char* buf = line;
+		buf = (char*) hex32(buf, &address);
 		if (!buf) {
 			continue;
 		}

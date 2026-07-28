@@ -398,7 +398,7 @@ static struct mScriptValue* _mScriptCoreReadRange(struct mCore* core, uint32_t a
 }
 
 static struct mScriptValue* _mScriptCoreReadRegister(const struct mCore* core, const char* regName) {
-	int32_t out;
+	int32_t out = 0;
 	if (!core->readRegister(core, regName, &out)) {
 		return &mScriptValueNull;
 	}
@@ -408,7 +408,7 @@ static struct mScriptValue* _mScriptCoreReadRegister(const struct mCore* core, c
 }
 
 static void _mScriptCoreWriteRegister(struct mCore* core, const char* regName, int32_t in) {
-	core->writeRegister(core, regName, &in);
+	core->writeRegister(core, regName, in);
 }
 
 static struct mScriptValue* _mScriptCoreSaveState(struct mCore* core, int32_t flags) {
@@ -1513,6 +1513,20 @@ void mScriptContextDetachCore(struct mScriptContext* context) {
 	if (adapter->rotationCbTable) {
 		mScriptValueDeref(adapter->rotationCbTable);
 	}
+
+	struct mCoreCallbacks callbacks = {
+		.videoFrameEnded = mCoreCallback(frame),
+		.coreCrashed = mCoreCallback(crashed),
+		.sleep = mCoreCallback(sleep),
+		.shutdown = mCoreCallback(stop),
+		.keysRead = mCoreCallback(keysRead),
+		.savedataUpdated = mCoreCallback(savedataUpdated),
+		.alarm = mCoreCallback(alarm),
+		.memoryBlocksChanged = mCoreCallback(memoryBlocksChanged),
+		.context = context
+	};
+	core->removeCoreCallbacks(core, &callbacks);
+
 #ifdef M_CORE_GBA
 	if (core->platform(core) == mPLATFORM_GBA) {
 		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, adapter->oldLuminance);

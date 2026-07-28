@@ -35,7 +35,7 @@ const struct mScriptType* const baseTypes[] = {
 
 void explainValue(struct mScriptValue* value, const char* name, int level);
 void explainValueScoped(struct mScriptValue* value, const char* name, const char* scope, int level);
-void explainType(struct mScriptType* type, int level);
+void explainType(const struct mScriptType* type, int level);
 
 void printchomp(const char* string, int level) {
 	char indent[(level + 1) * 2 + 1];
@@ -114,6 +114,10 @@ bool printval(const struct mScriptValue* value, char* buffer, size_t bufferSize)
 	case mSCRIPT_TYPE_OPAQUE:
 	case mSCRIPT_TYPE_LIST:
 	case mSCRIPT_TYPE_TABLE:
+	case mSCRIPT_TYPE_FUNCTION:
+	case mSCRIPT_TYPE_OBJECT:
+	case mSCRIPT_TYPE_WRAPPER:
+	case mSCRIPT_TYPE_WEAKREF:
 		// Not scalar or string values
 		return false;
 	}
@@ -167,6 +171,7 @@ void explainClass(struct mScriptTypeClass* cls, int level) {
 
 	fprintf(out, "%smembers:\n", indent);
 	const char* docstring = NULL;
+	bool hasSpecial = false;
 	const struct mScriptClassInitDetails* details;
 	size_t i;
 	for (i = 0; cls->details[i].type != mSCRIPT_CLASS_INIT_END; ++i) {
@@ -199,7 +204,50 @@ void explainClass(struct mScriptTypeClass* cls, int level) {
 				}
 			}
 			break;
+		case mSCRIPT_CLASS_INIT_INIT:
+		case mSCRIPT_CLASS_INIT_DEINIT:
+		case mSCRIPT_CLASS_INIT_GET:
+		case mSCRIPT_CLASS_INIT_SET:
+		case mSCRIPT_CLASS_INIT_CAST_TO_MEMBER:
+			hasSpecial = true;
+			break;
 		case mSCRIPT_CLASS_INIT_END:
+		case mSCRIPT_CLASS_INIT_CLASS_DOCSTRING:
+		case mSCRIPT_CLASS_INIT_INTERNAL:
+		case mSCRIPT_CLASS_INIT_INHERIT:
+			break;
+		}
+	}
+	if (!hasSpecial) {
+		return;
+	}
+	fprintf(out, "%sspecial:\n", indent);
+	for (i = 0; cls->details[i].type != mSCRIPT_CLASS_INIT_END; ++i) {
+		details = &cls->details[i];
+		switch (details->type) {
+		case mSCRIPT_CLASS_INIT_DOCSTRING:
+		case mSCRIPT_CLASS_INIT_INSTANCE_MEMBER:
+		case mSCRIPT_CLASS_INIT_END:
+		case mSCRIPT_CLASS_INIT_CLASS_DOCSTRING:
+		case mSCRIPT_CLASS_INIT_INTERNAL:
+		case mSCRIPT_CLASS_INIT_INHERIT:
+			break;
+		case mSCRIPT_CLASS_INIT_INIT:
+			fprintf(out, "%s- init\n", indent);
+			break;
+		case mSCRIPT_CLASS_INIT_DEINIT:
+			fprintf(out, "%s- deinit\n", indent);
+			break;
+		case mSCRIPT_CLASS_INIT_GET:
+			fprintf(out, "%s- get\n", indent);
+			break;
+		case mSCRIPT_CLASS_INIT_SET:
+			fprintf(out, "%s- set: %s\n", indent, details->info.member.type->details.function.parameters.entries[2]->name);
+			break;
+		case mSCRIPT_CLASS_INIT_CAST_TO_MEMBER:
+			fprintf(out, "%s- cast-to-member:\n", indent);
+			fprintf(out, "%s  type: %s\n", indent, details->info.castMember.type->name);
+			fprintf(out, "%s  member: %s\n", indent, details->info.castMember.member);
 			break;
 		}
 	}
@@ -285,7 +333,7 @@ void explainValueScoped(struct mScriptValue* value, const char* name, const char
 	}
 }
 
-void explainTypeTuple(struct mScriptTypeTuple* tuple, int level) {
+void explainTypeTuple(const struct mScriptTypeTuple* tuple, int level) {
 	char indent[(level + 1) * 2 + 1];
 	memset(indent, ' ', sizeof(indent) - 1);
 	indent[sizeof(indent) - 1] = '\0';
@@ -307,7 +355,7 @@ void explainTypeTuple(struct mScriptTypeTuple* tuple, int level) {
 	}
 }
 
-void explainType(struct mScriptType* type, int level) {
+void explainType(const struct mScriptType* type, int level) {
 	char indent[(level + 1) * 2 + 1];
 	memset(indent, ' ', sizeof(indent) - 1);
 	indent[sizeof(indent) - 1] = '\0';

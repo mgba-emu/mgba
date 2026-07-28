@@ -33,6 +33,8 @@
 #include <mgba-util/math.h>
 #include <mgba-util/vfs.h>
 
+#include "moc_CoreController.cpp"
+
 #define AUTOSAVE_GRANULARITY 600
 
 using namespace QGBA;

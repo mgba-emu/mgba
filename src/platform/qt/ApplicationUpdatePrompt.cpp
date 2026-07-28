@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ApplicationUpdatePrompt.h"
+#include "moc_ApplicationUpdatePrompt.cpp"
 
 #include <QCryptographicHash>
 #include <QPushButton>
@@ -72,12 +73,13 @@ void ApplicationUpdatePrompt::promptRestart() {
 	QByteArray expectedHash = updater->updateInfo().sha256;
 	QCryptographicHash sha256(QCryptographicHash::Sha256);
 	QFile update(filename);
-	update.open(QIODevice::ReadOnly);
-	if (!sha256.addData(&update) || sha256.result() != expectedHash) {
+	if (!update.open(QIODevice::ReadOnly)) {
+		update.remove();
+		m_ui.text->setText(tr("Verifying download failed. Please update manually."));
+	} else if (!sha256.addData(&update) || sha256.result() != expectedHash) {
 		update.close();
 		update.remove();
-		m_ui.text->setText(tr("Downloading failed. Please update manually.")
-			.arg(QLatin1String(projectName)));
+		m_ui.text->setText(tr("Downloading failed. Please update manually."));
 	} else {
 		m_ui.text->setText(tr("Downloading done. Press OK to restart %1 and install the update.")
 			.arg(QLatin1String(projectName)));

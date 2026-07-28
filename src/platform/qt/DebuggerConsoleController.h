@@ -25,6 +25,8 @@ public:
 
 	QStringListModel* history() { return m_history; }
 
+	bool isPaused();
+
 signals:
 	void log(const QString&);
 	void lineAppend(const QString&);
@@ -34,6 +36,7 @@ public slots:
 	virtual void detach() override;
 	void historyLoad();
 	void historySave();
+	void doContinue();
 
 protected:
 	virtual void attachInternal() override;

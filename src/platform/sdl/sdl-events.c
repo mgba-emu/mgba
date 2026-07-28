@@ -41,6 +41,16 @@ static struct SDL_JoystickCombo* _mSDLOpenJoystick(struct mSDLEvents* events, in
 	if (!sdlJoystick) {
 		return NULL;
 	}
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	size_t j;
+	for (j = 0; j < SDL_JoystickListSize(&events->joysticks); ++j) {
+		struct SDL_JoystickCombo* joystick = SDL_JoystickListGetPointer(&events->joysticks, j);
+		if (joystick->id == SDL_JoystickInstanceID(sdlJoystick)) {
+			return joystick;
+		}
+	}
+#endif
 	struct SDL_JoystickCombo* joystick = SDL_JoystickListAppend(&events->joysticks);
 	joystick->index = SDL_JoystickListSize(&events->joysticks) - 1;
 	joystick->joystick = sdlJoystick;
@@ -107,13 +117,13 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 	}
 #endif
 
+	SDL_JoystickListInit(&context->joysticks, 0);
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 	SDL_SetJoystickEventsEnabled(true);
+	mSDLUpdateJoysticks(context, NULL);
 	int nJoysticks;
 	SDL_JoystickID* ids = SDL_GetJoysticks(&nJoysticks);
-	SDL_JoystickListInit(&context->joysticks, nJoysticks);
 	if (nJoysticks > 0) {
-		mSDLUpdateJoysticks(context, NULL);
 		int i;
 		for (i = 0; i < nJoysticks; ++i) {
 			_mSDLOpenJoystick(context, ids[i]);
@@ -122,16 +132,12 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 	SDL_free(ids);
 #else
 	SDL_JoystickEventState(SDL_ENABLE);
+	mSDLUpdateJoysticks(context, NULL);
 	int nJoysticks = SDL_NumJoysticks();
-	SDL_JoystickListInit(&context->joysticks, nJoysticks);
 	if (nJoysticks > 0) {
-		mSDLUpdateJoysticks(context, NULL);
-		// Some OSes don't do hotplug detection
-		if (!SDL_JoystickListSize(&context->joysticks)) {
-			int i;
-			for (i = 0; i < nJoysticks; ++i) {
-				_mSDLOpenJoystick(context, i);
-			}
+		int i;
+		for (i = 0; i < nJoysticks; ++i) {
+			_mSDLOpenJoystick(context, i);
 		}
 	}
 #endif

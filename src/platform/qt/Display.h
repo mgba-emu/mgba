@@ -6,6 +6,7 @@
 #pragma once
 
 #include <mgba-util/common.h>
+#include <mgba-util/vfs.h>
 
 #include <memory>
 
@@ -13,7 +14,6 @@
 
 #include "MessagePainter.h"
 
-struct VDir;
 struct VideoBackend;
 struct VideoShader;
 

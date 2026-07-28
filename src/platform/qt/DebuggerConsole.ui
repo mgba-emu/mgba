@@ -14,6 +14,13 @@
    <string>Debugger</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0" colspan="3">
+    <widget class="QGBA::LogWidget" name="log">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item row="1" column="0">
     <widget class="QGBA::HistoryLineEdit" name="prompt">
      <property name="placeholderText">
@@ -28,10 +35,13 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="0" colspan="2">
-    <widget class="QGBA::LogWidget" name="log">
-     <property name="readOnly">
-      <bool>true</bool>
+   <item row="1" column="2">
+    <widget class="QPushButton" name="doContinue">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Continue</string>
      </property>
     </widget>
    </item>

@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "VideoView.h"
+#include "moc_VideoView.cpp"
 
 #ifdef USE_FFMPEG
 
@@ -98,12 +99,9 @@ VideoView::VideoView(std::shared_ptr<CoreController> controller, QWidget* parent
 	connect(m_ui.selectFile, &QAbstractButton::clicked, this, &VideoView::selectFile);
 	connect(m_ui.filename, &QLineEdit::textChanged, this, &VideoView::setFilename);
 
-	connect(m_ui.audio, SIGNAL(activated(const QString&)), this, SLOT(setAudioCodec(const QString&)));
-	connect(m_ui.video, SIGNAL(activated(const QString&)), this, SLOT(setVideoCodec(const QString&)));
-	connect(m_ui.container, SIGNAL(activated(const QString&)), this, SLOT(setContainer(const QString&)));
-	connect(m_ui.audio, SIGNAL(editTextChanged(const QString&)), this, SLOT(setAudioCodec(const QString&)));
-	connect(m_ui.video, SIGNAL(editTextChanged(const QString&)), this, SLOT(setVideoCodec(const QString&)));
-	connect(m_ui.container, SIGNAL(editTextChanged(const QString&)), this, SLOT(setContainer(const QString&)));
+	connect(m_ui.audio, &QComboBox::currentTextChanged, this, &VideoView::setAudioCodec);
+	connect(m_ui.video, &QComboBox::currentTextChanged, this, &VideoView::setVideoCodec);
+	connect(m_ui.container, &QComboBox::currentTextChanged, this, &VideoView::setContainer);
 
 	connect(m_ui.abr, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &VideoView::setAudioBitrate);
 	connect(m_ui.crf, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &VideoView::setVideoRateFactor);
@@ -539,7 +537,7 @@ void VideoView::safelySet(QComboBox* box, const QString& value) {
 
 void VideoView::addPreset(QAbstractButton* button, const Preset& preset) {
 	m_presets[button] = preset;
-	button->disconnect();
+	button->disconnect(SIGNAL(pressed()));
 	connect(button, &QAbstractButton::pressed, [this, preset]() {
 		setPreset(preset);
 	});
