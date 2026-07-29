@@ -900,11 +900,15 @@ struct EReaderScan* EReaderScanLoadImagePNG(const char* filename) {
 		vf->close(vf);
 		return NULL;
 	}
-	unsigned height = png_get_image_height(png, info);
-	unsigned width = png_get_image_width(png, info);
+	uint64_t height = png_get_image_height(png, info);
+	uint64_t width = png_get_image_width(png, info);
 	int type = png_get_color_type(png, info);
 	int depth = png_get_bit_depth(png, info);
 	void* image = NULL;
+
+	if (width * height * 4 >= UINT32_MAX) {
+		return NULL;
+	}
 	switch (type) {
 	case PNG_COLOR_TYPE_RGB:
 		if (depth != 8) {
