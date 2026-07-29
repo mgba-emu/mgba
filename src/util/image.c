@@ -97,6 +97,11 @@ struct mImage* mImageCreateWithStride(unsigned width, unsigned height, unsigned 
 	if (width < 1 || height < 1) {
 		return NULL;
 	}
+
+	if ((uint64_t) stride * (uint64_t) height * 4 >= UINT32_MAX) {
+		return NULL;
+	}
+
 	struct mImage* image = calloc(1, sizeof(struct mImage));
 	if (!image) {
 		return NULL;
@@ -158,8 +163,8 @@ static struct mImage* mImageLoadPNG(struct VFile* vf) {
 		PNGReadClose(png, info, end);
 		return NULL;
 	}
-	unsigned width = png_get_image_width(png, info);
-	unsigned height = png_get_image_height(png, info);
+	uint64_t width = png_get_image_width(png, info);
+	uint64_t height = png_get_image_height(png, info);
 
 	struct mImage* image = calloc(1, sizeof(*image));
 	if (!image) {
@@ -171,6 +176,10 @@ static struct mImage* mImageLoadPNG(struct VFile* vf) {
 	image->width = width;
 	image->height = height;
 	image->stride = width;
+
+	if (width * height * 4 >= UINT32_MAX) {
+		return NULL;
+	}
 
 	switch (png_get_channels(png, info)) {
 	case 3:
