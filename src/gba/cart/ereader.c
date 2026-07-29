@@ -636,12 +636,19 @@ void _eReaderWriteControl0(struct GBACartEReader* ereader, uint8_t value) {
 				ereader->byte = 0;
 			}
 		} else if (ereader->command == EREADER_COMMAND_READ_DATA) {
-			int bit = ereader->serial[ereader->activeRegister & 0x7F] >> (7 - (ereader->state - EREADER_SERIAL_BIT_0));
+			int bit = 0;
+			if ((ereader->activeRegister & 0x7F) < 0x5A) {
+				bit = ereader->serial[ereader->activeRegister & 0x7F] >> (7 - (ereader->state - EREADER_SERIAL_BIT_0));
+			}
 			control = EReaderControl0SetData(control, bit);
 			++ereader->state;
 			if (ereader->state == EREADER_SERIAL_END_BIT) {
 				++ereader->activeRegister;
-				mLOG(GBA_HW, DEBUG, "[e-Reader] Read serial byte: %02x", ereader->serial[ereader->activeRegister & 0x7F]);
+				if ((ereader->activeRegister & 0x7F) < 0x5A) {
+					mLOG(GBA_HW, DEBUG, "[e-Reader] Read serial byte: %02x", ereader->serial[ereader->activeRegister & 0x7F]);
+				} else {
+					mLOG(GBA_HW, GAME_ERROR, "[e-Reader] Read out of bounds serial byte %02x", ereader->activeRegister & 0x7F);
+				}
 			}
 		}
 	} else if (!EReaderControl0IsDirection(control)) {
