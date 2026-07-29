@@ -440,7 +440,7 @@ void mImageSetPaletteEntry(struct mImage* image, unsigned index, uint32_t color)
 	if (image->format != mCOLOR_PAL8) {
 		return;
 	}
-	if (index > 256) {
+	if (index >= 256) {
 		return;
 	}
 	image->palette[index] = color;
