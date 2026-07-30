@@ -8,6 +8,7 @@
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/sm83/sm83.h>
 #include <mgba-util/crc32.h>
+#include <mgba-util/math.h>
 #include <mgba-util/vfs.h>
 
 const uint32_t GB_LOGO_HASH = 0x46195417;
@@ -27,7 +28,10 @@ void GBMBCSwitchBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
 	if (bankStart + GB_SIZE_CART_BANK0 > gb->memory.romSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
-		bankStart &= (gb->memory.romSize - 1);
+		bankStart &= toPow2(gb->memory.romSize) - 1;
+		if (bankStart + GB_SIZE_CART_BANK0 > gb->memory.romSize) {
+			return;
+		}
 		bank = bankStart / GB_SIZE_CART_BANK0;
 	}
 	gb->memory.romBank = &gb->memory.rom[bankStart];
@@ -41,7 +45,11 @@ void GBMBCSwitchBank0(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
 	if (bankStart + GB_SIZE_CART_BANK0 > gb->memory.romSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
-		bankStart &= (gb->memory.romSize - 1);
+		bankStart &= toPow2(gb->memory.romSize) - 1;
+		if (bankStart + GB_SIZE_CART_BANK0 > gb->memory.romSize) {
+			return;
+		}
+		bank = bankStart / GB_SIZE_CART_BANK0;
 	}
 	gb->memory.romBase = &gb->memory.rom[bankStart];
 	gb->memory.currentBank0 = bank;
@@ -66,7 +74,10 @@ void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
 	} else {
 		if (bankStart + GB_SIZE_CART_HALFBANK > gb->memory.romSize) {
 			mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
-			bankStart &= gb->memory.romSize - 1;
+			bankStart &= toPow2(gb->memory.romSize) - 1;
+			if (bankStart + GB_SIZE_CART_HALFBANK > gb->memory.romSize) {
+				return;
+			}
 			bank = bankStart / GB_SIZE_CART_HALFBANK;
 			if (!bank) {
 				++bank;

@@ -206,13 +206,26 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 
 	gb->romVf = vf;
 	vf->seek(vf, 0, SEEK_SET);
-	gb->isPristine = true;
-	gb->memory.rom = vf->map(vf, gb->pristineRomSize, MAP_READ);
-	if (!gb->memory.rom) {
-		return false;
+	if (gb->pristineRomSize > GB_SIZE_CART_MAX) {
+		gb->pristineRomSize = GB_SIZE_CART_MAX;
+	}
+	if (gb->pristineRomSize < GB_SIZE_CART_BANK0) {
+		gb->isPristine = false;
+		gb->memory.rom = anonymousMemoryMap(GB_SIZE_CART_MAX);
+		gb->memory.romSize = GB_SIZE_CART_BANK0;
+		if (vf->read(vf, gb->memory.rom, gb->pristineRomSize) < (ssize_t) gb->pristineRomSize) {
+			mappedMemoryFree(gb->memory.rom, GB_SIZE_CART_MAX);
+			return false;
+		}
+	} else {
+		gb->isPristine = true;
+		gb->memory.rom = vf->map(vf, gb->pristineRomSize, MAP_READ);
+		if (!gb->memory.rom) {
+			return false;
+		}
+		gb->memory.romSize = gb->pristineRomSize;
 	}
 	gb->yankedRomSize = 0;
-	gb->memory.romSize = gb->pristineRomSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
 	GBMBCReset(gb);
 
