@@ -495,9 +495,14 @@ static void _processQXferCommand(struct GDBStub* stub, const char* params, const
 	unsigned length = 0;
 
 	unsigned index = 0;
-	for (index = 0; params[index] != ','; ++index) {
+	for (index = 0; params[index] != ',' && params[index]; ++index) {
 		offset <<= 4;
 		offset |= _hex2int(&params[index], 1);
+	}
+
+	if (!params[index]) {
+		_error(stub, GDB_BAD_ARGUMENTS);
+		return;
 	}
 
 	++index;
@@ -513,8 +518,12 @@ static void _processQXferCommand(struct GDBStub* stub, const char* params, const
 		length = GDB_STUB_MAX_LINE - 4;
 	}
 
-	if (strlen(data) < length + offset) {
-		length = strlen(data) - offset + 1;
+	size_t dataLength = strlen(data);
+	if (dataLength < offset) {
+		_error(stub, GDB_BAD_ARGUMENTS);
+		return;
+	} if (dataLength < length + offset) {
+		length = dataLength - offset + 1;
 		stub->outgoing[0] = 'l';
 	} else {
 		stub->outgoing[0] = 'm';
@@ -707,7 +716,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 
 	int i;
 	char messageType = message[0];
-	for (i = 0; message[i] != '#'; ++i, ++parsed) {
+	for (i = 0; message[i] != '#' && message[i]; ++i, ++parsed) {
 		checksum += message[i];
 	}
 	if (!message[i]) {
