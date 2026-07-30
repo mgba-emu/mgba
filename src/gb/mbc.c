@@ -259,7 +259,10 @@ void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM;
 	if (bankStart + GB_SIZE_EXTERNAL_RAM > gb->sramSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid RAM bank: %0X", bank);
-		bankStart &= (gb->sramSize - 1);
+		bankStart &= toPow2(gb->sramSize) - 1;
+		if (bankStart + GB_SIZE_EXTERNAL_RAM > gb->sramSize) {
+			return;
+		}
 		bank = bankStart / GB_SIZE_EXTERNAL_RAM;
 	}
 	gb->memory.sramBank = &gb->memory.sram[bankStart];
@@ -271,7 +274,10 @@ void GBMBCSwitchSramHalfBank(struct GB* gb, int half, int bank) {
 	size_t sramSize = gb->sramSize - GB_SIZE_MBC6_FLASH;
 	if (bankStart + GB_SIZE_EXTERNAL_RAM_HALFBANK > sramSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid RAM bank: %0X", bank);
-		bankStart &= (sramSize - 1);
+		bankStart &= toPow2(gb->sramSize) - 1;
+		if (bankStart + GB_SIZE_EXTERNAL_RAM_HALFBANK > gb->sramSize) {
+			return;
+		}
 		bank = bankStart / GB_SIZE_EXTERNAL_RAM_HALFBANK;
 	}
 	if (!half) {
