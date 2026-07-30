@@ -1725,6 +1725,7 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 	cpu->memory.activeNonseqCycles16 = memory->waitstatesNonseq16[memory->activeRegion];
 
 	if (memory->agbPrintBufferBackup) {
+		_pristineCow(gba);
 		int phi = (parameters >> 11) & 3;
 		uint32_t base = memory->agbPrintBase;
 		if (phi == 3) {
