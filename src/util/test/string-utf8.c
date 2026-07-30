@@ -138,10 +138,27 @@ M_TEST_DEFINE(roundtripUnpadded) {
 	}
 }
 
+M_TEST_DEFINE(utf16to8Ascii) {
+	const uint16_t hello[] = { 'H', 'e', 'l', 'l', 'o', 0};
+	char* hello8 = utf16to8(hello, sizeof(hello));
+	assert_string_equal(hello8, "Hello");
+	free(hello8);
+}
+
+M_TEST_DEFINE(utf16to8Cjk) {
+	const uint16_t hello[] = { 0x4F60, 0x597D, 0};
+	char* hello8 = utf16to8(hello, sizeof(hello));
+	const char utf8[] = { 0xE4, 0xBD, 0xA0, 0xE5, 0xA5, 0xBD, 0 };
+	assert_string_equal(hello8, utf8);
+	free(hello8);
+}
+
 M_TEST_SUITE_DEFINE(StringUTF8,
 	cmocka_unit_test(strlenASCII),
 	cmocka_unit_test(strlenMultibyte),
 	cmocka_unit_test(strlenDegenerate),
 	cmocka_unit_test(roundtrip),
 	cmocka_unit_test(roundtripUnpadded),
+	cmocka_unit_test(utf16to8Ascii),
+	cmocka_unit_test(utf16to8Cjk),
 )
