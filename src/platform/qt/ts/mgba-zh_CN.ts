@@ -132,7 +132,7 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="78"/>
         <source>Verifying download failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>下载验证失败，请手动更新。</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
@@ -244,7 +244,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorDummy.cpp" line="31"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished">没有输入无法启动音频处理器</translation>
+        <translation>没有输入信号无法启动音频处理器</translation>
     </message>
 </context>
 <context>
@@ -319,7 +319,7 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipModel.cpp" line="113"/>
         <source>Failed to open chip names list</source>
-        <translation type="unfinished"></translation>
+        <translation>无法打开芯片名称列表</translation>
     </message>
 </context>
 <context>
@@ -543,42 +543,42 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="105"/>
         <source>Temporary file loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>临时文件已加载</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="106"/>
         <source>The ROM appears to be loaded from a temporary directory, perhaps automatically extracted from an archive (e.g. a zip file).</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM 似乎是从临时目录加载的，可能是从存档（例如 zip 文件）中自动提取的。</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="154"/>
         <source>Could not open save file</source>
-        <translation type="unfinished"></translation>
+        <translation>无法打开保存文件</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="155"/>
         <source>Failed to open save file; in-game saves cannot be updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>无法打开存档文件；游戏内存档无法更新。</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="228"/>
         <source>Would you like to copy the ROM to a different location? If you don&apos;t, this will likely lead to data loss (e.g. saves, screenshots, etc.).</source>
-        <translation type="unfinished"></translation>
+        <translation>您想将 ROM 复制到其他位置吗？如果不这样做，可能会导致数据丢失（例如存档、屏幕截图等）。</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="235"/>
         <source>Copy failed</source>
-        <translation type="unfinished"></translation>
+        <translation>复制失败</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="235"/>
         <source>Failed to copy ROM. Do you want to try again?</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM 复制失败。是否重试？</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="242"/>
         <source>New ROM location</source>
-        <translation type="unfinished"></translation>
+        <translation>新的 ROM 位置</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="126"/>
@@ -606,7 +606,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsole.ui" line="44"/>
         <source>Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>继续</translation>
     </message>
 </context>
 <context>
@@ -4719,7 +4719,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="85"/>
         <source>Failed to open output file.</source>
-        <translation type="unfinished"></translation>
+        <translation>无法打开输出文件。</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="96"/>
