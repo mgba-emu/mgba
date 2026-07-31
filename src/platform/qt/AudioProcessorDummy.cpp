@@ -6,12 +6,12 @@
 #include "AudioProcessorDummy.h"
 #include "moc_AudioProcessorDummy.cpp"
 
-#include "AudioDevice.h"
 #include "LogController.h"
 
 #include <mgba/core/core.h>
 #include <mgba/core/sync.h>
 #include <mgba/core/thread.h>
+#include <mgba-util/audio-buffer.h>
 
 using namespace QGBA;
 
