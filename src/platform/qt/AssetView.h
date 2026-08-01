@@ -13,17 +13,19 @@
 
 #include <memory>
 
+#include "CorePointer.h"
+
 struct mMapCacheEntry;
 
 namespace QGBA {
 
 class CoreController;
 
-class AssetView : public QWidget {
+class AssetView : public QWidget, public CoreConsumer {
 Q_OBJECT
 
 public:
-	AssetView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	AssetView(CorePointerSource* controller, QWidget* parent = nullptr);
 
 protected slots:
 	void updateTiles();
@@ -31,7 +33,6 @@ protected slots:
 
 protected:
 	mCacheSet* const m_cacheSet;
-	std::shared_ptr<CoreController> m_controller;
 
 	struct ObjInfo {
 		unsigned tile;
