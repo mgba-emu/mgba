@@ -28,6 +28,9 @@ void GBMBCSwitchBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
 	if (bankStart + GB_SIZE_CART_BANK0 > gb->memory.romSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
+		if (gb->memory.romSize == 0) {
+			return;
+		}
 		bankStart &= toPow2(gb->memory.romSize) - 1;
 		if (bankStart + GB_SIZE_CART_BANK0 > gb->memory.romSize) {
 			return;
@@ -45,6 +48,9 @@ void GBMBCSwitchBank0(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
 	if (bankStart + GB_SIZE_CART_BANK0 > gb->memory.romSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
+		if (gb->memory.romSize == 0) {
+			return;
+		}
 		bankStart &= toPow2(gb->memory.romSize) - 1;
 		if (bankStart + GB_SIZE_CART_BANK0 > gb->memory.romSize) {
 			return;
@@ -74,6 +80,9 @@ void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
 	} else {
 		if (bankStart + GB_SIZE_CART_HALFBANK > gb->memory.romSize) {
 			mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
+			if (gb->memory.romSize == 0) {
+				return;
+			}
 			bankStart &= toPow2(gb->memory.romSize) - 1;
 			if (bankStart + GB_SIZE_CART_HALFBANK > gb->memory.romSize) {
 				return;
@@ -259,6 +268,9 @@ void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM;
 	if (bankStart + GB_SIZE_EXTERNAL_RAM > gb->sramSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid RAM bank: %0X", bank);
+		if (gb->sramSize == 0) {
+			return;
+		}
 		bankStart &= toPow2(gb->sramSize) - 1;
 		if (bankStart + GB_SIZE_EXTERNAL_RAM > gb->sramSize) {
 			return;
@@ -270,10 +282,13 @@ void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 }
 
 void GBMBCSwitchSramHalfBank(struct GB* gb, int half, int bank) {
-	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM_HALFBANK;
-	size_t sramSize = gb->sramSize - GB_SIZE_MBC6_FLASH;
+	ssize_t bankStart = bank * GB_SIZE_EXTERNAL_RAM_HALFBANK;
+	ssize_t sramSize = gb->sramSize - GB_SIZE_MBC6_FLASH;
 	if (bankStart + GB_SIZE_EXTERNAL_RAM_HALFBANK > sramSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid RAM bank: %0X", bank);
+		if (sramSize <= 0) {
+			return;
+		}
 		bankStart &= toPow2(gb->sramSize) - 1;
 		if (bankStart + GB_SIZE_EXTERNAL_RAM_HALFBANK > gb->sramSize) {
 			return;
