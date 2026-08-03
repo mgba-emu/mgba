@@ -111,7 +111,7 @@ void mSDLResumeAudio(struct mSDLAudio* context) {
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 static void _mSDLAudioCallback(void* context, SDL_AudioStream* stream, int additionalLen, int len) {
-	UNUSED(additionalLen);
+	len += additionalLen;
 #else
 static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
 #endif
@@ -124,12 +124,8 @@ static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
 		return;
 #endif
 	}
-	struct mAudioBuffer* buffer = NULL;
-	unsigned sampleRate = 32768;
-	if (audioContext->core) {
-		buffer = audioContext->core->getAudioBuffer(audioContext->core);
-		sampleRate = audioContext->core->audioSampleRate(audioContext->core);
-	}
+	struct mAudioBuffer* buffer = audioContext->core->getAudioBuffer(audioContext->core);
+	unsigned sampleRate = audioContext->core->audioSampleRate(audioContext->core);
 	double fauxClock = 1;
 	if (audioContext->sync) {
 		if (audioContext->sync->fpsTarget > 0 && audioContext->core) {
