@@ -581,11 +581,8 @@ void PainterGL::create() {
 	m_gl->create();
 	makeCurrent();
 
-#ifdef BUILD_GL
-	mGLContext* glBackend;
-#endif
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
-	mGLES2Context* gl2Backend;
+	mGLES2Context* gl2Backend = nullptr;
 #endif
 
 	if (!m_widget) {
@@ -594,15 +591,15 @@ void PainterGL::create() {
 
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (m_supportsShaders) {
-		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
+		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(*gl2Backend)));
 		mGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
 	}
 #endif
 
 #ifdef BUILD_GL
-	 if (!m_backend) {
-		glBackend = static_cast<mGLContext*>(malloc(sizeof(mGLContext)));
+	if (!m_backend) {
+		mGLContext* glBackend = static_cast<mGLContext*>(malloc(sizeof(*glBackend)));
 		mGLContextCreate(glBackend);
 		m_backend = &glBackend->d;
 	}
@@ -645,7 +642,7 @@ void PainterGL::create() {
 			m_finalTexIdx = 0;
 			gl2Backend->finalShader.tex = m_finalTex[m_finalTexIdx];
 		}
-		m_shader.preprocessShader = static_cast<void*>(&reinterpret_cast<mGLES2Context*>(m_backend)->initialShader);
+		m_shader.preprocessShader = static_cast<void*>(&gl2Backend->initialShader);
 	}
 #endif
 
