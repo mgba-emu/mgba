@@ -132,7 +132,7 @@ void mSDLResumeAudio(struct mSDLAudio* context) {
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 static void _mSDLAudioCallback(void* context, SDL_AudioStream* stream, int additionalLen, int len) {
-	len += additionalLen;
+	UNUSED(additionalLen);
 #else
 static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
 #endif
