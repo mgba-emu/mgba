@@ -56,9 +56,7 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext)
 	context->core = NULL;
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-	int samples = context->samples;
-	SDL_GetAudioDeviceFormat(SDL_GetAudioStreamDevice(context->stream), &context->obtainedSpec, &samples);
-	SDL_GetAudioStreamFormat(context->stream, NULL, &context->obtainedSpec);
+	SDL_GetAudioStreamFormat(context->stream, &context->obtainedSpec, NULL);
 #endif
 	if (context->obtainedSpec.channels == 0) {
 		// This should never happen, but let's make sure
@@ -74,11 +72,7 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext)
 		return false;
 	}
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-	mAudioBufferInit(&context->buffer, samples, context->obtainedSpec.channels);
-#else
 	mAudioBufferInit(&context->buffer, context->samples, context->obtainedSpec.channels);
-#endif
 	mAudioResamplerInit(&context->resampler, mINTERPOLATOR_SINC);
 	mAudioResamplerSetDestination(&context->resampler, &context->buffer, context->obtainedSpec.freq);
 
