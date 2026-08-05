@@ -847,6 +847,7 @@ static void _setData(struct GBASIOLockstepCoordinator* coordinator, uint32_t id,
 }
 
 void _setReady(struct GBASIOLockstepCoordinator* coordinator, struct GBASIOLockstepPlayer* activePlayer, int playerId, enum GBASIOMode mode) {
+	mASSERT_DEBUG(playerId >= 0 && playerId < MAX_GBAS);
 	activePlayer->otherModes[playerId] = mode;
 	bool ready = true;
 	int i;
