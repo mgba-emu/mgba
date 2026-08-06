@@ -153,6 +153,21 @@ M_TEST_DEFINE(utf16to8Cjk) {
 	free(hello8);
 }
 
+M_TEST_DEFINE(utf8to16Ascii) {
+	const char* hello = "Hello";
+	uint16_t* hello16 = utf8to16(hello, sizeof(hello));
+	assert_memory_equal(hello16, ((const uint16_t[]) { 'H', 'e', 'l', 'l', 'o', 0}), 12);
+	free(hello16);
+}
+
+M_TEST_DEFINE(utf8to16Cjk) {
+	const char hello[] = { 0xE4, 0xBD, 0xA0, 0xE5, 0xA5, 0xBD, 0 };
+	uint16_t* hello16 = utf8to16(hello, sizeof(hello));
+	const uint16_t utf16[] = { 0x4F60, 0x597D, 0};
+	assert_memory_equal(hello16, utf16, 6);
+	free(hello16);
+}
+
 M_TEST_SUITE_DEFINE(StringUTF8,
 	cmocka_unit_test(strlenASCII),
 	cmocka_unit_test(strlenMultibyte),
@@ -161,4 +176,6 @@ M_TEST_SUITE_DEFINE(StringUTF8,
 	cmocka_unit_test(roundtripUnpadded),
 	cmocka_unit_test(utf16to8Ascii),
 	cmocka_unit_test(utf16to8Cjk),
+	cmocka_unit_test(utf8to16Ascii),
+	cmocka_unit_test(utf8to16Cjk),
 )

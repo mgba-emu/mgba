@@ -236,8 +236,8 @@ int utfcmp(const uint16_t* utf16, const char* utf8, size_t utf16Length, size_t u
 }
 
 char* utf16to8(const uint16_t* utf16, size_t length) {
-	char* utf8 = 0;
-	char* offset = 0;
+	char* utf8 = NULL;
+	char* offset = NULL;
 	char buffer[4];
 	size_t utf8TotalBytes = 0;
 	size_t utf8Length = 0;
@@ -255,7 +255,7 @@ char* utf16to8(const uint16_t* utf16, size_t length) {
 			utf8TotalBytes = toPow2(utf8Length);
 			utf8 = malloc(utf8TotalBytes);
 			if (!utf8) {
-				return 0;
+				return NULL;
 			}
 			memcpy(utf8, buffer, bytes);
 			offset = utf8 + bytes;
@@ -266,7 +266,7 @@ char* utf16to8(const uint16_t* utf16, size_t length) {
 			offset = o + newUTF8;
 			if (!newUTF8) {
 				free(utf8);
-				return 0;
+				return NULL;
 			}
 			utf8 = newUTF8;
 			memcpy(offset, buffer, bytes);
@@ -277,10 +277,58 @@ char* utf16to8(const uint16_t* utf16, size_t length) {
 	char* newUTF8 = realloc(utf8, utf8Length + 1);
 	if (!newUTF8) {
 		free(utf8);
-		return 0;
+		return NULL;
 	}
 	newUTF8[utf8Length] = '\0';
 	return newUTF8;
+}
+
+uint16_t* utf8to16(const char* utf8, size_t length) {
+	uint16_t* utf16 = NULL;
+	uint16_t* offset = NULL;
+	uint16_t buffer[2];
+	size_t utf16TotalSize = 0;
+	size_t utf16Length = 0;
+	while (true) {
+		if (length == 0) {
+			break;
+		}
+		uint32_t unichar = utf8Char(&utf8, &length);
+		size_t size = toUtf16(unichar, buffer);
+		utf16Length += size;
+		if (utf16Length < utf16TotalSize) {
+			memcpy(offset, buffer, size * 2);
+			offset += size;
+		} else if (!utf16) {
+			utf16TotalSize = toPow2(utf16Length);
+			utf16 = malloc(utf16TotalSize * 2);
+			if (!utf16) {
+				return NULL;
+			}
+			memcpy(utf16, buffer, size * 2);
+			offset = utf16 + size;
+		} else if (utf16Length >= utf16TotalSize) {
+			ptrdiff_t o = offset - utf16;
+			utf16TotalSize *= 2;
+			uint16_t* newUTF16 = realloc(utf16, utf16TotalSize * 2);
+			offset = o + newUTF16;
+			if (!newUTF16) {
+				free(utf16);
+				return NULL;
+			}
+			utf16 = newUTF16;
+			memcpy(offset, buffer, size * 2);
+			offset += size;
+		}
+	}
+
+	uint16_t* newUTF16 = realloc(utf16, utf16Length * 2 + 2);
+	if (!newUTF16) {
+		free(utf16);
+		return NULL;
+	}
+	newUTF16[utf16Length] = 0;
+	return newUTF16;
 }
 
 char* latin1ToUtf8(const char* latin1, size_t length) {
