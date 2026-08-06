@@ -702,7 +702,6 @@ endif()
 
 if (USE_LZMA)
 	include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/lzma)
-	add_definitions(-D_7ZIP_PPMD_SUPPPORT)
 	list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-lzma.c)
 	set(LZMA_SRC
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/lzma/7zAlloc.c
@@ -724,6 +723,7 @@ if (USE_LZMA)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/lzma/Ppmd7Dec.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/lzma/7zFile.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/lzma/7zStream.c)
+	set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/lzma/7zDec.c PROPERTIES COMPILE_DEFINITIONS _7ZIP_PPMD_SUPPPORT)
 	list(APPEND VFS_SRC ${LZMA_SRC})
 	list(APPEND FEATURES LZMA)
 endif()
