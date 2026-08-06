@@ -99,6 +99,7 @@ void GBAMemoryInit(struct GBA* gba) {
 	gba->memory.ereader.p = gba;
 	gba->memory.ereader.dots = NULL;
 	memset(gba->memory.ereader.cards, 0, sizeof(gba->memory.ereader.cards));
+	GBAEverdriveSDInit(&gba->memory.everdrive);
 }
 
 void GBAMemoryDeinit(struct GBA* gba) {
@@ -114,6 +115,7 @@ void GBAMemoryDeinit(struct GBA* gba) {
 	}
 
 	GBACartEReaderDeinit(&gba->memory.ereader);
+	GBAEverdriveSDDeinit(&gba->memory.everdrive);
 }
 
 void GBAMemoryReset(struct GBA* gba) {
@@ -153,6 +155,7 @@ void GBAMemoryReset(struct GBA* gba) {
 	GBADMAReset(gba);
 	GBAUnlCartReset(gba);
 	memset(&gba->memory.matrix, 0, sizeof(gba->memory.matrix));
+	GBAEverdriveSDReset(&gba->memory.everdrive);
 }
 
 void GBAMemoryClearAGBPrint(struct GBA* gba) {
@@ -589,6 +592,10 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case GBA_REGION_ROM1_EX:
 	case GBA_REGION_ROM2:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
+		if (GBAEverdriveSDIsActive(&memory->everdrive) && GBAEverdriveSDHandlesAddress(address)) {
+			value = GBAEverdriveSDRead16(&memory->everdrive, address & ~1);
+			break;
+		}
 		if ((address & (GBA_SIZE_ROM0 - 2)) < memory->romSize) {
 			LOAD_16(value, address & (GBA_SIZE_ROM0 - 2), memory->rom);
 		} else if (memory->unl.type == GBA_UNL_CART_VFAME) {
@@ -705,6 +712,10 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case GBA_REGION_ROM2:
 	case GBA_REGION_ROM2_EX:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
+		if (GBAEverdriveSDIsActive(&memory->everdrive) && GBAEverdriveSDHandlesAddress(address)) {
+			value = GBAEverdriveSDRead16(&memory->everdrive, address & ~1) >> ((address & 1) << 3);
+			break;
+		}
 		if ((address & (GBA_SIZE_ROM0 - 1)) < memory->romSize) {
 			value = ((uint8_t*) memory->rom)[address & (GBA_SIZE_ROM0 - 1)];
 		} else if (memory->unl.type == GBA_UNL_CART_VFAME) {
@@ -928,6 +939,10 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		}
 		break;
 	case GBA_REGION_ROM0:
+		if (GBAEverdriveSDIsActive(&memory->everdrive) && GBAEverdriveSDHandlesAddress(address)) {
+			GBAEverdriveSDWrite16(&memory->everdrive, address & ~1, value);
+			break;
+		}
 		if (IS_GPIO_REGISTER(address & 0xFFFFFE)) {
 			if (!(memory->hw.devices & HW_GPIO)) {
 				mLOG(GBA_HW, WARN, "Write to GPIO address %08X on cartridge without GPIO", address);
@@ -943,6 +958,10 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		}
 		// Fall through
 	case GBA_REGION_ROM0_EX:
+		if (GBAEverdriveSDIsActive(&memory->everdrive) && GBAEverdriveSDHandlesAddress(address)) {
+			GBAEverdriveSDWrite16(&memory->everdrive, address & ~1, value);
+			break;
+		}
 		if ((address & 0x00FFFFFF) >= AGB_PRINT_BASE) {
 			uint32_t agbPrintAddr = address & 0x00FFFFFF;
 			if (agbPrintAddr == AGB_PRINT_PROTECT) {
@@ -1057,6 +1076,17 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		mLOG(GBA_MEM, GAME_ERROR, "Cannot Store8 to OAM: 0x%08X", address);
 		break;
 	case GBA_REGION_ROM0:
+	case GBA_REGION_ROM0_EX:
+	case GBA_REGION_ROM1:
+	case GBA_REGION_ROM1_EX:
+	case GBA_REGION_ROM2:
+	case GBA_REGION_ROM2_EX:
+		if (GBAEverdriveSDIsActive(&memory->everdrive) && GBAEverdriveSDHandlesAddress(address)) {
+			uint16_t pair = GBAEverdriveSDRead16(&memory->everdrive, address & ~1);
+			pair = (address & 1) ? ((pair & 0x00FF) | ((uint8_t) value << 8)) : ((pair & 0xFF00) | (uint8_t) value);
+			GBAEverdriveSDWrite16(&memory->everdrive, address & ~1, pair);
+			break;
+		}
 		mLOG(GBA_MEM, STUB, "Unimplemented memory Store8: 0x%08X", address);
 		break;
 	case GBA_REGION_SRAM:
