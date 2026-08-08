@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">mGBA</string>
+    <string name="load_rom">Load ROM</string>
+</resources>

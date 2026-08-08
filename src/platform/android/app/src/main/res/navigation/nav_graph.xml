@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_games">
+
+    <fragment
+        android:id="@+id/nav_games"
+        android:name="org.mgba_emu.mgba.fragments.GamesFragment"
+        android:label="Games"
+        tools:layout="@layout/fragment_games" />
+
+    <fragment
+        android:id="@+id/nav_recent"
+        android:name="org.mgba_emu.mgba.fragments.RecentFragment"
+        android:label="Recent"
+        tools:layout="@layout/fragment_recent" />
+
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="org.mgba_emu.mgba.fragments.SettingsFragment"
+        android:label="Settings"
+        tools:layout="@layout/fragment_settings">
+
+        <action
+            android:id="@+id/action_settingsFragment_to_searchLocationsFragment"
+            app:destination="@id/searchLocationsFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+
+        <action
+            android:id="@+id/action_settingsFragment_to_biosManagerFragment"
+            app:destination="@id/biosManagerFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/searchLocationsFragment"
+        android:name="org.mgba_emu.mgba.fragments.SearchLocationsFragment"
+        android:label="Game Folders"
+        tools:layout="@layout/fragment_search_locations" />
+
+    <fragment
+        android:id="@+id/biosManagerFragment"
+        android:name="org.mgba_emu.mgba.fragments.BiosManagerFragment"
+        android:label="Bios"
+        tools:layout="@layout/fragment_bios_manager" />
+</navigation>

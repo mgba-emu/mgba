@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SwitchPreference">
+        <attr name="title" format="string" />
+        <attr name="subtitle" format="string" />
+        <attr name="key" format="string" />
+        <attr name="defaultValue" format="boolean" />
+    </declare-styleable>
+</resources>
