@@ -167,25 +167,7 @@ public:
     }
 
     const uint32_t* getVideoBuffer() override {
-        //if (sizeof(mColor) == 4) {
-            return reinterpret_cast<const uint32_t*>(m_videoBuffer.data());
-        //}
-
-        if (m_expandedBuffer.size() != m_videoBuffer.size()) {
-            m_expandedBuffer.resize(m_videoBuffer.size());
-        }
-        const uint16_t* src = reinterpret_cast<const uint16_t*>(m_videoBuffer.data());
-        for (size_t i = 0; i < m_videoBuffer.size(); ++i) {
-            uint16_t px = src[i];
-            uint8_t r5 = (px >> 0) & 0x1F;
-            uint8_t g5 = (px >> 5) & 0x1F;
-            uint8_t b5 = (px >> 10) & 0x1F;
-            uint8_t r8 = (r5 << 3) | (r5 >> 2);
-            uint8_t g8 = (g5 << 3) | (g5 >> 2);
-            uint8_t b8 = (b5 << 3) | (b5 >> 2);
-            m_expandedBuffer[i] = (0xFFu << 24) | (b8 << 16) | (g8 << 8) | r8;
-        }
-        return m_expandedBuffer.data();
+		return reinterpret_cast<const uint32_t*>(m_videoBuffer.data());
     }
 
     int getWidth() const override { return m_width; }
