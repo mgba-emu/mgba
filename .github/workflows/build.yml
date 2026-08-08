@@ -1,0 +1,53 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up gradle caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-mgba-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-mgba-
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Decode Keystore
+        env:
+          KEYSTORE_ENCODED: ${{ secrets.KEYSTORE }}
+        run: |
+          echo "$KEYSTORE_ENCODED" | base64 --decode > ${{ github.workspace }}/src/platform/android/app/ks.jks
+
+      - name: Build
+        env:
+          KEYSTORE_PATH: "ks.jks"
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+        run: |
+          cd ./src/platform/android/
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mGBA-android
+          path: |
+            ./src/platform/android/app/build/outputs/apk/debug/app-debug.apk
