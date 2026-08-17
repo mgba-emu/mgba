@@ -710,7 +710,7 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 	}
 	int key = m_inputController.mapKeyboard(event->key());
 	if (key == -1) {
-		QWidget::keyPressEvent(event);
+		QWidget::keyReleaseEvent(event);
 		return;
 	}
 	if (m_controller) {
