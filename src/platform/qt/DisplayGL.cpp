@@ -527,6 +527,10 @@ void DisplayGL::setMaximumSize(const QSize& size) {
 	QMetaObject::invokeMethod(m_painter.get(), "setMaximumSize", Q_ARG(const QSize&, size));
 }
 
+void DisplayGL::setMaximumScale(int scale) {
+	QMetaObject::invokeMethod(m_painter.get(), "setMaximumScale", Q_ARG(int, scale));
+}
+
 PainterGL::PainterGL(QWindow* window, mGLWidget* widget, const QSurfaceFormat& format)
 	: m_window(window)
 	, m_format(format)
@@ -742,6 +746,13 @@ void PainterGL::resize(const QSize& size) {
 
 void PainterGL::setMaximumSize(const QSize& size) {
 	m_maxSize = size;
+	m_maxScale = 0;
+	resizeContext();
+}
+
+void PainterGL::setMaximumScale(int scale) {
+	m_maxSize = {};
+	m_maxScale = scale;
 	resizeContext();
 }
 
@@ -952,6 +963,10 @@ void PainterGL::unpause() {
 void PainterGL::performDraw() {
 	float r = m_window->devicePixelRatio();
 	QSize maxSize = m_maxSize;
+	if (!maxSize.isValid() && m_maxScale > 0) {
+		maxSize = m_dims * m_maxScale;
+	}
+
 	if (!maxSize.isValid()) {
 		maxSize = QSize(0, 0);
 	}

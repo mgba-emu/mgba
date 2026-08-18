@@ -77,6 +77,16 @@ void DisplayQt::filter(bool filter) {
 	update();
 }
 
+void DisplayQt::setMaximumSize(const QSize& size) {
+	m_maxSize = size;
+	m_maxScale = 0;
+}
+
+void DisplayQt::setMaximumScale(int scale) {
+	m_maxSize = {};
+	m_maxScale = scale;
+}
+
 void DisplayQt::framePosted() {
 	update();
 	const mColor* buffer = m_context->drawContext();
@@ -136,15 +146,21 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 		return;
 	}
 	QSize usedSize = size();
+	QSize limitSize;
 	QPoint screenOrigin(0, 0);
 	if (m_maxSize.isValid()) {
-		if (m_maxSize.width() < usedSize.width()) {
-			screenOrigin.setX((usedSize.width() - m_maxSize.width()) / 2);
-			usedSize.setWidth(m_maxSize.width());
+		limitSize = m_maxSize;
+	} else if (m_maxScale > 0) {
+		limitSize = drawSize * m_maxScale;
+	}
+	if (limitSize.isValid()) {
+		if (limitSize.width() < usedSize.width()) {
+			screenOrigin.setX((usedSize.width() - limitSize.width()) / 2);
+			usedSize.setWidth(limitSize.width());
 		}
-		if (m_maxSize.height() < usedSize.height()) {
-			screenOrigin.setY((usedSize.height() - m_maxSize.height()) / 2);
-			usedSize.setHeight(m_maxSize.height());
+		if (limitSize.height() < usedSize.height()) {
+			screenOrigin.setY((usedSize.height() - limitSize.height()) / 2);
+			usedSize.setHeight(limitSize.height());
 		}
 	}
 	QRect full(clampSize(contentSize(), usedSize, isAspectRatioLocked(), isIntegerScalingLocked()));

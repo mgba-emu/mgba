@@ -27,8 +27,8 @@ public:
 	VideoShader* shaders() override { return nullptr; }
 	QSize contentSize() const override;
 	VideoBackend* videoBackend() override { return &m_backend; }
-	void setMaximumSize(const QSize& size) override { m_maxSize = size; }
-
+	void setMaximumSize(const QSize& size) override;
+	void setMaximumScale(int scale) override;
 
 public slots:
 	void stopDrawing() override;
@@ -72,6 +72,7 @@ private:
 	int m_height = -1;
 	QImage m_oldBacking{nullptr};
 	QSize m_maxSize;
+	int m_maxScale = 0;
 	std::shared_ptr<CoreController> m_context = nullptr;
 };
 
