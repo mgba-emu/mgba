@@ -46,6 +46,7 @@ set(TEST_FILES
 	test/geometry.c
 	test/hash.c
 	test/image.c
+	test/interpolator.c
 	test/sfo.c
 	test/string-parser.c
 	test/string-utf8.c

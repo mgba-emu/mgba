@@ -33,15 +33,17 @@ void mInterpolatorSincInit(struct mInterpolatorSinc* interp, unsigned resolution
 	interp->sincLut = calloc(samples + 1, sizeof(double));
 	interp->windowLut = calloc(samples + 1, sizeof(double));
 
-	interp->sincLut[0] = 0;
+	// Initialize the removable singularity and window origin
+	interp->sincLut[0] = 1;
 	interp->windowLut[0] = 1;
 
 	interp->width = width;
 	interp->resolution = resolution;
 
 	unsigned i;
+	// Build a normalized sinc table spanning the full window
 	for (i = 1; i <= samples; ++i, x += dx, y += dy) {
-		interp->sincLut[i] = x < width ? sin(x) / x : 0.0;
+		interp->sincLut[i] = sin(x) / x;
 		// Three term Nuttall window with continuous first derivative
 		interp->windowLut[i] = 0.40897 + 0.5 * cos(y) + 0.09103 * cos(2 * y);
 	}
@@ -56,28 +58,18 @@ int16_t mInterpolatorSincInterpolate(const struct mInterpolator* interpolator, c
 	struct mInterpolatorSinc* interp = (struct mInterpolatorSinc*) interpolator;
 	int index = time;
 	double subsample = time - floor(time);
-	unsigned step = sampleStep < 1 ? interp->resolution * sampleStep : interp->resolution;
-	unsigned yShift = subsample * step;
-	unsigned xShift = subsample * interp->resolution;
+	double cutoff = sampleStep > 1 ? 1.0 / sampleStep : 1.0;
+	int shift = subsample * interp->resolution;
 	double sum = 0.0;
 	double kernelSum = 0.0;
 	double kernel;
 
 	int i;
+	// Apply the windowed low-pass kernel around the fractional source position
 	for (i = 1 - (int) interp->width; i <= (int) interp->width; ++i) {
-		unsigned window = (i >= 0 ? i : -i) * interp->resolution;
-		if (yShift > window) {
-			window = yShift - window;
-		} else {
-			window -= yShift;
-		}
-
-		unsigned sinc = (i >= 0 ? i : -i) * step;
-		if (xShift > sinc) {
-			sinc = xShift - sinc;
-		} else {
-			sinc -= xShift;
-		}
+		int offset = i * (int) interp->resolution - shift;
+		unsigned window = offset < 0 ? -offset : offset;
+		unsigned sinc = window * cutoff;
 
 		kernel = interp->sincLut[sinc] * interp->windowLut[window];
 		kernelSum += kernel;
