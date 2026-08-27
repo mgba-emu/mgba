@@ -30,7 +30,6 @@ struct mInterpolatorSinc {
 	unsigned resolution;
 	unsigned width;
 	double* sincLut;
-	double* windowLut;
 };
 
 struct mInterpolatorCosine {

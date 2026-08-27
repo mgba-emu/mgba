@@ -15,6 +15,19 @@ enum {
 static int16_t mInterpolatorSincInterpolate(const struct mInterpolator*, const struct mInterpolationData*, double time, double sampleStep);
 static int16_t mInterpolatorCosineInterpolate(const struct mInterpolator*, const struct mInterpolationData*, double time, double sampleStep);
 
+static double windowedSinc(double width, double t) {
+	// sinc has a removable singularity at x=0
+	double sincVal = (t == 0) ? 1.0 : (sin(t) / t);
+	// 4th-order flat-top window, coefficients as used in Matlab
+	double y = t / width;
+	double windowVal = 0.21557895 +
+		0.41663158 * cos(y) +
+		0.27723158 * cos(y * 2) +
+		0.083578947 * cos(y * 3) +
+		0.006947368 * cos(y * 4);
+	return windowVal * sincVal;
+}
+
 void mInterpolatorSincInit(struct mInterpolatorSinc* interp, unsigned resolution, unsigned width) {
 	interp->d.interpolate = mInterpolatorSincInterpolate;
 
@@ -25,65 +38,48 @@ void mInterpolatorSincInit(struct mInterpolatorSinc* interp, unsigned resolution
 		width = mSINC_WIDTH;
 	}
 	unsigned samples = resolution * width;
-	double dy = M_PI / samples;
-	double y = dy;
-	double dx = dy * width;
-	double x = dx;
-
-	interp->sincLut = calloc(samples + 1, sizeof(double));
-	interp->windowLut = calloc(samples + 1, sizeof(double));
-
-	interp->sincLut[0] = 0;
-	interp->windowLut[0] = 1;
-
+	double dx = M_PI / resolution;
+	interp->sincLut = calloc(samples, sizeof(double));
 	interp->width = width;
 	interp->resolution = resolution;
 
 	unsigned i;
-	for (i = 1; i <= samples; ++i, x += dx, y += dy) {
-		interp->sincLut[i] = x < width ? sin(x) / x : 0.0;
-		// Three term Nuttall window with continuous first derivative
-		interp->windowLut[i] = 0.40897 + 0.5 * cos(y) + 0.09103 * cos(2 * y);
+	for (i = 0; i < samples; ++i) {
+		interp->sincLut[i] = windowedSinc(width, i * dx);
 	}
 }
 
 void mInterpolatorSincDeinit(struct mInterpolatorSinc* interp) {
 	free(interp->sincLut);
-	free(interp->windowLut);
+}
+
+static double fastWindowedSinc(const struct mInterpolatorSinc* interp, double x) {
+	// Both sinc and the flat-top window are symmetric
+	if (x < 0) {
+		x = -x;
+	}
+	// sinc asymptotically approaches 0
+	if (x >= interp->width) {
+		return 0.0;
+	}
+	size_t index = x * interp->resolution;
+	return interp->sincLut[index];
 }
 
 int16_t mInterpolatorSincInterpolate(const struct mInterpolator* interpolator, const struct mInterpolationData* data, double time, double sampleStep) {
+	UNUSED(sampleStep);
 	struct mInterpolatorSinc* interp = (struct mInterpolatorSinc*) interpolator;
-	int index = time;
-	double subsample = time - floor(time);
-	unsigned step = sampleStep < 1 ? interp->resolution * sampleStep : interp->resolution;
-	unsigned yShift = subsample * step;
-	unsigned xShift = subsample * interp->resolution;
-	double sum = 0.0;
-	double kernelSum = 0.0;
-	double kernel;
+	unsigned x = time;
+	double offset = (time - x) / M_PI;
 
-	int i;
-	for (i = 1 - (int) interp->width; i <= (int) interp->width; ++i) {
-		unsigned window = (i >= 0 ? i : -i) * interp->resolution;
-		if (yShift > window) {
-			window = yShift - window;
-		} else {
-			window -= yShift;
-		}
-
-		unsigned sinc = (i >= 0 ? i : -i) * step;
-		if (xShift > sinc) {
-			sinc = xShift - sinc;
-		} else {
-			sinc -= xShift;
-		}
-
-		kernel = interp->sincLut[sinc] * interp->windowLut[window];
-		kernelSum += kernel;
-		sum += data->at(index + i, data->context) * kernel;
+	double sum = 0;
+	for (int i = -7; i <= 8; i++) {
+		double weight = fastWindowedSinc(interp, i - offset);
+		double sample = data->at(x + i, data->context);
+		sum += sample * weight;
 	}
-	return sum / kernelSum;
+
+	return sum;
 }
 
 void mInterpolatorCosineInit(struct mInterpolatorCosine* interp, unsigned resolution) {
