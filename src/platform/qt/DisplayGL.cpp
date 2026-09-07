@@ -697,10 +697,10 @@ void PainterGL::resizeContext() {
 		makeCurrent();
 	}
 	m_backend->setLayerDimensions(m_backend, VIDEO_LAYER_IMAGE, &dims);
+	recenterLayers();
 	if (!m_started) {
 		m_gl->doneCurrent();
 	}
-	recenterLayers();
 	m_dims = size;
 	cacheContentSize();
 }
