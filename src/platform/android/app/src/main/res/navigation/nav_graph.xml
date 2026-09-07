@@ -21,10 +21,10 @@
         tools:layout="@layout/fragment_games" />
 
     <fragment
-        android:id="@+id/nav_recent"
-        android:name="org.mgba_emu.mgba.fragments.RecentFragment"
-        android:label="Recent"
-        tools:layout="@layout/fragment_recent" />
+        android:id="@+id/nav_search"
+        android:name="org.mgba_emu.mgba.fragments.SearchFragment"
+        android:label="Search"
+        tools:layout="@layout/fragment_search" />
 
     <fragment
         android:id="@+id/nav_settings"

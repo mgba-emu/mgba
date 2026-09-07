@@ -15,9 +15,9 @@
         android:title="Games" />
 
     <item
-        android:id="@+id/nav_recent"
-        android:icon="@android:drawable/ic_menu_recent_history"
-        android:title="Recent" />
+        android:id="@+id/nav_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="Search" />
 
     <item
         android:id="@+id/nav_settings"

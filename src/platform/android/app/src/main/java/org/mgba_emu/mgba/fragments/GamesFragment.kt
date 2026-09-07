@@ -20,7 +20,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.color.MaterialColors
@@ -30,10 +29,8 @@ import org.mgba_emu.mgba.EmulationActivity
 import org.mgba_emu.mgba.adapters.GameAdapter
 import org.mgba_emu.mgba.databinding.FragmentGamesBinding
 import org.mgba_emu.mgba.model.GameModel
-import org.mgba_emu.mgba.utils.GameCacheManager
 import org.mgba_emu.mgba.utils.SearchLocationHelper
 import org.mgba_emu.mgba.utils.applySafePadding
-import org.mgba_emu.mgba.viewmodel.GamesViewModel
 import com.google.android.material.R as MaterialR
 
 class GamesFragment : Fragment() {
@@ -41,8 +38,6 @@ class GamesFragment : Fragment() {
     private var _binding: FragmentGamesBinding? = null
     private val binding get() = _binding!!
     private lateinit var gameAdapter: GameAdapter
-
-    private val viewModel: GamesViewModel by viewModels()
 
     private val folderPickerLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
@@ -96,14 +91,14 @@ class GamesFragment : Fragment() {
             )
 
             setOnRefreshListener {
-                viewModel.loadRoms()
+                SearchLocationHelper.loadRoms()
             }
 
             post {
                 if (_binding == null) {
                     return@post
                 }
-                binding.swipeRefreshLayout.isRefreshing = viewModel.isLoading.value
+                binding.swipeRefreshLayout.isRefreshing = SearchLocationHelper.isLoading.value
             }
         }
 
@@ -112,13 +107,13 @@ class GamesFragment : Fragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.isLoading.collect {
+            SearchLocationHelper.isLoading.collect {
                 binding.swipeRefreshLayout.isRefreshing = it
             }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.gameList.collect { gamesList ->
+            SearchLocationHelper.gameList.collect { gamesList ->
                 gameAdapter.submitList(gamesList)
             }
         }
@@ -140,18 +135,17 @@ class GamesFragment : Fragment() {
     }
 
     private fun launchEmulationActivity(game: GameModel) {
-        game.lastPlayed = System.currentTimeMillis()
-        GameCacheManager.saveGame(game)
-
+        SearchLocationHelper.updateLastPlayed(game.uri.toString(), System.currentTimeMillis())
         val intent = Intent(requireContext(), EmulationActivity::class.java).apply {
             putExtra(GameModel.launchId, game)
         }
+
         startActivity(intent)
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.loadRoms()
+        SearchLocationHelper.loadRoms()
     }
 
     override fun onDestroyView() {

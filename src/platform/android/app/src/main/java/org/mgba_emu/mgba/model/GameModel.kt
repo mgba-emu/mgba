@@ -13,14 +13,11 @@ package org.mgba_emu.mgba.model
 import android.net.Uri
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Serializable
 import org.mgba_emu.mgba.core.Platform
-import org.mgba_emu.mgba.utils.UriSerializer
 
 @Parcelize
-@Serializable
 data class GameModel(
-    @Serializable(with = UriSerializer::class) var uri: Uri,
+    var uri: Uri,
     var fileName: String,
     var title: String? = null,
     var version: String? = null,
@@ -31,5 +28,6 @@ data class GameModel(
 ) : Parcelable {
     companion object {
         val launchId = "game"
+        val supportedExtensions = setOf("gb", "gba", "gbc", "sgb") // TODO: zip?
     }
 }
