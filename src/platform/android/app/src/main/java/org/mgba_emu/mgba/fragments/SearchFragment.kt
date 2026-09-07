@@ -74,6 +74,13 @@ class SearchFragment : Fragment() {
             viewModel.onSearchQueryChanged(query)
         }
 
+        binding.clearSearch.setOnClickListener {
+            binding.searchInput.apply {
+                text.clear()
+                clearFocus()
+            }
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.searchResults.collect { filteredList ->
