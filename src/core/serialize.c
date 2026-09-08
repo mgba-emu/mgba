@@ -112,9 +112,19 @@ bool mStateExtdataSerialize(struct mStateExtdata* extdata, struct VFile* vf) {
 }
 
 bool mStateExtdataDeserialize(struct mStateExtdata* extdata, struct VFile* vf) {
+	struct {
+		int64_t start;
+		int64_t end;
+	} ranges[EXTDATA_MAX - 1];
+	ssize_t fileSize = vf->size(vf);
+	size_t rangeCount = 0;
 	while (true) {
 		struct mStateExtdataHeader buffer, header;
-		if (vf->read(vf, &buffer, sizeof(buffer)) != sizeof(buffer)) {
+		ssize_t bytesRead = vf->read(vf, &buffer, sizeof(buffer));
+		if (!bytesRead) {
+			return true;
+		}
+		if (bytesRead != sizeof(buffer)) {
 			return false;
 		}
 		LOAD_32LE(header.tag, 0, &buffer.tag);
@@ -127,12 +137,26 @@ bool mStateExtdataDeserialize(struct mStateExtdata* extdata, struct VFile* vf) {
 		if (header.tag >= EXTDATA_MAX) {
 			continue;
 		}
-		ssize_t position = vf->seek(vf, 0, SEEK_CUR);
-		if (vf->seek(vf, header.offset, SEEK_SET) < 0) {
+		if (fileSize < 0) {
 			return false;
 		}
-		if (header.size <= 0) {
-			continue;
+		if (header.size <= 0 || header.offset < 0 || header.offset > fileSize
+				|| header.size > fileSize - header.offset) {
+			return false;
+		}
+		if (extdata->data[header.tag].data) {
+			return false;
+		}
+		int64_t end = header.offset + header.size;
+		size_t i;
+		for (i = 0; i < rangeCount; ++i) {
+			if (header.offset < ranges[i].end && ranges[i].start < end) {
+				return false;
+			}
+		}
+		ssize_t position = vf->seek(vf, 0, SEEK_CUR);
+		if (position < 0 || vf->seek(vf, header.offset, SEEK_SET) < 0) {
+			return false;
 		}
 		struct mStateExtdataItem item = {
 			.data = malloc(header.size),
@@ -140,14 +164,19 @@ bool mStateExtdataDeserialize(struct mStateExtdata* extdata, struct VFile* vf) {
 			.clean = free
 		};
 		if (!item.data) {
-			continue;
+			return false;
 		}
 		if (vf->read(vf, item.data, header.size) != header.size) {
 			free(item.data);
-			continue;
+			return false;
 		}
 		mStateExtdataPut(extdata, header.tag, &item);
-		vf->seek(vf, position, SEEK_SET);
+		ranges[rangeCount].start = header.offset;
+		ranges[rangeCount].end = end;
+		++rangeCount;
+		if (vf->seek(vf, position, SEEK_SET) < 0) {
+			return false;
+		}
 	};
 	return true;
 }
@@ -516,7 +545,11 @@ void* mCoreExtractState(struct mCore* core, struct VFile* vf, struct mStateExtda
 		return 0;
 	}
 	if (extdata) {
-		mStateExtdataDeserialize(extdata, vf);
+		if (!mStateExtdataDeserialize(extdata, vf)) {
+			mStateExtdataDeinit(extdata);
+			mappedMemoryFree(state, stateSize);
+			return 0;
+		}
 	}
 	return state;
 }
@@ -588,4 +621,3 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	mStateExtdataDeinit(&extdata);
 	return success;
 }
-
