@@ -28,7 +28,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.mgba_emu.mgba.core.Core
 import org.mgba_emu.mgba.databinding.ActivityEmulationBinding
-import org.mgba_emu.mgba.fragments.EmulationLoadingFragment
 import org.mgba_emu.mgba.input.InputState
 import org.mgba_emu.mgba.model.GameModel
 import org.mgba_emu.mgba.renderer.gl.EmulationThread
@@ -44,8 +43,6 @@ class EmulationActivity : AppCompatActivity() {
     private lateinit var inputState: InputState
     private lateinit var glSurfaceView: GLSurfaceView
     private lateinit var frameBuffer: FrameBuffer
-
-    private lateinit var loadingFragment: EmulationLoadingFragment
 
     private var currentGame: GameModel? = null
 
@@ -77,7 +74,6 @@ class EmulationActivity : AppCompatActivity() {
         }
 
         currentGame ?: finish()
-        showLoadingScreen()
 
         binding.fps.visibility = if (GlobalConfig.fpsCounter) View.VISIBLE else View.GONE
         if (GlobalConfig.fpsCounter) binding.fps.applySafePadding()
@@ -128,10 +124,7 @@ class EmulationActivity : AppCompatActivity() {
             try {
                 // stop any previously running emulation thread before loading
                 stopEmulationThread()
-
-                updateLoadingProgress("Loading ROM")
                 val ok = Core.loadRom(uri)
-                updateLoadingProgress("Checking BIOS")
 
                 if (ok) {
                     if (!GlobalConfig.skipBios) {
@@ -150,7 +143,6 @@ class EmulationActivity : AppCompatActivity() {
                         }
                     }
 
-                    updateLoadingProgress("Checking Saves")
                     val save = SaveDataStore.load(currentGame?.fileName ?: "")
                     val saveOk = Core.loadSaveData(save)
                     if (!saveOk) {
@@ -160,7 +152,6 @@ class EmulationActivity : AppCompatActivity() {
                     Core.reset()
                     Log.i(LOG_TAG, "ROM loaded ${Core.gameTitle()}, ${Core.gameCode()}")
                     startEmulationThread()
-                    hideLoadingScreen()
                 } else {
                     Log.w(LOG_TAG, "Core rejected ROM")
                 }
@@ -168,30 +159,6 @@ class EmulationActivity : AppCompatActivity() {
                 Log.e(LOG_TAG, "Error reading ROM: ${e.message}")
             }
         }
-    }
-
-    fun showLoadingScreen() {
-        currentGame?.let {
-            loadingFragment = EmulationLoadingFragment.newInstance(it)
-
-            supportFragmentManager
-                .beginTransaction()
-                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-                .replace(R.id.emulation_fragment, loadingFragment)
-                .commit()
-        }
-    }
-
-    suspend fun updateLoadingProgress(progress : String) = withContext(Dispatchers.Main) {
-        loadingFragment.updateProgress(progress)
-    }
-
-    fun hideLoadingScreen() {
-        supportFragmentManager
-            .beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .remove(loadingFragment)
-            .commit()
     }
 
     private fun persistSaveData() {

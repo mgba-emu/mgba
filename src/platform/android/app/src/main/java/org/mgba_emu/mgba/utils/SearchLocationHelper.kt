@@ -138,7 +138,9 @@ object SearchLocationHelper {
                 gameDao.insertGames(newGameEntities)
             }
 
-            if (discoveredUris.isNotEmpty()) {
+            if (discoveredUris.isEmpty()) {
+                gameDao.deleteAllGames()
+            } else {
                 gameDao.deleteOrphans(discoveredUris)
             }
 

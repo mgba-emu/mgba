@@ -16,6 +16,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.core.widget.NestedScrollView
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -30,6 +31,7 @@ import org.mgba_emu.mgba.adapters.GameAdapter
 import org.mgba_emu.mgba.databinding.FragmentSearchBinding
 import org.mgba_emu.mgba.model.GameModel
 import org.mgba_emu.mgba.utils.SearchLocationHelper
+import org.mgba_emu.mgba.utils.applySafePadding
 import org.mgba_emu.mgba.viewmodel.SearchFilterType
 import org.mgba_emu.mgba.viewmodel.SearchViewModel
 
@@ -55,6 +57,9 @@ class SearchFragment : Fragment() {
         searchAdapter = GameAdapter { game ->
             launchEmulationActivity(game)
         }
+
+        binding.scrollView.applySafePadding()
+        binding.emptyStateLayout.isVisible = true
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = searchAdapter
@@ -85,14 +90,59 @@ class SearchFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.searchResults.collect { filteredList ->
                     searchAdapter.submitList(filteredList)
+                    binding.emptyStateLayout.isVisible = filteredList.isEmpty()
                 }
             }
         }
+
+        binding.bottomSearchBar.isVisible = viewModel.isSearchBarVisible.value
+        setupHideOnScroll()
+    }
+
+    private fun setupHideOnScroll() {
+        binding.scrollView.setOnScrollChangeListener(
+            NestedScrollView.OnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+                val dy = scrollY - oldScrollY
+                val scrollThreshold = 15
+
+                if (dy > scrollThreshold && viewModel.isSearchBarVisible.value) {
+                    hideSearchBar()
+                } else if (dy < -scrollThreshold && !viewModel.isSearchBarVisible.value) {
+                    showSearchBar()
+                }
+            }
+        )
+    }
+
+    private fun hideSearchBar() {
+        viewModel.isSearchBarVisible.value = false
+        val targetView = binding.bottomSearchBar
+
+        targetView.animate()
+            .translationY(targetView.height.toFloat())
+            .setDuration(250)
+            .withEndAction { targetView.visibility = View.INVISIBLE } // Optional: improves performance when hidden
+            .start()
+
+        binding.searchInput.clearFocus()
+    }
+
+    private fun showSearchBar() {
+        viewModel.isSearchBarVisible.value = true
+        val targetView = binding.bottomSearchBar
+        targetView.visibility = View.VISIBLE
+
+        targetView.animate()
+            .translationY(0f)
+            .setDuration(250)
+            .start()
     }
 
     override fun onResume() {
         super.onResume()
-        SearchLocationHelper.loadRoms()
+        binding.root.post {
+            SearchLocationHelper.loadRoms()
+        }
     }
 
     private fun launchEmulationActivity(game: GameModel) {

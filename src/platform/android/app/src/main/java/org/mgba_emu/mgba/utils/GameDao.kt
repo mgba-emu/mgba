@@ -47,4 +47,7 @@ interface GameDao {
 
     @Query("DELETE FROM games WHERE uri NOT IN (:existingUris)")
     suspend fun deleteOrphans(existingUris: List<String>)
+
+    @Query("DELETE FROM games")
+    suspend fun deleteAllGames()
 }

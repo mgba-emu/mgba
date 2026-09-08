@@ -45,6 +45,21 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        val keystoreAlias = System.getenv("KEYSTORE_ALIAS") ?: ""
+        val keystorePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+        val keystorePath = System.getenv("KEYSTORE_PATH") ?: ""
+        if (keystorePath.isNotEmpty() && file(keystorePath).exists() && file(keystorePath).length() > 0) {
+            println("Custom keystore found.")
+            create("custom-key") {
+                keyAlias = keystoreAlias
+                keyPassword = keystorePassword
+                storeFile = file(keystorePath)
+                storePassword = keystorePassword
+            }
+        }
+    }
+
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
@@ -55,8 +70,10 @@ android {
     buildTypes {
         release {
             optimization {
-                enable = false
+                enable = true
             }
+
+            signingConfig = signingConfigs.findByName("custom-key") ?: signingConfigs.getByName("debug")
         }
     }
 
@@ -102,7 +119,6 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.oboe)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.renderscript.intrinsics.replacement.toolkit)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)

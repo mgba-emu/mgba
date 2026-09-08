@@ -30,6 +30,7 @@ enum class SearchFilterType {
 class SearchViewModel : ViewModel() {
     val searchQuery = MutableStateFlow("")
     val selectedFilterType = MutableStateFlow(SearchFilterType.ALL)
+    val isSearchBarVisible = MutableStateFlow(true)
 
     val searchResults: StateFlow<List<GameModel>> = combine(
         SearchLocationHelper.gameList,
@@ -50,6 +51,8 @@ class SearchViewModel : ViewModel() {
         query: String,
         filter: SearchFilterType
     ): List<GameModel> {
+        val currentTime = System.currentTimeMillis()
+
         return games.asSequence()
             .filter { game ->
                 query.isEmpty() || (game.title ?: game.fileName).contains(query, ignoreCase = true)
@@ -57,7 +60,10 @@ class SearchViewModel : ViewModel() {
             .filter { game ->
                 when (filter) {
                     SearchFilterType.ALL -> true
-                    SearchFilterType.RECENTLY_PLAYED -> game.lastPlayed > 0L
+                    SearchFilterType.RECENTLY_PLAYED -> {
+                        val timeSincePlayed = currentTime - game.lastPlayed
+                        game.lastPlayed > 0L && timeSincePlayed <= RECENTLY_PLAYED_TIME_LIMIT
+                    }
                     SearchFilterType.FAVORITES -> false // TODO: Add favorite flag check
                 }
             }
@@ -77,5 +83,9 @@ class SearchViewModel : ViewModel() {
 
     fun onFilterTypeChanged(filterType: SearchFilterType) {
         selectedFilterType.value = filterType
+    }
+
+    companion object {
+        private const val RECENTLY_PLAYED_TIME_LIMIT = 4 * 60 * 60 * 1000L
     }
 }

@@ -35,9 +35,4 @@
         android:layout_gravity="top|start"
         android:visibility="gone"
         tools:text="60 FPS" />
-
-    <FrameLayout
-        android:id="@+id/emulation_fragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 </FrameLayout>
