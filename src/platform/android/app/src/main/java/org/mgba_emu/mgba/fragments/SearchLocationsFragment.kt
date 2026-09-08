@@ -13,18 +13,18 @@ package org.mgba_emu.mgba.fragments
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import org.mgba_emu.mgba.R
 import org.mgba_emu.mgba.adapters.FolderAdapter
 import org.mgba_emu.mgba.databinding.FragmentSearchLocationsBinding
 import org.mgba_emu.mgba.utils.SearchLocationHelper
 import org.mgba_emu.mgba.utils.applySafePadding
 
-class SearchLocationsFragment : Fragment() {
+class SearchLocationsFragment : Fragment(R.layout.fragment_search_locations) {
     private var _binding: FragmentSearchLocationsBinding? = null
     private val binding get() = _binding!!
 
@@ -41,24 +41,33 @@ class SearchLocationsFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
-        if (_binding == null) _binding = FragmentSearchLocationsBinding.inflate(inflater, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentSearchLocationsBinding.bind(view)
         binding.root.applySafePadding()
+
         loadFolders()
         binding.folderList.layoutManager = LinearLayoutManager(requireContext())
+
         adapter = FolderAdapter { uri ->
-            removeFolder(uri)
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Are you sure you want to remove this search location?")
+                .setMessage("This action is irreversible")
+                .setPositiveButton(android.R.string.ok) { dialog, which ->
+                    removeFolder(uri)
+                    dialog.dismiss()
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
+                .show()
         }
+
         binding.folderList.adapter = adapter
         adapter.submitList(folderList.toList())
 
         binding.addFolder.setOnClickListener {
             dirPickerLauncher.launch(null)
         }
-
-        return binding.root
     }
 
     private fun loadFolders() {

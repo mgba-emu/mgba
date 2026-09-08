@@ -13,9 +13,7 @@ package org.mgba_emu.mgba.fragments
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -26,6 +24,7 @@ import com.google.android.material.color.MaterialColors
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import org.mgba_emu.mgba.EmulationActivity
+import org.mgba_emu.mgba.R
 import org.mgba_emu.mgba.adapters.GameAdapter
 import org.mgba_emu.mgba.databinding.FragmentGamesBinding
 import org.mgba_emu.mgba.model.GameModel
@@ -33,7 +32,7 @@ import org.mgba_emu.mgba.utils.SearchLocationHelper
 import org.mgba_emu.mgba.utils.applySafePadding
 import com.google.android.material.R as MaterialR
 
-class GamesFragment : Fragment() {
+class GamesFragment : Fragment(R.layout.fragment_games) {
 
     private var _binding: FragmentGamesBinding? = null
     private val binding get() = _binding!!
@@ -56,17 +55,10 @@ class GamesFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        if (_binding == null) _binding = FragmentGamesBinding.inflate(inflater, container, false)
-        return binding.root
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentGamesBinding.bind(view)
         gameAdapter = GameAdapter { game ->
             launchEmulationActivity(game)
         }

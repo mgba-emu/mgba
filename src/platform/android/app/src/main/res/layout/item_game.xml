@@ -18,8 +18,9 @@
     android:layout_marginVertical="8dp"
     android:clickable="true"
     android:focusable="true"
-    app:cardCornerRadius="16dp"
-    style="?attr/materialCardViewElevatedStyle">
+    app:shapeAppearance="@style/ShapeAppearance.Material3.ListItem.Single"
+    app:cardBackgroundColor="?attr/colorSurfaceContainer"
+    style="?attr/materialCardViewFilledStyle">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

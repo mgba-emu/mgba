@@ -165,7 +165,7 @@
         android:layout_height="72dp"
         android:layout_marginHorizontal="20dp"
         android:layout_marginBottom="24dp"
-        app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
         app:cardCornerRadius="36dp"
         app:cardElevation="0dp"
         app:strokeWidth="0dp"

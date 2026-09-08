@@ -16,8 +16,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import java.net.URLDecoder
 import org.mgba_emu.mgba.databinding.ItemFolderBinding
+import java.net.URLDecoder
 
 class FolderAdapter(
     private val onDelete: (Uri) -> Unit
@@ -40,7 +40,9 @@ class FolderAdapter(
         }
 
         holder.binding.path.text = cleanPath
-        holder.binding.buttonDelete.setOnClickListener { onDelete(rawUri) }
+        holder.binding.buttonDelete.setOnClickListener {
+            onDelete(rawUri)
+        }
     }
 
     class FolderDiffCallback : DiffUtil.ItemCallback<Uri>() {

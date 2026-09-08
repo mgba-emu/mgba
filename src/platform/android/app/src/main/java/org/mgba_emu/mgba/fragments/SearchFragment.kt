@@ -12,9 +12,7 @@ package org.mgba_emu.mgba.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.core.widget.doOnTextChanged
@@ -24,6 +22,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 import org.mgba_emu.mgba.EmulationActivity
 import org.mgba_emu.mgba.R
@@ -35,7 +34,7 @@ import org.mgba_emu.mgba.utils.applySafePadding
 import org.mgba_emu.mgba.viewmodel.SearchFilterType
 import org.mgba_emu.mgba.viewmodel.SearchViewModel
 
-class SearchFragment : Fragment() {
+class SearchFragment : Fragment(R.layout.fragment_search) {
 
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
@@ -43,20 +42,12 @@ class SearchFragment : Fragment() {
     private lateinit var searchAdapter: GameAdapter
     private val viewModel: SearchViewModel by viewModels()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        if (_binding == null) _binding = FragmentSearchBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentSearchBinding.bind(view)
         searchAdapter = GameAdapter { game ->
             launchEmulationActivity(game)
-        }
+        }.apply { stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY }
 
         binding.scrollView.applySafePadding()
         binding.emptyStateLayout.isVisible = true
@@ -89,8 +80,10 @@ class SearchFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.searchResults.collect { filteredList ->
-                    searchAdapter.submitList(filteredList)
-                    binding.emptyStateLayout.isVisible = filteredList.isEmpty()
+                    binding.root.post {
+                        searchAdapter.submitList(filteredList)
+                        binding.emptyStateLayout.isVisible = filteredList.isEmpty()
+                    }
                 }
             }
         }
@@ -140,9 +133,7 @@ class SearchFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        binding.root.post {
-            SearchLocationHelper.loadRoms()
-        }
+        SearchLocationHelper.loadRoms()
     }
 
     private fun launchEmulationActivity(game: GameModel) {

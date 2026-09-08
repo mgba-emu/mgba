@@ -12,22 +12,18 @@ package org.mgba_emu.mgba.fragments
 
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import com.google.android.material.R
-import com.google.android.material.color.MaterialColors
+import org.mgba_emu.mgba.R
 import org.mgba_emu.mgba.core.Platform
 import org.mgba_emu.mgba.databinding.FragmentBiosManagerBinding
 import org.mgba_emu.mgba.utils.BiosStore
 import org.mgba_emu.mgba.utils.applySafePadding
 import java.io.ByteArrayOutputStream
 
-class BiosManagerFragment : Fragment() {
+class BiosManagerFragment : Fragment(R.layout.fragment_bios_manager) {
 
     private var _binding: FragmentBiosManagerBinding? = null
     private val binding get() = _binding!!
@@ -43,16 +39,9 @@ class BiosManagerFragment : Fragment() {
         pendingPlatform = null
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        if (_binding == null) _binding = FragmentBiosManagerBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentBiosManagerBinding.bind(view)
         binding.root.applySafePadding()
 
         setupClickListeners()
