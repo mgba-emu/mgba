@@ -34,13 +34,13 @@ class FolderAdapter(
     override fun onBindViewHolder(holder: FolderViewHolder, position: Int) {
         val rawUri = getItem(position)
         val cleanPath = try {
-            URLDecoder.decode(rawUri.toString(), "UTF-8").substringAfterLast(":")
+            URLDecoder.decode(rawUri.toString(), "UTF-8").substringAfter("documents")
         } catch (_: Exception) {
             rawUri.toString()
         }
 
         holder.binding.path.text = cleanPath
-        holder.binding.delete.setOnClickListener { onDelete(rawUri) }
+        holder.binding.buttonDelete.setOnClickListener { onDelete(rawUri) }
     }
 
     class FolderDiffCallback : DiffUtil.ItemCallback<Uri>() {

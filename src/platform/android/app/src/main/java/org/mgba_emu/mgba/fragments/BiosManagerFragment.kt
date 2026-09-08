@@ -54,9 +54,6 @@ class BiosManagerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.root.applySafePadding()
-        binding.toolbar.setNavigationOnClickListener {
-            findNavController().navigateUp()
-        }
 
         setupClickListeners()
         updatePlatformUi(Platform.GB, BiosStore.has(Platform.GB), filename = "gb.bin")
