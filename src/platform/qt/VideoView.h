@@ -12,7 +12,8 @@
 
 #include <memory>
 
-#include "CoreController.h"
+#include "CorePointer.h"
+#include "CorePointerSource.h"
 
 #include "ui_VideoView.h"
 
@@ -22,18 +23,16 @@ namespace QGBA {
 
 class CoreController;
 
-class VideoView : public QWidget {
+class VideoView : public QWidget, public CoreConsumer {
 Q_OBJECT
 
 public:
-	VideoView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	VideoView(CorePointerSource* controller, QWidget* parent = nullptr);
 	virtual ~VideoView();
 
 	mAVStream* getStream() { return &m_encoder.d; }
 
 public slots:
-	void setController(std::shared_ptr<CoreController>);
-
 	void startRecording();
 	void stopRecording();
 	void setNativeResolution(const QSize&);
@@ -66,6 +65,8 @@ private slots:
 	void changeExtension();
 
 private:
+	void onCoreAttached(std::shared_ptr<CoreController>);
+
 	struct Preset {
 		QString container;
 		QString vcodec;

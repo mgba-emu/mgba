@@ -14,6 +14,7 @@
 #include <mgba/core/scripting.h>
 
 #include "scripting/AutorunScriptModel.h"
+#include "CorePointer.h"
 #include "VFileDevice.h"
 
 #include <memory>
@@ -31,14 +32,13 @@ class InputController;
 class ScriptingTextBuffer;
 class ScriptingTextBufferModel;
 
-class ScriptingController : public QObject {
+class ScriptingController : public QObject, public CoreConsumer {
 Q_OBJECT
 
 public:
 	ScriptingController(ConfigController* config, QObject* parent = nullptr);
 	~ScriptingController();
 
-	void setController(std::shared_ptr<CoreController> controller);
 	void setInputController(InputController* controller);
 	void setVideoBackend(VideoBackend* backend);
 
@@ -79,6 +79,9 @@ private slots:
 
 private:
 	void init();
+
+	void onCoreDetached(std::shared_ptr<CoreController> controller);
+	void onCoreAttached(std::shared_ptr<CoreController> controller);
 
 	void attachGamepad();
 	void detachGamepad();
