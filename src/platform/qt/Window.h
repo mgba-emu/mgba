@@ -69,6 +69,8 @@ public:
 
 	InputController* inputController() { return &m_inputController; }
 
+	QSize contentSize(bool fallback) const;
+
 signals:
 	void startDrawing();
 	void shutdown();

@@ -261,6 +261,23 @@ void Window::argumentsPassed() {
 	}
 }
 
+QSize Window::contentSize(bool fallback) const {
+	if (m_display) {
+		return m_display->contentSize();
+	}
+	if (m_controller) {
+		return m_controller->screenDimensions();
+	}
+	if (fallback) {
+#if defined(M_CORE_GBA)
+		return QSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+#elif defined(M_CORE_GB)
+		return QSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+#endif
+	}
+	return QSize();
+}
+
 void Window::resizeFrame(const QSize& size) {
 	QSize newSize(size);
 	if (!m_config->getOption("lockFrameSize").toInt()) {
@@ -704,12 +721,7 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 
 void Window::recalculateFrameSize(const QSize& size) {
 	int factor = -1;
-	QSize baseSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-	if (m_display) {
-		baseSize = m_display->contentSize();
-	} else if (m_controller) {
-		baseSize = m_controller->screenDimensions();
-	}
+	QSize baseSize(contentSize(true));
 	if (!baseSize.isEmpty() && size.width() % baseSize.width() == 0 && size.height() % baseSize.height() == 0 && size.width() / baseSize.width() == size.height() / baseSize.height()) {
 		factor = size.width() / baseSize.width();
 	}
@@ -908,7 +920,7 @@ void Window::gameStarted() {
 	for (auto action = m_platformActions.begin(); action != m_platformActions.end(); ++action) {
 		action.value()->setEnabled(m_controller->platform() == action.key());
 	}
-	QSize size = m_controller->screenDimensions();
+	QSize size(contentSize(true));
 	m_config->updateOption("lockIntegerScaling");
 	m_config->updateOption("lockAspectRatio");
 	m_config->updateOption("interframeBlending");
@@ -1304,7 +1316,7 @@ void Window::openStateWindow(LoadSave ls) {
 	m_stateWindow->setAttribute(Qt::WA_DeleteOnClose);
 	m_stateWindow->setMode(ls);
 
-	m_stateWindow->setDimensions(m_controller->screenDimensions());
+	m_stateWindow->setDimensions(contentSize(true));
 	m_config->updateOption("lockAspectRatio");
 	m_config->updateOption("lockIntegerScaling");
 
@@ -1600,18 +1612,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 			if (!lockFrameSize) {
 				showNormal();
 			}
-#if defined(M_CORE_GBA)
-			QSize minimumSize = QSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-#elif defined(M_CORE_GB)
-			QSize minimumSize = QSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
-#endif
-			QSize size;
-			if (m_display) {
-				size = m_display->contentSize();
-			}
-			if (size.isNull()) {
-				size = minimumSize;
-			}
+			QSize size(contentSize(true));
 			size *= i;
 			m_config->setOption("scaleMultiplier", i); // TODO: Port to other
 			resizeFrame(size);
@@ -2362,9 +2363,13 @@ void Window::attachDisplay() {
 	m_display->attach(m_controller);
 	connect(m_display.get(), &QGBA::Display::drawingStarted, this, &Window::changeRenderer);
 	if (m_config->getOption("lockFrameSize").toInt()) {
-		m_display->setMaximumScale(m_savedScale);
+		if (m_savedScale > 0) {
+			m_display->setMaximumScale(m_savedScale);
+		} else {
+			m_display->setMaximumSize(m_savedSize);
+		}
 	} else {
-		m_display->setMaximumSize(m_savedSize);
+		m_display->setMaximumSize({});
 	}
 	m_display->startDrawing(m_controller);
 
