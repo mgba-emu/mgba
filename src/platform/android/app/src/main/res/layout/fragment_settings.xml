@@ -14,7 +14,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipToPadding="false"
-    android:paddingBottom="96dp">
+    android:paddingBottom="96dp"
+    android:background="?attr/colorSurfaceDim">
 
     <LinearLayout
         android:layout_width="match_parent"

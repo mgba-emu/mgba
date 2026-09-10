@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (C) 2026 Ishan
   ~ Android Port component of mGBA.
   ~
@@ -10,8 +9,6 @@
 
 <resources>
     <style name="Theme.mGBA" parent="Theme.mGBA.Base">
-        <item name="android:windowLightNavigationBar">true</item>
-        <item name="android:enforceNavigationBarContrast">false</item>
-        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
     </style>
 </resources>

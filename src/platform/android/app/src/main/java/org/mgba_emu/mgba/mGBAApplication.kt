@@ -32,8 +32,11 @@ class mGBAApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+
         Core.initNoIntroDB(this)
         GlobalConfig.initialize(context)
         startService(Intent(this, LoggerService::class.java))
+
+        // TODO: DynamicColors.applyToActivitiesIfAvailable(this)
     }
 }

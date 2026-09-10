@@ -16,10 +16,11 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="8dp"
+    android:foreground="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
     app:shapeAppearance="@style/ShapeAppearance.Material3.ListItem.Single"
-    app:cardBackgroundColor="?attr/colorSurfaceContainer"
+    app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
     style="?attr/materialCardViewFilledStyle">
 
     <androidx.constraintlayout.widget.ConstraintLayout

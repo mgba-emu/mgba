@@ -10,6 +10,7 @@
 
 <resources>
     <style name="Theme.mGBA" parent="Theme.mGBA.Base">
+        <item name="android:windowLightNavigationBar">false</item>
         <item name="android:enforceNavigationBarContrast">false</item>
         <item name="android:enforceStatusBarContrast">false</item>
     </style>

@@ -11,6 +11,7 @@ package org.mgba_emu.mgba.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +21,7 @@ import coil3.request.error
 import coil3.request.fallback
 import coil3.request.transformations
 import coil3.transform.RoundedCornersTransformation
+import org.mgba_emu.mgba.NavGraphDirections
 import org.mgba_emu.mgba.databinding.ItemGameBinding
 import org.mgba_emu.mgba.model.GameModel
 
@@ -34,6 +36,12 @@ class GameAdapter(
                 if (position != RecyclerView.NO_POSITION) {
                     onGameClick(getItem(position))
                 }
+            }
+
+            binding.root.setOnLongClickListener {
+                val action = NavGraphDirections.actionGlobalGameAboutFragment(getItem(position))
+                binding.root.findNavController().navigate(action)
+                true
             }
         }
     }

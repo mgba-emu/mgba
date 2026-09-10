@@ -60,4 +60,17 @@
         android:name="org.mgba_emu.mgba.fragments.BiosManagerFragment"
         android:label="Bios"
         tools:layout="@layout/fragment_bios_manager" />
+
+    <fragment
+        android:id="@+id/gameAboutFragment"
+        android:name="org.mgba_emu.mgba.fragments.GameAboutFragment"
+        android:label="GameAboutFragment" >
+        <argument
+            android:name="game"
+            app:argType="org.mgba_emu.mgba.model.GameModel" />
+    </fragment>
+
+    <action
+        android:id="@+id/action_global_gameAboutFragment"
+        app:destination="@id/gameAboutFragment" />
 </navigation>

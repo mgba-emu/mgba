@@ -10,9 +10,9 @@ espressoCore = "3.7.0"
 appcompat = "1.8.0"
 kotlinxSerializationJson = "1.11.0"
 material = "1.14.0"
-navigationUiKtx = "2.10.0"
+navigationUiKtx = "2.10.1"
 oboe = "1.10.0"
-roomRuntime = "2.8.4"
+roomRuntime = "2.8.5"
 swiperefreshlayout = "1.2.0"
 ksp = "2.3.11"
 
@@ -37,6 +37,7 @@ oboe = { module = "com.google.oboe:oboe", version.ref = "oboe" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+androidx-navigation-safeargs-kotlin = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigationUiKtx" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-parcelize = { id = "kotlin-parcelize" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

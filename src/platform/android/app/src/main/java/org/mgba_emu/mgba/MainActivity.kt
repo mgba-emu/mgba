@@ -63,11 +63,12 @@ class MainActivity : AppCompatActivity() {
                 R.id.searchLocationsFragment -> {
                     binding.navigationView.visibility = View.GONE
                 }
-
                 R.id.biosManagerFragment -> {
                     binding.navigationView.visibility = View.GONE
                 }
-
+                R.id.gameAboutFragment -> {
+                    binding.navigationView.visibility = View.GONE
+                }
                 else -> {
                     binding.navigationView.visibility = View.VISIBLE
                 }
@@ -78,7 +79,7 @@ class MainActivity : AppCompatActivity() {
             ThemeHelper.getColorWithOpacity(
                 MaterialColors.getColor(
                     binding.root,
-                    com.google.android.material.R.attr.colorSurface
+                    com.google.android.material.R.attr.colorSurfaceDim
                 ),
                 0.9f
             )
