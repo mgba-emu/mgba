@@ -236,17 +236,34 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(MUL, ARM_WAIT_SMUL(cpu->gprs[rd], 0); cpu->
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(BIC, cpu->gprs[rd] = cpu->gprs[rd] & ~cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(MVN, cpu->gprs[rd] = ~cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 
-#define DEFINE_INSTRUCTION_WITH_HIGH_EX_THUMB(NAME, H1, H2, BODY) \
-	DEFINE_INSTRUCTION_THUMB(NAME, \
-		int rd = (opcode & 0x0007) | H1; \
-		int rm = ((opcode >> 3) & 0x0007) | H2; \
-		BODY;)
+#define DEFINE_ALU_BLOCK(A, B, C, D) \
+	static void _ThumbInstruction ## A ## _ ## B ## _ ## C ## _ ## D (struct ARMCore* cpu, unsigned opcode) { \
+		switch (opcode & 0x00C0) {                 \
+		case 0x0000:                               \
+			_ThumbInstruction ## A (cpu, opcode);  \
+			break;                                 \
+		case 0x0040:                               \
+			_ThumbInstruction ## B (cpu, opcode);  \
+			break;                                 \
+		case 0x0080:                               \
+			_ThumbInstruction ## C (cpu, opcode);  \
+			break;                                 \
+		case 0x00C0:                               \
+			_ThumbInstruction ## D (cpu, opcode);  \
+			break;                                 \
+		}                                          \
+	}
+
+DEFINE_ALU_BLOCK(AND, EOR, LSL2, LSR2)
+DEFINE_ALU_BLOCK(ASR2, ADC, SBC, ROR)
+DEFINE_ALU_BLOCK(TST, NEG, CMP2, CMN)
+DEFINE_ALU_BLOCK(ORR, MUL, BIC, MVN)
 
 #define DEFINE_INSTRUCTION_WITH_HIGH_THUMB(NAME, BODY) \
-	DEFINE_INSTRUCTION_WITH_HIGH_EX_THUMB(NAME ## 00, 0, 0, BODY) \
-	DEFINE_INSTRUCTION_WITH_HIGH_EX_THUMB(NAME ## 01, 0, 8, BODY) \
-	DEFINE_INSTRUCTION_WITH_HIGH_EX_THUMB(NAME ## 10, 8, 0, BODY) \
-	DEFINE_INSTRUCTION_WITH_HIGH_EX_THUMB(NAME ## 11, 8, 8, BODY)
+	DEFINE_INSTRUCTION_THUMB(NAME, \
+		int rd = (opcode & 0x0007) | ((opcode >> 4) & 0x0008); \
+		int rm = (opcode >> 3) & 0x000F; \
+		BODY;)
 
 DEFINE_INSTRUCTION_WITH_HIGH_THUMB(ADD4,
 	cpu->gprs[rd] += cpu->gprs[rm];
@@ -347,6 +364,14 @@ DEFINE_CONDITIONAL_BRANCH_THUMB(LE)
 DEFINE_INSTRUCTION_THUMB(ADD7, cpu->gprs[ARM_SP] += (opcode & 0x7F) << 2)
 DEFINE_INSTRUCTION_THUMB(SUB4, cpu->gprs[ARM_SP] -= (opcode & 0x7F) << 2)
 
+static void _ThumbInstructionADD7_SUB4(struct ARMCore* cpu, unsigned opcode) {
+	if (opcode & 0x0080) {
+		_ThumbInstructionSUB4(cpu, opcode);
+	} else {
+		_ThumbInstructionADD7(cpu, opcode);
+	}
+}
+
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(POP,
 	ARM_SP,
 	load,
@@ -410,8 +435,16 @@ DEFINE_INSTRUCTION_THUMB(BX,
 		currentCycles += ARMWritePC(cpu);
 	})
 
+static void _ThumbInstructionBX_ILL(struct ARMCore* cpu, unsigned opcode) {
+	if (opcode & 0x0080) {
+		_ThumbInstructionILL(cpu, opcode);
+	} else {
+		_ThumbInstructionBX(cpu, opcode);
+	}
+}
+
 DEFINE_INSTRUCTION_THUMB(SWI, cpu->irqh.swi16(cpu, opcode & 0xFF))
 
-const ThumbInstruction _thumbTable[0x400] = {
+const ThumbInstruction _thumbTable[0x100] = {
 	DECLARE_THUMB_EMITTER_BLOCK(_ThumbInstruction)
 };

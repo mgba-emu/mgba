@@ -119,10 +119,33 @@ DEFINE_DATA_FORM_5_DECODER_THUMB(MUL, MUL, ARM_OPERAND_AFFECTED_1)
 DEFINE_DATA_FORM_5_DECODER_THUMB(BIC, BIC, ARM_OPERAND_AFFECTED_1)
 DEFINE_DATA_FORM_5_DECODER_THUMB(MVN, MVN, ARM_OPERAND_AFFECTED_1)
 
-#define DEFINE_DECODER_WITH_HIGH_EX_THUMB(NAME, H1, H2, MNEMONIC, AFFECTED, CPSR) \
+#define DEFINE_ALU_BLOCK(A, B, C, D) \
+	static void _ThumbDecode ## A ## _ ## B ## _ ## C ## _ ## D (uint16_t opcode, struct ARMInstructionInfo* info) { \
+		switch (opcode & 0x00C0) {             \
+		case 0x0000:                           \
+			_ThumbDecode ## A (opcode, info);  \
+			break;                             \
+		case 0x0040:                           \
+			_ThumbDecode ## B (opcode, info);  \
+			break;                             \
+		case 0x0080:                           \
+			_ThumbDecode ## C (opcode, info);  \
+			break;                             \
+		case 0x00C0:                           \
+			_ThumbDecode ## D (opcode, info);  \
+			break;                             \
+		}                                      \
+	}
+
+DEFINE_ALU_BLOCK(AND, EOR, LSL2, LSR2)
+DEFINE_ALU_BLOCK(ASR2, ADC, SBC, ROR)
+DEFINE_ALU_BLOCK(TST, NEG, CMP2, CMN)
+DEFINE_ALU_BLOCK(ORR, MUL, BIC, MVN)
+
+#define DEFINE_DECODER_WITH_HIGH_THUMB(NAME, MNEMONIC, AFFECTED, CPSR) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op1.reg = (opcode & 0x0007) | H1; \
-		info->op2.reg = ((opcode >> 3) & 0x0007) | H2; \
+		info->op1.reg = (opcode & 0x0007) | ((opcode >> 4) & 0x0008); \
+		info->op2.reg = (opcode >> 3) & 0x000F; \
 		if (info->op1.reg == ARM_PC) { \
 			info->branchType = ARM_BRANCH_INDIRECT; \
 		} \
@@ -130,13 +153,6 @@ DEFINE_DATA_FORM_5_DECODER_THUMB(MVN, MVN, ARM_OPERAND_AFFECTED_1)
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			AFFECTED | \
 			ARM_OPERAND_REGISTER_2;)
-
-
-#define DEFINE_DECODER_WITH_HIGH_THUMB(NAME, MNEMONIC, AFFECTED, CPSR) \
-	DEFINE_DECODER_WITH_HIGH_EX_THUMB(NAME ## 00, 0, 0, MNEMONIC, AFFECTED, CPSR) \
-	DEFINE_DECODER_WITH_HIGH_EX_THUMB(NAME ## 01, 0, 8, MNEMONIC, AFFECTED, CPSR) \
-	DEFINE_DECODER_WITH_HIGH_EX_THUMB(NAME ## 10, 8, 0, MNEMONIC, AFFECTED, CPSR) \
-	DEFINE_DECODER_WITH_HIGH_EX_THUMB(NAME ## 11, 8, 8, MNEMONIC, AFFECTED, CPSR)
 
 DEFINE_DECODER_WITH_HIGH_THUMB(ADD4, ADD, ARM_OPERAND_AFFECTED_1, 0)
 DEFINE_DECODER_WITH_HIGH_THUMB(CMP3, CMP, ARM_OPERAND_NONE, 1)
@@ -250,6 +266,14 @@ DEFINE_CONDITIONAL_BRANCH_THUMB(LE)
 DEFINE_SP_MODIFY_THUMB(ADD7, ADD)
 DEFINE_SP_MODIFY_THUMB(SUB4, SUB)
 
+static void _ThumbDecodeADD7_SUB4(uint16_t opcode, struct ARMInstructionInfo* info) {
+	if (opcode & 0x0080) {
+		_ThumbDecodeSUB4(opcode, info);
+	} else {
+		_ThumbDecodeADD7(opcode, info);
+	}
+}
+
 DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POP, ARM_SP, LDM, ARM_MEMORY_INCREMENT_AFTER, LOAD, 0)
 DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POPR, ARM_SP, LDM, ARM_MEMORY_INCREMENT_AFTER, LOAD, 1 << ARM_PC)
 DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH, ARM_SP, STM, ARM_MEMORY_DECREMENT_BEFORE, STORE, 0)
@@ -291,6 +315,14 @@ DEFINE_THUMB_DECODER(BX, BX,
 	info->operandFormat = ARM_OPERAND_REGISTER_1;
 	info->branchType = ARM_BRANCH_INDIRECT;)
 
+static void _ThumbDecodeBX_ILL(uint16_t opcode, struct ARMInstructionInfo* info) {
+	if (opcode & 0x0080) {
+		_ThumbDecodeILL(opcode, info);
+	} else {
+		_ThumbDecodeBX(opcode, info);
+	}
+}
+
 DEFINE_THUMB_DECODER(SWI, SWI,
 	info->op1.immediate = opcode & 0xFF;
 	info->operandFormat = ARM_OPERAND_IMMEDIATE_1;
@@ -298,7 +330,7 @@ DEFINE_THUMB_DECODER(SWI, SWI,
 
 typedef void (*ThumbDecoder)(uint16_t opcode, struct ARMInstructionInfo* info);
 
-static const ThumbDecoder _thumbDecoderTable[0x400] = {
+static const ThumbDecoder _thumbDecoderTable[0x100] = {
 	DECLARE_THUMB_EMITTER_BLOCK(_ThumbDecode)
 };
 
@@ -309,7 +341,7 @@ void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info) {
 	info->branchType = ARM_BRANCH_NONE;
 	info->condition = ARM_CONDITION_AL;
 	info->sInstructionCycles = 1;
-	ThumbDecoder decoder = _thumbDecoderTable[opcode >> 6];
+	ThumbDecoder decoder = _thumbDecoderTable[opcode >> 8];
 	decoder(opcode, info);
 }
 

@@ -222,7 +222,7 @@ static inline void ThumbStep(struct ARMCore* cpu) {
 	cpu->prefetch[0] = cpu->prefetch[1];
 	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
 	LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
-	ThumbInstruction instruction = _thumbTable[opcode >> 6];
+	ThumbInstruction instruction = _thumbTable[opcode >> 8];
 	instruction(cpu, opcode);
 }
 
