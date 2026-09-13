@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2026 Ishan
+  ~ Android Port component of mGBA.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+  ~
+  ~ This program is distributed without any warranty. See the GNU General Public License for more details.
+  -->
+
+<resources>
+    <attr name="title" format="string" />
+    <attr name="subtitle" format="string" />
+    <attr name="key" format="string" />
+
+    <attr name="defaultValue" format="boolean|integer" />
+
+    <attr name="entries" format="reference" />
+    <attr name="entryValues" format="reference" />
+
+    <declare-styleable name="SwitchPreference">
+        <attr name="title" />
+        <attr name="subtitle" />
+        <attr name="key" />
+        <attr name="defaultValue" />
+    </declare-styleable>
+
+    <declare-styleable name="IntListPreference">
+        <attr name="title" />
+        <attr name="subtitle" />
+        <attr name="key" />
+        <attr name="defaultValue" />
+        <attr name="entries" />
+        <attr name="entryValues" />
+    </declare-styleable>
+</resources>

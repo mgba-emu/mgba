@@ -1,0 +1,61 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up gradle caches
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-mgba-${{ hashFiles(
+           '**/*.gradle',
+           '**/*.gradle.kts',
+           '**/gradle-wrapper.properties',
+           '**/gradle.properties',
+           '**/settings.gradle',
+           '**/settings.gradle.kts',
+           '**/libs.versions.toml'
+           ) }}
+          restore-keys: |
+            ${{ runner.os }}-mgba-
+
+      - name: Setup Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Decode Keystore
+        env:
+          KEYSTORE_ENCODED: ${{ secrets.KEYSTORE }}
+        run: |
+          echo "$KEYSTORE_ENCODED" | base64 --decode > ${{ github.workspace }}/src/platform/android/app/ks.jks
+
+      - name: Build
+        env:
+          KEYSTORE_PATH: "ks.jks"
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+        run: |
+          cd ./src/platform/android/
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: mGBA-android
+          path: |
+            ./src/platform/android/app/build/outputs/apk/debug/app-debug.apk
