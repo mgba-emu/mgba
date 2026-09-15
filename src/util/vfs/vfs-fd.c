@@ -56,9 +56,28 @@ struct VFile* VFileOpenFD(const char* path, int flags) {
 	flags |= O_BINARY;
 	wchar_t wpath[PATH_MAX];
 	MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, sizeof(wpath) / sizeof(*wpath));
-	int fd = _wopen(wpath, flags, _S_IREAD | _S_IWRITE);
+	// Prevent other processes from writing to this file if we're writing to it
+	int shflag = (flags & O_ACCMODE) == O_RDONLY ? _SH_DENYNO : _SH_DENYWR;
+	int fd = _wsopen(wpath, flags, shflag, _S_IREAD | _S_IWRITE);
 #else
 	int fd = open(path, flags, 0666);
+	// Note, POSIX file locks are advisory, not mandatory
+	// This means other programs likely won't care about our lock
+	if (fd >= 0 && (flags & O_ACCMODE) != O_RDONLY) {
+		struct flock lk;
+		lk.l_type = F_WRLCK;
+		lk.l_whence = SEEK_SET;
+		lk.l_start = 0;
+		lk.l_len = 0;
+#ifdef F_OFD_SETLK
+		if (fcntl(fd, F_OFD_SETLK, &lk) < 0) {
+#else
+		if (fcntl(fd, F_SETLK, &lk) < 0) {
+#endif
+			close(fd);
+			return 0;
+		}
+	}
 #endif
 	return VFileFromFD(fd);
 }
