@@ -227,15 +227,18 @@ static inline void ThumbStep(struct ARMCore* cpu) {
 }
 
 void ARMRun(struct ARMCore* cpu) {
-	while (cpu->cycles >= cpu->nextEvent) {
+	if (cpu->cycles >= cpu->nextEvent) {
 		cpu->irqh.processEvents(cpu);
+	}
+	if (cpu->cycles == cpu->nextEvent) {
+		return;
 	}
 	if (cpu->executionMode == MODE_THUMB) {
 		ThumbStep(cpu);
 	} else {
 		ARMStep(cpu);
 	}
-	while (cpu->cycles >= cpu->nextEvent) {
+	if (cpu->cycles >= cpu->nextEvent) {
 		cpu->irqh.processEvents(cpu);
 	}
 }
