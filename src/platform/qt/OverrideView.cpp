@@ -25,8 +25,9 @@
 
 using namespace QGBA;
 
-OverrideView::OverrideView(ConfigController* config, QWidget* parent)
+OverrideView::OverrideView(CorePointerSource* controller, ConfigController* config, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
+	, CoreConsumer(controller)
 	, m_config(config)
 {
 	m_ui.setupUi(this);
@@ -127,8 +128,7 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 	connect(&m_recheck, &QTimer::timeout, this, &OverrideView::recheck);
 }
 
-void OverrideView::setController(std::shared_ptr<CoreController> controller) {
-	m_controller = controller;
+void OverrideView::onCoreAttached(std::shared_ptr<CoreController> controller) {
 	connect(controller.get(), &CoreController::started, this, &OverrideView::gameStarted);
 	connect(controller.get(), &CoreController::stopping, this, &OverrideView::gameStopped);
 	recheck();

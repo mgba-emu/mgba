@@ -15,6 +15,7 @@
 #endif
 
 #include "ColorPicker.h"
+#include "CorePointer.h"
 #include "Override.h"
 
 #include "ui_OverrideView.h"
@@ -27,13 +28,11 @@ class ConfigController;
 class CoreController;
 class Override;
 
-class OverrideView : public QDialog {
+class OverrideView : public QDialog, public CoreConsumer {
 Q_OBJECT
 
 public:
-	OverrideView(ConfigController* config, QWidget* parent = nullptr);
-
-	void setController(std::shared_ptr<CoreController> controller);
+	OverrideView(CorePointerSource* controller, ConfigController* config, QWidget* parent = nullptr);
 
 public slots:
 	void saveOverride();
@@ -45,6 +44,8 @@ private slots:
 	void gameStopped();
 
 private:
+	void onCoreAttached(std::shared_ptr<CoreController>);
+
 	Ui::OverrideView m_ui;
 
 	std::shared_ptr<CoreController> m_controller;

@@ -7,6 +7,7 @@
 
 #include <QValidator>
 
+#include "CorePointer.h"
 #include "MemoryModel.h"
 #include "MemoryAccessLogModel.h"
 
@@ -14,7 +15,7 @@
 
 namespace QGBA {
 
-class CoreController;
+class CorePointerSource;
 
 class IntValidator : public QValidator {
 Q_OBJECT
@@ -30,11 +31,11 @@ private:
 	bool m_signed;
 };
 
-class MemoryView : public QWidget {
+class MemoryView : public QWidget, public CoreConsumer {
 Q_OBJECT
 
 public:
-	MemoryView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	MemoryView(CorePointerSource* controller, QWidget* parent = nullptr);
 
 public slots:
 	void update();
@@ -52,7 +53,6 @@ private:
 	IntValidator m_sintValidator{true};
 	IntValidator m_uintValidator{false};
 
-	std::shared_ptr<CoreController> m_controller;
 	QPair<uint32_t, uint32_t> m_region;
 	QPair<uint32_t, uint32_t> m_selection;
 

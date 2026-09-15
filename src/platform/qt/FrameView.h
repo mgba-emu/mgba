@@ -32,7 +32,7 @@ class FrameView : public AssetView {
 Q_OBJECT
 
 public:
-	FrameView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	FrameView(CorePointerSource* controller, QWidget* parent = nullptr);
 	~FrameView();
 
 public slots:

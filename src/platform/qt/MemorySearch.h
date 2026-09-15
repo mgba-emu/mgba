@@ -11,17 +11,19 @@
 
 #include <mgba/core/mem-search.h>
 
+#include "CorePointer.h"
+
 namespace QGBA {
 
 class CoreController;
 
-class MemorySearch : public QWidget {
+class MemorySearch : public QWidget, public CoreConsumer {
 Q_OBJECT
 
 public:
 	static constexpr size_t LIMIT = 10000;
 
-	MemorySearch(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	MemorySearch(CorePointerSource* controller, QWidget* parent = nullptr);
 	~MemorySearch();
 
 public slots:
@@ -36,8 +38,6 @@ private:
 	bool createParams(mCoreMemorySearchParams*);
 
 	Ui::MemorySearch m_ui;
-
-	std::shared_ptr<CoreController> m_controller;
 
 	mCoreMemorySearchResults m_results;
 	QByteArray m_string;
