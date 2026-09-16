@@ -1103,15 +1103,18 @@ int main(int argc, char* argv[]) {
 
 	mGUIDeinit(&runner);
 
+	audrvVoiceStop(&audrenDriver, 0);
+	audrvMemPoolDetach(&audrenDriver, mempool);
 	audrvClose(&audrenDriver);
+	audrenStopAudioRenderer();
 	audrenExit();
+	free(buffers);
 	GUIFontDestroy(font);
 
 	glDeinit();
 	hidTeardown();
 
 	psmExit();
-	audoutExit();
 	romfsExit();
 	eglDeinit();
 	socketExit();
