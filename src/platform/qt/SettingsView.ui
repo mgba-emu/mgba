@@ -140,8 +140,18 @@
                <string>1536</string>
               </property>
               <property name="currentIndex">
-               <number>9</number>
+               <number>11</number>
               </property>
+              <item>
+               <property name="text">
+                <string>32</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>48</string>
+               </property>
+              </item>
               <item>
                <property name="text">
                 <string>64</string>
