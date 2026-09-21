@@ -132,7 +132,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="78"/>
         <source>Verifying download failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>Verifieringen misslyckades. Uppdatera manuellt.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
@@ -244,7 +244,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../AudioProcessorDummy.cpp" line="31"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished">Kan inte starta en ljudprocessor utan ingång</translation>
+        <translation>Det går inte att starta en ljudprocessor utan indata</translation>
     </message>
 </context>
 <context>
@@ -257,7 +257,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="82"/>
         <source>Audio outputting to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ljud skickas ut till %1</translation>
     </message>
 </context>
 <context>
@@ -319,7 +319,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../BattleChipModel.cpp" line="113"/>
         <source>Failed to open chip names list</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte öppna listan över chipnamn</translation>
     </message>
 </context>
 <context>
@@ -543,42 +543,42 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="105"/>
         <source>Temporary file loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillfällig fil har lästs in</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="106"/>
         <source>The ROM appears to be loaded from a temporary directory, perhaps automatically extracted from an archive (e.g. a zip file).</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM-filen verkar ha lästs in från en tillfällig katalog, möjligen automatiskt extraherad från ett arkiv (t.ex. en zip-fil).</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="154"/>
         <source>Could not open save file</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte öppna sparfilen</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="155"/>
         <source>Failed to open save file; in-game saves cannot be updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte öppna sparfilen; sparningar i spelet kan inte uppdateras.</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="228"/>
         <source>Would you like to copy the ROM to a different location? If you don&apos;t, this will likely lead to data loss (e.g. saves, screenshots, etc.).</source>
-        <translation type="unfinished"></translation>
+        <translation>Vill du kopiera ROM-filen till en annan plats? Om du inte gör det kommer det troligen att leda till dataförlust (t.ex. sparningar, skärmbilder osv.).</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="235"/>
         <source>Copy failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopieringen misslyckades</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="235"/>
         <source>Failed to copy ROM. Do you want to try again?</source>
-        <translation type="unfinished"></translation>
+        <translation>Det gick inte att kopiera ROM-filen. Vill du försöka igen?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="242"/>
         <source>New ROM location</source>
-        <translation type="unfinished"></translation>
+        <translation>Ny plats för ROM-fil</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="126"/>
@@ -606,7 +606,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../DebuggerConsole.ui" line="44"/>
         <source>Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>Fortsätt</translation>
     </message>
 </context>
 <context>
@@ -1173,7 +1173,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>%1 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (Lutning)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
@@ -1253,7 +1253,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="51"/>
         <source>Frame select</source>
-        <translation type="unfinished"></translation>
+        <translation>Bildruteval</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="52"/>
@@ -1348,7 +1348,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="76"/>
         <source>VCounter scanline</source>
-        <translation type="unfinished"></translation>
+        <translation>V-räknarens avsökningsrad</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="80"/>
@@ -1407,7 +1407,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="107"/>
         <location filename="../IOViewer.cpp" line="117"/>
         <source>Overflow wraps</source>
-        <translation type="unfinished"></translation>
+        <translation>Överflöde slår runt</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="122"/>
@@ -1443,7 +1443,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="212"/>
         <location filename="../IOViewer.cpp" line="221"/>
         <source>Fractional part</source>
-        <translation type="unfinished"></translation>
+        <translation>Bråkdel</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="155"/>
@@ -1525,7 +1525,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="255"/>
         <source>Window 0 enable blend</source>
-        <translation type="unfinished"></translation>
+        <translation>Fönster 0 aktiverar blandning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="256"/>
@@ -1555,87 +1555,87 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="261"/>
         <source>Window 1 enable blend</source>
-        <translation type="unfinished"></translation>
+        <translation>Fönster 1 aktiverar blandning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="265"/>
         <source>Outside window enable BG 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Utanför fönstret aktiveras BG 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="266"/>
         <source>Outside window enable BG 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Utanför fönstret aktiveras BG 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="267"/>
         <source>Outside window enable BG 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Utanför fönstret aktiveras BG 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="268"/>
         <source>Outside window enable BG 3</source>
-        <translation type="unfinished"></translation>
+        <translation>Utanför fönstret aktiveras BG 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="269"/>
         <source>Outside window enable OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>Utanför fönstret aktiveras OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="270"/>
         <source>Outside window enable blend</source>
-        <translation type="unfinished"></translation>
+        <translation>Utanför fönstret aktiveras blandning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="271"/>
         <source>OBJ window enable BG 0</source>
-        <translation type="unfinished"></translation>
+        <translation>OBJ-fönstret aktiverar BG 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="272"/>
         <source>OBJ window enable BG 1</source>
-        <translation type="unfinished"></translation>
+        <translation>OBJ-fönstret aktiverar BG 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="273"/>
         <source>OBJ window enable BG 2</source>
-        <translation type="unfinished"></translation>
+        <translation>OBJ-fönstret aktiverar BG 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="274"/>
         <source>OBJ window enable BG 3</source>
-        <translation type="unfinished"></translation>
+        <translation>OBJ-fönstret aktiverar BG 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="275"/>
         <source>OBJ window enable OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>OBJ-fönstret aktiverar OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="276"/>
         <source>OBJ window enable blend</source>
-        <translation type="unfinished"></translation>
+        <translation>OBJ-fönstret aktiverar blandning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="281"/>
         <source>Background mosaic size vertical</source>
-        <translation type="unfinished"></translation>
+        <translation>Bakgrundens mosaikstorlek, vertikalt</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="280"/>
         <source>Background mosaic size horizontal</source>
-        <translation type="unfinished"></translation>
+        <translation>Bakgrundens mosaikstorlek, horisontellt</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="283"/>
         <source>Object mosaic size vertical</source>
-        <translation type="unfinished"></translation>
+        <translation>Objektets mosaikstorlek, vertikalt</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="282"/>
         <source>Object mosaic size horizontal</source>
-        <translation type="unfinished"></translation>
+        <translation>Objektets mosaikstorlek, horisontellt</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="289"/>
@@ -1665,7 +1665,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="294"/>
         <source>Backdrop target 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Bakgrundsmål 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="295"/>
@@ -1680,7 +1680,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="297"/>
         <source>Additive blending</source>
-        <translation type="unfinished"></translation>
+        <translation>Additiv blandning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="298"/>
@@ -1715,45 +1715,45 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="305"/>
         <source>OBJ target 2</source>
-        <translation type="unfinished"></translation>
+        <translation>OBJ-mål 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="306"/>
         <source>Backdrop target 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Bakgrundsmål 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="310"/>
         <source>Blend A (target 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Blandning A (mål 1)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="311"/>
         <source>Blend B (target 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>Blandning B (mål 2)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="315"/>
         <source>Blend Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Blandning Y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="329"/>
         <location filename="../IOViewer.cpp" line="1100"/>
         <source>Sweep shifts</source>
-        <translation type="unfinished"></translation>
+        <translation>Svepskift</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="330"/>
         <location filename="../IOViewer.cpp" line="1101"/>
         <source>Sweep subtract</source>
-        <translation type="unfinished"></translation>
+        <translation>Svepsubtraktion</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="331"/>
         <location filename="../IOViewer.cpp" line="1102"/>
         <source>Sweep time (in 1/128s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sveptid (i 1/128 s)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="335"/>
@@ -1773,7 +1773,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1107"/>
         <location filename="../IOViewer.cpp" line="1130"/>
         <source>Duty cycle</source>
-        <translation type="unfinished"></translation>
+        <translation>Pulsbredd</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="337"/>
@@ -1783,7 +1783,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1134"/>
         <location filename="../IOViewer.cpp" line="1183"/>
         <source>Envelope step time</source>
-        <translation type="unfinished"></translation>
+        <translation>Omslagsstegtakt</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="338"/>
@@ -1793,7 +1793,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1135"/>
         <location filename="../IOViewer.cpp" line="1184"/>
         <source>Envelope increase</source>
-        <translation type="unfinished"></translation>
+        <translation>Öka omslag</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="339"/>
@@ -1822,7 +1822,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1172"/>
         <location filename="../IOViewer.cpp" line="1198"/>
         <source>Timed</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidsstyrd</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="345"/>
@@ -1839,12 +1839,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="369"/>
         <source>Double-size wave table</source>
-        <translation type="unfinished"></translation>
+        <translation>Vågtabell med dubbel storlek</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="370"/>
         <source>Active wave table</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktiv vågtabell</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="371"/>
@@ -1897,13 +1897,13 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="406"/>
         <location filename="../IOViewer.cpp" line="1189"/>
         <source>Clock divider</source>
-        <translation type="unfinished"></translation>
+        <translation>Klockdelare</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="407"/>
         <location filename="../IOViewer.cpp" line="1190"/>
         <source>Register stages</source>
-        <translation type="unfinished"></translation>
+        <translation>Registersteg</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="408"/>
@@ -1921,17 +1921,17 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="411"/>
         <location filename="../IOViewer.cpp" line="1194"/>
         <source>Shifter frequency</source>
-        <translation type="unfinished"></translation>
+        <translation>Skiftfrekvens</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="419"/>
         <source>PSG volume right</source>
-        <translation type="unfinished"></translation>
+        <translation>PSG-volym höger</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="420"/>
         <source>PSG volume left</source>
-        <translation type="unfinished"></translation>
+        <translation>PSG-volym vänster</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="421"/>
@@ -1984,17 +1984,17 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="432"/>
         <source>PSG master volume</source>
-        <translation type="unfinished"></translation>
+        <translation>PSG-huvudvolym</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="438"/>
         <source>Loud channel A</source>
-        <translation type="unfinished"></translation>
+        <translation>Hög kanal A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="439"/>
         <source>Loud channel B</source>
-        <translation type="unfinished"></translation>
+        <translation>Hög kanal B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="440"/>
@@ -2009,7 +2009,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="442"/>
         <source>Channel A timer</source>
-        <translation type="unfinished"></translation>
+        <translation>Kanal A-timer</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="443"/>
@@ -2033,7 +2033,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="446"/>
         <source>Channel A reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Återställ kanal A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="447"/>
@@ -2048,12 +2048,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="449"/>
         <source>Channel B timer</source>
-        <translation type="unfinished"></translation>
+        <translation>Kanal B-timer</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="453"/>
         <source>Channel B reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Återställ kanal B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="457"/>
@@ -2088,7 +2088,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="467"/>
         <source>Bias</source>
-        <translation type="unfinished"></translation>
+        <translation>Förspänning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="468"/>
@@ -2255,7 +2255,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="672"/>
         <location filename="../IOViewer.cpp" line="717"/>
         <source>Destination offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Målförskjutning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="583"/>
@@ -2307,7 +2307,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="678"/>
         <location filename="../IOViewer.cpp" line="723"/>
         <source>Source offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Källförskjutning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="594"/>
@@ -2331,7 +2331,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="686"/>
         <location filename="../IOViewer.cpp" line="732"/>
         <source>Start timing</source>
-        <translation type="unfinished"></translation>
+        <translation>Starttidpunkt</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="597"/>
@@ -2462,7 +2462,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="816"/>
         <location filename="../IOViewer.cpp" line="832"/>
         <source>Cascade</source>
-        <translation type="unfinished"></translation>
+        <translation>Kaskad</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="870"/>
@@ -2553,25 +2553,25 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="948"/>
         <location filename="../IOViewer.cpp" line="965"/>
         <source>Timer 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Timer 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="949"/>
         <location filename="../IOViewer.cpp" line="966"/>
         <source>Timer 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Timer 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="950"/>
         <location filename="../IOViewer.cpp" line="967"/>
         <source>Timer 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Timer 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="951"/>
         <location filename="../IOViewer.cpp" line="968"/>
         <source>Timer 3</source>
-        <translation type="unfinished"></translation>
+        <translation>Timer 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="952"/>
@@ -2607,7 +2607,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="957"/>
         <location filename="../IOViewer.cpp" line="974"/>
         <source>Keypad</source>
-        <translation type="unfinished"></translation>
+        <translation>Knappsats</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="958"/>
@@ -2618,7 +2618,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="979"/>
         <source>SRAM wait</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM-väntetid</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="980"/>
@@ -2658,37 +2658,37 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="985"/>
         <source>Cart 0 non-sequential</source>
-        <translation type="unfinished"></translation>
+        <translation>Kassett 0, icke-sekventiell</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="991"/>
         <source>Cart 0 sequential</source>
-        <translation type="unfinished"></translation>
+        <translation>Kassett 0, sekventiell</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="995"/>
         <source>Cart 1 non-sequential</source>
-        <translation type="unfinished"></translation>
+        <translation>Kassett 1, icke-sekventiell</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1001"/>
         <source>Cart 1 sequential</source>
-        <translation type="unfinished"></translation>
+        <translation>Kassett 1, sekventiell</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1005"/>
         <source>Cart 2 non-sequential</source>
-        <translation type="unfinished"></translation>
+        <translation>Kassett 2, icke-sekventiell</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1011"/>
         <source>Cart 2 sequential</source>
-        <translation type="unfinished"></translation>
+        <translation>Kassett 2, sekventiell</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1015"/>
         <source>PHI terminal</source>
-        <translation type="unfinished"></translation>
+        <translation>PHI-terminal</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1016"/>
@@ -2714,7 +2714,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1021"/>
         <source>Gamepak prefetch</source>
-        <translation type="unfinished"></translation>
+        <translation>Förhämtning av Game Pak</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1027"/>
@@ -2759,7 +2759,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1049"/>
         <source>32× clocking (CGB only)</source>
-        <translation type="unfinished"></translation>
+        <translation>32× klockning (endast CGB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1050"/>
@@ -2769,7 +2769,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1068"/>
         <source>Divider</source>
-        <translation type="unfinished"></translation>
+        <translation>Delare</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1070"/>
@@ -2780,13 +2780,13 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1093"/>
         <location filename="../IOViewer.cpp" line="1554"/>
         <source>LCD STAT</source>
-        <translation type="unfinished"></translation>
+        <translation>LCD-STAT</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1094"/>
         <location filename="../IOViewer.cpp" line="1555"/>
         <source>Timer</source>
-        <translation type="unfinished"></translation>
+        <translation>Timer</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1095"/>
@@ -2900,7 +2900,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1350"/>
         <source>2: OAM scan</source>
-        <translation type="unfinished"></translation>
+        <translation>2: OAM-avsökning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1351"/>
@@ -2910,7 +2910,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1353"/>
         <source>In LYC</source>
-        <translation type="unfinished"></translation>
+        <translation>I LYC</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1354"/>
@@ -2940,12 +2940,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1373"/>
         <source>Comparison Y coordinate</source>
-        <translation type="unfinished"></translation>
+        <translation>Jämförelse-Y-koordinat</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1377"/>
         <source>Start upper byte</source>
-        <translation type="unfinished"></translation>
+        <translation>Start, övre byte</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1381"/>
@@ -2998,17 +2998,17 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1442"/>
         <source>Timing</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidsinställning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1449"/>
         <source>Write bit</source>
-        <translation type="unfinished"></translation>
+        <translation>Skrivbit</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1450"/>
         <source>Read bit</source>
-        <translation type="unfinished"></translation>
+        <translation>Läsbit</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1453"/>
@@ -3026,7 +3026,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1495"/>
         <location filename="../IOViewer.cpp" line="1507"/>
         <source>Auto-increment</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatisk ökning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1499"/>
@@ -3053,7 +3053,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1520"/>
         <source>x coordinate sorting</source>
-        <translation type="unfinished"></translation>
+        <translation>Sortering efter x-koordinat</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1531"/>
@@ -3067,12 +3067,12 @@ Hämtningsstorlek: %3</translation>
         <location filename="../InputController.cpp" line="732"/>
         <location filename="../InputController.cpp" line="753"/>
         <source>Could not find a valid camera format!</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte hitta ett giltigt kameraformat!</translation>
     </message>
     <message>
         <location filename="../InputController.cpp" line="734"/>
         <source>Camera supported format: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Format som stöds av kameran: %1</translation>
     </message>
 </context>
 <context>
@@ -3493,17 +3493,17 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="96"/>
         <source>Accessed by instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Åtkommen av instruktion</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="98"/>
         <source>Accessed by DMA</source>
-        <translation type="unfinished"></translation>
+        <translation>Åtkommen av DMA</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="100"/>
         <source>Accessed by BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>Åtkommen av BIOS</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="102"/>
@@ -3513,7 +3513,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="104"/>
         <source>Accessed by memory copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Åtkommen av minneskopiering</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="106"/>
@@ -3548,7 +3548,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="118"/>
         <source>Invalid executable address</source>
-        <translation type="unfinished"></translation>
+        <translation>Ogiltig körbar adress</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="120"/>
@@ -3568,7 +3568,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="128"/>
         <source>Instruction opcode</source>
-        <translation type="unfinished"></translation>
+        <translation>Instruktionsopcode</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="130"/>
@@ -3578,12 +3578,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="135"/>
         <source>Thumb code</source>
-        <translation type="unfinished"></translation>
+        <translation>Thumb-kod</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="137"/>
         <source>Instruction operand</source>
-        <translation type="unfinished"></translation>
+        <translation>Instruktionsoperand</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="139"/>
@@ -3686,7 +3686,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../MemoryDump.ui" line="108"/>
         <source>Dump across banks within region</source>
         <comment>Generate dump with bytes all within the same region of memory, even if it crosses the bank boundary</comment>
-        <translation type="unfinished">Dumpa flera bankar</translation>
+        <translation>Skapa en dump där alla byte ligger inom samma minnesregion, även om den passerar bankgränsen</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="25"/>
@@ -4028,7 +4028,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="314"/>
         <source>Couldn&apos;t find available save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte hitta ett tillgängligt spar-id</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="368"/>
@@ -4267,7 +4267,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="75"/>
         <source>Tilt</source>
-        <translation type="unfinished"></translation>
+        <translation>Lutning</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="85"/>
@@ -4322,7 +4322,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="164"/>
         <source>Idle loop</source>
-        <translation type="unfinished"></translation>
+        <translation>Tomgångsslinga</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="190"/>
@@ -4332,7 +4332,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="197"/>
         <source>VBA bug compatibility mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Kompatibilitetsläge för VBA-buggar</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="227"/>
@@ -4719,7 +4719,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="85"/>
         <source>Failed to open output file.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte öppna utdatafilen.</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="96"/>
@@ -4914,7 +4914,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="108"/>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="118"/>
@@ -4944,7 +4944,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="143"/>
         <source>Clear console</source>
-        <translation type="unfinished"></translation>
+        <translation>Töm konsolen</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="67"/>
@@ -4997,7 +4997,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SensorView.ui" line="126"/>
         <source>MM/dd/yy hh:mm:ss AP</source>
-        <translation type="unfinished"></translation>
+        <translation>dd/MM/yy HH:mm:ss</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="136"/>
@@ -5526,7 +5526,7 @@ Om den är inställd på OpenGL och du fortfarande ser detta, kan ditt grafikkor
     <message>
         <location filename="../SettingsView.ui" line="447"/>
         <source>Interframe blending</source>
-        <translation type="unfinished"></translation>
+        <translation>Blandning mellan bildrutor</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="709"/>
@@ -5657,7 +5657,7 @@ Om den är inställd på OpenGL och du fortfarande ser detta, kan ditt grafikkor
     <message>
         <location filename="../SettingsView.ui" line="1245"/>
         <source>Idle loops:</source>
-        <translation type="unfinished"></translation>
+        <translation>Tomgångsslingor:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1253"/>
@@ -6577,7 +6577,7 @@ Om den är inställd på OpenGL och du fortfarande ser detta, kan ditt grafikkor
     <message>
         <location filename="../Window.cpp" line="1159"/>
         <source>Failed to start audio processor</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte starta ljudprocessorn</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1212"/>
@@ -6657,7 +6657,7 @@ Om den är inställd på OpenGL och du fortfarande ser detta, kan ditt grafikkor
     <message>
         <location filename="../Window.cpp" line="1475"/>
         <source>Yank game pak</source>
-        <translation type="unfinished"></translation>
+        <translation>Ryck ut Game Pak</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1478"/>
@@ -6757,7 +6757,7 @@ Om den är inställd på OpenGL och du fortfarande ser detta, kan ditt grafikkor
     <message>
         <location filename="../Window.cpp" line="1581"/>
         <source>BattleChip Gate...</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip Gate…</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1585"/>
@@ -6797,7 +6797,7 @@ Om den är inställd på OpenGL och du fortfarande ser detta, kan ditt grafikkor
     <message>
         <location filename="../Window.cpp" line="1669"/>
         <source>Interframe blending</source>
-        <translation type="unfinished"></translation>
+        <translation>Blandning mellan bildrutor</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1678"/>
@@ -6862,7 +6862,7 @@ Om den är inställd på OpenGL och du fortfarande ser detta, kan ditt grafikkor
     <message>
         <location filename="../Window.cpp" line="1747"/>
         <source>Hide &amp;menu</source>
-        <translation type="unfinished"></translation>
+        <translation>Dölj &amp;meny</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1752"/>
