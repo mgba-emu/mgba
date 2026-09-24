@@ -78,6 +78,27 @@ static void _tableApply(const char* key, void* value, void* user) {
 	mCoreConfigSetOverrideValue(config, key, value);
 }
 
+static void _add_options_from_subparser(char *shortOptions, size_t shortOptionsLen, struct option *longOptions, struct mSubParser* subparsers, int nSubparsers) {
+	int i, j;
+	int lastLongOpt = 0;
+	for (lastLongOpt = 0; longOptions[lastLongOpt].name; ++lastLongOpt); // Seek to end
+
+	for (i = 0; i < nSubparsers; ++i) {
+		if (subparsers[i].extraOptions) {
+			strncat(shortOptions, subparsers[i].extraOptions, shortOptionsLen - strlen(shortOptions) - 1);
+		}
+		if (subparsers[i].longOptions) {
+			for (j = 0; subparsers[i].longOptions[j].name; ++j) {
+				longOptions[lastLongOpt].name = subparsers[i].longOptions[j].name;
+				longOptions[lastLongOpt].has_arg = subparsers[i].longOptions[j].arg ? required_argument : no_argument;
+				longOptions[lastLongOpt].flag = NULL;
+				longOptions[lastLongOpt].val = subparsers[i].longOptions[j].shortEquiv;
+				++lastLongOpt;
+			}
+		}
+	}
+}
+
 bool mArgumentsParse(struct mArguments* args, int argc, char* const* argv, struct mSubParser* subparsers, int nSubparsers) {
 	int ch;
 	char options[128] =
@@ -97,26 +118,10 @@ bool mArgumentsParse(struct mArguments* args, int argc, char* const* argv, struc
 	args->frameskip = -1;
 	args->logLevel = INT_MIN;
 	HashTableInit(&args->configOverrides, 0, free);
-	int lastLongOpt;
+
+	_add_options_from_subparser(options, sizeof(options), longOptions, subparsers, nSubparsers);
 
 	int i, j;
-	for (i = 0; _options[i].name; ++i); // Seek to end
-	lastLongOpt = i;
-
-	for (i = 0; i < nSubparsers; ++i) {
-		if (subparsers[i].extraOptions) {
-			strncat(options, subparsers[i].extraOptions, sizeof(options) - strlen(options) - 1);
-		}
-		if (subparsers[i].longOptions) {
-			for (j = 0; subparsers[i].longOptions[j].name; ++j) {
-				longOptions[lastLongOpt].name = subparsers[i].longOptions[j].name;
-				longOptions[lastLongOpt].has_arg = subparsers[i].longOptions[j].arg ? required_argument : no_argument;
-				longOptions[lastLongOpt].flag = NULL;
-				longOptions[lastLongOpt].val = subparsers[i].longOptions[j].shortEquiv;
-				++lastLongOpt;
-			}
-		}
-	}
 	bool ok = false;
 	int index = 0;
 	while ((ch = getopt_long(argc, argv, options, longOptions, &index)) != -1) {
