@@ -36,6 +36,7 @@
 static const struct option _options[] = {
 	{ "bios",      required_argument, 0, 'b' },
 	{ "cheats",    required_argument, 0, 'c' },
+	{ "config",    required_argument, 0, 'C' },
 	{ "frameskip", required_argument, 0, 's' },
 #ifdef USE_EDITLINE
 	{ "debug",     no_argument, 0, 'd' },
