@@ -98,8 +98,8 @@ bool mCoreSyncProduceAudio(struct mCoreSync* sync, const struct mAudioBuffer* bu
 		return true;
 	}
 
-	size_t produced = mAudioBufferAvailable(buf);
-	size_t producedNew = produced;
+	size_t produced = mAudioBufferCapacity(buf);
+	size_t producedNew = mAudioBufferAvailable(buf);
 	while (sync->audioWait && sync->audioHighWater && producedNew >= sync->audioHighWater) {
 		ConditionWait(&sync->audioRequiredCond, &sync->audioBufferMutex);
 		produced = producedNew;
