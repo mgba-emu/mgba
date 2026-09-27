@@ -228,10 +228,10 @@ bool _BPSApplyPatch(struct Patch* patch, const void* restrict in, size_t inSize,
 			if (readTargetLocation < 0) {
 				return false;
 			}
-			if (readTargetLocation > (ssize_t) inSize) {
+			if (readTargetLocation > (ssize_t) outSize) {
 				return false;
 			}
-			if (readTargetLocation + length > inSize) {
+			if (readTargetLocation + length > outSize) {
 				return false;
 			}
 			for (i = 0; i < length; ++i) {
