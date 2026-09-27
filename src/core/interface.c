@@ -84,7 +84,7 @@ static bool _rtcGenericDeserialize(struct mRTCSource* source, const struct mStat
 		}
 		if (rtc->custom->deserialize) {
 			uint8_t* oldData = item->data;
-			oldData += sizeof(state);
+			oldData += sizeof(*state);
 			struct mStateExtdataItem fakeItem = {
 				.size = item->size - sizeof(*state),
 				.data = oldData,
