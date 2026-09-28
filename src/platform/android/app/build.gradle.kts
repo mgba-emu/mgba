@@ -86,6 +86,7 @@ android {
     buildFeatures {
         viewBinding = true
         prefab = true
+        buildConfig = true
     }
 }
 
@@ -109,6 +110,7 @@ tasks.named("preBuild") {
 }
 
 dependencies {
+    implementation("androidx.datastore:datastore-preferences-core:1.2.1")
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
@@ -122,6 +124,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.datastore)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)

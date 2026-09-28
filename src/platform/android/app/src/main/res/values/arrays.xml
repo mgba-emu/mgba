@@ -45,4 +45,37 @@
     <integer-array name="graphics_api_values">
         <item>0</item>
     </integer-array>
+
+    <string-array name="theme_entries">
+        <item>Default</item>
+        <item>Dynamic</item>
+    </string-array>
+
+    <integer-array name="theme_values">
+        <item>0</item>
+        <item>1</item>
+    </integer-array>
+
+    <string-array name="theme_mode_entries">
+        <item>System</item>
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+
+    <integer-array name="theme_mode_values">
+        <item>-1</item>
+        <item>1</item>
+        <item>2</item>
+    </integer-array>
+
+
+    <string-array name="upscaling_filter_entries">
+        <item>Nearest Neighbor</item>
+        <item>Bilinear</item>
+    </string-array>
+
+    <integer-array name="upscaling_filter_values">
+        <item>0</item>
+        <item>1</item>
+    </integer-array>
 </resources>

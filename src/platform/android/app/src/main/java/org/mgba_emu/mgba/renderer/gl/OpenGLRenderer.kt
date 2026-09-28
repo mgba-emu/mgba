@@ -12,6 +12,7 @@ package org.mgba_emu.mgba.renderer.gl
 
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
+import org.mgba_emu.mgba.settings.model.Settings
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -69,9 +70,19 @@ class OpenGLRenderer(
         GLES20.glGenTextures(1, textures, 0)
         textureId = textures[0]
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
-        // nearest filtering
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST)
+
+        // filtering
+        when (UpscalingFilter.from(Settings.upscalingFilter.value)) {
+            UpscalingFilter.NearestNeighbor -> {
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST)
+            }
+
+            UpscalingFilter.Bilinear -> {
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
+            }
+        }
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
 
@@ -193,5 +204,14 @@ class OpenGLRenderer(
                 gl_FragColor = texture2D(uTexture, vTexCoord);
             }
         """
+    }
+
+    enum class UpscalingFilter(val int: Int) {
+        NearestNeighbor(0),
+        Bilinear(1);
+
+        companion object {
+            fun from(int: Int): UpscalingFilter = entries.firstOrNull { it.int == int } ?: NearestNeighbor
+        }
     }
 }

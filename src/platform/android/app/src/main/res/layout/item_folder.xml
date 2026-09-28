@@ -44,15 +44,14 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_delete"
-                style="@style/Widget.Material3.Button.IconButton"
+                style="@style/Widget.Material3Expressive.Button.IconButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:contentDescription="Delete"
-                android:tooltipText="Delete"
-                app:icon="@drawable/ic_delete"
-                app:iconTint="?attr/colorControlNormal" />
+                android:contentDescription="@string/delete"
+                android:tooltipText="@string/delete"
+                app:icon="@drawable/ic_delete" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

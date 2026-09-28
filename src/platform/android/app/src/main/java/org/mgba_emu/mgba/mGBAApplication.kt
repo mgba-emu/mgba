@@ -15,7 +15,6 @@ import android.content.Context
 import android.content.Intent
 import org.mgba_emu.mgba.core.Core
 import org.mgba_emu.mgba.services.LoggerService
-import org.mgba_emu.mgba.utils.GlobalConfig
 
 class mGBAApplication : Application() {
     init {
@@ -34,9 +33,10 @@ class mGBAApplication : Application() {
         instance = this
 
         Core.initNoIntroDB(this)
-        GlobalConfig.initialize(context)
         startService(Intent(this, LoggerService::class.java))
+    }
 
-        // TODO: DynamicColors.applyToActivitiesIfAvailable(this)
+    override fun setTheme(resid: Int) {
+        super.setTheme(resid)
     }
 }

@@ -1,6 +1,7 @@
 [versions]
 agp = "9.4.0"
 coilNetworkOkhttp = "3.6.2"
+datastore = "1.2.1"
 documentfile = "1.1.0"
 kotlin = "2.4.20"
 coreKtx = "1.19.0"
@@ -18,6 +19,7 @@ ksp = "2.3.11"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationUiKtx" }
 androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationUiKtx" }

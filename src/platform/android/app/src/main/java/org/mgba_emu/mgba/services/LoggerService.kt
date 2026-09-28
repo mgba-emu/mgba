@@ -16,6 +16,7 @@ import android.content.pm.PackageInfo
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import org.mgba_emu.mgba.utils.FileUtils
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -42,8 +43,7 @@ class LoggerService : Service() {
             val proc = Runtime.getRuntime().exec(arrayOf("logcat"))
             logcat = proc
 
-            val baseMediaDir = externalMediaDirs.firstOrNull() ?: filesDir
-            val logsDir = File(baseMediaDir, "logs").apply { if (!exists()) mkdirs() }
+            val logsDir = FileUtils.getLogsDirectory()
 
             val lastFile = File(logsDir, "last.txt")
             if (lastFile.exists()) {

@@ -78,12 +78,12 @@ public:
     bool loadSaveData(const uint8_t* data, size_t size);
     std::vector<uint8_t> exportSaveData();
 
-    std::string getGameTitle();
+	std::optional<std::string> getGameTitle();
     std::string getGameCode();
 
 	int getPlatform();
 
-    bool loadBios(const uint8_t* data, size_t size);
+    bool loadBios(int biosFd);
     void setAudioMuted(bool mute);
 
 private:

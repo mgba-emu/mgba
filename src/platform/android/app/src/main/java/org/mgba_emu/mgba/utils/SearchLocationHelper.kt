@@ -13,6 +13,7 @@ package org.mgba_emu.mgba.utils
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
+import android.util.Log
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +23,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -31,6 +33,7 @@ import org.mgba_emu.mgba.core.Core
 import org.mgba_emu.mgba.database.AppDatabase
 import org.mgba_emu.mgba.mGBAApplication
 import org.mgba_emu.mgba.model.GameModel
+import org.mgba_emu.mgba.utils.FileUtils.getFileName
 import org.mgba_emu.mgba.utils.IconMetadataHelper.getIconUrl
 
 object SearchLocationHelper {
@@ -38,6 +41,8 @@ object SearchLocationHelper {
         mGBAApplication.context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
     }
     private const val GAME_FOLDERS = "game_folders"
+
+    private const val LOG_TAG = "SearchLocationHelper"
 
     private val gameDao = AppDatabase.getDatabase(mGBAApplication.context).gameDao()
 
@@ -88,6 +93,11 @@ object SearchLocationHelper {
         return savedUris.map { Uri.parse(it) }
     }
 
+    fun getGame(gameUri: Uri): GameModel? {
+        val fileName = gameUri.getFileName() ?: return null
+        return GameModel(uri = gameUri, fileName = fileName)
+    }
+
     fun isFolderExists(folder: Uri): Boolean {
         return getGameFolders().contains(folder)
     }
@@ -97,51 +107,56 @@ object SearchLocationHelper {
         if (!Core.init()) return
         CoroutineScope(Dispatchers.IO).launch {
             _isLoading.value = true
+            Core.isNoIntroDBInitialized.first { it }
 
-            val context = mGBAApplication.context
-            val folderUris = getGameFolders()
+            try {
+                val context = mGBAApplication.context
+                val folderUris = getGameFolders()
 
-            val searchJobs = folderUris.map { folderUri ->
-                async { FileUtils.searchRoms(context, folderUri) }
-            }
-            val discoveredFiles = searchJobs.awaitAll().flatten()
-            val discoveredUris = discoveredFiles.map { it.first.toString() }
+                val searchJobs = folderUris.map { folderUri ->
+                    async { FileUtils.searchRoms(context, folderUri) }
+                }
+                val discoveredFiles = searchJobs.awaitAll().flatten()
+                val discoveredUris = discoveredFiles.map { it.first.toString() }
 
-            val cachedUrisSet = gameDao.getAllCachedUris().toSet()
+                val cachedUrisSet = gameDao.getAllCachedUris().toSet()
 
-            val newFilesToValidate = discoveredFiles.filter { (uri, _) ->
-                !cachedUrisSet.contains(uri.toString())
-            }
+                val newFilesToValidate = discoveredFiles.filter { (uri, _) ->
+                    !cachedUrisSet.contains(uri.toString())
+                }
 
-            val newGameEntities = newFilesToValidate.mapNotNull { (fileUri, fileName) ->
-                coreMutex.withLock {
-                    if (Core.validateRom(fileUri)) {
-                        val platform = Core.getPlatform()
-                        val title = Core.gameTitle()
+                val newGameEntities = newFilesToValidate.mapNotNull { (fileUri, fileName) ->
+                    coreMutex.withLock {
+                        if (Core.validateRom(fileUri)) {
+                            val platform = Core.getPlatform()
+                            val title = Core.gameTitle()
 
-                        GameEntity(
-                            uri = fileUri.toString(),
-                            fileName = fileName,
-                            code = Core.gameCode(),
-                            iconUrl = getIconUrl(title, platform) ?: "",
-                            platform = platform,
-                            title = title,
-                            version = Core.gameVersion
-                        )
-                    } else {
-                        null
+                            GameEntity(
+                                uri = fileUri.toString(),
+                                fileName = fileName,
+                                code = Core.gameCode(),
+                                iconUrl = getIconUrl(title, platform) ?: "",
+                                platform = platform,
+                                title = title,
+                                version = Core.gameVersion
+                            )
+                        } else {
+                            null
+                        }
                     }
                 }
-            }
 
-            if (newGameEntities.isNotEmpty()) {
-                gameDao.insertGames(newGameEntities)
-            }
+                if (newGameEntities.isNotEmpty()) {
+                    gameDao.insertGames(newGameEntities)
+                }
 
-            if (discoveredUris.isEmpty()) {
-                gameDao.deleteAllGames()
-            } else {
-                gameDao.deleteOrphans(discoveredUris)
+                if (discoveredUris.isEmpty()) {
+                    gameDao.deleteAllGames()
+                } else {
+                    gameDao.deleteOrphans(discoveredUris)
+                }
+            } catch (e: Exception) {
+                Log.e(LOG_TAG, "${e.message}")
             }
 
             _isLoading.value = false

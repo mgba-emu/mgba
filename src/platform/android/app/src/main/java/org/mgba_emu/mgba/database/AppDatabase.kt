@@ -16,7 +16,7 @@ import androidx.room.RoomDatabase
 import org.mgba_emu.mgba.utils.GameDao
 import org.mgba_emu.mgba.utils.GameEntity
 
-@Database(entities = [GameEntity::class], version = 1, exportSchema = false)
+@Database(entities = [GameEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun gameDao(): GameDao
@@ -31,7 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "game_database"
-                ).build()
+                ).fallbackToDestructiveMigration(true).build()
                 INSTANCE = instance
                 instance
             }

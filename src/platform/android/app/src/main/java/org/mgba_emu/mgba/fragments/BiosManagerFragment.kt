@@ -16,11 +16,15 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.findNavController
+import com.google.android.material.transition.MaterialSharedAxis
 import org.mgba_emu.mgba.R
 import org.mgba_emu.mgba.core.Platform
 import org.mgba_emu.mgba.databinding.FragmentBiosManagerBinding
 import org.mgba_emu.mgba.utils.BiosStore
-import org.mgba_emu.mgba.utils.applySafePadding
+import org.mgba_emu.mgba.utils.ViewUtils.applySafePadding
+import org.mgba_emu.mgba.viewmodel.MainViewModel
 import java.io.ByteArrayOutputStream
 
 class BiosManagerFragment : Fragment(R.layout.fragment_bios_manager) {
@@ -30,6 +34,7 @@ class BiosManagerFragment : Fragment(R.layout.fragment_bios_manager) {
 
     private var pendingPlatform: Platform? = null
 
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
         uri?.let {
@@ -39,10 +44,23 @@ class BiosManagerFragment : Fragment(R.layout.fragment_bios_manager) {
         pendingPlatform = null
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true)
+        returnTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
+        reenterTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentBiosManagerBinding.bind(view)
+        mainViewModel.setNavigationVisibility(visible = false, animated = true)
+        mainViewModel.setStatusBarShadeVisibility(false)
         binding.root.applySafePadding()
+
+        binding.toolbar.setNavigationOnClickListener {
+            view.findNavController().popBackStack()
+        }
 
         setupClickListeners()
         updatePlatformUi(Platform.GB, BiosStore.has(Platform.GB), filename = "gb.bin")
@@ -75,11 +93,11 @@ class BiosManagerFragment : Fragment(R.layout.fragment_bios_manager) {
         if (statusView == null || button == null) return
 
         if (isLoaded) {
-            statusView.text = "Loaded: $filename"
-            button.text = "Replace"
+            statusView.text = getString(R.string.status_loaded, filename)
+            button.setText(R.string.replace)
         } else {
-            statusView.text = "Missing"
-            button.text = "Import"
+            statusView.setText(R.string.missing)
+            button.setText(R.string.text_import)
         }
     }
 

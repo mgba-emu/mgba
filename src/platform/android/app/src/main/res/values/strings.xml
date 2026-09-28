@@ -9,5 +9,125 @@
 
 <resources>
     <string name="app_name">mGBA</string>
-    <string name="load_rom">Load ROM</string>
+    <string name="start">Start</string>
+    <string name="text_import">Import</string>
+    <string name="export">Export</string>
+    <string name="missing">Missing</string>
+    <string name="copy_details">Copy Details</string>
+    <string name="empty">Empty</string>
+    <string name="add_folder">Add Folder</string>
+    <string name="delete">Delete</string>
+    <string name="replace">Replace</string>
+    <string name="status_loaded">Loaded: %1$s</string>
+    <string name="use_global_setting">Use global setting</string>
+    <string name="resume">Resume</string>
+    <string name="exit">Exit</string>
+    <string name="settings">Settings</string>
+    <string name="settings_per_game">Per-Game Settings</string>
+    <string name="overlay_options">Overlay Options</string>
+    <string name="value_with_units">%1$s%2$s</string>
+
+    <!-- SearchFragment -->
+    <string name="search">Search</string>
+    <string name="all_games">All Games</string>
+    <string name="recently_played">Recently Played</string>
+    <string name="favorites">Favorites</string>
+
+    <!-- Home Settings -->
+    <string name="advanced_settings">Advanced Settings</string>
+    <string name="advanced_settings_description">Configure emulator settings</string>
+    <string name="manage_mgba_data">Manage mGBA data</string>
+    <string name="manage_mgba_data_description">Import/export bios, saves, user data and more!</string>
+    <string name="search_locations">Search Locations</string>
+    <string name="search_locations_description">Allows mGBA to search games</string>
+    <string name="share_log">Share logs</string>
+    <string name="share_log_description">Share mGBA\'s log file to debug issues</string>
+    <string name="open_user_folder">Open mGBA folder</string>
+    <string name="open_user_folder_description">Manage mGBA\'s internal files</string>
+    <string name="theme_and_color_description">Modify the look of the app</string>
+    <string name="about">About</string>
+    <string name="about_description">version, credits and more</string>
+
+    <!-- Preferences Screen -->
+    <string name="preferences_system">System</string>
+    <string name="preferences_system_description">Realtime clock, skip bios</string>
+    <string name="preferences_graphics">Graphics</string>
+    <string name="preferences_graphics_description">API, orientation, frame limit</string>
+    <string name="preferences_audio">Audio</string>
+    <string name="preferences_audio_description">Output engine, mute, volume</string>
+    <string name="preferences_theme">Theme and color</string>
+
+    <!-- Preferences System -->
+    <string name="pref_skip_bios">Skip BIOS</string>
+    <string name="pref_realtime_clock">Realtime Clock</string>
+
+    <!-- Preferences Graphics -->
+    <string name="pref_graphics_api">API</string>
+    <string name="pref_upscaling_filter">Upscaling Filter</string>
+    <string name="pref_frame_limit">Frame Limit</string>
+    <string name="pref_screen_orientation">Orientation</string>
+    <string name="pref_show_fps">Show FPS</string>
+    <string name="pref_fast_forward">Fast Forward</string>
+
+    <!-- Preferences Audio -->
+    <string name="pref_volume">Volume</string>
+    <string name="pref_mute">Mute</string>
+
+    <!-- Preferences Theme -->
+    <string name="pref_theme">Theme</string>
+    <string name="pref_theme_mode">Theme mode</string>
+
+    <!-- InstallableFragment -->
+    <string name="user_data">User data</string>
+    <string name="user_data_description">Import/export all app data.</string>
+    <string name="manage_save_data">Manage save data</string>
+    <string name="manage_save_data_description">Import/export save data.</string>
+    <string name="install_bios">Install BIOS</string>
+    <string name="install_bios_description">Install/replace BIOS</string>
+
+    <!-- GameInfoFragment -->
+    <string name="path">Path</string>
+    <string name="game_code">Game Code</string>
+    <string name="platform">Platform</string>
+    <string name="revision">Revision</string>
+
+    <!-- BiosManagerFragment -->
+    <string name="game_boy">Game Boy (GB)</string>
+    <string name="game_boy_color">Game Boy Color (GBC)</string>
+    <string name="super_game_boy">Super Game Boy (SGB)</string>
+    <string name="game_boy_advance">Game Boy Advance (GBA)</string>
+
+    <!-- About -->
+    <string name="website_link">https://mgba.io/</string>
+    <string name="discord_link">https://discord.gg/em2M2sG</string>
+    <string name="github_link">https://github.com/mgba-emu/mgba</string>
+    <string name="licenses">Licenses</string>
+    <string name="source_code">Source Code</string>
+    <string name="join_discord">Join Discord</string>
+    <string name="visit_website">Visit Website</string>
+
+    <!-- Licenses -->
+    <string name="license_mgba" translatable="false">mGBA</string>
+    <string name="license_mgba_description" translatable="false">GBA, GBC, SGB, GB emulator written in C</string>
+    <string name="license_mgba_link" translatable="false">https://github.com/mgba-emu/mgba</string>
+    <string name="license_mgba_copyright" translatable="false">Copyright © 2013 – 2026 Jeffrey Pfau</string>
+    <string name="license_mgba_android" translatable="false">mGBA Android</string>
+    <string name="license_mgba_android_description" translatable="false">Android port of mGBA</string>
+    <string name="license_mgba_android_copyright" translatable="false">Copyright © 2026 Ishan09811</string>
+    <string name="license_oboe" translatable="false">Oboe</string>
+    <string name="license_oboe_description" translatable="false">Oboe is used for high-performance audio output</string>
+    <string name="license_oboe_link" translatable="false">https://github.com/google/oboe</string>
+    <string name="license_oboe_copyright" translatable="false">Copyright © 2021 The Android Open Source Project</string>
+    <string name="license_androidx" translatable="false">AndroidX</string>
+    <string name="license_androidx_description" translatable="false">AndroidX provides a consistent user-experience across Android versions</string>
+    <string name="license_androidx_link" translatable="false">https://developer.android.com/jetpack/androidx</string>
+    <string name="license_androidx_copyright" translatable="false">Copyright © 2021 The Android Open Source Project</string>
+    <string name="license_material_components" translatable="false">Android Material Components</string>
+    <string name="license_material_components_description" translatable="false">Android Material Components provides a consistent Material Design UI</string>
+    <string name="license_material_components_link" translatable="false">https://github.com/material-components/material-components-android</string>
+    <string name="license_material_components_copyright" translatable="false">Copyright © 2021 The Android Open Source Project</string>
+    <string name="license_material_icons" translatable="false">Material Design Icons</string>
+    <string name="license_material_icons_description" translatable="false">Material Design Icons provides consistent iconography throughout the application</string>
+    <string name="license_material_icons_link" translatable="false">https://material.io/resources/icons</string>
+    <string name="license_material_icons_copyright" translatable="false" />
 </resources>

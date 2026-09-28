@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (C) 2026 Ishan
   ~ Android Port component of mGBA.
   ~
@@ -12,206 +11,169 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constraint_search"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurfaceDim">
+    android:background="?attr/colorSurface"
+    android:clipToPadding="false">
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/scrollView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingBottom="18dp">
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
+            android:id="@+id/no_results_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="24dp">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
 
-            <TextView
-                android:id="@+id/searchHeaderTitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:text="Search"
-                android:textAppearance="?attr/textAppearanceHeadlineLarge"
-                android:textColor="?attr/colorOnSurface"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+            <ImageView
+                android:id="@+id/icon_no_results"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_search" />
 
-            <TextView
-                android:id="@+id/searchHeaderSubtitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="8dp"
-                android:text="Find your favorite games"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/searchHeaderTitle" />
-
-            <HorizontalScrollView
-                android:id="@+id/filterScrollView"
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/empty_list_text"
+                style="@style/TextAppearance.Material3.TitleLarge"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:clipToPadding="false"
-                android:paddingHorizontal="24dp"
-                android:scrollbars="none"
-                app:layout_constraintTop_toBottomOf="@+id/searchHeaderSubtitle">
+                android:gravity="center"
+                android:paddingTop="8dp"
+                android:text="@string/search"
+                tools:visibility="visible" />
 
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/filterChipGroup"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:selectionRequired="true"
-                    app:singleLine="true"
-                    app:singleSelection="true">
+        </LinearLayout>
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipAll"
-                        style="@style/Widget.Material3.Chip.Filter.Elevated"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:checked="true"
-                        android:text="All Games" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/grid_games_search"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false" />
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipRecentlyPlayed"
-                        style="@style/Widget.Material3.Chip.Filter.Elevated"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Recently Played" />
+    </RelativeLayout>
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipFavorites"
-                        style="@style/Widget.Material3.Chip.Filter.Elevated"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Favorites" />
+    <FrameLayout
+        android:id="@+id/frame_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginHorizontal="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-                </com.google.android.material.chip.ChipGroup>
-            </HorizontalScrollView>
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/search_background"
+            style="?attr/materialCardViewFilledStyle"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            app:cardCornerRadius="28dp">
 
             <LinearLayout
-                android:id="@+id/emptyStateLayout"
+                android:id="@+id/search_container"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="32dp"
-                android:background="@drawable/bg_empty_state"
-                android:backgroundTint="?attr/colorSurfaceContainer"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="40dp"
-                android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@+id/filterScrollView"
-                tools:visibility="visible">
+                android:layout_height="match_parent"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="56dp"
+                android:orientation="horizontal">
 
-                <FrameLayout
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:background="@drawable/bg_empty_state"
-                    android:backgroundTint="?attr/colorSecondaryContainer">
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="24dp"
+                    android:contentDescription="@string/search"
+                    android:src="@drawable/ic_search"
+                    app:tint="?attr/colorOnSurfaceVariant" />
 
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="No games found"
-                        app:srcCompat="@android:drawable/ic_menu_search"
-                        app:tint="?attr/colorOnSecondaryContainer" />
-                </FrameLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:text="No games found"
-                    android:textAppearance="?attr/textAppearanceTitleLarge"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Try adjusting your filters or search terms."
-                    android:textAppearance="?attr/textAppearanceBodyMedium"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textAlignment="center" />
+                <EditText
+                    android:id="@+id/search_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/search"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:imeOptions="flagNoFullscreen" />
 
             </LinearLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="false"
-                app:layout_constraintTop_toBottomOf="@+id/filterScrollView" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.core.widget.NestedScrollView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/bottomSearchBar"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginBottom="24dp"
-        app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
-        app:cardCornerRadius="36dp"
-        app:cardElevation="0dp"
-        app:strokeWidth="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="8dp">
-
             <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="12dp"
-                android:src="@android:drawable/ic_menu_search"
-                app:tint="?attr/colorOnSurface" />
-
-            <EditText
-                android:id="@+id/searchInput"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@null"
-                android:hint="Search your games..."
-                android:imeOptions="actionSearch"
-                android:inputType="text"
-                android:singleLine="true"
-                android:textAppearance="?attr/textAppearanceBodyLarge"
-                android:textColor="?attr/colorOnSurface"
-                android:textColorHint="?attr/colorOnSurfaceVariant" />
-
-            <ImageView
-                android:id="@+id/clearSearch"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="12dp"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"
-                android:visibility="gone"
+                android:id="@+id/clear_button"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginEnd="24dp"
+                android:background="?attr/selectableItemBackground"
+                android:src="@drawable/ic_close"
+                android:visibility="invisible"
                 app:tint="?attr/colorOnSurfaceVariant"
                 tools:visibility="visible" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+
+        </com.google.android.material.card.MaterialCardView>
+    </FrameLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/horizontalScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fadingEdge="horizontal"
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frame_search">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:paddingVertical="4dp"
+            app:chipSpacingHorizontal="12dp"
+            app:selectionRequired="true"
+            app:singleLine="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAllGames"
+                style="@style/Widget.Material3.Chip.Filter.Elevated"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/all_games" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipRecentlyPlayed"
+                style="@style/Widget.Material3.Chip.Filter.Elevated"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="@string/recently_played" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipFavorites"
+                style="@style/Widget.Material3.Chip.Filter.Elevated"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="@string/favorites" />
+
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/horizontalScrollView" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

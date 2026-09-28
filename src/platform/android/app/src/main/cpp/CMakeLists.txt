@@ -51,6 +51,7 @@ add_library(mgba-android SHARED
     core.cpp
     no_intro_parser.cpp
     audio/oboe_audio_player.cpp
+    utils/zip_utils.cpp
 )
 
 # very important to avoid definitions mismatch
@@ -64,6 +65,8 @@ endif()
 target_include_directories(mgba-android PRIVATE
         "${MGBA_DIR}/include"
         "${MGBA_DIR}/src"
+        "${MGBA_DIR}/src/third-party"
+        "${MGBA_DIR}/src/third-party/zlib/contrib"
         "${CMAKE_CURRENT_BINARY_DIR}"
 )
 
@@ -72,13 +75,11 @@ find_package(oboe REQUIRED CONFIG)
 find_library(log-lib log)
 find_library(android-lib android)
 find_library(gles-lib GLESv2)
-find_library(z-lib z)
 
 target_link_libraries(mgba-android
     ${MGBA_CORE_TARGET}
     ${log-lib}
     ${android-lib}
     ${gles-lib}
-    ${z-lib}
     oboe::oboe
 )

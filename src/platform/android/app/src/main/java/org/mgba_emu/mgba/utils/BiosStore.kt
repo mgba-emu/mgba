@@ -10,9 +10,9 @@
 
 package org.mgba_emu.mgba.utils
 
+import androidx.core.net.toUri
 import org.mgba_emu.mgba.core.Platform
 import org.mgba_emu.mgba.mGBAApplication
-import org.mgba_emu.mgba.utils.FileUtils.safeReadBytes
 import org.mgba_emu.mgba.utils.FileUtils.writeBytesAtomically
 import java.io.File
 
@@ -34,8 +34,12 @@ object BiosStore {
 
     fun has(platform: Platform): Boolean = fileFor(platform).exists()
 
-    fun load(platform: Platform): ByteArray {
-        return fileFor(platform).safeReadBytes()
+    fun load(platform: Platform): Int? {
+        val uri = fileFor(platform).toUri()
+        val parcel = mGBAApplication.context.contentResolver.openFileDescriptor(uri, "r")
+        val biosFd = parcel?.detachFd()
+        parcel?.close()
+        return biosFd
     }
 
     fun import(platform: Platform, biosBytes: ByteArray): Boolean {

@@ -12,8 +12,7 @@ package org.mgba_emu.mgba.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.navigation.findNavController
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.recyclerview.widget.RecyclerView
 import coil3.load
 import coil3.request.crossfade
@@ -24,24 +23,43 @@ import coil3.transform.RoundedCornersTransformation
 import org.mgba_emu.mgba.NavGraphDirections
 import org.mgba_emu.mgba.databinding.ItemGameBinding
 import org.mgba_emu.mgba.model.GameModel
+import org.mgba_emu.mgba.utils.ViewUtils.marquee
+import org.mgba_emu.mgba.viewholders.AbstractViewHolder
 
 class GameAdapter(
     private val onGameClick: (GameModel) -> Unit
-) : ListAdapter<GameModel, GameAdapter.GameViewHolder>(GameDiffCallback()) {
+) : AbstractDiffAdapter<GameModel, GameAdapter.GameViewHolder>() {
 
-    inner class GameViewHolder(val binding: ItemGameBinding) : RecyclerView.ViewHolder(binding.root) {
-        init {
+    inner class GameViewHolder(val binding: ItemGameBinding) : AbstractViewHolder<GameModel>(binding) {
+        override fun bind(model: GameModel) {
+
+            binding.rootContainer.transitionName = "item_card_${model.fileName}"
+
             binding.root.setOnClickListener {
                 val position = bindingAdapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    onGameClick(getItem(position))
+                    onGameClick(model)
                 }
             }
 
-            binding.root.setOnLongClickListener {
-                val action = NavGraphDirections.actionGlobalGameAboutFragment(getItem(position))
-                binding.root.findNavController().navigate(action)
+            binding.root.setOnLongClickListener { view ->
+                val extras = FragmentNavigatorExtras(
+                    view to view.transitionName
+                )
+
+                val action = NavGraphDirections.actionGlobalGameAboutFragment(game = model, transitionName = view.transitionName)
+                binding.root.findNavController().navigate(action, extras)
                 true
+            }
+
+            binding.title.text = model.title ?: model.fileName
+            binding.title.marquee()
+            binding.platform.text = model.platform?.name ?: ""
+            binding.icon.load(model.iconUrl ?: "") {
+                crossfade(true)
+                fallback(android.R.drawable.ic_media_play)
+                error(android.R.drawable.ic_media_play)
+                transformations(RoundedCornersTransformation(16f))
             }
         }
     }
@@ -49,34 +67,5 @@ class GameAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GameViewHolder {
         val binding = ItemGameBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return GameViewHolder(binding)
-    }
-
-    override fun onBindViewHolder(holder: GameViewHolder, position: Int) {
-        val game = getItem(position)
-
-        holder.binding.title.text = if (!game.title.isNullOrEmpty()) {
-            game.title
-        } else {
-            game.fileName
-        }
-
-        holder.binding.title.isSelected = true
-        holder.binding.platform.text = game.platform?.name ?: ""
-        holder.binding.icon.load(game.iconUrl ?: "") {
-            crossfade(true)
-            fallback(android.R.drawable.ic_media_play)
-            error(android.R.drawable.ic_media_play)
-            transformations(RoundedCornersTransformation(16f))
-        }
-    }
-
-    class GameDiffCallback : DiffUtil.ItemCallback<GameModel>() {
-        override fun areItemsTheSame(oldItem: GameModel, newItem: GameModel): Boolean {
-            return oldItem.uri == newItem.uri
-        }
-
-        override fun areContentsTheSame(oldItem: GameModel, newItem: GameModel): Boolean {
-            return oldItem == newItem
-        }
     }
 }

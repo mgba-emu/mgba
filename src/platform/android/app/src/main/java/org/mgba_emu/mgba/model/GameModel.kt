@@ -10,10 +10,15 @@
 
 package org.mgba_emu.mgba.model
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import org.mgba_emu.mgba.EmulationActivity
 import org.mgba_emu.mgba.core.Platform
+import org.mgba_emu.mgba.mGBAApplication
+import org.mgba_emu.mgba.utils.SearchLocationHelper
 
 @Parcelize
 data class GameModel(
@@ -29,5 +34,20 @@ data class GameModel(
     companion object {
         val launchId = "game"
         val supportedExtensions = setOf("gb", "gba", "gbc", "sgb") // TODO: zip?
+
+        fun launchEmulationActivity(ctx: Context, game: GameModel) {
+            SearchLocationHelper.updateLastPlayed(game.uri.toString(), System.currentTimeMillis())
+            val intent = Intent(ctx, EmulationActivity::class.java).apply {
+                putExtra(launchId, game)
+            }
+
+            ctx.startActivity(intent)
+        }
     }
+
+    val launchIntent: Intent
+        get() = Intent(mGBAApplication.context, EmulationActivity::class.java).apply {
+            action = Intent.ACTION_VIEW
+            data = uri
+        }
 }

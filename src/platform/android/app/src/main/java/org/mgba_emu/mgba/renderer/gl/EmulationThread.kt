@@ -12,7 +12,7 @@ package org.mgba_emu.mgba.renderer.gl
 
 import org.mgba_emu.mgba.core.Core
 import org.mgba_emu.mgba.input.InputState
-import org.mgba_emu.mgba.utils.GlobalConfig
+import org.mgba_emu.mgba.settings.model.Settings
 import java.util.concurrent.atomic.AtomicBoolean
 
 class EmulationThread(
@@ -27,7 +27,7 @@ class EmulationThread(
     @Volatile
     var paused: Boolean = false
 
-    private val frameLimit = when (GlobalConfig.frameLimit) {
+    private val frameLimit = when (Settings.frameLimit.value) {
         0 -> NATIVE_FPS
         1 -> 60.0
         2 -> 120.0
@@ -38,6 +38,8 @@ class EmulationThread(
 
     private var framesThisSecond = 0
     private var lastFpsTimestampNs = 0L
+
+    private val isFastForwardEnabled = Settings.fastForward.value
 
     override fun run() {
         running.set(true)
@@ -59,7 +61,7 @@ class EmulationThread(
             val now = System.nanoTime()
             val remainingNs = nextFrameDeadlineNs - now
 
-            if (GlobalConfig.fastForward) {
+            if (isFastForwardEnabled) {
                 // skip sleeping to run as fast as possible
                 nextFrameDeadlineNs = now
             } else {

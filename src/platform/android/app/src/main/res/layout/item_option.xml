@@ -8,43 +8,40 @@
   ~ This program is distributed without any warranty. See the GNU General Public License for more details.
   -->
 
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    style="?attr/materialCardViewOutlinedStyle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="12dp"
     android:background="?attr/selectableItemBackground"
-    style="?attr/materialCardViewOutlinedStyle"
-    app:shapeAppearance="?attr/listItemShapeAppearanceSingle">
+    android:clickable="true"
+    android:focusable="true">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
         android:paddingVertical="16dp"
         android:paddingHorizontal="24dp">
 
-        <com.google.android.material.button.MaterialButton
-            style="?attr/materialIconButtonFilledTonalStyle"
+        <ImageView
             android:id="@+id/icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:src="@drawable/ic_launcher_foreground" />
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="20dp"
+            android:layout_gravity="center_vertical"
+            app:tint="?attr/colorOnSurface" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_weight="1"
             android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/icon"
-            app:layout_constraintTop_toTopOf="parent">
+            android:layout_gravity="center_vertical">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/title"
@@ -59,11 +56,24 @@
                 style="@style/TextAppearance.Material3.BodyMedium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAlignment="viewStart"
                 android:layout_marginTop="6dp"
+                android:textAlignment="viewStart"
+                tools:text="Description" />
+
+            <com.google.android.material.textview.MaterialTextView
+                style="@style/TextAppearance.Material3.LabelMedium"
+                android:id="@+id/details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="viewStart"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:requiresFadingEdge="horizontal"
+                android:layout_marginTop="6dp"
+                android:visibility="gone"
+                tools:visibility="visible"
                 tools:text="Subtitle" />
+
         </LinearLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
+    </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2026 Ishan
+  ~ Android Port component of mGBA.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+  ~
+  ~ This program is distributed without any warranty. See the GNU General Public License for more details.
+  -->
+
+<resources>
+    <style name="Theme.mGBA.Dynamic" parent="Theme.mGBA">
+        <item name="colorPrimary">@color/m3_sys_color_dynamic_light_primary</item>
+        <item name="colorOnPrimary">@color/m3_sys_color_dynamic_light_on_primary</item>
+        <item name="colorPrimaryContainer">@color/m3_sys_color_dynamic_light_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/m3_sys_color_dynamic_light_on_primary_container</item>
+        <item name="colorSecondary">@color/m3_sys_color_dynamic_light_secondary</item>
+        <item name="colorOnSecondary">@color/m3_sys_color_dynamic_light_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/m3_sys_color_dynamic_light_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/m3_sys_color_dynamic_light_on_secondary_container</item>
+        <item name="colorTertiary">@color/m3_sys_color_dynamic_light_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_sys_color_dynamic_light_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_sys_color_dynamic_light_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/m3_sys_color_dynamic_light_on_tertiary_container</item>
+        <item name="android:colorBackground">@color/m3_sys_color_dynamic_light_background</item>
+        <item name="colorOnBackground">@color/m3_sys_color_dynamic_light_on_background</item>
+        <item name="colorSurface">@color/m3_sys_color_dynamic_light_surface</item>
+        <item name="colorOnSurface">@color/m3_sys_color_dynamic_light_on_surface</item>
+        <item name="colorSurfaceVariant">@color/m3_sys_color_dynamic_light_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/m3_sys_color_dynamic_light_on_surface_variant</item>
+        <item name="colorOutline">@color/m3_sys_color_dynamic_light_outline</item>
+        <item name="colorOnSurfaceInverse">@color/m3_sys_color_dynamic_light_on_surface_variant</item>
+        <item name="colorSurfaceInverse">@color/m3_sys_color_dynamic_light_surface_variant</item>
+        <item name="colorPrimaryInverse">@color/m3_sys_color_dynamic_light_inverse_primary</item>
+        <item name="colorSurfaceContainerLowest">@color/m3_sys_color_dynamic_light_surface_container_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/m3_sys_color_dynamic_light_surface_container_low</item>
+        <item name="colorSurfaceContainer">@color/m3_sys_color_dynamic_light_surface_container</item>
+        <item name="colorSurfaceContainerHigh">@color/m3_sys_color_dynamic_light_surface_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/m3_sys_color_dynamic_light_surface_container_highest</item>
+    </style>
+</resources>

@@ -23,11 +23,11 @@ import org.mgba_emu.mgba.core.Platform
 data class GameEntity(
     @PrimaryKey val uri: String,
     val fileName: String,
-    val code: String,
-    val iconUrl: String,
-    val platform: Platform,
-    val title: String,
-    val version: String,
+    val code: String?,
+    val iconUrl: String?,
+    val platform: Platform?,
+    val title: String?,
+    val version: String?,
     var lastPlayed: Long = 0L
 )
 

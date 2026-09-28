@@ -26,7 +26,6 @@ bool Core::init() {
 
 void Core::shutdown() {
 	unloadRom();
-	m_audioPlayer.stop();
 }
 
 bool Core::validateRom(int romFd) {
@@ -106,7 +105,7 @@ bool Core::loadRom(int romFd, bool rtcEnable) {
 	mCoreInitConfig(m_core, nullptr);
 
 	if (!rtcEnable) {
-		m_core->rtc.override = RTC_FIXED;
+		// TODO: implement
 	}
 
 	LOGI("Config Applied -> Key: '%s' = %d", "hw.rtc", rtcEnable ? 1 : 0);
@@ -305,7 +304,10 @@ std::vector<uint8_t> Core::exportSaveData() {
 	return result;
 }
 
-std::string Core::getGameTitle() {
+std::optional<std::string> Core::getGameTitle() {
+	if (m_gameTitle.empty()) {
+		return std::nullopt;
+	}
 	return m_gameTitle;
 }
 
@@ -346,21 +348,21 @@ int Core::getPlatform() {
 	return PLATFORM_UNKNOWN;
 }
 
-bool Core::loadBios(const uint8_t* data, size_t size) {
+bool Core::loadBios(int biosFd) {
 	if (!m_core) {
 		LOGE("loadBios called before loadRom");
 		return false;
 	}
 
-	VFile* vf = VFileFromConstMemory(data, size);
+	VFile* vf = VFileFromFD(biosFd);
 	if (!vf) {
-		LOGE("VFileFromConstMemory failed for BIOS data");
+		LOGE("VFileFromFD failed for BIOS data");
 		return false;
 	}
 
 	bool ok = m_core->loadBIOS(m_core, vf, 0);
 	if (!ok) {
-		LOGE("mCore loadBIOS rejected the file (size=%zu)", size);
+		LOGE("mCore loadBIOS rejected the file (size={})", vf->size);
 		vf->close(vf);
 	}
 	return ok;

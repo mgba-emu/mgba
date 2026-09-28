@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (C) 2026 Ishan
   ~ Android Port component of mGBA.
   ~
@@ -8,31 +7,58 @@
   ~ This program is distributed without any warranty. See the GNU General Public License for more details.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:background="#000000">
+    android:background="#000000"
+    android:defaultFocusHighlightEnabled="false"
+    android:keepScreenOn="true"
+    tools:context="org.mgba_emu.mgba.EmulationActivity"
+    tools:openDrawer="start">
 
-    <android.opengl.GLSurfaceView
-        android:id="@+id/glSurfaceView"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
 
-    <org.mgba_emu.mgba.input.ui.TouchControlsView
-        android:id="@+id/touchControlsView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        <FrameLayout
+            android:id="@+id/emulation_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/fps"
+            <android.opengl.GLSurfaceView
+                android:id="@+id/glSurfaceView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <org.mgba_emu.mgba.input.ui.TouchControlsView
+                android:id="@+id/touchControlsView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:id="@+id/fps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_marginStart="16dp"
+                android:textColor="#00FF00"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:text="60 FPS" />
+
+        </FrameLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/in_game_menu"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#00FF00"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:layout_marginStart="16dp"
-        android:layout_gravity="top|start"
-        android:visibility="gone"
-        tools:text="60 FPS" />
-</FrameLayout>
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:focusedByDefault="true"
+        app:headerLayout="@layout/header_in_game"
+        app:menu="@menu/menu_in_game" />
+</androidx.drawerlayout.widget.DrawerLayout>

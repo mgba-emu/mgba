@@ -12,6 +12,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
@@ -20,7 +21,7 @@
     android:clickable="true"
     android:focusable="true"
     app:shapeAppearance="@style/ShapeAppearance.Material3.ListItem.Single"
-    app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+    app:cardBackgroundColor="?attr/colorSurfaceContainer"
     style="?attr/materialCardViewFilledStyle">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -33,7 +34,6 @@
             android:layout_width="96dp"
             android:layout_height="96dp"
             android:background="?attr/colorSecondaryContainer"
-            android:contentDescription="Game Icon"
             android:padding="8dp"
             android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -73,7 +73,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/icon"
             app:layout_constraintTop_toBottomOf="@+id/title"
-            tools:text="Version: Null" />
+            tools:text="Platform" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

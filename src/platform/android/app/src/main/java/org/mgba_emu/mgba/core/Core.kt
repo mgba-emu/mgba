@@ -13,8 +13,12 @@ package org.mgba_emu.mgba.core
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import org.mgba_emu.mgba.mGBAApplication
-import org.mgba_emu.mgba.utils.GlobalConfig
+import org.mgba_emu.mgba.settings.model.Settings
 import java.io.File
 
 enum class Platform(val value: Int) {
@@ -67,7 +71,6 @@ object Core {
 
     fun validateRom(uri: Uri): Boolean {
         check(initialized) { "Core.init() must succeed before loadRom()" }
-
         val parcel = mGBAApplication.context.contentResolver.openFileDescriptor(uri, "r")
         val romFd = parcel?.detachFd() ?: return false
         parcel.close()
@@ -78,14 +81,13 @@ object Core {
 
     fun loadRom(uri: Uri): Boolean {
         check(initialized) { "Core.init() must succeed before loadRom()" }
-
         val parcel = mGBAApplication.context.contentResolver.openFileDescriptor(uri, "r")
         val romFd = parcel?.detachFd() ?: return false
         parcel.close()
 
-        val ok = nativeLoadRom(romFd, GlobalConfig.rtcEnable)
+        val ok = nativeLoadRom(romFd, Settings.rtcEnable.value)
         if (ok) {
-            nativeSetAudioMuted(GlobalConfig.mute)
+            nativeSetAudioMuted(Settings.mute.value)
             width = nativeGetWidth()
             height = nativeGetHeight()
             if (width > 0 && height > 0) {
@@ -108,7 +110,7 @@ object Core {
 
     fun setKeys(keyMask: Int) = nativeSetKeys(keyMask)
 
-    fun gameTitle(): String = nativeGetGameTitle()
+    fun gameTitle(): String? = nativeGetGameTitle()
     fun gameCode(): String = nativeGetGameCode()
 
     fun getPlatform(): Platform {
@@ -118,36 +120,42 @@ object Core {
     fun loadSaveData(saveBytes: ByteArray): Boolean = nativeLoadSaveData(saveBytes)
     fun exportSaveData(): ByteArray = nativeExportSaveData()
 
-    fun loadBios(biosBytes: ByteArray): Boolean = nativeLoadBios(biosBytes)
+    fun loadBios(biosFd: Int): Boolean = nativeLoadBios(biosFd)
+
+    val isNoIntroDBInitialized = MutableStateFlow(false)
 
     fun initNoIntroDB(context: Context) {
-        val database = File(context.getExternalFilesDir(null), "database").apply { mkdirs() }
-        val datFile = File(database, "nointro.dat")
-        val dbFile = File(database, "nointro.db").apply { createNewFile() }
+        CoroutineScope(Dispatchers.IO).launch {
+            val database = File(context.getExternalFilesDir(null), "database").apply { mkdirs() }
+            val datFile = File(database, "nointro.dat")
+            val dbFile = File(database, "nointro.db").apply { createNewFile() }
 
-        if (dbFile.exists() && dbFile.readBytes().isNotEmpty()) {
-            if (!nativeInitNoIntroDB("", dbFile.absolutePath)) {
-                Log.e("Core", "nativeInitNoIntroDB Failed")
+            if (dbFile.exists() && dbFile.readBytes().isNotEmpty()) {
+                if (!nativeInitNoIntroDB("", dbFile.absolutePath)) {
+                    Log.e("Core", "nativeInitNoIntroDB Failed")
+                }
+                if (datFile.exists()) datFile.delete()
+                isNoIntroDBInitialized.value = true
+                return@launch
             }
-            if (datFile.exists()) datFile.delete()
-            return
-        }
 
-        if (!datFile.exists()) {
-            context.assets.open("nointro.dat").use { input ->
-                datFile.outputStream().use { outputStream ->
-                    input.copyTo(outputStream)
+            if (!datFile.exists()) {
+                context.assets.open("nointro.dat").use { input ->
+                    datFile.outputStream().use { outputStream ->
+                        input.copyTo(outputStream)
+                    }
                 }
             }
-        }
 
-        nativeInitNoIntroDB(datFile.absolutePath, dbFile.absolutePath)
+            nativeInitNoIntroDB(datFile.absolutePath, dbFile.absolutePath)
+            isNoIntroDBInitialized.value = true
+        }
     }
 
     private external fun nativeInit(): Boolean
     private external fun nativeShutdown()
     private external fun nativeLoadRom(romFd: Int, rtcEnable: Boolean): Boolean
-    private external fun nativeLoadBios(biosData: ByteArray): Boolean
+    private external fun nativeLoadBios(biosFd: Int): Boolean
     private external fun nativeValidateRom(romFd: Int): Boolean
     private external fun nativeReset()
     private external fun nativeRunFrame()
@@ -157,7 +165,7 @@ object Core {
     private external fun nativeSetKeys(keyMask: Int)
     private external fun nativeLoadSaveData(saveData: ByteArray): Boolean
     private external fun nativeExportSaveData(): ByteArray
-    private external fun nativeGetGameTitle(): String
+    private external fun nativeGetGameTitle(): String?
     private external fun nativeGetGameCode(): String
     private external fun nativeGetPlatform(): Int
     private external fun nativeSetAudioMuted(muted: Boolean)

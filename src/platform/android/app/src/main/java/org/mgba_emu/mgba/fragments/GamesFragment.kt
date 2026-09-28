@@ -10,62 +10,50 @@
 
 package org.mgba_emu.mgba.fragments
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnPreDraw
+import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.color.MaterialColors
-import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.launch
-import org.mgba_emu.mgba.EmulationActivity
 import org.mgba_emu.mgba.R
 import org.mgba_emu.mgba.adapters.GameAdapter
 import org.mgba_emu.mgba.databinding.FragmentGamesBinding
 import org.mgba_emu.mgba.model.GameModel
+import org.mgba_emu.mgba.utils.LifecycleUtils.collect
 import org.mgba_emu.mgba.utils.SearchLocationHelper
-import org.mgba_emu.mgba.utils.applySafePadding
+import org.mgba_emu.mgba.utils.ViewUtils.updateMargins
+import org.mgba_emu.mgba.viewmodel.MainViewModel
 import com.google.android.material.R as MaterialR
 
 class GamesFragment : Fragment(R.layout.fragment_games) {
-
     private var _binding: FragmentGamesBinding? = null
     private val binding get() = _binding!!
     private lateinit var gameAdapter: GameAdapter
 
-    private val folderPickerLauncher = registerForActivityResult(
-        ActivityResultContracts.OpenDocumentTree()
-    ) { uri: Uri? ->
-        uri?.let {
-            if (SearchLocationHelper.isFolderExists(it)) {
-                Snackbar.make(
-                    binding.root,
-                    "Folder already added to library",
-                    Snackbar.LENGTH_SHORT
-                ).setAnchorView(binding.add).show()
-                return@let
-            }
-            requireContext().contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-            SearchLocationHelper.saveFolderUri(it)
-        }
-    }
-
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentGamesBinding.bind(view)
+        postponeEnterTransition()
+        binding.gamesList.doOnPreDraw {
+            startPostponedEnterTransition()
+        }
+        mainViewModel.setNavigationVisibility(visible = true, animated = true)
+        mainViewModel.setStatusBarShadeVisibility(true)
+
         gameAdapter = GameAdapter { game ->
-            launchEmulationActivity(game)
+            GameModel.launchEmulationActivity(requireContext(), game)
         }
 
-        binding.gamesList.layoutManager = LinearLayoutManager(requireContext())
+        binding.gamesList.layoutManager = GridLayoutManager(requireContext(), resources.getInteger(R.integer.list_columns))
         binding.gamesList.adapter = gameAdapter
-        binding.gamesList.applySafePadding()
 
         binding.swipeRefreshLayout.apply {
             setProgressBackgroundColorSchemeColor(
@@ -94,46 +82,54 @@ class GamesFragment : Fragment(R.layout.fragment_games) {
             }
         }
 
-        binding.add.setOnClickListener {
-            folderPickerLauncher.launch(null)
+        SearchLocationHelper.isLoading.collect(viewLifecycleOwner) {
+            binding.swipeRefreshLayout.isRefreshing = it
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            SearchLocationHelper.isLoading.collect {
-                binding.swipeRefreshLayout.isRefreshing = it
-            }
+        SearchLocationHelper.gameList.collect(viewLifecycleOwner) { gamesList ->
+            gameAdapter.submitList(gamesList)
+            binding.emptyListText.isVisible = gamesList.isEmpty()
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            SearchLocationHelper.gameList.collect { gamesList ->
-                gameAdapter.submitList(gamesList)
-            }
-        }
+        setInsets()
+    }
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.swipeRefreshLayout) { view, insets ->
-            val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
+    private fun setInsets() =
+        ViewCompat.setOnApplyWindowInsetsListener(
+            binding.root
+        ) { view: View, windowInsets: WindowInsetsCompat ->
+            val barInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val cutoutInsets = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout())
+            val extraListSpacing = resources.getDimensionPixelSize(R.dimen.spacing_large)
+            val spacingNavigation = resources.getDimensionPixelSize(R.dimen.spacing_navigation)
+            val spacingNavigationRail =
+                resources.getDimensionPixelSize(R.dimen.spacing_navigation_rail)
 
-            val defaultStartOffset = 0
-            val defaultEndOffset = (64 * view.resources.displayMetrics.density).toInt()
-
-            binding.swipeRefreshLayout.setProgressViewOffset(
-                false,
-                defaultStartOffset + statusBarHeight,
-                defaultEndOffset + statusBarHeight
+            binding.gamesList.updatePadding(
+                top = barInsets.top + extraListSpacing,
+                bottom = barInsets.bottom + spacingNavigation + extraListSpacing
             )
 
-            insets
-        }
-    }
+            binding.swipeRefreshLayout.setProgressViewEndTarget(
+                false,
+                barInsets.top + resources.getDimensionPixelSize(R.dimen.spacing_refresh_end)
+            )
 
-    private fun launchEmulationActivity(game: GameModel) {
-        SearchLocationHelper.updateLastPlayed(game.uri.toString(), System.currentTimeMillis())
-        val intent = Intent(requireContext(), EmulationActivity::class.java).apply {
-            putExtra(GameModel.launchId, game)
-        }
+            val leftInsets = barInsets.left + cutoutInsets.left
+            val rightInsets = barInsets.right + cutoutInsets.right
+            val left: Int
+            val right: Int
+            if (ViewCompat.getLayoutDirection(view) == ViewCompat.LAYOUT_DIRECTION_LTR) {
+                left = leftInsets + spacingNavigationRail
+                right = rightInsets
+            } else {
+                left = leftInsets
+                right = rightInsets + spacingNavigationRail
+            }
+            binding.swipeRefreshLayout.updateMargins(left = left, right = right)
 
-        startActivity(intent)
-    }
+            windowInsets
+        }
 
     override fun onResume() {
         super.onResume()

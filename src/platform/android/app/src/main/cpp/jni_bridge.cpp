@@ -9,6 +9,7 @@
 
 #include "log/log.h"
 #include "utils/jni_string.h"
+#include "utils/zip_utils.h"
 #include "core.h"
 #include "no_intro_parser.h"
 #include <csignal>
@@ -85,18 +86,14 @@ Java_org_mgba_1emu_mgba_core_Core_nativeLoadRom(JNIEnv* env, jobject /*thiz*/, j
 }
 
 JNIEXPORT jboolean JNICALL
-Java_org_mgba_1emu_mgba_core_Core_nativeLoadBios(JNIEnv* env, jobject /*thiz*/, jbyteArray biosData) {
+Java_org_mgba_1emu_mgba_core_Core_nativeLoadBios(JNIEnv* env, jobject /*thiz*/, jint biosFd) {
     std::lock_guard<std::mutex> lock(g_coreMutex);
     if (g_core == nullptr) {
         LOGE("nativeLoadBios called before nativeInit");
         return JNI_FALSE;
     }
-    jsize len = env->GetArrayLength(biosData);
-    std::vector<uint8_t> buffer(static_cast<size_t>(len));
-    env->GetByteArrayRegion(biosData, 0, len, reinterpret_cast<jbyte*>(buffer.data()));
 
-    bool ok = g_core->loadBios(buffer.data(), buffer.size());
-    LOGI("nativeLoadBios: %zu bytes, success=%d", buffer.size(), ok);
+    bool ok = g_core->loadBios(biosFd);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
@@ -169,8 +166,13 @@ Java_org_mgba_1emu_mgba_core_Core_nativeExportSaveData(JNIEnv* env, jobject /*th
 JNIEXPORT jstring JNICALL
 Java_org_mgba_1emu_mgba_core_Core_nativeGetGameTitle(JNIEnv* env, jobject /*thiz*/) {
     std::lock_guard<std::mutex> lock(g_coreMutex);
-    std::string title = g_core ? g_core->getGameTitle() : "";
-    return env->NewStringUTF(title.c_str());
+    std::optional<std::string> title = g_core->getGameTitle();
+
+    if (!title.has_value()) {
+        return nullptr;
+    }
+
+    return env->NewStringUTF(title->c_str());
 }
 
 JNIEXPORT jstring JNICALL
@@ -196,8 +198,24 @@ JNIEXPORT jboolean JNICALL
 Java_org_mgba_1emu_mgba_core_Core_nativeInitNoIntroDB(JNIEnv* env, jobject thiz, jstring jDatPath, jstring jDBPath) {
 	JniString datPath(env, jDatPath);
 	JniString dbPath(env, jDBPath);
-	noIntroInit(dbPath, datPath);
-	return JNI_TRUE;
+	bool result = noIntroInit(dbPath, datPath);
+	return result ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_mgba_1emu_mgba_utils_ZipUtils_exportUserData(JNIEnv *env, jobject thiz, jstring jFolderPath, jint out_fd, jstring jAppId) {
+    JniString folderPath(env, jFolderPath);
+    JniString appId(env, jAppId);
+    bool result = ZipUtils::exportUserData(folderPath.c_str(), out_fd, appId.c_str());
+    return result ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_mgba_1emu_mgba_utils_ZipUtils_importUserData(JNIEnv *env, jobject thiz, jint inFd, jstring jTargetExtractDir, jstring jExpectedAppId) {
+    JniString targetExtractDir(env, jTargetExtractDir);
+    JniString expectedAppId(env, jExpectedAppId);
+    bool result = ZipUtils::importUserData(inFd, targetExtractDir.c_str(), expectedAppId.c_str());
+    return result ? JNI_TRUE : JNI_FALSE;
 }
 
 } // extern "C"

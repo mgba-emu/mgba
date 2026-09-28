@@ -13,7 +13,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurfaceDim">
+    android:background="?attr/colorSurface">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -24,27 +24,23 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="24dp">
+            android:orientation="vertical">
 
-            <TextView
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:text="Search Locations"
-                android:textAppearance="?attr/textAppearanceHeadlineLarge"
-                android:textColor="?attr/colorOnSurface"
-                android:textStyle="bold" />
+                android:touchscreenBlocksFocus="false">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="24dp"
-                android:text="mGBA will check these active directories automatically."
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOutline" />
+                <com.google.android.material.appbar.MaterialToolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:touchscreenBlocksFocus="false"
+                    app:navigationIcon="@drawable/ic_chevron_left"
+                    app:title="@string/search_locations"/>
+
+            </com.google.android.material.appbar.AppBarLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/folderList"
@@ -62,10 +58,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:text="Add Folder"
+        android:contentDescription="@string/add_folder"
+        android:text="@string/add_folder"
         android:textColor="?attr/colorOnPrimaryContainer"
         app:backgroundTint="?attr/colorPrimaryContainer"
-        app:icon="@android:drawable/ic_input_add"
+        app:icon="@drawable/ic_add"
         app:iconTint="?attr/colorOnPrimaryContainer" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
