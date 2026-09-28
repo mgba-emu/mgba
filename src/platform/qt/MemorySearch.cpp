@@ -13,9 +13,9 @@
 
 using namespace QGBA;
 
-MemorySearch::MemorySearch(std::shared_ptr<CoreController> controller, QWidget* parent)
+MemorySearch::MemorySearch(CorePointerSource* controller, QWidget* parent)
 	: QWidget(parent)
-	, m_controller(controller)
+	, CoreConsumer(controller)
 {
 	m_ui.setupUi(this);
 
@@ -267,7 +267,7 @@ void MemorySearch::openMemory() {
 	QTableWidgetItem* item = items[0];
 	uint32_t address = item->text().toUInt(nullptr, 16);
 
-	MemoryView* memView = new MemoryView(m_controller);
+	MemoryView* memView = new MemoryView(m_controller.source());
 	memView->jumpToAddress(address);
 
 	memView->setAttribute(Qt::WA_DeleteOnClose);

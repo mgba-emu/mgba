@@ -15,19 +15,19 @@
 
 #include <mgba-util/text-codec.h>
 
+#include "CorePointer.h"
+
 struct mCore;
 
 namespace QGBA {
 
 class CoreController;
 
-class MemoryModel : public QAbstractScrollArea {
+class MemoryModel : public QAbstractScrollArea, public CoreConsumer {
 Q_OBJECT
 
 public:
 	MemoryModel(QWidget* parent = nullptr);
-
-	void setController(std::shared_ptr<CoreController> controller);
 
 	void setRegion(uint32_t base, uint32_t size, const QString& name = QString(), int segment = -1);
 	void setSegment(int segment);
@@ -63,6 +63,8 @@ protected:
 	void keyPressEvent(QKeyEvent*) override;
 
 private:
+	void onCoreAttached(std::shared_ptr<CoreController> controller);
+
 	void boundsCheck();
 
 	bool isInSelection(uint32_t address);

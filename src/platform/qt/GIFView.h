@@ -11,6 +11,7 @@
 
 #include <memory>
 
+#include "CorePointer.h"
 #include "ui_GIFView.h"
 
 #include "feature/ffmpeg/ffmpeg-encoder.h"
@@ -19,18 +20,16 @@ namespace QGBA {
 
 class CoreController;
 
-class GIFView : public QWidget {
+class GIFView : public QWidget, public CoreConsumer {
 Q_OBJECT
 
 public:
-	GIFView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	GIFView(CorePointerSource* controller, QWidget* parent = nullptr);
 	virtual ~GIFView();
 
 	mAVStream* getStream() { return &m_encoder.d; }
 
 public slots:
-	void setController(std::shared_ptr<CoreController>);
-
 	void startRecording();
 	void stopRecording();
 
@@ -44,6 +43,8 @@ private slots:
 	void changeExtension();
 
 private:
+	void onCoreAttached(std::shared_ptr<CoreController>);
+
 	Ui::GIFView m_ui;
 
 	FFmpegEncoder m_encoder;

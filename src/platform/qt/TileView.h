@@ -19,7 +19,7 @@ class TileView : public AssetView {
 Q_OBJECT
 
 public:
-	TileView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	TileView(CorePointerSource* controller, QWidget* parent = nullptr);
 
 public slots:
 	void updatePalette(int);
@@ -38,7 +38,6 @@ private:
 
 	Ui::TileView m_ui;
 
-	std::shared_ptr<CoreController> m_controller;
 	mTileCacheEntry m_tileStatus[3072 * 32] = {}; // TODO: Correct size
 	int m_paletteId = 0;
 };

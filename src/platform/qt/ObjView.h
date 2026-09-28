@@ -23,7 +23,7 @@ class ObjView : public AssetView {
 Q_OBJECT
 
 public:
-	ObjView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	ObjView(CorePointerSource* controller, QWidget* parent = nullptr);
 
 public slots:
 	void exportObj();
@@ -45,7 +45,6 @@ private:
 
 	Ui::ObjView m_ui;
 
-	std::shared_ptr<CoreController> m_controller;
 	mTileCacheEntry m_tileStatus[1024 * 32] = {}; // TODO: Correct size
 	int m_objId = 0;
 	ObjInfo m_objInfo = {};

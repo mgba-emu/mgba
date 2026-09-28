@@ -9,6 +9,7 @@
 #ifdef USE_FFMPEG
 
 #include "GBAApp.h"
+#include "CoreController.h"
 #include "LogController.h"
 #include "utils.h"
 
@@ -48,8 +49,8 @@ bool VideoView::Preset::compatible(const Preset& other) const {
 	return true;
 }
 
-VideoView::VideoView(std::shared_ptr<CoreController> controller, QWidget* parent)
-	: QWidget(parent)
+VideoView::VideoView(CorePointerSource* controller, QWidget* parent)
+	: QWidget(parent), CoreConsumer(controller)
 {
 	m_ui.setupUi(this);
 
@@ -131,8 +132,6 @@ VideoView::VideoView(std::shared_ptr<CoreController> controller, QWidget* parent
 
 	m_ui.presetYoutube->setChecked(true); // Use the Youtube preset by default
 	showAdvanced(false);
-
-	setController(controller);
 }
 
 void VideoView::updatePresets() {
@@ -201,7 +200,7 @@ VideoView::~VideoView() {
 	free(m_containerCstr);
 }
 
-void VideoView::setController(std::shared_ptr<CoreController> controller) {
+void VideoView::onCoreAttached(std::shared_ptr<CoreController> controller) {
 	CoreController* controllerPtr = controller.get();
 	connect(controllerPtr, &CoreController::frameAvailable, this, [this, controllerPtr]() {
 		setNativeResolution(controllerPtr->screenDimensions());
