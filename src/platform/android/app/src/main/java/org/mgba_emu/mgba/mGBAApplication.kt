@@ -35,8 +35,4 @@ class mGBAApplication : Application() {
         Core.initNoIntroDB(this)
         startService(Intent(this, LoggerService::class.java))
     }
-
-    override fun setTheme(resid: Int) {
-        super.setTheme(resid)
-    }
 }
