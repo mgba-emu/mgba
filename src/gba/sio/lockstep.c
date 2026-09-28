@@ -938,7 +938,7 @@ void _lockstepEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 		if (!event) {
 			break;
 		}
-		if (event->timestamp > GBASIOLockstepTime(player)) {
+		if (event->timestamp - GBASIOLockstepTime(player) > 0) {
 			break;
 		}
 		player->queue = event->next;

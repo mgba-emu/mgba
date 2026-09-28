@@ -69,6 +69,8 @@ public:
 
 	InputController* inputController() { return &m_inputController; }
 
+	QSize contentSize(bool fallback) const;
+
 signals:
 	void startDrawing();
 	void shutdown();
@@ -182,6 +184,7 @@ private:
 	void updateMRU();
 
 	void ensureScripting();
+	void recalculateFrameSize(const QSize&);
 
 	template <typename T, typename... A> std::function<void()> openTView(A... arg);
 	template <typename T, typename... A> std::function<void()> openControllerTView(A... arg);

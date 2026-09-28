@@ -96,6 +96,7 @@ public:
 	int framebufferHandle() override;
 	QSize contentSize() const override { return m_cachedContentSize; }
 	void setMaximumSize(const QSize& size) override;
+	void setMaximumScale(int scale) override;
 
 	static bool highestCompatible(QSurfaceFormat&);
 	static bool supportsFormat(const QSurfaceFormat&);
@@ -174,6 +175,7 @@ public slots:
 	void unpause();
 	void resize(const QSize& size);
 	void setMaximumSize(const QSize& size);
+	void setMaximumScale(int scale);
 	void lockAspectRatio(bool lock);
 	void lockIntegerScaling(bool lock);
 	void interframeBlending(bool enable);
@@ -235,6 +237,7 @@ private:
 	QSize m_size;
 	QSize m_dims;
 	QSize m_maxSize;
+	int m_maxScale = 0;
 	MessagePainter* m_messagePainter = nullptr;
 	QElapsedTimer m_delayTimer;
 	std::shared_ptr<VideoProxy> m_videoProxy;
