@@ -149,6 +149,13 @@ static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
 		mCoreSyncLockAudio(audioContext->sync);
 		audioContext->sync->audioHighWater = audioContext->samples + audioContext->resampler.highWaterMark + audioContext->resampler.lowWaterMark + (audioContext->samples >> 6);
 		audioContext->sync->audioHighWater *= sampleRate / (fauxClock * audioContext->obtainedSpec.freq);
+
+		if (audioContext->resampler.source) {
+			size_t destSize = mAudioBufferCapacity(audioContext->resampler.source);
+			if (audioContext->sync->audioHighWater >= destSize) {
+				audioContext->sync->audioHighWater = destSize;
+			}
+		}
 	}
 	mAudioResamplerSetSource(&audioContext->resampler, buffer, sampleRate / fauxClock, true);
 	mAudioResamplerProcess(&audioContext->resampler);

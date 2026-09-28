@@ -261,25 +261,43 @@ void Window::argumentsPassed() {
 	}
 }
 
+QSize Window::contentSize(bool fallback) const {
+	if (m_display) {
+		return m_display->contentSize();
+	}
+	if (m_controller) {
+		return m_controller->screenDimensions();
+	}
+	if (fallback) {
+#if defined(M_CORE_GBA)
+		return QSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+#elif defined(M_CORE_GB)
+		return QSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+#endif
+	}
+	return QSize();
+}
+
 void Window::resizeFrame(const QSize& size) {
 	QSize newSize(size);
 	if (!m_config->getOption("lockFrameSize").toInt()) {
 		m_savedSize = size;
-	}
-	if (windowHandle()) {
-		QRect geom = windowHandle()->screen()->availableGeometry();
-		if (newSize.width() > geom.width()) {
-			newSize.setWidth(geom.width());
+		if (windowHandle()) {
+			QRect geom = windowHandle()->screen()->availableGeometry();
+			if (newSize.width() > geom.width()) {
+				newSize.setWidth(geom.width());
+			}
+			if (newSize.height() > geom.height()) {
+				newSize.setHeight(geom.height());
+			}
 		}
-		if (newSize.height() > geom.height()) {
-			newSize.setHeight(geom.height());
+		newSize += this->size();
+		newSize -= centralWidget()->size();
+		if (!isFullScreen()) {
+			resize(newSize);
 		}
 	}
-	newSize += this->size();
-	newSize -= centralWidget()->size();
-	if (!isFullScreen()) {
-		resize(newSize);
-	}
+	recalculateFrameSize(size);
 }
 
 void Window::updateMultiplayerStatus(bool canOpenAnother) {
@@ -692,7 +710,7 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 	}
 	int key = m_inputController.mapKeyboard(event->key());
 	if (key == -1) {
-		QWidget::keyPressEvent(event);
+		QWidget::keyReleaseEvent(event);
 		return;
 	}
 	if (m_controller) {
@@ -701,28 +719,31 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 	event->accept();
 }
 
+void Window::recalculateFrameSize(const QSize& size) {
+	int factor = -1;
+	QSize baseSize(contentSize(true));
+	if (!baseSize.isEmpty() && size.width() % baseSize.width() == 0 && size.height() % baseSize.height() == 0 && size.width() / baseSize.width() == size.height() / baseSize.height()) {
+		factor = size.width() / baseSize.width();
+	}
+
+	m_savedScale = factor;
+	for (QMap<int, std::shared_ptr<Action>>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
+		std::shared_ptr<Action> frameSize = iter.value();
+		frameSize->setActive(iter.key() == factor);
+	}
+}
+
 void Window::resizeEvent(QResizeEvent*) {
+	m_config->setOption("fullscreen", isFullScreen());
+	if (m_config->getOption("lockFrameSize").toInt()) {
+		return;
+	}
 	QSize newSize = centralWidget()->size();
 	if (!isFullScreen()) {
 		m_config->setOption("height", newSize.height());
 		m_config->setOption("width", newSize.width());
 	}
-
-	int factor = 0;
-	QSize size(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-	if (m_controller) {
-		size = m_controller->screenDimensions();
-	}
-	if (newSize.width() % size.width() == 0 && newSize.height() % size.height() == 0 &&
-	    newSize.width() / size.width() == newSize.height() / size.height()) {
-		factor = newSize.width() / size.width();
-	}
-	m_savedScale = factor;
-	for (QMap<int, std::shared_ptr<Action>>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
-		iter.value()->setActive(iter.key() == factor);
-	}
-
-	m_config->setOption("fullscreen", isFullScreen());
+	recalculateFrameSize(newSize);
 }
 
 void Window::showEvent(QShowEvent* event) {
@@ -899,14 +920,10 @@ void Window::gameStarted() {
 	for (auto action = m_platformActions.begin(); action != m_platformActions.end(); ++action) {
 		action.value()->setEnabled(m_controller->platform() == action.key());
 	}
-	QSize size = m_controller->screenDimensions();
 	m_config->updateOption("lockIntegerScaling");
 	m_config->updateOption("lockAspectRatio");
 	m_config->updateOption("interframeBlending");
 	m_config->updateOption("resampleVideo");
-	if (m_savedScale > 0) {
-		resizeFrame(size * m_savedScale);
-	}
 	attachWidget(m_display.get());
 	setFocus();
 
@@ -1107,6 +1124,12 @@ void Window::reloadDisplayDriver() {
 		centralWidget()->unsetCursor();
 	});
 
+	connect(m_display.get(), &QGBA::Display::contentSizeChanged, [this](const QSize& size) {
+		if (m_savedScale > 0 && !m_config->getOption("lockFrameSize").toInt()) {
+			resizeFrame(size * m_savedScale);
+		}
+	});
+
 	m_display->configure(m_config);
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	if (m_shaderView) {
@@ -1295,7 +1318,7 @@ void Window::openStateWindow(LoadSave ls) {
 	m_stateWindow->setAttribute(Qt::WA_DeleteOnClose);
 	m_stateWindow->setMode(ls);
 
-	m_stateWindow->setDimensions(m_controller->screenDimensions());
+	m_stateWindow->setDimensions(contentSize(true));
 	m_config->updateOption("lockAspectRatio");
 	m_config->updateOption("lockIntegerScaling");
 
@@ -1591,30 +1614,18 @@ void Window::setupMenu(QMenuBar* menubar) {
 			if (!lockFrameSize) {
 				showNormal();
 			}
-#if defined(M_CORE_GBA)
-			QSize minimumSize = QSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-#elif defined(M_CORE_GB)
-			QSize minimumSize = QSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
-#endif
-			QSize size;
-			if (m_display) {
-				size = m_display->contentSize();
-			}
-			if (size.isNull()) {
-				size = minimumSize;
-			}
+			QSize size(contentSize(true));
 			size *= i;
-			m_savedScale = i;
 			m_config->setOption("scaleMultiplier", i); // TODO: Port to other
-			m_savedSize = size;
 			resizeFrame(size);
 			if (lockFrameSize) {
-				m_display->setMaximumSize(size);
+				m_display->setMaximumScale(i);
 			}
 			setSize->setActive(true);
 		}, "frame");
 		setSize->setExclusive(true);
 		if (m_savedScale == i) {
+			QSignalBlocker blocker(setSize.get());
 			setSize->setActive(true);
 		}
 		m_frameSizes[i] = setSize;
@@ -1633,9 +1644,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	lockFrameSize->connect([this](const QVariant& value) {
 		if (m_display) {
 			if (value.toBool()) {
-				m_display->setMaximumSize(m_display->size());
+				if (m_savedScale > 0) {
+					m_display->setMaximumScale(m_savedScale);
+				} else {
+					m_display->setMaximumSize(m_display->size());
+				}
 			} else {
 				m_display->setMaximumSize({});
+				resizeEvent(nullptr);
 			}
 		}
 	}, this);
@@ -2349,7 +2365,11 @@ void Window::attachDisplay() {
 	m_display->attach(m_controller);
 	connect(m_display.get(), &QGBA::Display::drawingStarted, this, &Window::changeRenderer);
 	if (m_config->getOption("lockFrameSize").toInt()) {
-		m_display->setMaximumSize(m_savedSize);
+		if (m_savedScale > 0) {
+			m_display->setMaximumScale(m_savedScale);
+		} else {
+			m_display->setMaximumSize(m_savedSize);
+		}
 	} else {
 		m_display->setMaximumSize({});
 	}

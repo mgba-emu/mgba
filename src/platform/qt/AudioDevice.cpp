@@ -143,4 +143,11 @@ void AudioDevice::adjustResampler() {
 	mAudioResamplerSetDestination(&m_resampler, &m_buffer, m_format.sampleRate() * fauxClock);
 	m_context->impl->sync.audioHighWater = m_samples + m_resampler.highWaterMark + m_resampler.lowWaterMark;
 	m_context->impl->sync.audioHighWater *= core->audioSampleRate(core) / (m_format.sampleRate() * fauxClock);
+
+	if (m_resampler.source) {
+		size_t destSize = mAudioBufferCapacity(m_resampler.source);
+		if (m_context->impl->sync.audioHighWater >= destSize) {
+			m_context->impl->sync.audioHighWater = destSize;
+		}
+	}
 }
