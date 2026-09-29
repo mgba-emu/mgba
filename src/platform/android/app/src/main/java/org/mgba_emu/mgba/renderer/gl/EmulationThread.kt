@@ -39,8 +39,6 @@ class EmulationThread(
     private var framesThisSecond = 0
     private var lastFpsTimestampNs = 0L
 
-    private val isFastForwardEnabled = Settings.fastForward.value
-
     override fun run() {
         running.set(true)
         var nextFrameDeadlineNs = System.nanoTime()
@@ -61,7 +59,7 @@ class EmulationThread(
             val now = System.nanoTime()
             val remainingNs = nextFrameDeadlineNs - now
 
-            if (isFastForwardEnabled) {
+            if (Settings.fastForward.value) {
                 // skip sleeping to run as fast as possible
                 nextFrameDeadlineNs = now
             } else {
