@@ -9,7 +9,6 @@
 
 package org.mgba_emu.mgba
 
-import android.content.DialogInterface
 import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.opengl.GLSurfaceView
@@ -92,14 +91,16 @@ class EmulationActivity : AppCompatActivity() {
         ConfigManager.gameFileName = currentGame!!.fileName
         ConfigManager.shouldHandleInGameMenu = true
 
-        requestedOrientation = when (Settings.screenOrientation.value) {
-            0 -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-            1 -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            2 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
-            3 -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
-            4 -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            5 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
-            else -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        Settings.screenOrientation.flow.collect(this) {
+            requestedOrientation = when (it) {
+                0 -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                1 -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                2 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
+                3 -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+                4 -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                5 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
+                else -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            }
         }
 
         binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {

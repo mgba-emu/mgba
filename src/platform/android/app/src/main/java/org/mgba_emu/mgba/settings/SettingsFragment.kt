@@ -11,6 +11,8 @@ package org.mgba_emu.mgba.settings
 
 import android.annotation.SuppressLint
 import android.content.DialogInterface
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -66,7 +68,7 @@ class SettingsFragment : DialogFragment(R.layout.fragment_settings) {
 
         settingsAdapter = SettingsAdapter(
             this,
-            {
+            onSubmenuClick = {
                 try {
                     findNavController().navigate(it)
                 } catch (_: IllegalStateException) {
@@ -117,8 +119,22 @@ class SettingsFragment : DialogFragment(R.layout.fragment_settings) {
         super.onStart()
         dialog?.window?.apply {
             val displayMetrics = resources.displayMetrics
-            val dialogWidth = (displayMetrics.widthPixels * 0.50).toInt()
-            val dialogHeight = (displayMetrics.heightPixels * 0.80).toInt()
+            val widthMultiplier = when (Settings.screenOrientation.value) {
+                0,
+                1,
+                2 -> 0.50
+                else -> 0.80
+            }
+
+            val heightMultiplier = when (Settings.screenOrientation.value) {
+                0,
+                1,
+                2 -> 0.80
+                else -> 0.50
+            }
+
+            val dialogWidth = (displayMetrics.widthPixels * widthMultiplier).toInt()
+            val dialogHeight = (displayMetrics.heightPixels * heightMultiplier).toInt()
 
             setLayout(dialogWidth, dialogHeight)
             setGravity(Gravity.CENTER)
@@ -126,6 +142,31 @@ class SettingsFragment : DialogFragment(R.layout.fragment_settings) {
             setBackgroundDrawableResource(android.R.color.transparent)
             binding.root.setBackgroundResource(R.drawable.bg_dialog_rounded)
             binding.root.clipToOutline = true
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        dialog?.window?.apply {
+            val displayMetrics = resources.displayMetrics
+            val widthMultiplier = when (Settings.screenOrientation.value) {
+                0,
+                1,
+                2 -> 0.50
+                else -> 0.80
+            }
+
+            val heightMultiplier = when (Settings.screenOrientation.value) {
+                0,
+                1,
+                2 -> 0.80
+                else -> 0.50
+            }
+
+            val dialogWidth = (displayMetrics.widthPixels * widthMultiplier).toInt()
+            val dialogHeight = (displayMetrics.heightPixels * heightMultiplier).toInt()
+
+            setLayout(dialogWidth, dialogHeight)
         }
     }
 
