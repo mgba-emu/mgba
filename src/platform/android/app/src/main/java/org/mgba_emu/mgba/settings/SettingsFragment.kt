@@ -103,25 +103,11 @@ class SettingsFragment : DialogFragment(R.layout.fragment_settings) {
             }
         }
 
-        settingsViewModel.shouldReloadSettingsList.collect(
-            viewLifecycleOwner,
-            resetState = { settingsViewModel.setShouldReloadSettingsList(false) }
-        ) { if (it) presenter.loadSettingsList() }
-
         settingsViewModel.adapterItemChanged.collect(
-            viewLifecycleOwner,
-            resetState = { settingsViewModel.setAdapterItemChanged(-1) }
-        ) { if (it != -1) settingsAdapter?.notifyItemChanged(it) }
-
-        settingsViewModel.datasetChanged.collect(
-            viewLifecycleOwner,
-            resetState = { settingsViewModel.setDatasetChanged(false) }
-        ) { if (it) settingsAdapter?.notifyDataSetChanged() }
-
-        settingsViewModel.reloadListAndNotifyDataset.collect(
-            viewLifecycleOwner,
-            resetState = { settingsViewModel.setReloadListAndNotifyDataset(false) }
-        ) { if (it) presenter.loadSettingsList(true) }
+            viewLifecycleOwner
+        ) {
+            if (it != -1) settingsAdapter?.notifyItemChanged(it)
+        }
 
         presenter.onViewCreated()
         setInsets()

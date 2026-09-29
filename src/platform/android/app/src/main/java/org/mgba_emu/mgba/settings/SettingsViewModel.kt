@@ -10,9 +10,12 @@
 package org.mgba_emu.mgba.settings
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import org.mgba_emu.mgba.R
 import org.mgba_emu.mgba.mGBAApplication
 import org.mgba_emu.mgba.settings.model.SettingsItem
@@ -20,27 +23,14 @@ import org.mgba_emu.mgba.settings.model.SettingsItem
 class SettingsViewModel : ViewModel() {
     var clickedItem: SettingsItem? = null
 
-    val shouldReloadSettingsList: StateFlow<Boolean> get() = _shouldReloadSettingsList
-    private val _shouldReloadSettingsList = MutableStateFlow(false)
-
     val sliderProgress: StateFlow<Int> get() = _sliderProgress
     private val _sliderProgress = MutableStateFlow(-1)
 
     val sliderTextValue: StateFlow<String> get() = _sliderTextValue
     private val _sliderTextValue = MutableStateFlow("")
 
-    val adapterItemChanged: StateFlow<Int> get() = _adapterItemChanged
-    private val _adapterItemChanged = MutableStateFlow(-1)
-
-    private val _datasetChanged = MutableStateFlow(false)
-    val datasetChanged = _datasetChanged.asStateFlow()
-
-    private val _reloadListAndNotifyDataset = MutableStateFlow(false)
-    val reloadListAndNotifyDataset = _reloadListAndNotifyDataset.asStateFlow()
-
-    fun setShouldReloadSettingsList(value: Boolean) {
-        _shouldReloadSettingsList.value = value
-    }
+    private val _adapterItemChanged = MutableSharedFlow<Int>()
+    val adapterItemChanged = _adapterItemChanged.asSharedFlow()
 
     fun setSliderTextValue(value: Float, units: String) {
         _sliderProgress.value = value.toInt()
@@ -56,14 +46,8 @@ class SettingsViewModel : ViewModel() {
     }
 
     fun setAdapterItemChanged(value: Int) {
-        _adapterItemChanged.value = value
-    }
-
-    fun setDatasetChanged(value: Boolean) {
-        _datasetChanged.value = value
-    }
-
-    fun setReloadListAndNotifyDataset(value: Boolean) {
-        _reloadListAndNotifyDataset.value = value
+        viewModelScope.launch {
+            _adapterItemChanged.emit(value)
+        }
     }
 }

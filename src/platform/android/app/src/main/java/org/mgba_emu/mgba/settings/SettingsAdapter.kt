@@ -122,7 +122,6 @@ class SettingsAdapter(
     fun onClearClick(item: SettingsItem, position: Int) {
         item.removeGameOverride()
         notifyItemChanged(position)
-        settingsViewModel.setShouldReloadSettingsList(true)
     }
 
     private class DiffCallback : DiffUtil.ItemCallback<SettingsItem>() {
