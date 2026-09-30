@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2026 Ishan
+  ~ Android Port component of mGBA.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+  ~
+  ~ This program is distributed without any warranty. See the GNU General Public License for more details.
+  -->
+
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scroll_view_settings"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:scrollbars="vertical"
+    android:fadeScrollbars="false"
+    android:clipToPadding="false"
+    android:defaultFocusHighlightEnabled="false">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/linear_layout_settings"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingHorizontal="8dp">
+
+        <ImageView
+            android:id="@+id/logo_image"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginVertical="32dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/mgba"
+            app:tint="?attr/colorPrimary" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/home_settings_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.core.widget.NestedScrollView>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2026 Ishan
+  ~ Android Port component of mGBA.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+  ~
+  ~ This program is distributed without any warranty. See the GNU General Public License for more details.
+  -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_resume_emulation"
+        android:icon="@drawable/ic_play"
+        android:title="@string/resume" />
+
+    <item
+        android:id="@+id/menu_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/settings" />
+
+    <item
+        android:id="@+id/menu_settings_per_game"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/settings_per_game" />
+
+    <item
+        android:id="@+id/menu_overlay_options"
+        android:icon="@drawable/ic_overlay"
+        android:title="@string/overlay_options" />
+
+    <item
+        android:id="@+id/menu_exit"
+        android:icon="@drawable/ic_exit"
+        android:title="@string/exit" />
+</menu>
