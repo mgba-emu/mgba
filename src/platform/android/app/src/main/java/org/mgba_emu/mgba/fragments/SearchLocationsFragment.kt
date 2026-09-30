@@ -106,6 +106,7 @@ class SearchLocationsFragment : Fragment(R.layout.fragment_search_locations) {
     }
 
     // used for non-SAF devices like AndroidTV
+    // TODO: make a separate library to handle file importing/exporting and folder importing
     private fun launchLegacyDirPicker() {
         setFragmentResultListener(DirectoryPickerDialogFragment.REQUEST_KEY) { _, bundle ->
             val selectedPath = bundle.getString(DirectoryPickerDialogFragment.RESULT_EXTRA_PATH)

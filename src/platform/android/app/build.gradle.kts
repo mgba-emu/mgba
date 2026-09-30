@@ -110,7 +110,7 @@ tasks.named("preBuild") {
 }
 
 dependencies {
-    implementation("androidx.datastore:datastore-preferences-core:1.2.1")
+    implementation(libs.androidx.datastore.preferences.core)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
@@ -119,6 +119,7 @@ dependencies {
     implementation(libs.androidx.documentfile)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.coil)
+    implementation(libs.coil.gif)
     implementation(libs.coil.network.okhttp)
     implementation(libs.oboe)
     implementation(libs.kotlinx.serialization.json)
