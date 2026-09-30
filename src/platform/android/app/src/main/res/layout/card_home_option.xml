@@ -42,19 +42,22 @@
             android:orientation="vertical">
 
             <com.google.android.material.textview.MaterialTextView
-                style="@style/Widget.Material3.TextView.ListItem.LabelText"
+                style="@style/TextAppearance.Material3.BodyMedium"
                 android:id="@+id/option_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAlignment="viewStart"
+                android:textStyle="bold"
+                android:textSize="16sp"
                 tools:text="Title" />
 
             <com.google.android.material.textview.MaterialTextView
-                style="@style/Widget.Material3.TextView.ListItem.SupportingText"
+                style="@style/TextAppearance.Material3.BodySmall"
                 android:id="@+id/option_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAlignment="viewStart"
+                android:textSize="14sp"
                 android:layout_marginTop="5dp"
                 tools:text="Description" />
 

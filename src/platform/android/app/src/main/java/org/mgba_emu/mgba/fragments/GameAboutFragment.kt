@@ -9,6 +9,7 @@
 
 package org.mgba_emu.mgba.fragments
 
+import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.os.Bundle
@@ -318,6 +319,7 @@ class GameAboutFragment : Fragment(R.layout.fragment_game_about) {
             error(R.drawable.mgba)
         }
 
+        requireContext().contentResolver.takePersistableUriPermission(result, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         SearchLocationHelper.updateIconUrl(args.game.uri.toString(), result.toString())
     }
 }
