@@ -60,9 +60,7 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/add_folder"
         android:text="@string/add_folder"
-        android:textColor="?attr/colorOnPrimaryContainer"
-        app:backgroundTint="?attr/colorPrimaryContainer"
         app:icon="@drawable/ic_add"
-        app:iconTint="?attr/colorOnPrimaryContainer" />
+        app:materialThemeOverlay="@style/ThemeOverlay.Material3Expressive.FloatingActionButton.Primary" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
