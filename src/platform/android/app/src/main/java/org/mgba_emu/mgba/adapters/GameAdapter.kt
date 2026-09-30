@@ -21,6 +21,7 @@ import coil3.request.fallback
 import coil3.request.transformations
 import coil3.transform.RoundedCornersTransformation
 import org.mgba_emu.mgba.NavGraphDirections
+import org.mgba_emu.mgba.R
 import org.mgba_emu.mgba.databinding.ItemGameBinding
 import org.mgba_emu.mgba.model.GameModel
 import org.mgba_emu.mgba.utils.ViewUtils.marquee
@@ -57,8 +58,8 @@ class GameAdapter(
             binding.platform.text = model.platform?.name ?: ""
             binding.icon.load(model.iconUrl ?: "") {
                 crossfade(true)
-                fallback(android.R.drawable.ic_media_play)
-                error(android.R.drawable.ic_media_play)
+                fallback(R.drawable.mgba)
+                error(R.drawable.mgba)
                 transformations(RoundedCornersTransformation(16f))
             }
         }

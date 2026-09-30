@@ -45,6 +45,9 @@ interface GameDao {
     @Query("UPDATE games SET lastPlayed = :timestamp WHERE uri = :uri")
     suspend fun updateLastPlayed(uri: String, timestamp: Long)
 
+    @Query("UPDATE games SET iconUrl = :iconUrl WHERE uri = :uri")
+    suspend fun updateIconUrl(uri: String, iconUrl: String)
+
     @Query("DELETE FROM games WHERE uri NOT IN (:existingUris)")
     suspend fun deleteOrphans(existingUris: List<String>)
 

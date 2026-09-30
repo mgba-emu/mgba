@@ -59,21 +59,45 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <com.google.android.material.card.MaterialCardView
-                style="?attr/materialCardViewElevatedStyle"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="4dp"
-                app:cardElevation="4dp">
+                android:paddingTop="20dp"
+                android:paddingEnd="20dp"
+                android:paddingStart="20dp"
+                android:clipToPadding="false"
+                android:clipChildren="false">
 
-                <ImageView
+                <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/game_icon"
                     android:layout_width="175dp"
                     android:layout_height="175dp"
+                    android:scaleType="centerCrop"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
                     tools:src="@drawable/mgba" />
 
-            </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/editIcon"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    app:backgroundTint="?attr/colorSecondaryContainer"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:icon="@drawable/ic_edit"
+                    app:iconTint="?attr/colorOnSecondaryContainer"
+                    app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
+                    app:layout_constraintTop_toTopOf="@id/game_icon"
+                    app:layout_constraintBottom_toTopOf="@id/game_icon"
+                    app:layout_constraintStart_toEndOf="@id/game_icon"
+                    app:layout_constraintEnd_toEndOf="@id/game_icon" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/title"
@@ -103,8 +127,8 @@
         android:contentDescription="@string/start"
         android:text="@string/start"
         app:icon="@drawable/ic_play"
-        app:materialThemeOverlay="@style/ThemeOverlay.Material3Expressive.FloatingActionButton.Primary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:materialThemeOverlay="@style/ThemeOverlay.Material3Expressive.FloatingActionButton.Primary" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

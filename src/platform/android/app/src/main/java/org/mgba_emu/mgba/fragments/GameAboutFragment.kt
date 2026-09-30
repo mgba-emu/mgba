@@ -15,6 +15,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -26,6 +27,9 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import coil3.load
+import coil3.request.allowHardware
+import coil3.request.crossfade
+import coil3.request.error
 import coil3.request.fallback
 import com.google.android.material.transition.MaterialContainerTransform
 import kotlinx.coroutines.Dispatchers
@@ -39,8 +43,10 @@ import org.mgba_emu.mgba.dialogs.AlertDialogQueue
 import org.mgba_emu.mgba.model.GameAboutItem
 import org.mgba_emu.mgba.model.GameModel
 import org.mgba_emu.mgba.settings.model.Settings
+import org.mgba_emu.mgba.utils.GameDao
 import org.mgba_emu.mgba.utils.IconMetadataHelper
 import org.mgba_emu.mgba.utils.SaveDataStore
+import org.mgba_emu.mgba.utils.SearchLocationHelper
 import org.mgba_emu.mgba.utils.ViewUtils.updateMargins
 import org.mgba_emu.mgba.viewmodel.MainViewModel
 
@@ -83,8 +89,11 @@ class GameAboutFragment : Fragment(R.layout.fragment_game_about) {
         }
 
         binding.title.text = args.game.title ?: args.game.fileName
-        binding.gameIcon.load(args.game.iconUrl) {
-            fallback(R.mipmap.ic_launcher)
+        (binding.gameIcon as AppCompatImageView).load(args.game.iconUrl) {
+            crossfade(true)
+            allowHardware(false)
+            fallback(R.drawable.mgba)
+            error(R.drawable.mgba)
         }
 
         binding.listProperties.isNestedScrollingEnabled = false
@@ -114,6 +123,10 @@ class GameAboutFragment : Fragment(R.layout.fragment_game_about) {
 
         binding.buttonStart.setOnClickListener {
             GameModel.launchEmulationActivity(requireContext(), args.game)
+        }
+
+        binding.editIcon.setOnClickListener {
+            importIcon.launch(arrayOf("image/png", "image/jpeg", "image/gif", "image/svg+xml"))
         }
 
         loadItems()
@@ -292,5 +305,19 @@ class GameAboutFragment : Fragment(R.layout.fragment_game_about) {
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
+
+    private val importIcon = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { result ->
+        result ?: return@registerForActivityResult
+        (binding.gameIcon as AppCompatImageView).load(result.toString()) {
+            crossfade(true)
+            allowHardware(false)
+            fallback(R.drawable.mgba)
+            error(R.drawable.mgba)
+        }
+
+        SearchLocationHelper.updateIconUrl(args.game.uri.toString(), result.toString())
     }
 }

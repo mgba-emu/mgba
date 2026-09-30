@@ -168,4 +168,10 @@ object SearchLocationHelper {
             gameDao.updateLastPlayed(uri, timestamp)
         }
     }
+
+    fun updateIconUrl(uri: String, iconUrl: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            gameDao.updateIconUrl(uri, iconUrl)
+        }
+    }
 }
