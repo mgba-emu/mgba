@@ -1333,6 +1333,11 @@ void CoreController::updateFastForward() {
 		mCoreConfigGetBoolValue(&m_threadContext.core->config, "mute", &m_threadContext.core->opts.mute);
 		m_threadContext.impl->sync.fpsTarget = m_fpsTarget;
 		setSync(true);
+
+		// flush backed up audio samples
+		mCoreSyncLockAudio(&m_threadContext.impl->sync);
+		mAudioBufferClear(m_threadContext.core->getAudioBuffer(m_threadContext.core));
+		mCoreSyncUnlockAudio(&m_threadContext.impl->sync);
 	}
 
 	m_threadContext.core->reloadConfigOption(m_threadContext.core, NULL, NULL);
