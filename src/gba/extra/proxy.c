@@ -225,7 +225,7 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		}
 		break;
 	case DIRTY_OAM:
-		if (item->address < GBA_SIZE_OAM) {
+		if (item->address < GBA_SIZE_OAM / sizeof(*logger->oam)) {
 			STORE_16LE(item->value, item->address << 1, logger->oam);
 			proxyRenderer->backend->writeOAM(proxyRenderer->backend, item->address);
 		}
