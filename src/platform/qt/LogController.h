@@ -33,6 +33,7 @@ public:
 	mLogFilter* filter() { return &m_filter; }
 
 	static LogController* global();
+	static void installGlobalLogger();
 	static QtMessageHandler installMessageHandler();
 	static QString toString(int level);
 	static int categoryId(const char*);

@@ -7,6 +7,7 @@
 #include "moc_VideoProxy.cpp"
 
 #include "CoreController.h"
+#include "LogController.h"
 
 #include <QThread>
 
@@ -69,12 +70,14 @@ void VideoProxy::setProxiedBackend(VideoBackend* backend) {
 void VideoProxy::processData() {
 	mLogSetThreadLogger(m_logContext);
 	mVideoLoggerRendererRun(&m_logger, false);
+	LogController::installGlobalLogger();
 	m_fromThreadCond.wakeAll();
 }
 
 void VideoProxy::processCommands() {
 	mLogSetThreadLogger(m_logContext);
 	mVideoProxyBackendRun(&m_backend, false);
+	LogController::installGlobalLogger();
 }
 
 void VideoProxy::init() {
@@ -95,6 +98,7 @@ bool VideoProxy::writeData(const void* data, size_t length) {
 			// We're on the main thread
 			mLogSetThreadLogger(m_logContext);
 			mVideoLoggerRendererRun(&m_logger, false);
+			LogController::installGlobalLogger();
 		} else {
 			emit dataAvailable();
 			QMutexLocker locker(&m_mutex);
@@ -122,7 +126,9 @@ bool VideoProxy::readData(void* data, size_t length, bool block) {
 void VideoProxy::postEvent(enum mVideoLoggerEvent event) {
 	if (QThread::currentThread() == thread()) {
 		// We're on the main thread
+		mLogSetThreadLogger(m_logContext);
 		handleEvent(event);
+		LogController::installGlobalLogger();
 	} else {
 		QMetaObject::invokeMethod(this, "handleEvent", Qt::BlockingQueuedConnection, Q_ARG(int, event));
 	}
@@ -130,7 +136,6 @@ void VideoProxy::postEvent(enum mVideoLoggerEvent event) {
 
 void VideoProxy::handleEvent(int event) {
 	QMutexLocker locker(&m_mutex);
-	mLogSetThreadLogger(m_logContext);
 	m_logger.handleEvent(&m_logger, static_cast<enum mVideoLoggerEvent>(event));
 }
 
@@ -149,6 +154,7 @@ void VideoProxy::wait() {
 			// We're on the main thread
 			mLogSetThreadLogger(m_logContext);
 			mVideoLoggerRendererRun(&m_logger, false);
+			LogController::installGlobalLogger();
 		} else {
 			emit dataAvailable();
 			m_toThreadCond.wakeAll();
