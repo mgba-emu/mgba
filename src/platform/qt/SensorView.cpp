@@ -17,10 +17,9 @@
 
 using namespace QGBA;
 
-SensorView::SensorView(InputController* input, QWidget* parent)
+SensorView::SensorView(QPointer<InputController> input, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_input(input)
-	, m_rotation(input->rotationSource())
  {
 	m_ui.setupUi(this);
 
@@ -37,13 +36,15 @@ SensorView::SensorView(InputController* input, QWidget* parent)
 
 	m_timer.setInterval(15);
 	connect(&m_timer, &QTimer::timeout, this, &SensorView::updateSensors);
-	if (!m_rotation || !m_rotation->readTiltX || !m_rotation->readTiltY) {
+
+	mRotationSource* rotation = input->rotationSource();
+	if (!rotation || !rotation->readTiltX || !rotation->readTiltY) {
 		m_ui.tilt->hide();
 	} else {
 		m_timer.start();
 	}
 
-	if (!m_rotation || !m_rotation->readGyroZ) {
+	if (!rotation || !rotation->readGyroZ) {
 		m_ui.gyro->hide();
 	} else {
 		m_timer.start();
@@ -107,10 +108,12 @@ void SensorView::jiggerer(QAbstractButton* button, void (InputDriver::*setter)(i
 
 bool SensorView::event(QEvent* event) {
 	QEvent::Type type = event->type();
-	if (type == QEvent::WindowActivate || type == QEvent::Show) {
-		m_input->stealFocus(this);
-	} else if (type == QEvent::WindowDeactivate || type == QEvent::Hide) {
-		m_input->releaseFocus(this);
+	if (m_input) {
+		if (type == QEvent::WindowActivate || type == QEvent::Show) {
+			m_input->stealFocus(this);
+		} else if (type == QEvent::WindowDeactivate || type == QEvent::Hide) {
+			m_input->releaseFocus(this);
+		}
 	}
 	return QWidget::event(event);
 }
@@ -123,9 +126,11 @@ bool SensorView::eventFilter(QObject*, QEvent* event) {
 			m_button->removeEventFilter(this);
 			m_button->clearFocus();
 			m_button->setChecked(false);
-			InputDriver* sensorDriver = m_input->sensorDriver();
-			if (sensorDriver) {
-				(sensorDriver->*m_setter)(gae->axis());
+			if (m_input) {
+				InputDriver* sensorDriver = m_input->sensorDriver();
+				if (sensorDriver) {
+					(sensorDriver->*m_setter)(gae->axis());
+				}
 			}
 			m_button = nullptr;
 		}
@@ -135,17 +140,21 @@ bool SensorView::eventFilter(QObject*, QEvent* event) {
 }
 
 void SensorView::updateSensors() {
-	if (m_rotation->sample && (!m_controller || m_controller->isPaused())) {
-		m_rotation->sample(m_rotation);
+	if (!m_input) {
+		return;
 	}
-	if (m_rotation->readTiltX && m_rotation->readTiltY) {
-		float x = m_rotation->readTiltX(m_rotation);
-		float y = m_rotation->readTiltY(m_rotation);
+	mRotationSource* rotation = m_input->rotationSource();
+	if (rotation->sample && (!m_controller || m_controller->isPaused())) {
+		rotation->sample(rotation);
+	}
+	if (rotation->readTiltX && rotation->readTiltY) {
+		float x = rotation->readTiltX(rotation);
+		float y = rotation->readTiltY(rotation);
 		m_ui.tiltX->setValue(x / 469762048.0f); // TODO: Document this value (0xE0 << 21)
 		m_ui.tiltY->setValue(y / 469762048.0f);
 	}
-	if (m_rotation->readGyroZ) {
-		m_ui.gyroView->setValue(m_rotation->readGyroZ(m_rotation));
+	if (rotation->readGyroZ) {
+		m_ui.gyroView->setValue(rotation->readGyroZ(rotation));
 	}
 }
 

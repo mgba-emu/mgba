@@ -7,6 +7,7 @@
 
 #include <QTimer>
 #include <QDialog>
+#include <QPointer>
 
 #include <functional>
 #include <memory>
@@ -27,7 +28,7 @@ class SensorView : public QDialog {
 Q_OBJECT
 
 public:
-	SensorView(InputController* input, QWidget* parent = nullptr);
+	SensorView(QPointer<InputController> input, QWidget* parent = nullptr);
 
 	void setController(std::shared_ptr<CoreController>);
 
@@ -47,8 +48,7 @@ private:
 	void (InputDriver::*m_setter)(int);
 
 	std::shared_ptr<CoreController> m_controller;
-	InputController* m_input;
-	mRotationSource* m_rotation;
+	QPointer<InputController> m_input;
 	QTimer m_timer;
 
 	void jiggerer(QAbstractButton*, void (InputDriver::*)(int));
