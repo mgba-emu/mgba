@@ -42,9 +42,9 @@ M_TEST_DEFINE(members) {
 	TEST_PROGRAM("assert(im.width == 1)");
 	TEST_PROGRAM("assert(im.height == 1)");
 	TEST_PROGRAM("assert(im.save)");
-	TEST_PROGRAM("assert(im.save)");
 	TEST_PROGRAM("assert(im.getPixel)");
 	TEST_PROGRAM("assert(im.setPixel)");
+	TEST_PROGRAM("assert(im.encode)");
 
 	mScriptContextDeinit(&context);
 }
@@ -100,6 +100,18 @@ M_TEST_DEFINE(saveLoadRoundTrip) {
 }
 #endif
 
+#ifdef USE_PNG
+M_TEST_DEFINE(encodeBasic) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("im = image.new(1, 1)");
+	TEST_PROGRAM("assert(type(im:encode()) == 'string')");
+	TEST_PROGRAM("assert(#im:encode() >= 8)");
+
+	mScriptContextDeinit(&context);
+}
+#endif
+
 M_TEST_DEFINE(painterBasic) {
 	SETUP_LUA;
 
@@ -121,6 +133,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptImage,
 	cmocka_unit_test(pixelColorRoundTrip),
 #ifdef USE_PNG
 	cmocka_unit_test(saveLoadRoundTrip),
+	cmocka_unit_test(encodeBasic),
 #endif
 	cmocka_unit_test(painterBasic),
 )
