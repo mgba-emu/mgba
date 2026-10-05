@@ -11,25 +11,23 @@
 #include <functional>
 #include <memory>
 
+#include "CorePointer.h"
 #include "ui_SensorView.h"
 
 struct mRotationSource;
 
 namespace QGBA {
 
-class ConfigController;
 class CoreController;
 class GamepadAxisEvent;
 class InputController;
 class InputDriver;
 
-class SensorView : public QDialog {
+class SensorView : public QDialog, public CoreConsumer {
 Q_OBJECT
 
 public:
-	SensorView(InputController* input, QWidget* parent = nullptr);
-
-	void setController(std::shared_ptr<CoreController>);
+	SensorView(CorePointerSource* controller, InputController* input, QWidget* parent = nullptr);
 
 protected:
 	bool eventFilter(QObject*, QEvent* event) override;
@@ -41,12 +39,13 @@ private slots:
 	void luminanceValueChanged(int);
 
 private:
+	void onCoreAttached(std::shared_ptr<CoreController>);
+
 	Ui::SensorView m_ui;
 
 	QAbstractButton* m_button = nullptr;
 	void (InputDriver::*m_setter)(int);
 
-	std::shared_ptr<CoreController> m_controller;
 	InputController* m_input;
 	mRotationSource* m_rotation;
 	QTimer m_timer;
