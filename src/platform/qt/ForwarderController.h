@@ -34,6 +34,7 @@ public:
 	void clearBaseFilename() { m_baseFilename = QString(); }
 	QString baseFilename() const { return m_baseFilename; }
 
+	void setChannel(const QString& channel) { m_channel = channel; }
 	QString channel() const { return m_channel; }
 	bool inProgress() const { return m_inProgress; }
 

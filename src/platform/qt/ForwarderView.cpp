@@ -98,6 +98,14 @@ void ForwarderView::build() {
 	if (m_ui.baseType->currentIndex() == 2) {
 		m_controller.setBaseFilename(m_ui.baseFilename->text());
 	} else {
+		switch (m_ui.baseType->currentIndex()) {
+		case 0:
+			m_controller.setChannel(QLatin1String("stable"));
+			break;
+		case 1:
+			m_controller.setChannel(QLatin1String("dev"));
+			break;
+		}
 		m_controller.clearBaseFilename();
 	}
 	m_controller.startBuild(m_ui.outputFilename->text());
@@ -127,6 +135,7 @@ void ForwarderView::validate() {
 		valid = false;
 	}
 	if (m_ui.baseType->currentIndex() < 1) {
+		// TODO: remove this before cutting release
 		valid = false;
 	}
 	if (m_ui.baseType->currentIndex() == 2) {
