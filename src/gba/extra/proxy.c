@@ -216,7 +216,9 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 	struct GBAVideoProxyRenderer* proxyRenderer = logger->context;
 	switch (item->type) {
 	case DIRTY_REGISTER:
-		proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item->address, item->value);
+		if (item->address <= GBA_REG_BLDY) {
+			proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item->address, item->value);
+		}
 		break;
 	case DIRTY_PALETTE:
 		if (item->address < GBA_SIZE_PALETTE_RAM) {
