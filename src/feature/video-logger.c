@@ -1004,7 +1004,9 @@ static ssize_t mVideoLoggerReadChannel(struct mVideoLogChannel* channel, void* d
 		if (size <= 0) {
 			return size;
 		}
-		data = (uint8_t*) data + size;
+		if (data) {
+			data = (uint8_t*) data + size;
+		}
 		length -= size;
 	}
 	if (channel->injecting || !_fillBuffer(context, channelId, BUFFER_BASE_SIZE)) {
