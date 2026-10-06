@@ -1513,12 +1513,11 @@ static void _GBVLPReset(struct mCore* core) {
 static bool _GBVLPLoadROM(struct mCore* core, struct VFile* vf) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->logContext = mVideoLogContextCreate(NULL);
-	if (!mVideoLogContextLoad(gbcore->logContext, vf)) {
+	if (!mVideoLogContextLoad(gbcore->logContext, vf) || !mVideoLoggerAttachChannel(gbcore->proxyRenderer.logger, gbcore->logContext, 0)) {
 		mVideoLogContextDestroy(core, gbcore->logContext, false);
 		gbcore->logContext = NULL;
 		return false;
 	}
-	mVideoLoggerAttachChannel(gbcore->proxyRenderer.logger, gbcore->logContext, 0);
 	return true;
 }
 

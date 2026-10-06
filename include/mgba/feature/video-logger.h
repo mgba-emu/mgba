@@ -114,7 +114,7 @@ bool mVideoLoggerRendererRun(struct mVideoLogger* logger, bool block);
 bool mVideoLoggerRendererRunInjected(struct mVideoLogger* logger);
 
 struct mVideoLogContext;
-void mVideoLoggerAttachChannel(struct mVideoLogger* logger, struct mVideoLogContext* context, size_t channelId);
+bool mVideoLoggerAttachChannel(struct mVideoLogger* logger, struct mVideoLogContext* context, size_t channelId);
 
 struct mCore;
 struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core);
