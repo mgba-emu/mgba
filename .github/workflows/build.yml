@@ -20,11 +20,9 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-mgba-${{ hashFiles(
-           '**/*.gradle',
            '**/*.gradle.kts',
            '**/gradle-wrapper.properties',
            '**/gradle.properties',
-           '**/settings.gradle',
            '**/settings.gradle.kts',
            '**/libs.versions.toml'
            ) }}
