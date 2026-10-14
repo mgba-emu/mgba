@@ -144,6 +144,7 @@
         android:text="@string/start"
         app:icon="@drawable/ic_play"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:materialThemeOverlay="@style/ThemeOverlay.Material3Expressive.FloatingActionButton.Primary" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
