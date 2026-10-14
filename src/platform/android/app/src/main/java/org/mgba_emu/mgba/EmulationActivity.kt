@@ -21,6 +21,7 @@ import android.view.View
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.graphics.Insets
@@ -150,6 +151,17 @@ class EmulationActivity : AppCompatActivity() {
                 else -> true
             }
         }
+
+        onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    binding.drawerLayout.apply {
+                        if (isOpen) close() else open()
+                    }
+                }
+            }
+        )
 
         binding.fps.isVisible = Settings.fpsCounter.value
         binding.fps.applySafePadding()
