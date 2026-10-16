@@ -534,7 +534,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsole.ui" line="27"/>
         <source>Break</source>
-        <translation type="unfinished"></translation>
+        <translation>หยุดการทำงาน</translation>
     </message>
 </context>
 <context>
