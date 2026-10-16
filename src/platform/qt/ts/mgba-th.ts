@@ -62,7 +62,7 @@
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;เว็บไซต์&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;ฟอรัม / สนับสนุน&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;บริจาค&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;ซอร์สโค้ด&lt;/a&gt;</translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt; เว็บไซต์&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;ฟอรัม / ฝ่ายสนับสนุน&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;บริจาค&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
@@ -764,107 +764,107 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="84"/>
         <source>Specific file</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์เฉพาะ</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="95"/>
         <source>Base file:</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์หลัก:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="135"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>ระบบ</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="141"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="151"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="174"/>
         <source>Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>การนำเสนอ</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="182"/>
         <source>Title:</source>
-        <translation type="unfinished"></translation>
+        <translation>ชื่อ:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="195"/>
         <source>Images:</source>
-        <translation type="unfinished"></translation>
+        <translation>ภาพ:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="215"/>
         <source>Use default image</source>
-        <translation type="unfinished"></translation>
+        <translation>ใช้ภาพเริ่มต้น</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="328"/>
         <source>Preferred size:</source>
-        <translation type="unfinished"></translation>
+        <translation>ขนาดที่ต้องการ:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="395"/>
         <source>Select image file</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์ภาพ</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="23"/>
         <source>Select ROM file</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์เกม</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="24"/>
         <source>Select output filename</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกชื่อไฟล์ Output</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="25"/>
         <source>Select base file</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์ฐาน</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="37"/>
         <source>Build finished</source>
-        <translation type="unfinished"></translation>
+        <translation>สร้างสำเร็จ</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="38"/>
         <source>Forwarder finished building</source>
-        <translation type="unfinished"></translation>
+        <translation>สร้างฟอร์เวิร์ดเดอร์สำเร็จ</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
         <source>Build failed</source>
-        <translation type="unfinished"></translation>
+        <translation>สร้างไม่สำเร็จ</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="46"/>
         <source>Failed to build forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>สร้างฟอร์เวิร์ดเกอร์ไม่สำเร็จ</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="177"/>
         <source>%1 installable package (*.%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 แพ็กเกจที่ติดตั้งได้ (*.%2)</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="193"/>
         <source>Select an image</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์ภาพ</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="193"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์ภาพ (*.png *.jpg *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -872,87 +872,87 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.ui" line="14"/>
         <source>Inspect frame</source>
-        <translation type="unfinished"></translation>
+        <translation>ตรวจสอบเฟรม</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="41"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>การขยาย</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="50"/>
         <source>Freeze frame</source>
-        <translation type="unfinished"></translation>
+        <translation>แช่ภาพ</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="84"/>
         <source>Backdrop color</source>
-        <translation type="unfinished"></translation>
+        <translation>สีพื้นหลัง</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="132"/>
         <source>Disable scanline effects</source>
-        <translation type="unfinished"></translation>
+        <translation>ปิดใช้งานเอฟเฟกต์เส้นสแกน</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="145"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออก</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="152"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>รีเซ็ต</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="592"/>
         <source>Export frame</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออกภาพ</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="593"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="623"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่มี</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="625"/>
         <source>Background</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="628"/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>หน้าต่าง</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="631"/>
         <source>Objwin</source>
-        <translation type="unfinished"></translation>
+        <translation>Objwin</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="636"/>
         <source>Sprite</source>
-        <translation type="unfinished"></translation>
+        <translation>สไปรท์</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="639"/>
         <source>Backdrop</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="642"/>
         <source>Frame</source>
-        <translation type="unfinished"></translation>
+        <translation>เฟรม</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="648"/>
         <source>%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -960,7 +960,7 @@ Download size: %3</source>
     <message>
         <location filename="../GBAApp.cpp" line="84"/>
         <source>Enable Discord Rich Presence</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานสถานะบน Discord</translation>
     </message>
 </context>
 <context>
@@ -968,22 +968,22 @@ Download size: %3</source>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="70"/>
         <source>Clear Button</source>
-        <translation type="unfinished"></translation>
+        <translation>ล้างข้อมูลปุ่ม</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="82"/>
         <source>Clear Analog</source>
-        <translation type="unfinished"></translation>
+        <translation>ล้างข้อมูลอนาล็อก</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="93"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>รีเฟรช</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="103"/>
         <source>Set all</source>
-        <translation type="unfinished"></translation>
+        <translation>ตั้งค่าทั้งหมด</translation>
     </message>
 </context>
 <context>
@@ -991,62 +991,62 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="32"/>
         <source>Server settings</source>
-        <translation type="unfinished"></translation>
+        <translation>ตั้งค่าเชิร์ฟเวอร์</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="38"/>
         <source>Local port</source>
-        <translation type="unfinished"></translation>
+        <translation>พอร์ตในเครื่อง</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="40"/>
         <source>Bind address</source>
-        <translation type="unfinished"></translation>
+        <translation>ผูกที่อยู่</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="53"/>
         <source>Write watchpoints behavior</source>
-        <translation type="unfinished"></translation>
+        <translation>พฤติกรรมจุดเฝ้าระวังการเขียน</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="64"/>
         <source>Standard GDB</source>
-        <translation type="unfinished"></translation>
+        <translation>GDB ทั่วไป</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="69"/>
         <source>Internal change detection</source>
-        <translation type="unfinished"></translation>
+        <translation>การตรวจจับการเปลี่ยนแปลงภายใน</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="73"/>
         <source>Break on all writes</source>
-        <translation type="unfinished"></translation>
+        <translation>หยุดทำงานเมื่อมีการเขียนข้อมูลทั้งหมด</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="83"/>
         <source>Break</source>
-        <translation type="unfinished"></translation>
+        <translation>พัก</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="125"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>หยุด</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="138"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>เริ่ม</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="146"/>
         <source>Crash</source>
-        <translation type="unfinished"></translation>
+        <translation>โปรแกรมหยุดทำงาน</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="146"/>
         <source>Could not start GDB server</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถเริ่มเซิร์ฟเวอร์ GDB ได้</translation>
     </message>
 </context>
 <context>
@@ -1054,62 +1054,62 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.ui" line="14"/>
         <source>Record GIF/WebP/APNG</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึก GIF/WebP/APNG</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="30"/>
         <source>Loop</source>
-        <translation type="unfinished"></translation>
+        <translation>วนซ้ำ</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="51"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>เริ่ม</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="67"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>หยุด</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="93"/>
         <source>Select File</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="112"/>
         <source>APNG</source>
-        <translation type="unfinished"></translation>
+        <translation>APNG</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="122"/>
         <source>GIF</source>
-        <translation type="unfinished"></translation>
+        <translation>GIF</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="135"/>
         <source>WebP</source>
-        <translation type="unfinished"></translation>
+        <translation>WebP</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="145"/>
         <source>Frameskip</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้ามเฟรม</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="64"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดไฟล์ส่งออกล้มเหลว: %1</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="91"/>
         <source>Select output file</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์ส่งออก</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="91"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
-        <translation type="unfinished"></translation>
+        <translation>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</translation>
     </message>
 </context>
 <context>
@@ -1118,77 +1118,77 @@ Download size: %3</source>
         <location filename="../GameBoy.cpp" line="62"/>
         <location filename="../GameBoy.cpp" line="81"/>
         <source>Autodetect</source>
-        <translation type="unfinished"></translation>
+        <translation>ตรวจจับอัตโนมัติ</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="63"/>
         <source>Game Boy (DMG)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy (DMG)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="64"/>
         <source>Game Boy Pocket (MGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Pocket (MGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="65"/>
         <source>Super Game Boy (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="66"/>
         <source>Super Game Boy 2 (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy 2 (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="67"/>
         <source>Game Boy Color (CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Color (CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="68"/>
         <source>Game Boy Advance (AGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance (AGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="69"/>
         <source>Super Game Boy Color (SGB + CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy Color (SGB + CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="82"/>
         <source>ROM Only</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์เกม เท่านั้น</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
         <source>%1 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
         <source>%1 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + สั่น</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>%1 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (เอี่ยง)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
         <source>%1 (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (เก่า 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="99"/>
         <source>%1 (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (เก่า 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="100"/>
         <source>%1 (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (ใหม่)</translation>
     </message>
 </context>
 <context>
@@ -1196,164 +1196,164 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.ui" line="14"/>
         <source>I/O Viewer</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวดู I/O</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="26"/>
         <source>0x0000</source>
-        <translation type="unfinished"></translation>
+        <translation>0x0000</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="367"/>
         <location filename="../IOViewer.cpp" line="871"/>
         <location filename="../IOViewer.cpp" line="884"/>
         <source>B</source>
-        <translation type="unfinished"></translation>
+        <translation>B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="40"/>
         <source>Background mode</source>
-        <translation type="unfinished"></translation>
+        <translation>โหมดพื้นหลัง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="41"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation type="unfinished"></translation>
+        <translation>โหมด 0: 4 เลเยอร์ไทล์</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="42"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation type="unfinished"></translation>
+        <translation>โหมด 1: 2 เลเยอร์ไทล์ + 1 เลเยอร์ไทล์ที่หมุน/ปรับขนาดได้</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="43"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode 2: 2 เลเยอร์ไทย์ที่หมุน/ปรับขนาดได้</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="44"/>
         <source>Mode 3: Full 15-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation>โหมด 3: บิตแมป 15-บิตเต็ม</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="45"/>
         <source>Mode 4: Full 8-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation>โหมด 4:บิตแมป 8-บิตเต็ม</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="46"/>
         <source>Mode 5: Small 15-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation>โหมด 5:บิทแมป 15-บิตขนาดเล็ก</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="50"/>
         <source>CGB Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>โหมด CBG</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="51"/>
         <source>Frame select</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือก เฟรม</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="52"/>
         <source>Unlocked HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>ปลดล็อก HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="53"/>
         <source>Linear OBJ tile mapping</source>
-        <translation type="unfinished"></translation>
+        <translation>การแมปไทล์ OBJ แบบเชิงเส้น</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="54"/>
         <source>Force blank screen</source>
-        <translation type="unfinished"></translation>
+        <translation>บังคับแสดงหน้าจอว่าง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="55"/>
         <source>Enable background 0</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="56"/>
         <source>Enable background 1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 2ฃ1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="57"/>
         <source>Enable background 2</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="58"/>
         <source>Enable background 3</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="59"/>
         <source>Enable OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="60"/>
         <source>Enable Window 0</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานหน้าต่าง 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="61"/>
         <source>Enable Window 1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานหน้าต่าง 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="62"/>
         <source>Enable OBJ Window</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานหน้าต่าง OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="66"/>
         <source>Swap green components</source>
-        <translation type="unfinished"></translation>
+        <translation>สลับส่วนประกอบสีเขียว</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="70"/>
         <source>Currently in VBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>ขณะนี้อยู่ใน VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="71"/>
         <source>Currently in HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>ขณะนี้อยู่ใน HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="72"/>
         <source>Currently in VCounter</source>
-        <translation type="unfinished"></translation>
+        <translation>ขณะนี้อยู่ใน VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="73"/>
         <source>Enable VBlank IRQ generation</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานการสร้าง VBlank IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="74"/>
         <source>Enable HBlank IRQ generation</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานการสร้าง HBlank IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="75"/>
         <source>Enable VCounter IRQ generation</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานการสร้าง VCounter IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="76"/>
         <source>VCounter scanline</source>
-        <translation type="unfinished"></translation>
+        <translation>เส้นสแกน VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="80"/>
         <source>Current scanline</source>
-        <translation type="unfinished"></translation>
+        <translation>เส้นสแกนปัจจุบัน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="84"/>
@@ -1361,7 +1361,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="102"/>
         <location filename="../IOViewer.cpp" line="112"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>ลำดับความสำคัญ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="85"/>
@@ -1369,7 +1369,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="103"/>
         <location filename="../IOViewer.cpp" line="113"/>
         <source>Tile data base (* 16kB)</source>
-        <translation type="unfinished"></translation>
+        <translation>ฐานข้อมูลไทล์ (* 16kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="86"/>
@@ -1377,7 +1377,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="104"/>
         <location filename="../IOViewer.cpp" line="114"/>
         <source>Enable mosaic</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานโมเสก</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="87"/>
@@ -1385,7 +1385,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="105"/>
         <location filename="../IOViewer.cpp" line="115"/>
         <source>Enable 256-color</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน 256 สี</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="88"/>
@@ -1393,7 +1393,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="106"/>
         <location filename="../IOViewer.cpp" line="116"/>
         <source>Tile map base (* 2kB)</source>
-        <translation type="unfinished"></translation>
+        <translation>ฐานข้อมูลแมปไทล์ (* 2 kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="89"/>
@@ -1401,13 +1401,13 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="108"/>
         <location filename="../IOViewer.cpp" line="118"/>
         <source>Background dimensions</source>
-        <translation type="unfinished"></translation>
+        <translation>ขนาดพื้นหลัง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="107"/>
         <location filename="../IOViewer.cpp" line="117"/>
         <source>Overflow wraps</source>
-        <translation type="unfinished"></translation>
+        <translation>การตัดคำเพื่อขึ้นบรรทัดใหม่</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="122"/>
@@ -1417,7 +1417,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1365"/>
         <location filename="../IOViewer.cpp" line="1406"/>
         <source>Horizontal offset</source>
-        <translation type="unfinished"></translation>
+        <translation>ระยะชดเชยแนวนอน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="126"/>
@@ -1427,7 +1427,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1361"/>
         <location filename="../IOViewer.cpp" line="1402"/>
         <source>Vertical offset</source>
-        <translation type="unfinished"></translation>
+        <translation>ระยะชดเชยแนวตั้ง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="154"/>
@@ -1443,7 +1443,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="212"/>
         <location filename="../IOViewer.cpp" line="221"/>
         <source>Fractional part</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่วนเศษ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="155"/>
@@ -1455,7 +1455,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="203"/>
         <location filename="../IOViewer.cpp" line="208"/>
         <source>Integer part</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่วนจำนวนเต็ม</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="175"/>
@@ -1463,7 +1463,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="213"/>
         <location filename="../IOViewer.cpp" line="222"/>
         <source>Integer part (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่วนจำนวนเต็ม (ต่ำ)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="179"/>
@@ -1471,289 +1471,289 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="217"/>
         <location filename="../IOViewer.cpp" line="226"/>
         <source>Integer part (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่วนจำนวนเต็ม (สูง)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="230"/>
         <location filename="../IOViewer.cpp" line="235"/>
         <source>End x</source>
-        <translation type="unfinished"></translation>
+        <translation>จัดสิ้นสุด x</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="231"/>
         <location filename="../IOViewer.cpp" line="236"/>
         <source>Start x</source>
-        <translation type="unfinished"></translation>
+        <translation>จุดเริ่มต้น x</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="240"/>
         <location filename="../IOViewer.cpp" line="245"/>
         <source>End y</source>
-        <translation type="unfinished"></translation>
+        <translation>จุดสิ้นสุด y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="241"/>
         <location filename="../IOViewer.cpp" line="246"/>
         <source>Start y</source>
-        <translation type="unfinished"></translation>
+        <translation>จุดเริ่มต้น x</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="250"/>
         <source>Window 0 enable BG 0</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 0 หน้าต่าง 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="251"/>
         <source>Window 0 enable BG 1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 1 หน้าต่าง 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="252"/>
         <source>Window 0 enable BG 2</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 2 หน้าต่าง 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="253"/>
         <source>Window 0 enable BG 3</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 3 หน้าต่าง 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="254"/>
         <source>Window 0 enable OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน OBJ หน้าต่าง 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="255"/>
         <source>Window 0 enable blend</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานผสมสี หน้าต่าง 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="256"/>
         <source>Window 1 enable BG 0</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 0 หน้าต่าง 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="257"/>
         <source>Window 1 enable BG 1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 1 หน้าต่าง 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="258"/>
         <source>Window 1 enable BG 2</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 2 หน้าต่าง 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="259"/>
         <source>Window 1 enable BG 3</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 3 หน้าต่าง 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="260"/>
         <source>Window 1 enable OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน OBJ หน้าต่าง 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="261"/>
         <source>Window 1 enable blend</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพผสมสี หน้าต่าง 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="265"/>
         <source>Outside window enable BG 0</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 0 นอกหน้าต่าง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="266"/>
         <source>Outside window enable BG 1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 1 นอกหน้าต่าง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="267"/>
         <source>Outside window enable BG 2</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 2 นอกหน้าต่าง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="268"/>
         <source>Outside window enable BG 3</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 3 นอกหน้าต่าง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="269"/>
         <source>Outside window enable OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน OBJ นอกหน้าต่าง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="270"/>
         <source>Outside window enable blend</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพผสมสี นอกหน้าต่าง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="271"/>
         <source>OBJ window enable BG 0</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 0 หน้าต่าง OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="272"/>
         <source>OBJ window enable BG 1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 1 หน้าต่าง OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="273"/>
         <source>OBJ window enable BG 2</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 2 หน้าต่าง OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="274"/>
         <source>OBJ window enable BG 3</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง 3 หน้าต่าง OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="275"/>
         <source>OBJ window enable OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน OBJ หน้าต่าง OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="276"/>
         <source>OBJ window enable blend</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานผสมสี หน้าต่าง OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="281"/>
         <source>Background mosaic size vertical</source>
-        <translation type="unfinished"></translation>
+        <translation>ขนาดโมเสกพื้นหลังในแนวตั้ง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="280"/>
         <source>Background mosaic size horizontal</source>
-        <translation type="unfinished"></translation>
+        <translation>ขนาดโมเสกพื้นหลังในแนวนอน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="283"/>
         <source>Object mosaic size vertical</source>
-        <translation type="unfinished"></translation>
+        <translation>ขนาดโมเสกวัตถุในแนวตั้ง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="282"/>
         <source>Object mosaic size horizontal</source>
-        <translation type="unfinished"></translation>
+        <translation>ขนาดโมเสกวัตถุในแนวนอน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="289"/>
         <source>BG 0 target 1</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง 0 เป้าหมาย 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="290"/>
         <source>BG 1 target 1</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง 1 เป้าหมาย 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="291"/>
         <source>BG 2 target 1</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง 2 เป้าหมาย 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="292"/>
         <source>BG 3 target 1</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง 3 เป้าหมาย 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="293"/>
         <source>OBJ target 1</source>
-        <translation type="unfinished"></translation>
+        <translation>OBJ เป้าหมาย 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="294"/>
         <source>Backdrop target 1</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง เป้าหมาย 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="295"/>
         <source>Blend mode</source>
-        <translation type="unfinished"></translation>
+        <translation>โหมดผสมสี</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="296"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>ปิดใช้งาน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="297"/>
         <source>Additive blending</source>
-        <translation type="unfinished"></translation>
+        <translation>ผสมสีแบบบวก</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="298"/>
         <source>Brighten</source>
-        <translation type="unfinished"></translation>
+        <translation>สว่างขึ้น</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="299"/>
         <source>Darken</source>
-        <translation type="unfinished"></translation>
+        <translation>มืดขึ้น</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="301"/>
         <source>BG 0 target 2</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง 0 เป้าหมาย 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="302"/>
         <source>BG 1 target 2</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง 1 เป้าหมาย 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="303"/>
         <source>BG 2 target 2</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง 2 เป้าหมาย 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="304"/>
         <source>BG 3 target 2</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง 3 เป้าหมาย 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="305"/>
         <source>OBJ target 2</source>
-        <translation type="unfinished"></translation>
+        <translation>OBJ เป้าหมาย 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="306"/>
         <source>Backdrop target 2</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหล้ง เป้าหมาย 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="310"/>
         <source>Blend A (target 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>ผสม A (เป้าหมาย 1)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="311"/>
         <source>Blend B (target 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>ผสม B (เป้าหมาย 2)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="315"/>
         <source>Blend Y</source>
-        <translation type="unfinished"></translation>
+        <translation>ผสม Y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="329"/>
         <location filename="../IOViewer.cpp" line="1100"/>
         <source>Sweep shifts</source>
-        <translation type="unfinished"></translation>
+        <translation>การเลื่อนสวีป</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="330"/>
         <location filename="../IOViewer.cpp" line="1101"/>
         <source>Sweep subtract</source>
-        <translation type="unfinished"></translation>
+        <translation>การลบสวีป</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="331"/>
         <location filename="../IOViewer.cpp" line="1102"/>
         <source>Sweep time (in 1/128s)</source>
-        <translation type="unfinished"></translation>
+        <translation>เวลาสวีป (1/128 วินาที)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="335"/>
@@ -1765,7 +1765,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1154"/>
         <location filename="../IOViewer.cpp" line="1179"/>
         <source>Sound length</source>
-        <translation type="unfinished"></translation>
+        <translation>ความยาวเสียง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="336"/>
@@ -1773,7 +1773,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1107"/>
         <location filename="../IOViewer.cpp" line="1130"/>
         <source>Duty cycle</source>
-        <translation type="unfinished"></translation>
+        <translation>รอบการทำงาน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="337"/>
@@ -1783,7 +1783,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1134"/>
         <location filename="../IOViewer.cpp" line="1183"/>
         <source>Envelope step time</source>
-        <translation type="unfinished"></translation>
+        <translation>เวลาขั้นเอ็นเวโลป</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="338"/>
@@ -1793,7 +1793,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1135"/>
         <location filename="../IOViewer.cpp" line="1184"/>
         <source>Envelope increase</source>
-        <translation type="unfinished"></translation>
+        <translation>เพิ่มเอ็นเวโลป</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="339"/>
@@ -1803,14 +1803,14 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1136"/>
         <location filename="../IOViewer.cpp" line="1185"/>
         <source>Initial volume</source>
-        <translation type="unfinished"></translation>
+        <translation>ระดับเสียงเริ่มต้น</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="343"/>
         <location filename="../IOViewer.cpp" line="361"/>
         <location filename="../IOViewer.cpp" line="389"/>
         <source>Sound frequency</source>
-        <translation type="unfinished"></translation>
+        <translation>ความถี่เสียง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="344"/>
@@ -1822,7 +1822,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1172"/>
         <location filename="../IOViewer.cpp" line="1198"/>
         <source>Timed</source>
-        <translation type="unfinished"></translation>
+        <translation>กำหนดเวลา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="345"/>
@@ -1834,56 +1834,56 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1173"/>
         <location filename="../IOViewer.cpp" line="1199"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>รีเซ็ต</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="369"/>
         <source>Double-size wave table</source>
-        <translation type="unfinished"></translation>
+        <translation>ตารางรูปคลื่นขนาดสองเท่า</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="370"/>
         <source>Active wave table</source>
-        <translation type="unfinished"></translation>
+        <translation>ตารางรูปคลื่นที่ใช้งานอยู่</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="371"/>
         <location filename="../IOViewer.cpp" line="1150"/>
         <source>Enable channel 3</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานช่องที่ 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="376"/>
         <location filename="../IOViewer.cpp" line="1158"/>
         <source>Volume</source>
-        <translation type="unfinished"></translation>
+        <translation>ระดับเสียง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="377"/>
         <location filename="../IOViewer.cpp" line="1159"/>
         <source>0%</source>
-        <translation type="unfinished"></translation>
+        <translation>0%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="378"/>
         <location filename="../IOViewer.cpp" line="435"/>
         <location filename="../IOViewer.cpp" line="1160"/>
         <source>100%</source>
-        <translation type="unfinished"></translation>
+        <translation>100%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="379"/>
         <location filename="../IOViewer.cpp" line="434"/>
         <location filename="../IOViewer.cpp" line="1161"/>
         <source>50%</source>
-        <translation type="unfinished"></translation>
+        <translation>50%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="380"/>
         <location filename="../IOViewer.cpp" line="433"/>
         <location filename="../IOViewer.cpp" line="1162"/>
         <source>25%</source>
-        <translation type="unfinished"></translation>
+        <translation>25%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="381"/>
@@ -1891,131 +1891,131 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="383"/>
         <location filename="../IOViewer.cpp" line="384"/>
         <source>75%</source>
-        <translation type="unfinished"></translation>
+        <translation>75%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="406"/>
         <location filename="../IOViewer.cpp" line="1189"/>
         <source>Clock divider</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวหารสัญญาณนาฬิกา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="407"/>
         <location filename="../IOViewer.cpp" line="1190"/>
         <source>Register stages</source>
-        <translation type="unfinished"></translation>
+        <translation>สเตจของเรจิสเตอร์</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="408"/>
         <location filename="../IOViewer.cpp" line="1191"/>
         <source>15</source>
-        <translation type="unfinished"></translation>
+        <translation>15</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="409"/>
         <location filename="../IOViewer.cpp" line="1192"/>
         <source>7</source>
-        <translation type="unfinished"></translation>
+        <translation>7</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="411"/>
         <location filename="../IOViewer.cpp" line="1194"/>
         <source>Shifter frequency</source>
-        <translation type="unfinished"></translation>
+        <translation>ความถี่ชิฟเตอร์</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="419"/>
         <source>PSG volume right</source>
-        <translation type="unfinished"></translation>
+        <translation>ระดับเสียง PSG ขวา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="420"/>
         <source>PSG volume left</source>
-        <translation type="unfinished"></translation>
+        <translation>ระดับเสียง PSG ซ้าย</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="421"/>
         <location filename="../IOViewer.cpp" line="1210"/>
         <source>Enable channel 1 right</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน ช่อง 1 ขวา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="422"/>
         <location filename="../IOViewer.cpp" line="1211"/>
         <source>Enable channel 2 right</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน ช่อง 2 ขวา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="423"/>
         <location filename="../IOViewer.cpp" line="1212"/>
         <source>Enable channel 3 right</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน ช่อง 3 ขวา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="424"/>
         <location filename="../IOViewer.cpp" line="1213"/>
         <source>Enable channel 4 right</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน ช่อง 4 ขวา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="425"/>
         <location filename="../IOViewer.cpp" line="1214"/>
         <source>Enable channel 1 left</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน ช่อง 1 ซ้าย</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="426"/>
         <location filename="../IOViewer.cpp" line="1215"/>
         <source>Enable channel 2 left</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน ช่อง 2 ซ้าย</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="427"/>
         <location filename="../IOViewer.cpp" line="1216"/>
         <source>Enable channel 3 left</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน ช่อง 3 ซ้าย</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="428"/>
         <location filename="../IOViewer.cpp" line="1217"/>
         <source>Enable channel 4 left</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน ช่อง 4 ซ้าย</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="432"/>
         <source>PSG master volume</source>
-        <translation type="unfinished"></translation>
+        <translation>ระดับเสียงหลัก PSG</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="438"/>
         <source>Loud channel A</source>
-        <translation type="unfinished"></translation>
+        <translation>ช่อง A เสียงดัง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="439"/>
         <source>Loud channel B</source>
-        <translation type="unfinished"></translation>
+        <translation>ช่อง B เสียงดัง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="440"/>
         <source>Enable channel A right</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน ช่อง A ขวา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="441"/>
         <source>Enable channel A left</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน ช่อง A ซ้าย</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="442"/>
         <source>Channel A timer</source>
-        <translation type="unfinished"></translation>
+        <translation>จับเวลา ช่อง A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="443"/>
         <location filename="../IOViewer.cpp" line="450"/>
         <source>0</source>
-        <translation type="unfinished"></translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="444"/>
@@ -2028,72 +2028,72 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1003"/>
         <location filename="../IOViewer.cpp" line="1013"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="446"/>
         <source>Channel A reset</source>
-        <translation type="unfinished"></translation>
+        <translation>รีเซ็ต ช่อง A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="447"/>
         <source>Enable channel B right</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน ช่อง B ขวา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="448"/>
         <source>Enable channel B left</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน ช่อง B ซ้าย</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="449"/>
         <source>Channel B timer</source>
-        <translation type="unfinished"></translation>
+        <translation>ขับเวลา ช่อง B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="453"/>
         <source>Channel B reset</source>
-        <translation type="unfinished"></translation>
+        <translation>รีเซ็ต ช่อง B ขวา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="457"/>
         <location filename="../IOViewer.cpp" line="1221"/>
         <source>Active channel 1</source>
-        <translation type="unfinished"></translation>
+        <translation>ช่อง 1 ทำงานอยู่</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="458"/>
         <location filename="../IOViewer.cpp" line="1222"/>
         <source>Active channel 2</source>
-        <translation type="unfinished"></translation>
+        <translation>ช่อง 2 ทำงานอยู่</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="459"/>
         <location filename="../IOViewer.cpp" line="1223"/>
         <source>Active channel 3</source>
-        <translation type="unfinished"></translation>
+        <translation>ช่อง 3 ทำงานอยู่</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="460"/>
         <location filename="../IOViewer.cpp" line="1224"/>
         <source>Active channel 4</source>
-        <translation type="unfinished"></translation>
+        <translation>ช่อง 4 ทำงานอยู่</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="461"/>
         <location filename="../IOViewer.cpp" line="1225"/>
         <source>Enable audio</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน เสียง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="467"/>
         <source>Bias</source>
-        <translation type="unfinished"></translation>
+        <translation>ไบแอส</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="468"/>
         <source>Resolution</source>
-        <translation type="unfinished"></translation>
+        <translation>ขนาดภาพ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="478"/>
@@ -2169,7 +2169,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1322"/>
         <location filename="../IOViewer.cpp" line="1323"/>
         <source>Sample</source>
-        <translation type="unfinished"></translation>
+        <translation>แซมเปิล</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="562"/>
@@ -2181,7 +2181,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="697"/>
         <location filename="../IOViewer.cpp" line="705"/>
         <source>Address (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>ที่อยู่ (ต่ำ)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="566"/>
@@ -2193,53 +2193,53 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="701"/>
         <location filename="../IOViewer.cpp" line="709"/>
         <source>Address (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>ที่อยู่ (สูง)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1117"/>
         <location filename="../IOViewer.cpp" line="1140"/>
         <location filename="../IOViewer.cpp" line="1167"/>
         <source>Sound frequency (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>ความถี่เสียง (ต่ำ)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1121"/>
         <location filename="../IOViewer.cpp" line="1144"/>
         <location filename="../IOViewer.cpp" line="1171"/>
         <source>Sound frequency (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>ความถี่เสียง (สูง)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1425"/>
         <source>Source (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>ที่มา (สูง)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1429"/>
         <source>Source (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>ที่มา (ต่ำ)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1433"/>
         <source>Destination (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>เป้าหมาย (สูง)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1437"/>
         <source>Destination (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>เป้าหมาย (ต่ำ)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1500"/>
         <location filename="../IOViewer.cpp" line="1512"/>
         <source>Green (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>เขียว (ต่ำ)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1501"/>
         <location filename="../IOViewer.cpp" line="1513"/>
         <source>Green (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>เขียว (สูง)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="578"/>
@@ -2247,7 +2247,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="668"/>
         <location filename="../IOViewer.cpp" line="713"/>
         <source>Word count</source>
-        <translation type="unfinished"></translation>
+        <translation>จำนวนคำ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="582"/>
@@ -2255,7 +2255,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="672"/>
         <location filename="../IOViewer.cpp" line="717"/>
         <source>Destination offset</source>
-        <translation type="unfinished"></translation>
+        <translation>คลาดเคลื่อนปลายทาง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="583"/>
@@ -2267,7 +2267,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="718"/>
         <location filename="../IOViewer.cpp" line="724"/>
         <source>Increment</source>
-        <translation type="unfinished"></translation>
+        <translation>เพิ่มขึ้น</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="584"/>
@@ -2279,7 +2279,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="719"/>
         <location filename="../IOViewer.cpp" line="725"/>
         <source>Decrement</source>
-        <translation type="unfinished"></translation>
+        <translation>ลดลง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="585"/>
@@ -2291,7 +2291,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="720"/>
         <location filename="../IOViewer.cpp" line="726"/>
         <source>Fixed</source>
-        <translation type="unfinished"></translation>
+        <translation>คงที่</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="586"/>
@@ -2299,7 +2299,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="676"/>
         <location filename="../IOViewer.cpp" line="721"/>
         <source>Increment and reload</source>
-        <translation type="unfinished"></translation>
+        <translation>เพิ่มขึ้น และ รีโหลด</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="588"/>
@@ -2307,7 +2307,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="678"/>
         <location filename="../IOViewer.cpp" line="723"/>
         <source>Source offset</source>
-        <translation type="unfinished"></translation>
+        <translation>ความคลาดเคลื่อนที่มา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="594"/>
@@ -2315,7 +2315,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="684"/>
         <location filename="../IOViewer.cpp" line="730"/>
         <source>Repeat</source>
-        <translation type="unfinished"></translation>
+        <translation>ทำซ้ำ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="595"/>
@@ -2323,7 +2323,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="685"/>
         <location filename="../IOViewer.cpp" line="731"/>
         <source>32-bit</source>
-        <translation type="unfinished"></translation>
+        <translation>32-บิต</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="596"/>
@@ -2331,7 +2331,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="686"/>
         <location filename="../IOViewer.cpp" line="732"/>
         <source>Start timing</source>
-        <translation type="unfinished"></translation>
+        <translation>เริ่ม จับเวลา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="597"/>
@@ -2340,7 +2340,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="733"/>
         <location filename="../IOViewer.cpp" line="1443"/>
         <source>Immediate</source>
-        <translation type="unfinished"></translation>
+        <translation>ทันที่</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="598"/>
@@ -2352,7 +2352,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1092"/>
         <location filename="../IOViewer.cpp" line="1553"/>
         <source>VBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="599"/>
@@ -2363,7 +2363,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="963"/>
         <location filename="../IOViewer.cpp" line="1444"/>
         <source>HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="602"/>
@@ -2376,7 +2376,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="833"/>
         <location filename="../IOViewer.cpp" line="893"/>
         <source>IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="603"/>
@@ -2391,24 +2391,24 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1451"/>
         <location filename="../IOViewer.cpp" line="1455"/>
         <source>Enable</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="645"/>
         <location filename="../IOViewer.cpp" line="690"/>
         <location filename="../IOViewer.cpp" line="736"/>
         <source>Audio FIFO</source>
-        <translation type="unfinished"></translation>
+        <translation>เสียง FIFO</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="727"/>
         <source>Video Capture</source>
-        <translation type="unfinished"></translation>
+        <translation>จับภาพวิดีโอ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="729"/>
         <source>DRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>DRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="775"/>
@@ -2420,7 +2420,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1060"/>
         <location filename="../IOViewer.cpp" line="1064"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>ค่า</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="779"/>
@@ -2428,7 +2428,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="810"/>
         <location filename="../IOViewer.cpp" line="826"/>
         <source>Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>ขนาด</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="781"/>
@@ -2437,7 +2437,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="828"/>
         <location filename="../IOViewer.cpp" line="1071"/>
         <source>1/64</source>
-        <translation type="unfinished"></translation>
+        <translation>1/64</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="782"/>
@@ -2446,7 +2446,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="829"/>
         <location filename="../IOViewer.cpp" line="1072"/>
         <source>1/256</source>
-        <translation type="unfinished"></translation>
+        <translation>1/256</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="783"/>
@@ -2455,170 +2455,170 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="830"/>
         <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/1024</source>
-        <translation type="unfinished"></translation>
+        <translation>1/1024</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="800"/>
         <location filename="../IOViewer.cpp" line="816"/>
         <location filename="../IOViewer.cpp" line="832"/>
         <source>Cascade</source>
-        <translation type="unfinished"></translation>
+        <translation>แคสเคด</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="870"/>
         <location filename="../IOViewer.cpp" line="883"/>
         <source>A</source>
-        <translation type="unfinished"></translation>
+        <translation>A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="872"/>
         <location filename="../IOViewer.cpp" line="885"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Select</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="873"/>
         <location filename="../IOViewer.cpp" line="886"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Start</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="874"/>
         <location filename="../IOViewer.cpp" line="887"/>
         <source>Right</source>
-        <translation type="unfinished"></translation>
+        <translation>ขวา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="875"/>
         <location filename="../IOViewer.cpp" line="888"/>
         <source>Left</source>
-        <translation type="unfinished"></translation>
+        <translation>ซ้าย</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="876"/>
         <location filename="../IOViewer.cpp" line="889"/>
         <source>Up</source>
-        <translation type="unfinished"></translation>
+        <translation>บน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="877"/>
         <location filename="../IOViewer.cpp" line="890"/>
         <source>Down</source>
-        <translation type="unfinished"></translation>
+        <translation>ล่าง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="878"/>
         <location filename="../IOViewer.cpp" line="891"/>
         <source>R</source>
-        <translation type="unfinished"></translation>
+        <translation>R</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="879"/>
         <location filename="../IOViewer.cpp" line="892"/>
         <source>L</source>
-        <translation type="unfinished"></translation>
+        <translation>L</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="894"/>
         <source>Condition</source>
-        <translation type="unfinished"></translation>
+        <translation>เงื่อนไข</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="898"/>
         <source>SC</source>
-        <translation type="unfinished"></translation>
+        <translation>SC</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="899"/>
         <source>SD</source>
-        <translation type="unfinished"></translation>
+        <translation>SD</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="900"/>
         <source>SI</source>
-        <translation type="unfinished"></translation>
+        <translation>SI</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="901"/>
         <source>SO</source>
-        <translation type="unfinished"></translation>
+        <translation>SO</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="947"/>
         <location filename="../IOViewer.cpp" line="964"/>
         <source>VCounter</source>
-        <translation type="unfinished"></translation>
+        <translation>VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="948"/>
         <location filename="../IOViewer.cpp" line="965"/>
         <source>Timer 0</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวจำเวลา 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="949"/>
         <location filename="../IOViewer.cpp" line="966"/>
         <source>Timer 1</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวจำเวลา 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="950"/>
         <location filename="../IOViewer.cpp" line="967"/>
         <source>Timer 2</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวจำเวลา 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="951"/>
         <location filename="../IOViewer.cpp" line="968"/>
         <source>Timer 3</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวจำเวลา 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="952"/>
         <location filename="../IOViewer.cpp" line="969"/>
         <source>SIO</source>
-        <translation type="unfinished"></translation>
+        <translation>SIO</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="953"/>
         <location filename="../IOViewer.cpp" line="970"/>
         <source>DMA 0</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="954"/>
         <location filename="../IOViewer.cpp" line="971"/>
         <source>DMA 1</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="955"/>
         <location filename="../IOViewer.cpp" line="972"/>
         <source>DMA 2</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="956"/>
         <location filename="../IOViewer.cpp" line="973"/>
         <source>DMA 3</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="957"/>
         <location filename="../IOViewer.cpp" line="974"/>
         <source>Keypad</source>
-        <translation type="unfinished"></translation>
+        <translation>ชุดปุ่มกด</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="958"/>
         <location filename="../IOViewer.cpp" line="975"/>
         <source>Gamepak</source>
-        <translation type="unfinished"></translation>
+        <translation>ตลับเกม</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="979"/>
         <source>SRAM wait</source>
-        <translation type="unfinished"></translation>
+        <translation>รอ SRAM</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="980"/>
@@ -2627,7 +2627,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1002"/>
         <location filename="../IOViewer.cpp" line="1006"/>
         <source>4</source>
-        <translation type="unfinished"></translation>
+        <translation>4</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="981"/>
@@ -2635,7 +2635,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="997"/>
         <location filename="../IOViewer.cpp" line="1007"/>
         <source>3</source>
-        <translation type="unfinished"></translation>
+        <translation>3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="982"/>
@@ -2644,7 +2644,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="998"/>
         <location filename="../IOViewer.cpp" line="1008"/>
         <source>2</source>
-        <translation type="unfinished"></translation>
+        <translation>2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="983"/>
@@ -2653,172 +2653,172 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1009"/>
         <location filename="../IOViewer.cpp" line="1012"/>
         <source>8</source>
-        <translation type="unfinished"></translation>
+        <translation>8</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="985"/>
         <source>Cart 0 non-sequential</source>
-        <translation type="unfinished"></translation>
+        <translation>ตลับ 0 ไม่ต่อเนื่อง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="991"/>
         <source>Cart 0 sequential</source>
-        <translation type="unfinished"></translation>
+        <translation>ตลับ 0 ต่อเนื่อง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="995"/>
         <source>Cart 1 non-sequential</source>
-        <translation type="unfinished"></translation>
+        <translation>ตลับ 1 ไม่ต่อเนื่อง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1001"/>
         <source>Cart 1 sequential</source>
-        <translation type="unfinished"></translation>
+        <translation>ตลับ 1 ต่อเนื่อง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1005"/>
         <source>Cart 2 non-sequential</source>
-        <translation type="unfinished"></translation>
+        <translation>ตลับ 2 ไม่ต่อเนื่อง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1011"/>
         <source>Cart 2 sequential</source>
-        <translation type="unfinished"></translation>
+        <translation>ตลับ 2 ต่อเนื่อง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1015"/>
         <source>PHI terminal</source>
-        <translation type="unfinished"></translation>
+        <translation>เทอร์มินัล PHI</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1016"/>
         <location filename="../IOViewer.cpp" line="1452"/>
         <source>Disable</source>
-        <translation type="unfinished"></translation>
+        <translation>ปิดใช้งาน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1017"/>
         <source>4.19MHz</source>
-        <translation type="unfinished"></translation>
+        <translation>4.19MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1018"/>
         <source>8.38MHz</source>
-        <translation type="unfinished"></translation>
+        <translation>8.38MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1019"/>
         <source>16.78MHz</source>
-        <translation type="unfinished"></translation>
+        <translation>16.78MHz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1021"/>
         <source>Gamepak prefetch</source>
-        <translation type="unfinished"></translation>
+        <translation>ดึงข้อมูลตลับเกมล่วงหน้า</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1027"/>
         <source>Enable IRQs</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน IRQs</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1035"/>
         <source>Right/A</source>
-        <translation type="unfinished"></translation>
+        <translation>ขวา/A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1036"/>
         <source>Left/B</source>
-        <translation type="unfinished"></translation>
+        <translation>ซ้าย/B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1037"/>
         <source>Up/Select</source>
-        <translation type="unfinished"></translation>
+        <translation>ขึ้น/Select</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1038"/>
         <source>Down/Start</source>
-        <translation type="unfinished"></translation>
+        <translation>ลง/Start</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1039"/>
         <source>Active D-pad</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานปุ่มทิศทาง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1040"/>
         <source>Active face buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานปุ่มหลัก</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1048"/>
         <source>Internal clock</source>
-        <translation type="unfinished"></translation>
+        <translation>นาฬิกาภายใน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1049"/>
         <source>32× clocking (CGB only)</source>
-        <translation type="unfinished"></translation>
+        <translation>สัญญาณนาฬิกา 32× (เฉพาะ CGB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1050"/>
         <source>Transfer active</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งข้อมูลทำงานอยู่</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1068"/>
         <source>Divider</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวหาร</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1070"/>
         <source>1/16</source>
-        <translation type="unfinished"></translation>
+        <translation>1/16</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1093"/>
         <location filename="../IOViewer.cpp" line="1554"/>
         <source>LCD STAT</source>
-        <translation type="unfinished"></translation>
+        <translation>สถานะ LCD</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1094"/>
         <location filename="../IOViewer.cpp" line="1555"/>
         <source>Timer</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวจับเวลา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1095"/>
         <location filename="../IOViewer.cpp" line="1556"/>
         <source>Serial</source>
-        <translation type="unfinished"></translation>
+        <translation>หมายเลข</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1096"/>
         <location filename="../IOViewer.cpp" line="1557"/>
         <source>Joypad</source>
-        <translation type="unfinished"></translation>
+        <translation>จอยเกม</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1203"/>
         <source>Volume right</source>
-        <translation type="unfinished"></translation>
+        <translation>ระดับเสียง ขวา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1204"/>
         <source>Output right</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออก ขวา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1205"/>
         <source>Volume left</source>
-        <translation type="unfinished"></translation>
+        <translation>ระดับเสียง ซ้าย</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1206"/>
         <source>Output left</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออก ซ้าย</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1327"/>
