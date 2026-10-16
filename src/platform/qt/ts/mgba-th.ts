@@ -6,27 +6,27 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="428"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>ชื่อ</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="430"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>ตำแหน่ง</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="432"/>
         <source>Platform</source>
-        <translation type="unfinished"></translation>
+        <translation>แพลตฟอร์ม</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="434"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>ขนาด</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="436"/>
         <source>CRC32</source>
-        <translation type="unfinished"></translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -34,22 +34,22 @@
     <message>
         <location filename="../utils.cpp" line="109"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์เกมเครื่อง Game Boy Advance (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="135"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์เกมเครื่อง Game Boy (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="140"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์เกมทั้งหมด (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="142"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 บันทึกวีดิโอ (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -57,33 +57,34 @@
     <message>
         <location filename="../AboutScreen.ui" line="14"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>เกี่ยวกับ</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;เว็บไซต์&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;ฟอรัม / สนับสนุน&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;บริจาค&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;ซอร์สโค้ด&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
         <source>Branch: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revision: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>สาขา: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;ฉบับปรับปรุง: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
         <source>{projectName} would like to thank the following patrons from Patreon:</source>
-        <translation type="unfinished"></translation>
+        <translation>{projectName} ขอขอบคุณผู้สนับสนุนต่อไปนี้จาก Patreon</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
         <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation type="unfinished"></translation>
+        <translation>© 2013 – {year} Jeffrey Pfau, ลิขสิทธิ์ภายใต้สัญญาอนุญาต Mozilla Public License เวอร์ชัน 2.0
+Game Boy Advance เป็นเครื่องหมายการค้าจดทะเบียนของ Nintendo Co., Ltd.</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation type="unfinished"></translation>
+        <translation>{projectName} เป็นโปรแกรมโอเพนซอร์สที่จำลองเครื่อง Game Boy Advance</translation>
     </message>
 </context>
 <context>
@@ -91,52 +92,57 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>มีอัปเดตใหม่พร้อมใช้งาน</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="27"/>
         <source>An update to %1 is available.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>มีอัปเดตใหม่ สำหรับ %1 พร้อมใช้งาน
+</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="39"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+คุณต้องการดาวน์โหลดและติดตั้งในตอนนี้เลยหรือไม่? คุณจำเป็นต้องรีสตาร์ตโปรแกรมจำลองเมื่อการดาวน์โหลดเสร็จสิ้น</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="42"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+ไม่รองรับการอัปเดตอัตโนมัติบนแพลตฟอร์มนี้ หากคุณต้องการอัปเดต คุณจำเป็นต้องดำเนินการด้วยตนเอง</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="46"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>เวอร์ชันปัจจุบัน: %1
+เวอร์ชันใหม่: %2
+ขนาดดาวน์โหลด: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="64"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>กำลังดาวน์โหลด อัปเดต</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="78"/>
         <source>Verifying download failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>การตรวจสอบความถูกต้องของการดาวน์โหลดล้มเหลว โปรดอัปเดตด้วยตนเอง</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>การดาวน์โหลดล้มเหลว โปรดอัปเดตด้วยตนเอง</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="84"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>ดาวน์โหลดเสร็จสิ้น กด ตกลง เพื่อรีสตาร์ต %1 และติดตั้งอัปเดต</translation>
     </message>
 </context>
 <context>
@@ -144,22 +150,22 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>เวอร์ชันเสถียร</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="98"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>เวอร์ชันพัฒนา</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="100"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่ทราบ</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="246"/>
         <source>(None)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ไม่มี)</translation>
     </message>
 </context>
 <context>
@@ -167,12 +173,12 @@ Download size: %3</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดในไฟล์คลังข้อมูล...</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation type="unfinished"></translation>
+        <translation>กำลังโหลด...</translation>
     </message>
 </context>
 <context>
@@ -180,39 +186,39 @@ Download size: %3</source>
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation type="unfinished"></translation>
+        <translation>ไทล์ #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
-        <translation type="unfinished"></translation>
+        <translation>พาเล็ต #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="89"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>ที่อยู่</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="138"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>แดง</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="145"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>เขียว</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="152"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>น้ำเงิน</translation>
     </message>
     <message>
         <location filename="../AssetTile.cpp" line="144"/>
         <location filename="../AssetTile.cpp" line="145"/>
         <location filename="../AssetTile.cpp" line="146"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0 (%1)</translation>
     </message>
 </context>
 <context>
@@ -220,17 +226,17 @@ Download size: %3</source>
     <message>
         <location filename="../AudioDevice.cpp" line="36"/>
         <source>Can&apos;t set format of context-less audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถตั้งค่ารูปแบบของอุปกรณ์เสียงที่ไม่มีบริบท (Context-less) ได้</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="57"/>
         <source>Audio device is missing its core</source>
-        <translation type="unfinished"></translation>
+        <translation>อุปกรณ์เสียงไม่มีแกนหลัก</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="85"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>กำลังเขียนข้อมูลลงในอุปกรณ์เสียงที่อ่านได้อย่างเดียว</translation>
     </message>
 </context>
 <context>
@@ -238,7 +244,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorDummy.cpp" line="31"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถเริ่มทำงานตัวประมวลผลเสียงโดยไม่มีอินพุตได้</translation>
     </message>
 </context>
 <context>
@@ -246,12 +252,12 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="57"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถเริ่มทำงานตัวประมวลผลเสียงโดยไม่มีอินพุตได้</translation>
     </message>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="82"/>
         <source>Audio outputting to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>กำลังส่งสัญญาณเสียงออกไปยัง %1</translation>
     </message>
 </context>
 <context>
@@ -259,7 +265,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="35"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถเริ่มทำงานตัวประมวลผลเสียงโดยไม่มีอินพุตได้</translation>
     </message>
 </context>
 <context>
@@ -267,7 +273,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="32"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถโหลดการตั้งค่าสคริปต์รันอัตโนมัติได้: ไม่รู้จักรูปแบบข้อมูลสคริปต์ %1</translation>
     </message>
 </context>
 <context>
@@ -275,37 +281,37 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="14"/>
         <source>Autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>สคริปต์รันอัตโนมัติ</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>เพิ่ม</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>ลบ</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="53"/>
         <source>Move up</source>
-        <translation type="unfinished"></translation>
+        <translation>เลื่อนขึ้น</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="63"/>
         <source>Move down</source>
-        <translation type="unfinished"></translation>
+        <translation>เลื่อนลง</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="73"/>
         <source>Run scripts when starting a game</source>
-        <translation type="unfinished"></translation>
+        <translation>รันสคริปต์เมื่อเริ่มเกม</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="29"/>
         <source>Select a script</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกสคริปต์</translation>
     </message>
 </context>
 <context>
@@ -313,7 +319,7 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipModel.cpp" line="113"/>
         <source>Failed to open chip names list</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดรายการชื่อชิปไม่สำเร็จ</translation>
     </message>
 </context>
 <context>
@@ -321,88 +327,88 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.ui" line="14"/>
         <source>BattleChip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip Gate</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="67"/>
         <source>Chip name</source>
-        <translation type="unfinished"></translation>
+        <translation>ชื่อชิป</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
         <source>Insert</source>
-        <translation type="unfinished"></translation>
+        <translation>นำเข้า</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึก</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="94"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลด</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="114"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>เพิ่ม</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="121"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>ลบ</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="138"/>
         <source>Gate type</source>
-        <translation type="unfinished"></translation>
+        <translation>ประเภทของเกต</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="180"/>
         <source>Inserted</source>
-        <translation type="unfinished"></translation>
+        <translation>ใส่แล้ว</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
-        <translation type="unfinished"></translation>
+        <translation>ID ชิป</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
         <source>Update Chip data</source>
-        <translation type="unfinished"></translation>
+        <translation>อัปเดตข้อมูลของชิป</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
         <source>Show advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>แสดงตัวเลือกขั้นสูง</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="112"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่พบข้อมูล BattleChip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="113"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่พบข้อมูล BattleChip และ BattleChip Gate จะยังคงใช้งานได้ แต่กราฟิกบางส่วนจะขาดหายไป คุณต้องการดาวน์โหลดข้อมูลตอนนี้เลยหรือไม่?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="179"/>
         <location filename="../BattleChipView.cpp" line="198"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์เด็ค</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="210"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>เด็คไม่รองรับ</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="211"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>เด็คที่เลือกไว้ไม่รองรับกับชิปเกตนี้</translation>
     </message>
 </context>
 <context>
@@ -410,12 +416,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsModel.cpp" line="54"/>
         <source>(untitled)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ไม่มีชื่อ)</translation>
     </message>
     <message>
         <location filename="../CheatsModel.cpp" line="212"/>
         <source>Failed to open cheats file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดไฟล์สูตรโกงไม่สำเร็จ: %1</translation>
     </message>
 </context>
 <context>
@@ -423,59 +429,59 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="14"/>
         <source>Cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>สูตรโกง</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished"></translation>
+        <translation>เพิ่มโค็ตใหม่</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>ลบ</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="93"/>
         <source>Add Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>เพิ่มบรรทัด</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="100"/>
         <source>Code type</source>
-        <translation type="unfinished"></translation>
+        <translation>ชนิดของโค้ต</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึก</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="46"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลด</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="86"/>
         <source>Enter codes here...</source>
-        <translation type="unfinished"></translation>
+        <translation>ใส่โค็ตที่นี่...</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="50"/>
         <location filename="../CheatsView.cpp" line="58"/>
         <source>Autodetect (recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation>ตรวจจับอัตโนมัติ (แนะนำ)</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="88"/>
         <location filename="../CheatsView.cpp" line="95"/>
         <source>Select cheats file</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์สูตรโกง</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถเพิ่มสูตรโกงบางส่วนได้ โปรดตรวจสอบให้แน่ใจว่ารูปแบบถูกต้อง และ/หรือลองใช้ประเภทสูตรโกงอื่น</translation>
     </message>
 </context>
 <context>
@@ -483,48 +489,48 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="106"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>รีเซ็ต r%1-%2 %3</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="554"/>
         <location filename="../CoreController.cpp" line="571"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>ยังไม่ได้เปิดใช้ฟังก์ชันย้อนกลับ</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="610"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>รีเซ็ตเกมหรือไม่?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="611"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation type="unfinished"></translation>
+        <translation>เกมส่วนใหญ่จำเป็นต้องรีเซ็ตเพื่อโหลดเซฟใหม่ คุณต้องการรีเซ็ตตอนนี้เลยหรือไม่?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="829"/>
         <source>Failed to open save file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลดเซฟล้มเหลว %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="887"/>
         <source>Failed to open game file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลดไฟล์เกมล้มเหลว: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="917"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถดึงตลับเกมออกบนแพลตฟอร์มที่ไม่รองรับได้!</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="1032"/>
         <source>Failed to open snapshot file for reading: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดไฟล์สแนปชอตเพื่ออ่านไม่สำเร็จ: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="1049"/>
         <source>Failed to open snapshot file for writing: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดไฟล์สแนปชอตเพื่อเขียนไม่สำเร็จ: %1</translation>
     </message>
 </context>
 <context>
@@ -532,52 +538,52 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="58"/>
         <source>Failed to open game file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลดไฟล์เกมล้มเหลว: %1</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="105"/>
         <source>Temporary file loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลดไฟล์ชั่วคราวสำเร็จ</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="106"/>
         <source>The ROM appears to be loaded from a temporary directory, perhaps automatically extracted from an archive (e.g. a zip file).</source>
-        <translation type="unfinished"></translation>
+        <translation>ดูเหมือนว่าไฟล์เกมจะถูกโหลดมาจากไดเรกทอรีชั่วคราว ซึ่งอาจถูกแตกไฟล์มาจากไฟล์คลังข้อมูลโดยอัตโนมัติ (เช่น ไฟล์ zip)</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="154"/>
         <source>Could not open save file</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถเปิดไฟล์เซฟได้</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="155"/>
         <source>Failed to open save file; in-game saves cannot be updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดไฟล์เซฟไม่สำเร็จ; จะไม่สามารถอัปเดตข้อมูลการเซฟภายในเกมได้</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="228"/>
         <source>Would you like to copy the ROM to a different location? If you don&apos;t, this will likely lead to data loss (e.g. saves, screenshots, etc.).</source>
-        <translation type="unfinished"></translation>
+        <translation>คุณต้องการคัดลอกไฟล์เกมไปยังตำแหน่งอื่นหรือไม่? หากคุณไม่คัดลอก อาจส่งผลให้ข้อมูลสูญหายได้ (เช่น เซฟ, ภาพหน้าจอ เป็นต้น)</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="235"/>
         <source>Copy failed</source>
-        <translation type="unfinished"></translation>
+        <translation>การคัดลอกล้มเหลว</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="235"/>
         <source>Failed to copy ROM. Do you want to try again?</source>
-        <translation type="unfinished"></translation>
+        <translation>การคัดลอกไฟล์เกมล้มเหลว คุณต้องการลองอีกครั้งไหม?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="242"/>
         <source>New ROM location</source>
-        <translation type="unfinished"></translation>
+        <translation>ตำแหน่งไฟล์เกมใหม้</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="126"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถโหลดเกมได้ คุณแน่ใจหรือไม่ว่าไฟล์อยู่ในรูปแบบที่ถูกต้อง?</translation>
     </message>
 </context>
 <context>
@@ -585,22 +591,22 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsole.ui" line="14"/>
         <source>Debugger</source>
-        <translation type="unfinished"></translation>
+        <translation>ดีบั๊กเกอร์</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="27"/>
         <source>Enter command (try `help` for more info)</source>
-        <translation type="unfinished"></translation>
+        <translation>ใส่คำสั่ง (ลองพิมพ์ `help` เพื่อดูข้อมูลเพิ่มเติม)</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="34"/>
         <source>Break</source>
-        <translation type="unfinished"></translation>
+        <translation>หยุดการทำงาน</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="44"/>
         <source>Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>เริ่มการทำงานต่อ</translation>
     </message>
 </context>
 <context>
@@ -608,7 +614,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="190"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถเปิดประวัติ CLI เพื่อเขียนได้</translation>
     </message>
 </context>
 <context>
@@ -616,7 +622,7 @@ Download size: %3</source>
     <message>
         <location filename="../DisplayGL.cpp" line="310"/>
         <source>Failed to create an OpenGL 3 context, trying old-style...</source>
-        <translation type="unfinished"></translation>
+        <translation>สร้างบริบท OpenGL 3 ไม่สำเร็จ กำลังลองใช้รูปแบบเก่า...</translation>
     </message>
 </context>
 <context>
@@ -624,47 +630,47 @@ Download size: %3</source>
     <message>
         <location filename="../DolphinConnector.ui" line="14"/>
         <source>Connect to Dolphin</source>
-        <translation type="unfinished"></translation>
+        <translation>เชื่อมต่อกับ Dolphin</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="23"/>
         <source>Local computer</source>
-        <translation type="unfinished"></translation>
+        <translation>คอมพิวเตอร์เครื่องนี้</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
         <source>IP address</source>
-        <translation type="unfinished"></translation>
+        <translation>ที่อยู่ IP</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>เชื่อมต่อ</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="68"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>หยุดการเชื่อมต่อ</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="78"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>ปิด</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="90"/>
         <source>Reset on connect</source>
-        <translation type="unfinished"></translation>
+        <translation>รีเซ็ตเมื่อเชื่อม</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Couldn&apos;t Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถเชื่อมต่อได้</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="59"/>
         <source>Could not connect to Dolphin.</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถเชื่อมต่อไปยัง Dolphin ได้</translation>
     </message>
 </context>
 <context>
@@ -672,12 +678,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="84"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="86"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
 </context>
 <context>
@@ -685,12 +691,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="30"/>
         <source>Icon</source>
-        <translation type="unfinished"></translation>
+        <translation>ไอคอน</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="31"/>
         <source>Banner</source>
-        <translation type="unfinished"></translation>
+        <translation>แบนเนอร์</translation>
     </message>
 </context>
 <context>
@@ -698,17 +704,17 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Bubble</source>
-        <translation type="unfinished"></translation>
+        <translation>บับเบิล</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
         <source>Background</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="28"/>
         <source>Startup</source>
-        <translation type="unfinished"></translation>
+        <translation>เริ่มต้น</translation>
     </message>
 </context>
 <context>
@@ -716,44 +722,44 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="14"/>
         <source>Create forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>สร้างฟอร์เวิร์ดเดอร์</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="20"/>
         <source>Files</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="26"/>
         <source>ROM file:</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์เกม:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="36"/>
         <location filename="../ForwarderView.ui" line="53"/>
         <location filename="../ForwarderView.ui" line="112"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>เรียกดู</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="43"/>
         <source>Output filename:</source>
-        <translation type="unfinished"></translation>
+        <translation>ชื่อไฟล์เอาต์พุต:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="60"/>
         <source>Forwarder base:</source>
-        <translation type="unfinished"></translation>
+        <translation>ฟอร์เวิร์ดเดอร์หลัก:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="74"/>
         <source>Latest stable version</source>
-        <translation type="unfinished"></translation>
+        <translation>เวอร์ชั้นเสถียรล่าสุด</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="79"/>
         <source>Latest development build</source>
-        <translation type="unfinished"></translation>
+        <translation>เวอร์ชันพัฒนาล่าสุด</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="84"/>
