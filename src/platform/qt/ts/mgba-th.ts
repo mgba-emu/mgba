@@ -2823,242 +2823,242 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1327"/>
         <source>Background enable/priority</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานพื้นหลัง/ลำดับความสำคัญ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1328"/>
         <source>Enable sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน สไปรต์</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Double-height sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>สไปรต์ความสูงสองเท่า</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
         <source>Background tile map</source>
-        <translation type="unfinished"></translation>
+        <translation>ผังไทล์พื้นหลัง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1331"/>
         <location filename="../IOViewer.cpp" line="1340"/>
         <source>0x9800 – 0x9BFF</source>
-        <translation type="unfinished"></translation>
+        <translation>0x9800 – 0x9BFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1332"/>
         <location filename="../IOViewer.cpp" line="1341"/>
         <source>0x9C00 – 0x9FFF</source>
-        <translation type="unfinished"></translation>
+        <translation>0x9C00 – 0x9FFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1334"/>
         <source>Background tile data</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้อมูลไทล์พื้นหลัง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1335"/>
         <source>0x8800 – 0x87FF</source>
-        <translation type="unfinished"></translation>
+        <translation>0x8800 – 0x87FF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1336"/>
         <source>0x8000 – 0x8FFF</source>
-        <translation type="unfinished"></translation>
+        <translation>0x8000 – 0x8FFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1338"/>
         <source>Enable window</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน หน้าต่าง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1339"/>
         <source>Window tile map</source>
-        <translation type="unfinished"></translation>
+        <translation>ผังไทล์หน้าต่าง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1343"/>
         <source>Enable LCD</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน LCD</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1347"/>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>โหมด</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1348"/>
         <source>0: HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>0: HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1349"/>
         <source>1: VBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>1: VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1350"/>
         <source>2: OAM scan</source>
-        <translation type="unfinished"></translation>
+        <translation>2: OAM สแกน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1351"/>
         <source>3: HDraw</source>
-        <translation type="unfinished"></translation>
+        <translation>3: HDraw</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1353"/>
         <source>In LYC</source>
-        <translation type="unfinished"></translation>
+        <translation>ใน LYC</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1354"/>
         <source>Enable HBlank (mode 0) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน HBlank (โหมด 0) IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1355"/>
         <source>Enable VBlank (mode 1) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน VBlank (โหมด 1) IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1356"/>
         <source>Enable OAM (mode 2) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน OAM (โหมด 2) IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1357"/>
         <source>Enable LYC IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งาน LYC IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1369"/>
         <source>Current Y coordinate</source>
-        <translation type="unfinished"></translation>
+        <translation>ตำแหน่งแกน Y ปัจจุบัน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1373"/>
         <source>Comparison Y coordinate</source>
-        <translation type="unfinished"></translation>
+        <translation>ตำแหน่งแกน Y ที่เปรียบเทียบ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1377"/>
         <source>Start upper byte</source>
-        <translation type="unfinished"></translation>
+        <translation>ไบต์สูงเริ่มต้น</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1381"/>
         <location filename="../IOViewer.cpp" line="1388"/>
         <location filename="../IOViewer.cpp" line="1395"/>
         <source>Color 0 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>เฉดสี 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1382"/>
         <location filename="../IOViewer.cpp" line="1389"/>
         <location filename="../IOViewer.cpp" line="1396"/>
         <source>Color 1 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>เฉดสี 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1383"/>
         <location filename="../IOViewer.cpp" line="1390"/>
         <location filename="../IOViewer.cpp" line="1397"/>
         <source>Color 2 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>เฉดสี 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1384"/>
         <location filename="../IOViewer.cpp" line="1391"/>
         <location filename="../IOViewer.cpp" line="1398"/>
         <source>Color 3 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>เฉดสี 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1412"/>
         <source>Prepare to switch speed</source>
-        <translation type="unfinished"></translation>
+        <translation>เตรียมคัวที่จะเปลี่ยนความเร็๋ว</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1413"/>
         <source>Double speed</source>
-        <translation type="unfinished"></translation>
+        <translation>ความเร็ว 2 เท่า</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1419"/>
         <source>VRAM bank</source>
-        <translation type="unfinished"></translation>
+        <translation>แบงก์ VRAM</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1441"/>
         <source>Length</source>
-        <translation type="unfinished"></translation>
+        <translation>ความยาว</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1442"/>
         <source>Timing</source>
-        <translation type="unfinished"></translation>
+        <translation>เวลา</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1449"/>
         <source>Write bit</source>
-        <translation type="unfinished"></translation>
+        <translation>เขียนบิต</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1450"/>
         <source>Read bit</source>
-        <translation type="unfinished"></translation>
+        <translation>อ่านบิต</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1453"/>
         <location filename="../IOViewer.cpp" line="1454"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่ทราบ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1494"/>
         <location filename="../IOViewer.cpp" line="1506"/>
         <source>Current index</source>
-        <translation type="unfinished"></translation>
+        <translation>ดัชนีปัจจุบัน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1495"/>
         <location filename="../IOViewer.cpp" line="1507"/>
         <source>Auto-increment</source>
-        <translation type="unfinished"></translation>
+        <translation>เพิ่มค่าอัตโนมัติ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1499"/>
         <location filename="../IOViewer.cpp" line="1511"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>แดง</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1502"/>
         <location filename="../IOViewer.cpp" line="1514"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>น้ำเงิน</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1518"/>
         <source>Sprite ordering</source>
-        <translation type="unfinished"></translation>
+        <translation>ลำดับสไปรต์</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1519"/>
         <source>OAM order</source>
-        <translation type="unfinished"></translation>
+        <translation>ลำดับ OAM</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1520"/>
         <source>x coordinate sorting</source>
-        <translation type="unfinished"></translation>
+        <translation>เรียงลำดับ แกน x</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1531"/>
         <source>WRAM bank</source>
-        <translation type="unfinished"></translation>
+        <translation>แบงก์ WRAM</translation>
     </message>
 </context>
 <context>
@@ -3067,12 +3067,12 @@ Download size: %3</source>
         <location filename="../InputController.cpp" line="732"/>
         <location filename="../InputController.cpp" line="753"/>
         <source>Could not find a valid camera format!</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่พบรูปแบบกล้องที่ถูกต้อง!</translation>
     </message>
     <message>
         <location filename="../InputController.cpp" line="734"/>
         <source>Camera supported format: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>รูปแบบกล้องที่รองรับ: %1</translation>
     </message>
 </context>
 <context>
@@ -3081,7 +3081,7 @@ Download size: %3</source>
         <location filename="../KeyEditor.cpp" line="46"/>
         <location filename="../KeyEditor.cpp" line="207"/>
         <source>---</source>
-        <translation type="unfinished"></translation>
+        <translation>---</translation>
     </message>
 </context>
 <context>
@@ -3090,7 +3090,7 @@ Download size: %3</source>
         <location filename="../LoadSaveState.ui" line="14"/>
         <location filename="../LoadSaveState.ui" line="66"/>
         <source>%1 State</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์เซฟ %1</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="41"/>
@@ -3103,82 +3103,82 @@ Download size: %3</source>
         <location filename="../LoadSaveState.ui" line="217"/>
         <location filename="../LoadSaveState.ui" line="239"/>
         <source>No Save</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่พบไฟล์เซฟ</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="50"/>
         <source>5</source>
-        <translation type="unfinished"></translation>
+        <translation>5</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="94"/>
         <source>6</source>
-        <translation type="unfinished"></translation>
+        <translation>6</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="116"/>
         <source>8</source>
-        <translation type="unfinished"></translation>
+        <translation>8</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="138"/>
         <source>4</source>
-        <translation type="unfinished"></translation>
+        <translation>4</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="160"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="182"/>
         <source>3</source>
-        <translation type="unfinished"></translation>
+        <translation>3</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="204"/>
         <source>7</source>
-        <translation type="unfinished"></translation>
+        <translation>7</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="226"/>
         <source>9</source>
-        <translation type="unfinished"></translation>
+        <translation>9</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="248"/>
         <source>2</source>
-        <translation type="unfinished"></translation>
+        <translation>2</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="261"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>ยกเลิก</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="76"/>
         <source>Load State</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลดไฟล์เซฟ</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="76"/>
         <source>Save State</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกไฟล์เซฟ</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="185"/>
         <source>Empty</source>
-        <translation type="unfinished"></translation>
+        <translation>ว่างเปล่า</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="194"/>
         <source>Corrupted</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์เสีย</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="229"/>
         <source>Slot %1</source>
-        <translation type="unfinished"></translation>
+        <translation>ช่อง %1</translation>
     </message>
 </context>
 <context>
@@ -3187,42 +3187,42 @@ Download size: %3</source>
         <location filename="../LogConfigModel.cpp" line="91"/>
         <location filename="../LogConfigModel.cpp" line="112"/>
         <source>Default</source>
-        <translation type="unfinished"></translation>
+        <translation>ค่าเริ่มต้น</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="93"/>
         <source>Fatal</source>
-        <translation type="unfinished"></translation>
+        <translation>ร้ายแรง</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="95"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>ปัญหา</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="97"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>คำเตือน</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="99"/>
         <source>Info</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้อมูล</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="101"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>ดีบัค</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="103"/>
         <source>Stub</source>
-        <translation type="unfinished"></translation>
+        <translation>สตับ</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="105"/>
         <source>Game Error</source>
-        <translation type="unfinished"></translation>
+        <translation>ปัญหาเกม</translation>
     </message>
 </context>
 <context>
@@ -3230,47 +3230,47 @@ Download size: %3</source>
     <message>
         <location filename="../LogController.cpp" line="110"/>
         <source>[%1] %2: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>[%1] %2: %3</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="121"/>
         <source>An error occurred</source>
-        <translation type="unfinished"></translation>
+        <translation>มีปัญหาเกิดขึ้น</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="193"/>
         <source>DEBUG</source>
-        <translation type="unfinished"></translation>
+        <translation>ดีบัก</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="195"/>
         <source>STUB</source>
-        <translation type="unfinished"></translation>
+        <translation>สตับ</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="197"/>
         <source>INFO</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้อมูล</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="199"/>
         <source>WARN</source>
-        <translation type="unfinished"></translation>
+        <translation>เตือน</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="201"/>
         <source>ERROR</source>
-        <translation type="unfinished"></translation>
+        <translation>ปัญหา</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="203"/>
         <source>FATAL</source>
-        <translation type="unfinished"></translation>
+        <translation>ร้ายแรง</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="205"/>
         <source>GAME ERROR</source>
-        <translation type="unfinished"></translation>
+        <translation>ปัญหาเกม</translation>
     </message>
 </context>
 <context>
@@ -3278,62 +3278,62 @@ Download size: %3</source>
     <message>
         <location filename="../LogView.ui" line="14"/>
         <source>Logs</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกการทำงาน</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="22"/>
         <source>Enabled Levels</source>
-        <translation type="unfinished"></translation>
+        <translation>ระดับที่เปิดใช้งาน</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="28"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>ดีบัก</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="38"/>
         <source>Stub</source>
-        <translation type="unfinished"></translation>
+        <translation>สตับ</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้อมูล</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>คำเตือน</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="68"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>ปัญหา</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="78"/>
         <source>Fatal</source>
-        <translation type="unfinished"></translation>
+        <translation>ร้ายแรง</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="95"/>
         <source>Game Error</source>
-        <translation type="unfinished"></translation>
+        <translation>ปัญหาเกม</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="108"/>
         <source>Advanced settings</source>
-        <translation type="unfinished"></translation>
+        <translation>การตั้งค่าขั้นสูง</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="128"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>ล้าง</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="137"/>
         <source>Max Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>บรรทัดสูงสุด</translation>
     </message>
 </context>
 <context>
@@ -3341,102 +3341,102 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.ui" line="14"/>
         <source>Maps</source>
-        <translation type="unfinished"></translation>
+        <translation>แผนที่</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="43"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>การขยาย</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="124"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออก</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="139"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>คัดลอก</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="49"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>ลำดับความสำคัญ</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="50"/>
         <location filename="../MapView.cpp" line="63"/>
         <source>Map base</source>
-        <translation type="unfinished"></translation>
+        <translation>ฐานแผนที่</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="51"/>
         <location filename="../MapView.cpp" line="64"/>
         <source>Tile base</source>
-        <translation type="unfinished"></translation>
+        <translation>ฐานไทล์</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="52"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>ขนาด</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="53"/>
         <location filename="../MapView.cpp" line="65"/>
         <source>Offset</source>
-        <translation type="unfinished"></translation>
+        <translation>ออฟเซต</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="54"/>
         <source>Xform</source>
-        <translation type="unfinished"></translation>
+        <translation>Xform</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="109"/>
         <source>Map Addr.</source>
-        <translation type="unfinished"></translation>
+        <translation>ที่อยู๋แผนที่</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="110"/>
         <source>Mirror</source>
-        <translation type="unfinished"></translation>
+        <translation>สะท้อน</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="147"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่มี</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="149"/>
         <source>Both</source>
-        <translation type="unfinished"></translation>
+        <translation>ทั้งคู่</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="151"/>
         <source>Horizontal</source>
-        <translation type="unfinished"></translation>
+        <translation>แนวนอน</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="153"/>
         <source>Vertical</source>
-        <translation type="unfinished"></translation>
+        <translation>แนวตั้ง</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="184"/>
         <location filename="../MapView.cpp" line="185"/>
         <location filename="../MapView.cpp" line="240"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่มีอยู่</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="283"/>
         <source>Export map</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออกแผนที่</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="284"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -3445,7 +3445,7 @@ Download size: %3</source>
         <location filename="../MemoryAccessLogController.cpp" line="118"/>
         <location filename="../MemoryAccessLogController.cpp" line="127"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดไฟล์บันทึกหน่วยความจำล้มเหลว</translation>
     </message>
 </context>
 <context>
@@ -3453,147 +3453,147 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="68"/>
         <source>Data read</source>
-        <translation type="unfinished"></translation>
+        <translation>อ่านข้อมูล</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="70"/>
         <source>Data written</source>
-        <translation type="unfinished"></translation>
+        <translation>เขียนข้อมูล</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="72"/>
         <source>Code executed</source>
-        <translation type="unfinished"></translation>
+        <translation>ประมวลผลโค้ดแล้ว</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="74"/>
         <source>Code aborted</source>
-        <translation type="unfinished"></translation>
+        <translation>ยกเลิกโค้ดแล้ว</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="76"/>
         <source>8-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>การเข้าถึง 8-บิต</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="78"/>
         <source>16-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>การเข้าถึง 16-บิต</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="80"/>
         <source>32-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>การเข้าถึง 32-บิต</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="82"/>
         <source>64-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>การเข้าถึง 64-บิต</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="96"/>
         <source>Accessed by instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>เข้าถึงโดยคำสั่ง</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="98"/>
         <source>Accessed by DMA</source>
-        <translation type="unfinished"></translation>
+        <translation>เข้าถึงโดย DMA</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="100"/>
         <source>Accessed by BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>เข้าถึงโดย BIOS</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="102"/>
         <source>Compressed data</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้อมูลถูกบีบอัด</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="104"/>
         <source>Accessed by memory copy</source>
-        <translation type="unfinished"></translation>
+        <translation>เข้าถึงโดยคัดลอกหน่วยความจำ</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="106"/>
         <source>(Unknown extra bit 5)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ไม่ทราบบิตที่เพิ่มเติม 5)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="108"/>
         <source>(Unknown extra bit 6)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ไม่ทราบบิตที่เพิ่มเติม 6)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="110"/>
         <source>(Unknown extra bit 7)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ไม่ทราบบิตที่เพิ่มเติม 7)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="112"/>
         <source>Invalid instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>คำสั่งไม่ถูกต้อง</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="114"/>
         <source>Invalid read</source>
-        <translation type="unfinished"></translation>
+        <translation>การอ่านไม่ถูกต้อง</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="116"/>
         <source>Invalid write</source>
-        <translation type="unfinished"></translation>
+        <translation>การเขียนไม่ถูกต้อง</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="118"/>
         <source>Invalid executable address</source>
-        <translation type="unfinished"></translation>
+        <translation>แอดเดรสประมวลผลไม่ถูกต้อง</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="120"/>
         <source>(Private bit 0)</source>
-        <translation type="unfinished"></translation>
+        <translation>(บิตส่วนตัว 0)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="122"/>
         <source>(Private bit 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>(บิตส่วนตัว 1)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="126"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>(บิตส่วนตัว 2)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="128"/>
         <source>Instruction opcode</source>
-        <translation type="unfinished"></translation>
+        <translation>ออปโค้ดของคำสั่ง</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="130"/>
         <source>(Private bit 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>(บิตส่วนตัว 2)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="135"/>
         <source>Thumb code</source>
-        <translation type="unfinished"></translation>
+        <translation>โค้ด Thumb</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="137"/>
         <source>Instruction operand</source>
-        <translation type="unfinished"></translation>
+        <translation>โอเปอแรนด์ของคำสั่ง</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="139"/>
         <source>(Private bit 3)</source>
-        <translation type="unfinished"></translation>
+        <translation>(บิตส่วนตัว 3)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="147"/>
         <source>(Unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ไม่ทราบ)</translation>
     </message>
 </context>
 <context>
@@ -3601,68 +3601,68 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="14"/>
         <source>Memory access logging</source>
-        <translation type="unfinished"></translation>
+        <translation>การบันทึกการเข้าถึงหน่วยความจำ</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="23"/>
         <source>Log file</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์บันทึกการเข้าถึงหน่วยความจำ</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="32"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>ค้นหา</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="39"/>
         <source>Log additional information (uses 3× space)</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกข้อมูลเพิ่มเติม (ใช้พื้นที่ 3 เท่า)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="46"/>
         <source>Load existing file if present</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลดไฟล์เดิมหากมี</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="56"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลด</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
         <source>Unload</source>
-        <translation type="unfinished"></translation>
+        <translation>ถอนการโหลด</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="76"/>
         <source>Regions</source>
-        <translation type="unfinished"></translation>
+        <translation>ภูมิภาค</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="87"/>
         <source>Export ROM snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออก สแนปชอตไฟล์เกม</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="94"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>เริ่ม</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="104"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>หยุด</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="97"/>
         <location filename="../MemoryAccessLogView.cpp" line="112"/>
         <source>Select access log file</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์เข้าถึงบันทึกการเข้าถึงหน่วยความจำ</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="97"/>
         <source>Memory access logs (*.mal)</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์บันทึกการเข้าถึงหน่วยความจำ (*.mal)</translation>
     </message>
 </context>
 <context>
@@ -3670,33 +3670,33 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryDump.ui" line="14"/>
         <source>Save Memory Range</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกช่วงหน่วยความจำ</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="20"/>
         <source>Start Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>เริ่มที่อยู่:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="76"/>
         <source>Byte Count:</source>
-        <translation type="unfinished"></translation>
+        <translation>จำนวนไบต์:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="108"/>
         <source>Dump across banks within region</source>
         <comment>Generate dump with bytes all within the same region of memory, even if it crosses the bank boundary</comment>
-        <translation type="unfinished"></translation>
+        <translation>ดัมป์ข้ามแบงก์ภายในภูมิภาค</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="25"/>
         <source>Save memory region</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกภูมิภาคหน่วยความจำ</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="31"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดไฟล์ส่งออกล้มเหลว: %1</translation>
     </message>
 </context>
 <context>
@@ -3704,57 +3704,57 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryModel.cpp" line="46"/>
         <source>Copy selection</source>
-        <translation type="unfinished"></translation>
+        <translation>คัดลอกที่เลือกไว้</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="51"/>
         <source>Save selection</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกที่เลือกไว้</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="56"/>
         <source>Paste</source>
-        <translation type="unfinished"></translation>
+        <translation>วาง</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="61"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลด</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="119"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>ทั้งหมด</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="169"/>
         <source>Load TBL</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลด TBL</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="223"/>
         <source>Save selected memory</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกหน่วยความจำที่เลือกไว้</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="229"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดไฟล์ส่งออกล้มเหลว: %1</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="237"/>
         <source>Load memory</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลด ความทรงจำ</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="243"/>
         <source>Failed to open input file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดไฟล์นำเข้าล้มเหลว: %1</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="358"/>
         <source>ISO-8859-1</source>
-        <translation type="unfinished"></translation>
+        <translation>ISO-8859-1</translation>
     </message>
 </context>
 <context>
@@ -3762,169 +3762,169 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="26"/>
         <source>Memory Search</source>
-        <translation type="unfinished"></translation>
+        <translation>ค้นหาหน่วยความจำ</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="51"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>ที่อยู่</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="56"/>
         <source>Current Value</source>
-        <translation type="unfinished"></translation>
+        <translation>ค่าปัจจุบัน</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="61"/>
         <location filename="../MemorySearch.ui" line="81"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>ชนิด</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="71"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>ค่า</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="88"/>
         <source>Numeric</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวเลข</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="101"/>
         <source>Text</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้อความ</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="118"/>
         <source>Width</source>
-        <translation type="unfinished"></translation>
+        <translation>ความยาว</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="125"/>
         <location filename="../MemorySearch.ui" line="185"/>
         <source>Guess</source>
-        <translation type="unfinished"></translation>
+        <translation>ทาย</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="138"/>
         <source>1 Byte (8-bit)</source>
-        <translation type="unfinished"></translation>
+        <translation>1 ไบต์ (8-บิต)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="148"/>
         <source>2 Bytes (16-bit)</source>
-        <translation type="unfinished"></translation>
+        <translation>2 ไบต์ (16-บิต)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="158"/>
         <source>4 Bytes (32-bit)</source>
-        <translation type="unfinished"></translation>
+        <translation>4 ไบต์ (32-บิต)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="178"/>
         <source>Number type</source>
-        <translation type="unfinished"></translation>
+        <translation>ชนิดของเลข</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="195"/>
         <source>Decimal</source>
-        <translation type="unfinished"></translation>
+        <translation>เลขฐานสิบ</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="202"/>
         <source>Hexadecimal</source>
-        <translation type="unfinished"></translation>
+        <translation>เลขฐานสิบหก</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="216"/>
         <source>Search type</source>
-        <translation type="unfinished"></translation>
+        <translation>ค้นหาชนิด</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="223"/>
         <source>Equal to value</source>
-        <translation type="unfinished"></translation>
+        <translation>เท่ากับค่า</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="236"/>
         <source>Greater than value</source>
-        <translation type="unfinished"></translation>
+        <translation>มากกว่าค่า</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="246"/>
         <source>Less than value</source>
-        <translation type="unfinished"></translation>
+        <translation>น้อยกว่าค่า</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="256"/>
         <source>Unknown/changed</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่ทราบ/เปลี่ยน</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="269"/>
         <source>Changed by value</source>
-        <translation type="unfinished"></translation>
+        <translation>เปลี่ยนโดยค่า</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="282"/>
         <source>Unchanged</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่เปลี่ยน</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="295"/>
         <source>Increased</source>
-        <translation type="unfinished"></translation>
+        <translation>เพิ่มขึ้น</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="308"/>
         <source>Decreased</source>
-        <translation type="unfinished"></translation>
+        <translation>ลดลง</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="318"/>
         <source>Search ROM</source>
-        <translation type="unfinished"></translation>
+        <translation>ค้นหาไฟล์เกม</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="336"/>
         <source>New Search</source>
-        <translation type="unfinished"></translation>
+        <translation>ค้นหาใหม่</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="343"/>
         <source>Search Within</source>
-        <translation type="unfinished"></translation>
+        <translation>ค้นหาภายใน</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="350"/>
         <source>Open in Memory Viewer</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดในตัวดูหน่วยความจำ</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="357"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>รีเฟรช</translation>
     </message>
     <message>
         <location filename="../MemorySearch.cpp" line="224"/>
         <source> (%0/%1×)</source>
-        <translation type="unfinished"></translation>
+        <translation> (%0/%1×)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.cpp" line="226"/>
         <source> (⅟%0×)</source>
-        <translation type="unfinished"></translation>
+        <translation> (⅟%0×)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.cpp" line="229"/>
         <source> (%0×)</source>
-        <translation type="unfinished"></translation>
+        <translation> (%0×)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.cpp" line="233"/>
         <source>%1 byte%2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ไบต์%2</translation>
     </message>
 </context>
 <context>
@@ -3932,87 +3932,87 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="14"/>
         <source>Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>หน่วยความจำ</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="192"/>
         <source>String:</source>
-        <translation type="unfinished"></translation>
+        <translation>สตริง:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="205"/>
         <source>Load TBL</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลด TBL</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="233"/>
         <source>Copy Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>คัดลอกที่เลือกไว้</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="247"/>
         <source>Paste</source>
-        <translation type="unfinished"></translation>
+        <translation>วาง</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="240"/>
         <source>Save Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกที่เลือกไว้</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="37"/>
         <source>Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>ที่อยู่:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="106"/>
         <source>Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation>การจัดตำแหน่ง:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="120"/>
         <source>1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>1 ไบต์</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="125"/>
         <source>2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>2 ไบต์</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="130"/>
         <source>4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>4 ไบต์</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="152"/>
         <source>Signed:</source>
-        <translation type="unfinished"></translation>
+        <translation>ลงนาม:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="172"/>
         <source>Unsigned:</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่ได้ลงนาม:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="254"/>
         <source>Save Range</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกช่วงข้อมูล</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="267"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลด</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="282"/>
         <source>Selected address accesses</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกที่อยู่ที่สามารถเข้าถึงไว้แล้ว</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="304"/>
         <source>Logging configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>การตั้งค่าบันทึกข้อมูลการทำงาน</translation>
     </message>
 </context>
 <context>
@@ -4020,7 +4020,7 @@ Download size: %3</source>
     <message>
         <location filename="../MessagePainter.cpp" line="82"/>
         <source>Frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>เฟรม %1</translation>
     </message>
 </context>
 <context>
@@ -4028,32 +4028,32 @@ Download size: %3</source>
     <message>
         <location filename="../MultiplayerController.cpp" line="314"/>
         <source>Couldn&apos;t find available save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถหาเซฟ ID ที่ใช้งานได้</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="368"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>พยายามที่จะตัดการเชื่อมต่อผู้เล่นในการเล่นผู้เล่นหลายคนที่ไม่ได้เชื่อมต่อ</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="408"/>
         <source>Clearing invalid save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>กำลังล้างเซฟ ID ที่ไม่ถูกต้อง</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="417"/>
         <source>Clearing invalid preferred ID</source>
-        <translation type="unfinished"></translation>
+        <translation>กำลังล้าง ID ที่ต้องการแต่ไม่ถูกต้อง</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="438"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>พยายามเอาเลข ID ผู้เล่นเพื่อผู้เล่นในผู้เล่นหลายคนที่ๆม่ได้เชื่อมต่ออยู่</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="452"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>พยายามบันทึกเลข ID ผู้เล่นเพื่อผู้เล่นในผู้เล่นหลายคนที่ๆม่ได้เชื่อมต่ออยู่</translation>
     </message>
 </context>
 <context>
@@ -4061,134 +4061,134 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.ui" line="14"/>
         <source>Sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>สไปรต์</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="72"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>ที่อยู่</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="94"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>คัดลอก</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="122"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>การขยาย</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="137"/>
         <source>Geometry</source>
-        <translation type="unfinished"></translation>
+        <translation>เรขาคณิต</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="145"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>ตำแหน่ง</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="224"/>
         <source>Dimensions</source>
-        <translation type="unfinished"></translation>
+        <translation>มิติ</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="316"/>
         <source>Matrix</source>
-        <translation type="unfinished"></translation>
+        <translation>เมทริกซ์</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="389"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออก</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="402"/>
         <source>Attributes</source>
-        <translation type="unfinished"></translation>
+        <translation>คุณสมบัติ</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="410"/>
         <source>Transform</source>
-        <translation type="unfinished"></translation>
+        <translation>การแปลง</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="430"/>
         <location filename="../ObjView.cpp" line="182"/>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>ปิด</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="444"/>
         <source>Palette</source>
-        <translation type="unfinished"></translation>
+        <translation>จานสี</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="481"/>
         <source>Double Size</source>
-        <translation type="unfinished"></translation>
+        <translation>เพิ่มขนาด 2 เท่า</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="548"/>
         <location filename="../ObjView.ui" line="561"/>
         <location filename="../ObjView.ui" line="632"/>
         <source>Return, Ctrl+R</source>
-        <translation type="unfinished"></translation>
+        <translation>รีเทิร์น, Ctrl+R</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="522"/>
         <source>Flipped</source>
-        <translation type="unfinished"></translation>
+        <translation>กลับด้าน</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="545"/>
         <source>H</source>
         <extracomment>Short for horizontal</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>H</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="558"/>
         <source>V</source>
         <extracomment>Short for vertical</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>V</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="572"/>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>โหมด</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="592"/>
         <location filename="../ObjView.cpp" line="191"/>
         <source>Normal</source>
-        <translation type="unfinished"></translation>
+        <translation>ปกติ</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="606"/>
         <source>Mosaic</source>
-        <translation type="unfinished"></translation>
+        <translation>โมเสก</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="643"/>
         <source>Enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานแล้ว</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="677"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>ลำดับความสำคัญ</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="715"/>
         <source>Tile</source>
-        <translation type="unfinished"></translation>
+        <translation>ไทล์</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="161"/>
         <location filename="../ObjView.cpp" line="250"/>
         <source>0x%0</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="183"/>
@@ -4200,38 +4200,38 @@ Download size: %3</source>
         <location filename="../ObjView.cpp" line="260"/>
         <location filename="../ObjView.cpp" line="261"/>
         <source>---</source>
-        <translation type="unfinished"></translation>
+        <translation>---</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="194"/>
         <source>Trans</source>
-        <translation type="unfinished"></translation>
+        <translation>เปลี่ยน</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="197"/>
         <source>OBJWIN</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OBJWIN</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="200"/>
         <source>Invalid</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่ถูกต้อง</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="257"/>
         <location filename="../ObjView.cpp" line="262"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translation>N/A</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="288"/>
         <source>Export sprite</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออก สไปรต์</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="289"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -4239,12 +4239,12 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="20"/>
         <source>Game Overrides</source>
-        <translation type="unfinished"></translation>
+        <translation>แทนที่เกม</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="30"/>
         <source>Game Boy Advance</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="42"/>
@@ -4252,137 +4252,137 @@ Download size: %3</source>
         <location filename="../OverrideView.ui" line="241"/>
         <location filename="../OverrideView.ui" line="257"/>
         <source>Autodetect</source>
-        <translation type="unfinished"></translation>
+        <translation>ตรวจจับอัตโนมัติ</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="55"/>
         <source>Realtime clock</source>
-        <translation type="unfinished"></translation>
+        <translation>นาฬิกาเวลาจริง</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="65"/>
         <source>Gyroscope</source>
-        <translation type="unfinished"></translation>
+        <translation>ไจโรสโคป</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="75"/>
         <source>Tilt</source>
-        <translation type="unfinished"></translation>
+        <translation>เอียง</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="85"/>
         <source>Light sensor</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวจับแสง</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="95"/>
         <source>Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>การสั่น</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="113"/>
         <source>Save type</source>
-        <translation type="unfinished"></translation>
+        <translation>ชนิดเซฟ</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="126"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่มี</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="131"/>
         <source>SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="136"/>
         <source>Flash 512kb</source>
-        <translation type="unfinished"></translation>
+        <translation>Flash 512kb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="141"/>
         <source>Flash 1Mb</source>
-        <translation type="unfinished"></translation>
+        <translation>Flash 1Mb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="146"/>
         <source>EEPROM 8kB</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 8kB</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="151"/>
         <source>EEPROM 512 bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 512 ไบต์</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="156"/>
         <source>SRAM 64kB (bootlegs only)</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM 64kB (เฉพาะของปลอมเท่านั้น)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="164"/>
         <source>Idle loop</source>
-        <translation type="unfinished"></translation>
+        <translation>วนซ้ำการไม่ได้ทำงาน</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="190"/>
         <source>Game Boy Player features</source>
-        <translation type="unfinished"></translation>
+        <translation>ฟีเจอร์ของเครื่อง Game Boy</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="197"/>
         <source>VBA bug compatibility mode</source>
-        <translation type="unfinished"></translation>
+        <translation>โหมดรองรับ บัค VBA</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="227"/>
         <source>Game Boy</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="233"/>
         <source>Game Boy model</source>
-        <translation type="unfinished"></translation>
+        <translation>โมเดลของ Game Boy</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="249"/>
         <source>Memory bank controller</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวควบคุม แบงค์หน่วยความจำ</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="265"/>
         <source>Background Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>สีพื้นหลัง</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="352"/>
         <source>Sprite Colors 1</source>
-        <translation type="unfinished"></translation>
+        <translation>สีสไปรต์ 1</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="359"/>
         <source>Sprite Colors 2</source>
-        <translation type="unfinished"></translation>
+        <translation>สีสไปรต์ 2</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="529"/>
         <source>Palette preset</source>
-        <translation type="unfinished"></translation>
+        <translation>ค่าจานสีที่ตั้งไว้</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="68"/>
         <source>Official MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC อย่างเป็นทางการ</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="72"/>
         <source>Licensed MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC ที่ได้รับอนุญาต</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="76"/>
         <source>Unlicensed MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC ที่ไม่ได้รับอนุญาต</translation>
     </message>
 </context>
 <context>
@@ -4390,72 +4390,72 @@ Download size: %3</source>
     <message>
         <location filename="../PaletteView.ui" line="14"/>
         <source>Palette</source>
-        <translation type="unfinished"></translation>
+        <translation>จานสี</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="44"/>
         <source>Background</source>
-        <translation type="unfinished"></translation>
+        <translation>พื้นหลัง</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="94"/>
         <source>Objects</source>
-        <translation type="unfinished"></translation>
+        <translation>สิ่งของ</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="153"/>
         <source>Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>การเลือก</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="184"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>แดง</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="191"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>เขียว</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="198"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>น้ำเงิน</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="253"/>
         <source>16-bit value</source>
-        <translation type="unfinished"></translation>
+        <translation>ค่า 16-บิต</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="260"/>
         <source>Hex code</source>
-        <translation type="unfinished"></translation>
+        <translation>ค่า Hex</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="267"/>
         <source>Palette index</source>
-        <translation type="unfinished"></translation>
+        <translation>ค่าจานสี</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="340"/>
         <source>Export BG</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออก พื้นหลัง</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="360"/>
         <source>Export OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออก OBJ</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="119"/>
         <source>#%0</source>
-        <translation type="unfinished"></translation>
+        <translation>#%0</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="120"/>
         <source>0x%0</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="121"/>
@@ -4463,22 +4463,22 @@ Download size: %3</source>
         <location filename="../PaletteView.cpp" line="123"/>
         <location filename="../PaletteView.cpp" line="124"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0 (%1)</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="136"/>
         <source>Export palette</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออก จานสี</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="137"/>
         <source>Windows PAL (*.pal);;Adobe Color Table (*.act)</source>
-        <translation type="unfinished"></translation>
+        <translation>Windows PAL (*.pal);;Adobe Color Table (*.act)</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="143"/>
         <source>Failed to open output palette file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>ล้มเหลวในการเปิดไฟล์จานสีที่ส่งออก: %1</translation>
     </message>
 </context>
 <context>
@@ -4486,27 +4486,27 @@ Download size: %3</source>
     <message>
         <location filename="../PlacementControl.ui" line="20"/>
         <source>Adjust placement</source>
-        <translation type="unfinished"></translation>
+        <translation>ปรับตำแหน่ง</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="26"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>ทั้งหมด</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="65"/>
         <source>Offset</source>
-        <translation type="unfinished"></translation>
+        <translation>ออฟเซต</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="72"/>
         <source>X</source>
-        <translation type="unfinished"></translation>
+        <translation>X</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="79"/>
         <source>Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Y</translation>
     </message>
 </context>
 <context>
@@ -4514,37 +4514,37 @@ Download size: %3</source>
     <message>
         <location filename="../PrinterView.ui" line="14"/>
         <source>Game Boy Printer</source>
-        <translation type="unfinished"></translation>
+        <translation>พรินต์เตอร์ Game Boy</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="130"/>
         <source>Hurry up!</source>
-        <translation type="unfinished"></translation>
+        <translation>เร็วๆหน่อย</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="137"/>
         <source>Tear off</source>
-        <translation type="unfinished"></translation>
+        <translation>ฉีกออก</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="180"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>การขยาย</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="223"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>คัดลอก</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="60"/>
         <source>Save Printout</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกที่ปรินต์ออกมา</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="60"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -4557,82 +4557,82 @@ Download size: %3</source>
         <location filename="../ROMInfo.cpp" line="89"/>
         <location filename="../ROMInfo.cpp" line="102"/>
         <source>(unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ไม่ทราบ)</translation>
     </message>
     <message>
         <location filename="../ROMInfo.cpp" line="57"/>
         <source> bytes</source>
-        <translation type="unfinished"></translation>
+        <translation> ไบต์</translation>
     </message>
     <message>
         <location filename="../ROMInfo.cpp" line="92"/>
         <source>(no database present)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ไม่มีฐานข้อมูล)</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="14"/>
         <source>ROM Info</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้อมูลไฟล์เกม</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้อมูลไฟล์</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
         <source>Game name:</source>
-        <translation type="unfinished"></translation>
+        <translation>ชื่อเกม:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="100"/>
         <source>SHA-1</source>
-        <translation type="unfinished"></translation>
+        <translation>SHA-1</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
         <source>ROM header</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวนำไฟล์เกม</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="140"/>
         <source>Internal name:</source>
-        <translation type="unfinished"></translation>
+        <translation>ชื่อภายใน:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="157"/>
         <source>Game ID:</source>
-        <translation type="unfinished"></translation>
+        <translation>ID เกม:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="174"/>
         <source>Maker Code:</source>
-        <translation type="unfinished"></translation>
+        <translation>รหัสผู้สร้าง:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="191"/>
         <source>Revision:</source>
-        <translation type="unfinished"></translation>
+        <translation>การแก้ไข:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="49"/>
         <source>File size:</source>
-        <translation type="unfinished"></translation>
+        <translation>ขนาดไฟล์:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="66"/>
         <source>CRC32:</source>
-        <translation type="unfinished"></translation>
+        <translation>CRC32:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
         <source>Save file:</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์เซฟ:</translation>
     </message>
 </context>
 <context>
@@ -4640,47 +4640,47 @@ Download size: %3</source>
     <message>
         <location filename="../ReportView.cpp" line="436"/>
         <source>Bug report archive</source>
-        <translation type="unfinished"></translation>
+        <translation>รายงานข้อผิดพลาด</translation>
     </message>
     <message>
         <location filename="../ReportView.cpp" line="436"/>
         <source>ZIP archive (*.zip)</source>
-        <translation type="unfinished"></translation>
+        <translation>ZIP archive (*.zip)</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="14"/>
         <source>Generate Bug Report</source>
-        <translation type="unfinished"></translation>
+        <translation>สร้างรายงานข้อผิดพลาด</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="67"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ในการรายงานข้อผิดพลาด (บั๊ก) โปรดสร้างไฟล์รายงานก่อนเพื่อแนบไปพร้อมกับรายงานที่คุณกำลังจะส่ง แนะนำให้แนบไฟล์เซฟเกมมาด้วย เนื่องจากมักจะช่วยในการแก้ไขปัญหาได้เป็นอย่างดี ระบบจะรวบรวมข้อมูลบางส่วนเกี่ยวกับเวอร์ชันของ {projectName} ที่คุณกำลังใช้งานอยู่, การตั้งค่าของคุณ, คอมพิวเตอร์ของคุณ, และเกมที่คุณกำลังเปิดอยู่ (หากมี) เมื่อรวบรวมข้อมูลเสร็จสิ้นแล้ว คุณสามารถตรวจสอบข้อมูลทั้งหมดที่ถูกรวบรวมไว้ด้านล่างนี้และบันทึกเป็นไฟล์ zip ได้ ระบบจะพยายามซ่อนข้อมูลส่วนบุคคลให้อัตโนมัติ เช่น ชื่อผู้ใช้ของคุณหากปรากฏอยู่ในพาธที่ถูกรวบรวม แต่คุณก็ยังสามารถแก้ไขในภายหลังได้เพื่อความแน่ใจ หลังจากสร้างและบันทึกไฟล์เรียบร้อยแล้ว โปรดคลิกปุ่มด้านล่างหรือไปยัง &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; เพื่อรายงานข้อผิดพลาดบน GitHub อย่าลืมแนบไฟล์รายงานที่คุณสร้างขึ้นไปด้วย!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="85"/>
         <source>Generate report</source>
-        <translation type="unfinished"></translation>
+        <translation>สร้างรายงาน</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="99"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึก</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="113"/>
         <source>Open issue list in browser</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดรายชื่อบัญหาในเบราว์เซอร์</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="134"/>
         <source>Include save file</source>
-        <translation type="unfinished"></translation>
+        <translation>รวมไฟล์เซฟ</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="150"/>
         <source>Create and include savestate</source>
-        <translation type="unfinished"></translation>
+        <translation>สร้างและรวมไฟล์เซฟสเตช</translation>
     </message>
 </context>
 <context>
@@ -4688,7 +4688,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="39"/>
         <source>Save games and save states (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>เซฟเกม และ เซฟสเตช (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="40"/>
