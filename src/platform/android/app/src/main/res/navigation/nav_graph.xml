@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2026 Ishan
+  ~ Android Port component of mGBA.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+  ~
+  ~ This program is distributed without any warranty. See the GNU General Public License for more details.
+  -->
+
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_games">
+
+    <fragment
+        android:id="@+id/nav_games"
+        android:name="org.mgba_emu.mgba.fragments.GamesFragment"
+        android:label="Games"
+        tools:layout="@layout/fragment_games" />
+
+    <fragment
+        android:id="@+id/nav_search"
+        android:name="org.mgba_emu.mgba.fragments.SearchFragment"
+        android:label="Search"
+        tools:layout="@layout/fragment_search" />
+
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="org.mgba_emu.mgba.fragments.HomeSettingsFragment"
+        android:label="Settings"
+        tools:layout="@layout/fragment_home_settings">
+
+        <action
+            android:id="@+id/action_homeSettingsFragment_to_searchLocationsFragment"
+            app:destination="@id/searchLocationsFragment" />
+
+        <action
+            android:id="@+id/action_homeSettingsFragment_to_installableFragment"
+            app:destination="@id/installableFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/installableFragment"
+        android:name="org.mgba_emu.mgba.fragments.InstallableFragment"
+        android:label="Manage mGBA data"
+        tools:layout="@layout/fragment_installable" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="org.mgba_emu.mgba.settings.SettingsFragment"
+        android:label="Advanced Settings"
+        tools:layout="@layout/fragment_settings">
+
+        <argument
+            android:name="game"
+            app:argType="org.mgba_emu.mgba.model.GameModel"
+            app:nullable="true" />
+        <argument
+            android:name="menuTag"
+            app:argType="org.mgba_emu.mgba.settings.model.Settings$MenuTag" />
+    </fragment>
+
+    <action
+        android:id="@+id/action_global_settingsFragment"
+        app:destination="@id/settingsFragment" />
+
+    <fragment
+        android:id="@+id/searchLocationsFragment"
+        android:name="org.mgba_emu.mgba.fragments.SearchLocationsFragment"
+        android:label="Search Locations"
+        tools:layout="@layout/fragment_search_locations" />
+
+    <dialog
+        android:id="@+id/directoryPickerDialog"
+        android:name="org.mgba_emu.mgba.fragments.DirectoryPickerDialogFragment"
+        android:label="Select Folder" />
+
+    <fragment
+        android:id="@+id/biosManagerFragment"
+        android:name="org.mgba_emu.mgba.fragments.BiosManagerFragment"
+        android:label="BIOS"
+        tools:layout="@layout/fragment_bios_manager" />
+
+    <action
+        android:id="@+id/action_global_biosManagerFragment"
+        app:destination="@id/biosManagerFragment" />
+
+    <fragment
+        android:id="@+id/gameAboutFragment"
+        android:name="org.mgba_emu.mgba.fragments.GameAboutFragment"
+        android:label="GameAboutFragment" >
+        <argument
+            android:name="game"
+            app:argType="org.mgba_emu.mgba.model.GameModel" />
+
+        <argument
+            android:name="transitionName"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_gameAboutFragment_to_gameInfoFragment"
+            app:destination="@id/gameInfoFragment" />
+    </fragment>
+
+    <action
+        android:id="@+id/action_global_gameAboutFragment"
+        app:destination="@id/gameAboutFragment" />
+
+    <fragment
+        android:id="@+id/gameInfoFragment"
+        android:name="org.mgba_emu.mgba.fragments.GameInfoFragment"
+        android:label="GameInfoFragment" >
+        <argument
+            android:name="game"
+            app:argType="org.mgba_emu.mgba.model.GameModel" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="org.mgba_emu.mgba.fragments.AboutFragment"
+        android:label="AboutFragment">
+
+        <action
+            android:id="@+id/action_aboutFragment_to_licensesFragment"
+            app:destination="@id/licensesFragment" />
+    </fragment>
+
+    <action
+        android:id="@+id/action_global_aboutFragment"
+        app:destination="@id/aboutFragment" />
+
+    <fragment
+        android:id="@+id/licensesFragment"
+        android:name="org.mgba_emu.mgba.fragments.LicensesFragment"
+        android:label="LicensesFragment" />
+</navigation>
