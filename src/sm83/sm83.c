@@ -179,11 +179,11 @@ static inline bool _SM83TickInternal(struct SM83Core* cpu) {
 void SM83Tick(struct SM83Core* cpu) {
 	while (cpu->cycles >= cpu->nextEvent) {
 		cpu->irqh.processEvents(cpu);
+		if (cpu->halted) {
+			return;
+		}
 	}
 	_SM83TickInternal(cpu);
-	while (cpu->cycles >= cpu->nextEvent) {
-		cpu->irqh.processEvents(cpu);
-	}
 }
 
 void SM83Run(struct SM83Core* cpu) {
