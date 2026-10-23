@@ -109,7 +109,10 @@ swiTable:
 .word SoundDriverVsyncOff     @ 0x28
 .word SoundDriverVsyncOn      @ 0x29
 .word SoundDriverGetJumpList  @ 0x2A
-
+@ 0x2B - 0xD3 are undefined behavior.
+.fill 169, 4, 0x00            @ 0x2B - 0xD3
+@ 0xD4 is also undefined behavior but has the property of jumping into wram
+.word 0x02002040              @ 0xD4
 .ltorg
 .word 0 @ Padding for back-compat
 

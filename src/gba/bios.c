@@ -586,6 +586,9 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case GBA_SWI_SOUND_DRIVER_GET_JUMP_LIST:
 		ARMRaiseSWI(cpu);
 		return;
+	case GBA_SWI_BUG_JUMP_TO_EWRAM:
+		ARMRaiseSWI(cpu);
+		return;
 	default:
 		mLOG(GBA_BIOS, STUB, "Stub software interrupt: %02X", immediate);
 	}
