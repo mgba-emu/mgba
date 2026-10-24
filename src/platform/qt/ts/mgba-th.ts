@@ -4693,179 +4693,179 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="40"/>
         <source>Select save game or save state</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์เซฟเกมหรือไฟล์เซฟสเตต</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="52"/>
         <source>Save games (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์เซฟเกม (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="53"/>
         <source>Select save game</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์เซฟเกม</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="74"/>
         <location filename="../SaveConverter.cpp" line="85"/>
         <source>Conversion failed</source>
-        <translation type="unfinished"></translation>
+        <translation>แปลงไฟล์ไม่สำเร็จ</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="74"/>
         <source>Failed to convert the save game. This is probably a bug.</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถแปลงไฟล์เซฟเกมได้ นี่อาจเป็นข้อผิดพลาดของโปรแกรม</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="85"/>
         <source>Failed to open output file.</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถเปิดไฟล์ส่งออกไฟล์ได้</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="96"/>
         <source>No file selected</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่มีไฟล์เลือกไว้</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="103"/>
         <source>Could not open file</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถเปิดไฟล์ได้</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="118"/>
         <source>No valid formats found</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่พบรูปแบบที่ใช้งานได้</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="126"/>
         <source>Please select a valid input file</source>
-        <translation type="unfinished"></translation>
+        <translation>โปรดเลือกไฟล์อินพุตที่ถูกต้อง</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="137"/>
         <source>No valid conversions found</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่พบตัวเลือกการแปลงไฟล์ที่ใช้งานได้</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="666"/>
         <source>Cannot convert save games between platforms</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถแปลงไฟล์เซฟเกมข้ามแพลตฟอร์มได้</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="14"/>
         <source>Convert/Extract Save Game</source>
-        <translation type="unfinished"></translation>
+        <translation>แปลง/สกัดไฟล์เซฟเกม</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="20"/>
         <source>Input file</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์นำเข้า</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="29"/>
         <location filename="../SaveConverter.ui" line="55"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>เรียกดู</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="46"/>
         <source>Output file</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์ส่งออก</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="461"/>
         <source>%1 %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>เซฟเกม %1 %2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="465"/>
         <source>little endian</source>
-        <translation type="unfinished"></translation>
+        <translation>little endian</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="468"/>
         <source>big endian</source>
-        <translation type="unfinished"></translation>
+        <translation>big endian</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="479"/>
         <source>SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="483"/>
         <source>%1 flash</source>
-        <translation type="unfinished"></translation>
+        <translation>แฟลช %1</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="487"/>
         <source>%1 EEPROM</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 EEPROM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="493"/>
         <source> + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation> + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="502"/>
         <source>%1 SRAM + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%1 SRAM + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="504"/>
         <source>%1 SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="509"/>
         <source>packed MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2 แบบบีบอัด</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="511"/>
         <source>unpacked MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2 แบบไม่บีบอัด</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="516"/>
         <source>MBC6 flash</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6 แฟรช</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="518"/>
         <source>MBC6 combined SRAM + flash</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6 รวม SRAM + แฟลช</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="520"/>
         <source>MBC6 SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6 SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="524"/>
         <source>TAMA5</source>
-        <translation type="unfinished"></translation>
+        <translation>TAMA5</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="536"/>
         <source>%1 (%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="540"/>
         <source>%1 save state with embedded %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์เซฟสเตต %1 ที่ฝังไฟล์เซฟเกม %2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="543"/>
         <source>%1 SharkPort %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 SharkPort %2 ไฟล์เซฟเกม</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="546"/>
         <source>%1 GameShark Advance SP %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 GameShark Advance SP %2 ไฟล์เซฟเกม</translation>
     </message>
 </context>
 <context>
@@ -4873,12 +4873,12 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="281"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished"></translation>
+        <translation>สคริป Lua (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="283"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์ทุกชนิด (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4886,7 +4886,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingTextBuffer.cpp" line="45"/>
         <source>Untitled buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>บัฟเฟอร์ไม่มีชื่อ</translation>
     </message>
 </context>
 <context>
@@ -4894,62 +4894,62 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="14"/>
         <source>Scripting</source>
-        <translation type="unfinished"></translation>
+        <translation>สคริปต์</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="71"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>เรียกใช้งาน</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="92"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="96"/>
         <source>Load recent script</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลดสคริปต์ล่าสุด</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="108"/>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>ดู</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="118"/>
         <source>Load script...</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลดสคริปต์...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="123"/>
         <source>&amp;Load most recent</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;โหลดไฟล์ล่าสุด</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="128"/>
         <source>&amp;Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;รีเซต</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="133"/>
         <source>0</source>
-        <translation type="unfinished"></translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="138"/>
         <source>Edit autorun scripts...</source>
-        <translation type="unfinished"></translation>
+        <translation>แก้ไขสคริปต์รันอัตโนมัติ...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="143"/>
         <source>Clear console</source>
-        <translation type="unfinished"></translation>
+        <translation>ล้างคอนโซล</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="67"/>
         <source>Select script to load</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกสคริปต์ที่จะโหลด</translation>
     </message>
 </context>
 <context>
@@ -4957,68 +4957,68 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="20"/>
         <source>Sensors</source>
-        <translation type="unfinished"></translation>
+        <translation>เซ็นเซอร์</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="31"/>
         <source>Realtime clock</source>
-        <translation type="unfinished"></translation>
+        <translation>นาฬิกาเวลาจริง</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="50"/>
         <source>Fixed time</source>
-        <translation type="unfinished"></translation>
+        <translation>เวลาที่กำหนดไว้</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="37"/>
         <source>System time</source>
-        <translation type="unfinished"></translation>
+        <translation>เวลาระบบ</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="96"/>
         <source>Start time at</source>
-        <translation type="unfinished"></translation>
+        <translation>เริ่มเวลาที่</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="60"/>
         <source>Now</source>
-        <translation type="unfinished"></translation>
+        <translation>ตอนนี้</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="67"/>
         <source>Offset time</source>
-        <translation type="unfinished"></translation>
+        <translation>ชดเชยเวลา</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="80"/>
         <source> sec</source>
-        <translation type="unfinished"></translation>
+        <translation> วินาที</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="126"/>
         <source>MM/dd/yy hh:mm:ss AP</source>
-        <translation type="unfinished"></translation>
+        <translation>dd/MM/yy HH:mm:ss</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="136"/>
         <source>Light sensor</source>
-        <translation type="unfinished"></translation>
+        <translation>เซนเซอร์แสง</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="142"/>
         <source>Brightness</source>
-        <translation type="unfinished"></translation>
+        <translation>ความสว่าง</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="179"/>
         <source>Tilt sensor</source>
-        <translation type="unfinished"></translation>
+        <translation>เซนเซอร์เอียง</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="187"/>
         <location filename="../SensorView.ui" line="276"/>
         <source>Set Y</source>
-        <translation type="unfinished"></translation>
+        <translation>ตั้งค่า Y</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="197"/>
