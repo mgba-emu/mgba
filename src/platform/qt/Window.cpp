@@ -262,20 +262,21 @@ void Window::argumentsPassed() {
 }
 
 QSize Window::contentSize(bool fallback) const {
-	if (m_display) {
-		return m_display->contentSize();
+	QSize size;
+	if (size.isEmpty() && m_display) {
+		size = m_display->contentSize();
 	}
-	if (m_controller) {
-		return m_controller->screenDimensions();
+	if (size.isEmpty() && m_controller) {
+		size = m_controller->screenDimensions();
 	}
-	if (fallback) {
+	if (size.isEmpty() && fallback) {
 #if defined(M_CORE_GBA)
 		return QSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 #elif defined(M_CORE_GB)
 		return QSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #endif
 	}
-	return QSize();
+	return size;
 }
 
 void Window::resizeFrame(const QSize& size) {
