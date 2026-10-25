@@ -79,6 +79,13 @@ int16_t mInterpolatorSincInterpolate(const struct mInterpolator* interpolator, c
 		sum += sample * weight;
 	}
 
+	if (sum > INT16_MAX) {
+		return INT16_MAX;
+	}
+	if (sum < INT16_MIN) {
+		return INT16_MIN;
+	}
+
 	return sum;
 }
 
