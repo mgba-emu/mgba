@@ -184,6 +184,8 @@ private:
 	void updateMRU();
 
 	void ensureScripting();
+
+	void setFrameSize(int scale);
 	void recalculateFrameSize(const QSize&);
 
 	template <typename T, typename... A> std::function<void()> openTView(A... arg);

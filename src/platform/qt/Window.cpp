@@ -719,6 +719,22 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 	event->accept();
 }
 
+void Window::setFrameSize(int scale) {
+	auto setSize = m_frameSizes[scale];
+	bool lockFrameSize = m_config->getOption("lockFrameSize").toInt();
+	if (!lockFrameSize) {
+		showNormal();
+	}
+	QSize size(contentSize(true));
+	size *= scale;
+	m_config->setOption("scaleMultiplier", scale); // TODO: Port to other
+	resizeFrame(size);
+	if (lockFrameSize) {
+		m_display->setMaximumScale(scale);
+	}
+	setSize->setActive(true);
+}
+
 void Window::recalculateFrameSize(const QSize& size) {
 	int factor = -1;
 	QSize baseSize(contentSize(true));
@@ -1608,21 +1624,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addMenu(tr("Audio/&Video"), "av");
 	m_actions.addMenu(tr("Frame size"), "frame", "av");
 	for (int i = 1; i <= 8; ++i) {
-		auto setSize = m_actions.addAction(tr("%1×").arg(QString::number(i)), QString("frame.%1x").arg(QString::number(i)), [this, i]() {
-			auto setSize = m_frameSizes[i];
-			bool lockFrameSize = m_config->getOption("lockFrameSize").toInt();
-			if (!lockFrameSize) {
-				showNormal();
-			}
-			QSize size(contentSize(true));
-			size *= i;
-			m_config->setOption("scaleMultiplier", i); // TODO: Port to other
-			resizeFrame(size);
-			if (lockFrameSize) {
-				m_display->setMaximumScale(i);
-			}
-			setSize->setActive(true);
-		}, "frame");
+		auto setSize = m_actions.addAction(tr("%1×").arg(QString::number(i)), QString("frame.%1x").arg(QString::number(i)), std::bind(&Window::setFrameSize, this, i), "frame");
 		setSize->setExclusive(true);
 		if (m_savedScale == i) {
 			QSignalBlocker blocker(setSize.get());
