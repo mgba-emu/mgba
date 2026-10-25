@@ -4210,7 +4210,7 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.cpp" line="197"/>
         <source>OBJWIN</source>
-        <translation type="unfinished">OBJWIN</translation>
+        <translation>OBJWIN</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="200"/>
@@ -4810,7 +4810,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="502"/>
         <source>%1 SRAM + RTC</source>
-        <translation type="unfinished">%1 SRAM + RTC</translation>
+        <translation>%1 SRAM + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="504"/>
@@ -5024,17 +5024,17 @@ Download size: %3</source>
         <location filename="../SensorView.ui" line="197"/>
         <location filename="../SensorView.ui" line="286"/>
         <source>Set X</source>
-        <translation type="unfinished"></translation>
+        <translation>ตั้งค่า X</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="268"/>
         <source>Gyroscope</source>
-        <translation type="unfinished"></translation>
+        <translation>เซนเซอร์ไจโรสโคป</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="296"/>
         <source>Sensitivity</source>
-        <translation type="unfinished"></translation>
+        <translation>ความไว</translation>
     </message>
 </context>
 <context>
@@ -5043,60 +5043,62 @@ Download size: %3</source>
         <location filename="../SettingsView.cpp" line="158"/>
         <location filename="../SettingsView.cpp" line="233"/>
         <source>Qt Multimedia</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt มัลติมีเดีย</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="165"/>
         <source>SDL</source>
-        <translation type="unfinished"></translation>
+        <translation>SDL</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="173"/>
         <source>Software (Qt)</source>
-        <translation type="unfinished"></translation>
+        <translation>โปรแกรม (Qt)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1315"/>
         <location filename="../SettingsView.cpp" line="179"/>
         <source>OpenGL</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenGL</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="186"/>
         <source>OpenGL (force version 1.x)</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenGL (บังคับเวอร์ชัน 1.x)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="219"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่มี</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="226"/>
         <source>None (Still Image)</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่มี (ภาพนิ่ง)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="335"/>
         <source>Keyboard</source>
-        <translation type="unfinished"></translation>
+        <translation>คีย์บอร์ด</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="347"/>
         <source>Controllers</source>
-        <translation type="unfinished"></translation>
+        <translation>คอนโทรลเลอร์</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="412"/>
         <source>Shortcuts</source>
-        <translation type="unfinished"></translation>
+        <translation>ทางลัด</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="415"/>
         <source>Shaders are not supported when the display driver is not OpenGL.
 
 If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่รองรับ Shader เมื่อไดรเวอร์จอแสดงผลไม่ใช่ OpenGL
+
+หากตั้งค่าเป็น OpenGL และคุณยังเห็นสิ่งนี้อยู่ การ์ดจอหรือไดรเวอร์ของคุณอาจเก่าเกินไป</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="419"/>
@@ -5104,203 +5106,203 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.cpp" line="446"/>
         <location filename="../SettingsView.cpp" line="448"/>
         <source>Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Shaders</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="469"/>
         <source>Select BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์ BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="476"/>
         <source>Select directory</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไดเรกทอรี</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="484"/>
         <source>Select image</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์ภาพ</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="484"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์ภาพ (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="878"/>
         <source>(%1×%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>(%1×%2)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="896"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่เคย</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="901"/>
         <source>Just now</source>
-        <translation type="unfinished"></translation>
+        <translation>เมื่อก่อนหน้านี้</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="905"/>
         <source>Less than an hour ago</source>
-        <translation type="unfinished"></translation>
+        <translation>เมื่อน้อยกว่าชั่วโมงที่แล้ว</translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="910"/>
         <source>%n hour(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n ชั่วโมงที่แล้ว</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="914"/>
         <source>%n day(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n วันที่แล้ว</numerusform>
         </translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="20"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>การตั้งค่า</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="45"/>
         <source>Audio/Video</source>
-        <translation type="unfinished"></translation>
+        <translation>เสียง/ภาพ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="50"/>
         <source>Gameplay</source>
-        <translation type="unfinished"></translation>
+        <translation>การเล่นเกม</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
         <source>Interface</source>
-        <translation type="unfinished"></translation>
+        <translation>อินเทอร์เฟซ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>อัพเดต</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
         <source>Emulation</source>
-        <translation type="unfinished"></translation>
+        <translation>การจำลอง</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="70"/>
         <source>Enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>การปรับปรุง</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="75"/>
         <source>BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="80"/>
         <source>Paths</source>
-        <translation type="unfinished"></translation>
+        <translation>ทาง</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="85"/>
         <source>Logging</source>
-        <translation type="unfinished"></translation>
+        <translation>การบันทึก</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="90"/>
         <source>Game Boy</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="111"/>
         <source>Audio driver:</source>
-        <translation type="unfinished"></translation>
+        <translation>ไดร์เวอร์เสียง:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="128"/>
         <source>Audio buffer:</source>
-        <translation type="unfinished"></translation>
+        <translation>บัฟเฟอร์เสียง:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="140"/>
         <location filename="../SettingsView.ui" line="162"/>
         <source>1536</source>
-        <translation type="unfinished"></translation>
+        <translation>1536</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="147"/>
         <source>512</source>
-        <translation type="unfinished"></translation>
+        <translation>512</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="152"/>
         <source>768</source>
-        <translation type="unfinished"></translation>
+        <translation>768</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="157"/>
         <source>1024</source>
-        <translation type="unfinished"></translation>
+        <translation>1024</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="167"/>
         <source>2048</source>
-        <translation type="unfinished"></translation>
+        <translation>2048</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="172"/>
         <source>3072</source>
-        <translation type="unfinished"></translation>
+        <translation>3072</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="177"/>
         <source>4096</source>
-        <translation type="unfinished"></translation>
+        <translation>4096</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="185"/>
         <source>samples</source>
-        <translation type="unfinished"></translation>
+        <translation>ตัวอย่าง</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="194"/>
         <source>Sample rate:</source>
-        <translation type="unfinished"></translation>
+        <translation>อัตราตัวอย่าง:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="206"/>
         <location filename="../SettingsView.ui" line="223"/>
         <source>44100</source>
-        <translation type="unfinished"></translation>
+        <translation>44100</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="213"/>
         <source>22050</source>
-        <translation type="unfinished"></translation>
+        <translation>22050</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="218"/>
         <source>32000</source>
-        <translation type="unfinished"></translation>
+        <translation>32000</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="228"/>
         <source>48000</source>
-        <translation type="unfinished"></translation>
+        <translation>48000</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="236"/>
         <source>Hz</source>
-        <translation type="unfinished"></translation>
+        <translation>เฮิรตซ์</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="245"/>
         <source>Volume:</source>
-        <translation type="unfinished"></translation>
+        <translation>ระดับเสียง:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="276"/>
@@ -5308,480 +5310,480 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.ui" line="811"/>
         <location filename="../SettingsView.ui" line="836"/>
         <source>Mute</source>
-        <translation type="unfinished"></translation>
+        <translation>ปิดเสียง</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="285"/>
         <source>Fast forward volume:</source>
-        <translation type="unfinished"></translation>
+        <translation>ระดับเสียงเมื่อเร่งความเร็ว:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="325"/>
         <source>Audio in multiplayer:</source>
-        <translation type="unfinished"></translation>
+        <translation>ระดับเสียงในผู้เล่นหลายคน:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="332"/>
         <source>All windows</source>
-        <translation type="unfinished"></translation>
+        <translation>หน้าต่างทั้งหมด</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="345"/>
         <source>Player 1 window only</source>
-        <translation type="unfinished"></translation>
+        <translation>หน้าต่างผู้เล่น 1 เท่านั้น</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="355"/>
         <source>Currently active player window</source>
-        <translation type="unfinished"></translation>
+        <translation>หน้าต่างเครื่องเล่นที่ใช้งานอยู่ในปัจจุบัน</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="388"/>
         <source>Display driver:</source>
-        <translation type="unfinished"></translation>
+        <translation>ไดร์เวอร์ภาพ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="405"/>
         <source>Frameskip:</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้ามเฟรม:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="414"/>
         <source>Skip every</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้ามทุกๆ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="424"/>
         <location filename="../SettingsView.ui" line="1199"/>
         <source>frames</source>
-        <translation type="unfinished"></translation>
+        <translation>เฟรม</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="475"/>
         <source>FPS target:</source>
-        <translation type="unfinished"></translation>
+        <translation>เป้าหมาย FPS:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="500"/>
         <source>frames per second</source>
-        <translation type="unfinished"></translation>
+        <translation>เฟรมต่อวินาที</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="516"/>
         <source>Sync:</source>
-        <translation type="unfinished"></translation>
+        <translation>ซิงค์:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="382"/>
         <location filename="../SettingsView.ui" line="525"/>
         <source>Video</source>
-        <translation type="unfinished"></translation>
+        <translation>วีดีโอ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="105"/>
         <location filename="../SettingsView.ui" line="532"/>
         <source>Audio</source>
-        <translation type="unfinished"></translation>
+        <translation>เสียง</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="433"/>
         <source>Lock aspect ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>ล็อกอัตราส่วนหน้าจอ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="440"/>
         <source>Force integer scaling</source>
-        <translation type="unfinished"></translation>
+        <translation>บังคับปรับขนาดเต็ม</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="454"/>
         <source>Bilinear filtering</source>
-        <translation type="unfinished"></translation>
+        <translation>การกรองแบบไบลิเนียร์</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="757"/>
         <source>Show filename instead of ROM name in library view</source>
-        <translation type="unfinished"></translation>
+        <translation>แสดงชื่อไฟล์แทนชื่อไฟล์เกมในมุมมองไลบรารี</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="804"/>
         <location filename="../SettingsView.ui" line="829"/>
         <source>Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>พัก</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="795"/>
         <source>When inactive:</source>
-        <translation type="unfinished"></translation>
+        <translation>เมื่อไม่ได้ใช้งาน:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="548"/>
         <source>On loading a game:</source>
-        <translation type="unfinished"></translation>
+        <translation>เมื่อกำลังโหลดเกม:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="555"/>
         <source>Load last state</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลสเตดล่าสุด</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="565"/>
         <source>Load cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลด สูตรโกง</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="599"/>
         <source>Save entered cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึก สูตรโกงที่ป้อนไว้</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="820"/>
         <source>When minimized:</source>
-        <translation type="unfinished"></translation>
+        <translation>เมื่อย่อหน้าจอ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="959"/>
         <source>Current channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>ช่องปัจจุบัน:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="973"/>
         <source>Current version:</source>
-        <translation type="unfinished"></translation>
+        <translation>เวอร์ชันปัจจุบัน:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="997"/>
         <source>Update channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>ช่องอัพเดต:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1007"/>
         <source>Available version:</source>
-        <translation type="unfinished"></translation>
+        <translation>เวอร์ชันพร้อมใช้งาน:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1014"/>
         <source>(Unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ไม่ทราบ)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1024"/>
         <source>Last checked:</source>
-        <translation type="unfinished"></translation>
+        <translation>ตรวจสอบล่าสุด:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1045"/>
         <source>Automatically check on start</source>
-        <translation type="unfinished"></translation>
+        <translation>ตรวจอัตโนมัติเมื่อเปิด</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1052"/>
         <source>Check now</source>
-        <translation type="unfinished"></translation>
+        <translation>ตรวจเดี่ยวนี้</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2174"/>
         <source>Default color palette only</source>
-        <translation type="unfinished"></translation>
+        <translation>จานสีเริ่มต้นเท่านั้น</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2167"/>
         <source>SGB color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>จานสี SGB ถ้ามี</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2181"/>
         <source>GBC color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>จานสี GBC ถ้ามี</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2188"/>
         <source>SGB (preferred) or GBC color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>ชุดสี SGB (มาก่อน) หรือ GBC หากมี</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2200"/>
         <source>Game Boy Camera</source>
-        <translation type="unfinished"></translation>
+        <translation>กล้อง Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2206"/>
         <source>Driver:</source>
-        <translation type="unfinished"></translation>
+        <translation>ไดร์เวอร์:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2223"/>
         <source>Source:</source>
-        <translation type="unfinished"></translation>
+        <translation>ที่มา:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="509"/>
         <source>Native (59.7275)</source>
-        <translation type="unfinished"></translation>
+        <translation>ดั้งเดิม (59.7275)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="447"/>
         <source>Interframe blending</source>
-        <translation type="unfinished"></translation>
+        <translation>การผสมอินเตอร์เฟรม</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="709"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation>ภาษา</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="726"/>
         <source>Library:</source>
-        <translation type="unfinished"></translation>
+        <translation>ไลบารี่:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="734"/>
         <source>List view</source>
-        <translation type="unfinished"></translation>
+        <translation>ดูแบบตาราง</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="739"/>
         <source>Tree view</source>
-        <translation type="unfinished"></translation>
+        <translation>ดูแบบต้นไม้</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="747"/>
         <source>Show when no game open</source>
-        <translation type="unfinished"></translation>
+        <translation>แสดงเมื่อๆไม่มีเกมเปิด</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="764"/>
         <source>Clear cache</source>
-        <translation type="unfinished"></translation>
+        <translation>ล้างไฟล์แคช</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="778"/>
         <source>Allow opposing input directions</source>
-        <translation type="unfinished"></translation>
+        <translation>อนุญาตให้ทิศทางอินพุตตรงข้าม</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="785"/>
         <source>Suspend screensaver</source>
-        <translation type="unfinished"></translation>
+        <translation>หยุดโปรแกรมรักษาหน้าจอ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="852"/>
         <source>Dynamically update window title</source>
-        <translation type="unfinished"></translation>
+        <translation>ปรับปรุงชื่อหน้าต่างแบบไดนามิก</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="872"/>
         <source>Show filename instead of ROM name in title bar</source>
-        <translation type="unfinished"></translation>
+        <translation>แสดงชื่อไฟล์แทนชื่อไฟล์เกมในแถบชื่อเรื่อง</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="889"/>
         <source>Show OSD messages</source>
-        <translation type="unfinished"></translation>
+        <translation>แสดงข้อความ OSD</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="698"/>
         <source>Enable Discord Rich Presence</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานสถานะบน Discord</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="575"/>
         <source>Edit autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>แก้ไขสคริปต์ที่รันอัตโนมัติ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="589"/>
         <source>Periodically autosave state</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกสถานะอัตโนมัติเป็นระยะ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="862"/>
         <source>Show FPS in title bar</source>
-        <translation type="unfinished"></translation>
+        <translation>แสดง FPS ในแถบชื่อเรื่อง</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="904"/>
         <source>Show frame count in OSD</source>
-        <translation type="unfinished"></translation>
+        <translation>แสดงจำนวนเฟรมใน OSD</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="911"/>
         <source>Show emulation info on reset</source>
-        <translation type="unfinished"></translation>
+        <translation>แสดงข้อมูลการจำลองเมื่อรีเซ็ต</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="948"/>
         <source>Custom border:</source>
-        <translation type="unfinished"></translation>
+        <translation>กรอบที่กำหนดเอง:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1066"/>
         <source>Fast forward speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>ความเร็วเมื่อเร่งความเร็ว:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1097"/>
         <location filename="../SettingsView.ui" line="1140"/>
         <source>Unbounded</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่มีขอบเขต</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1109"/>
         <source>Fast forward (held) speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>ความเร็วเมื่อเร่งความเร็ว (กดค้าง):</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1152"/>
         <source>Autofire interval:</source>
-        <translation type="unfinished"></translation>
+        <translation>ช่วงเวลาห่างระหว่างการยิงอัตโนมัติ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1176"/>
         <source>Enable rewind</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดการย้อนกลับ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1183"/>
         <source>Rewind history:</source>
-        <translation type="unfinished"></translation>
+        <translation>ประวัติการย้อนกลับ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1208"/>
         <source>Rewind speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>ความเร็วในการย้อนกลับ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1245"/>
         <source>Idle loops:</source>
-        <translation type="unfinished"></translation>
+        <translation>ลูปว่าง:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1253"/>
         <source>Run all</source>
-        <translation type="unfinished"></translation>
+        <translation>รันที้งหมด</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1258"/>
         <source>Remove known</source>
-        <translation type="unfinished"></translation>
+        <translation>ลบที่ทราบ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1263"/>
         <source>Detect and remove</source>
-        <translation type="unfinished"></translation>
+        <translation>ตรวจและลบ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1271"/>
         <source>Preload entire ROM into memory</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลดไฟล์เกมทั้งหมดลงในหน่วยความจำชั่วคราว</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="616"/>
         <source>Save state extra data:</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้อมูลเพิมเติมของไฟล์เซฟสเตด:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="633"/>
         <location filename="../SettingsView.ui" line="677"/>
         <source>Save game</source>
-        <translation type="unfinished"></translation>
+        <translation>เซฟเกม</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="660"/>
         <source>Load state extra data:</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้อมูลเพิ่มเติมของไฟล์โหลดสเตด:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1815"/>
         <source>Models</source>
-        <translation type="unfinished"></translation>
+        <translation>โมเดล</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1821"/>
         <source>GB only:</source>
-        <translation type="unfinished"></translation>
+        <translation>GB เท่านั้น:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1831"/>
         <source>SGB compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>รองรับ SGB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1841"/>
         <source>GBC only:</source>
-        <translation type="unfinished"></translation>
+        <translation>GBC เท่านั้น</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1851"/>
         <source>GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>รองรับ GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1861"/>
         <source>SGB and GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>รองรับ SGB และ GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1881"/>
         <source>Game Boy palette</source>
-        <translation type="unfinished"></translation>
+        <translation>จานสี Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1887"/>
         <source>Preset:</source>
-        <translation type="unfinished"></translation>
+        <translation>ตั้งไว้ล่วงหน้า:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="623"/>
         <location filename="../SettingsView.ui" line="667"/>
         <source>Screenshot</source>
-        <translation type="unfinished"></translation>
+        <translation>ภาพหน้าจอ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="643"/>
         <location filename="../SettingsView.ui" line="684"/>
         <source>Cheat codes</source>
-        <translation type="unfinished"></translation>
+        <translation>โค๊ตสูตรโกง</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1281"/>
         <source>Enable Game Boy Player features by default</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานฟีเจอร์ของ Game Boy Player โดยค่าเริ่มต้น</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1288"/>
         <source>Enable VBA bug compatibility in ROM hacks</source>
-        <translation type="unfinished"></translation>
+        <translation>เปิดใช้งานความเข้ากันได้ของบั๊ก VBA ในการแฮ็กไฟล์เกม</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1302"/>
         <source>Video renderer:</source>
-        <translation type="unfinished"></translation>
+        <translation>โปรแกรมเรนเดอร์วิดีโอ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1310"/>
         <source>Software</source>
-        <translation type="unfinished"></translation>
+        <translation>ซอฟต์แวร์</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1323"/>
         <source>OpenGL enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>การปรับปรุง OpenGL</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1329"/>
         <source>High-resolution scale:</source>
-        <translation type="unfinished"></translation>
+        <translation>มาตราส่วนความละเอียดสูง:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1367"/>
         <source>(240×160)</source>
-        <translation type="unfinished"></translation>
+        <translation>(240×160)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1396"/>
         <source>GB BIOS file:</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์ GB BIOS:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="932"/>
@@ -5795,37 +5797,37 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.ui" line="1701"/>
         <location filename="../SettingsView.ui" line="1749"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>เรียกดู</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1508"/>
         <source>Use BIOS file if found</source>
-        <translation type="unfinished"></translation>
+        <translation>ใช้ไฟล์ BIOS หากพบ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1518"/>
         <source>Skip BIOS intro</source>
-        <translation type="unfinished"></translation>
+        <translation>ข้ามฉากเริ่ม BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1480"/>
         <source>GBA BIOS file:</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์ GBA BIOS:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1452"/>
         <source>GBC BIOS file:</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์ GBC BIOS:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1424"/>
         <source>SGB BIOS file:</source>
-        <translation type="unfinished"></translation>
+        <translation>ไฟล์ SGB BIOS:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1532"/>
         <source>Save games</source>
-        <translation type="unfinished"></translation>
+        <translation>เซฟเกม</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1566"/>
@@ -5834,62 +5836,62 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.ui" line="1710"/>
         <location filename="../SettingsView.ui" line="1758"/>
         <source>Same directory as the ROM</source>
-        <translation type="unfinished"></translation>
+        <translation>ตำแหน่งเดี่ยวกันกับไฟล์เกม</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1580"/>
         <source>Save states</source>
-        <translation type="unfinished"></translation>
+        <translation>เซฟสเตต</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1628"/>
         <source>Screenshots</source>
-        <translation type="unfinished"></translation>
+        <translation>ภาพหน้าจอ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1676"/>
         <source>Patches</source>
-        <translation type="unfinished"></translation>
+        <translation>แพตช์</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1724"/>
         <source>Cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>สูตรโกง</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1781"/>
         <source>Log to file</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกลงไฟล์</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1788"/>
         <source>Log to console</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกชงคอนโซล</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1802"/>
         <source>Select Log File</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์บันทึก:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1897"/>
         <source>Default BG colors:</source>
-        <translation type="unfinished"></translation>
+        <translation>สีพื้นหลังทั่วไป:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1984"/>
         <source>Default sprite colors 1:</source>
-        <translation type="unfinished"></translation>
+        <translation>สีสไปรท์ทั่วไป 1:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2071"/>
         <source>Default sprite colors 2:</source>
-        <translation type="unfinished"></translation>
+        <translation>สีสไปรท์ทั่วไป 2:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1871"/>
         <source>Super Game Boy borders</source>
-        <translation type="unfinished"></translation>
+        <translation>ขอบจอ Super Game Boy</translation>
     </message>
 </context>
 <context>
@@ -5897,83 +5899,83 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.cpp" line="78"/>
         <source>No shader active</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่มี Shader ที่ใช้งานอยู่</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="92"/>
         <location filename="../ShaderSelector.cpp" line="95"/>
         <source>Load shader</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลด shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="94"/>
         <source>mGBA Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Shaders ของ mGBA</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="125"/>
         <source>Error loading shader</source>
-        <translation type="unfinished"></translation>
+        <translation>มีปัญหาโหลด shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="125"/>
         <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถโหลดshader &quot;%1&quot; ได้สำเร็จ</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="147"/>
         <source>No shader loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่มี shader โหลด</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="155"/>
         <source>by %1</source>
-        <translation type="unfinished"></translation>
+        <translation>โดย %1</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="166"/>
         <source>Preprocessing</source>
-        <translation type="unfinished"></translation>
+        <translation>การประมวลผลล่วงหน้า</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="173"/>
         <source>Pass %1</source>
-        <translation type="unfinished"></translation>
+        <translation>ผ่าน %1</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="14"/>
         <source>Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Shaders</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="28"/>
         <source>Active Shader:</source>
-        <translation type="unfinished"></translation>
+        <translation>Shaderที่ใช้งานอยู่:</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="35"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>ชื่อ</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="45"/>
         <source>Author</source>
-        <translation type="unfinished"></translation>
+        <translation>ผู้สร้าง</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="62"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>คำบรรยาย</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="88"/>
         <source>Unload Shader</source>
-        <translation type="unfinished"></translation>
+        <translation>ยกเลิกการโหลด Shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="95"/>
         <source>Load New Shader</source>
-        <translation type="unfinished"></translation>
+        <translation>โหลด Shader ใหม่</translation>
     </message>
 </context>
 <context>
@@ -5981,17 +5983,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShortcutModel.cpp" line="68"/>
         <source>Action</source>
-        <translation type="unfinished"></translation>
+        <translation>การกระทำ</translation>
     </message>
     <message>
         <location filename="../ShortcutModel.cpp" line="70"/>
         <source>Keyboard</source>
-        <translation type="unfinished"></translation>
+        <translation>คีย์บอร์ด</translation>
     </message>
     <message>
         <location filename="../ShortcutModel.cpp" line="72"/>
         <source>Gamepad</source>
-        <translation type="unfinished"></translation>
+        <translation>แป้นเกม</translation>
     </message>
 </context>
 <context>
@@ -5999,22 +6001,22 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShortcutView.ui" line="14"/>
         <source>Edit Shortcuts</source>
-        <translation type="unfinished"></translation>
+        <translation>แก้ไขทางลัด</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="32"/>
         <source>Keyboard</source>
-        <translation type="unfinished"></translation>
+        <translation>คีย์บอร์ด</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="42"/>
         <source>Gamepad</source>
-        <translation type="unfinished"></translation>
+        <translation>แป้นเกม</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="49"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>ล้าง</translation>
     </message>
 </context>
 <context>
@@ -6022,88 +6024,88 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../TileView.cpp" line="227"/>
         <source>Export tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออกตาราง</translation>
     </message>
     <message>
         <location filename="../TileView.cpp" line="228"/>
         <location filename="../TileView.cpp" line="240"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
         <location filename="../TileView.cpp" line="239"/>
         <source>Export tile</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออกตาราง</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="14"/>
         <source>Tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>ตาราง</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="170"/>
         <source>Export Selected</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออกที่เลือกไว้</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="184"/>
         <source>Export All</source>
-        <translation type="unfinished"></translation>
+        <translation>ส่งออกทั้งหมด</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="40"/>
         <source>256 colors</source>
-        <translation type="unfinished"></translation>
+        <translation>256 สี</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="33"/>
         <source>Palette</source>
-        <translation type="unfinished"></translation>
+        <translation>จานสี</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="73"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation>การขยาย</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="96"/>
         <source>Tiles per row</source>
-        <translation type="unfinished"></translation>
+        <translation>ตารางต่อแถว</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="103"/>
         <source>Fit to window</source>
-        <translation type="unfinished"></translation>
+        <translation>พอดีกับหน้าต่าง</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="119"/>
         <source>Displayed tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>ตารางที่แสดง</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="125"/>
         <source>Only BG tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>เฉพาะตาราง BG</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="135"/>
         <source>Only OBJ tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>เฉพาะตาราง OBJ</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="145"/>
         <source>Both</source>
-        <translation type="unfinished"></translation>
+        <translation>ทั้งคู่</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="163"/>
         <source>Copy Selected</source>
-        <translation type="unfinished"></translation>
+        <translation>คัลลอกที่เลือกไว้</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="177"/>
         <source>Copy All</source>
-        <translation type="unfinished"></translation>
+        <translation>คัดลอกทั้งหมด</translation>
     </message>
 </context>
 <context>
@@ -6111,72 +6113,72 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.cpp" line="224"/>
         <source>Failed to open output video file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>ไม่สามารถเปิดไฟล์วิดีโอส่งออก:% 1</translation>
     </message>
     <message>
         <location filename="../VideoView.cpp" line="245"/>
         <source>Native (%0x%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>ดั้งเดิม (%0x%1)</translation>
     </message>
     <message>
         <location filename="../VideoView.cpp" line="260"/>
         <source>Select output file</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์ส่งออก</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="20"/>
         <source>Record Video</source>
-        <translation type="unfinished"></translation>
+        <translation>บันทึกวีดิโอ</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="40"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>เริ่ม</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="56"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>หยุด</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="69"/>
         <source>Select File</source>
-        <translation type="unfinished"></translation>
+        <translation>เลือกไฟล์</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="101"/>
         <source>Presets</source>
-        <translation type="unfinished"></translation>
+        <translation>ค่าที่ตั้งไว้ล่วงหน้า</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="109"/>
         <source>High &amp;Quality</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;คุณภาพ สูง</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="119"/>
         <source>&amp;YouTube</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;YouTube</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="129"/>
         <source>WebM</source>
-        <translation type="unfinished"></translation>
+        <translation>WebM</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="139"/>
         <source>MP4</source>
-        <translation type="unfinished"></translation>
+        <translation>MP4</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="146"/>
         <source>&amp;Lossless</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Lossless</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="167"/>
         <source>4K</source>
-        <translation type="unfinished"></translation>
+        <translation>4K</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="174"/>
