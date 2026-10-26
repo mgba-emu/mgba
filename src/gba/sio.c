@@ -256,6 +256,14 @@ uint16_t GBASIOReadRegister(struct GBASIO* sio, uint32_t address, uint16_t value
 		case GBA_REG_JOYSTAT:
 			mLOG(GBA_SIO, DEBUG, "JOY read: STAT -> %04X", value);
 			break;
+		case GBA_REG_JOY_RECV_LO:
+			mLOG(GBA_SIO, DEBUG, "JOY read: RECV_LO -> %04X", value);
+			sio->p->memory.io[GBA_REG(JOYSTAT)] &= ~JOYSTAT_RECV;
+			break;
+		case GBA_REG_JOY_RECV_HI:
+			mLOG(GBA_SIO, DEBUG, "JOY read: RECV_HI -> %04X", value);
+			sio->p->memory.io[GBA_REG(JOYSTAT)] &= ~JOYSTAT_RECV;
+			break;
 		case GBA_REG_JOY_TRANS_LO:
 			mLOG(GBA_SIO, DEBUG, "JOY read: TRANS_LO -> %04X", value);
 			break;

@@ -886,11 +886,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		// (Silent) write-only register
 		return 0;
 
-	case GBA_REG_JOY_RECV_LO:
-	case GBA_REG_JOY_RECV_HI:
-		gba->memory.io[GBA_REG(JOYSTAT)] &= ~JOYSTAT_RECV;
-		break;
-
 	// Wave RAM can be written and read even if the audio hardware is disabled.
 	// However, it is not possible to switch between the two banks because it
 	// isn't possible to write to register SOUND3CNT_LO.
@@ -958,6 +953,8 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case GBA_REG_SIOMULTI3:
 	case GBA_REG_SIOMLT_SEND: // Alias for GBA_REG_SIODATA8
 	case GBA_REG_JOYCNT:
+	case GBA_REG_JOY_RECV_LO:
+	case GBA_REG_JOY_RECV_HI:
 	case GBA_REG_JOY_TRANS_LO:
 	case GBA_REG_JOY_TRANS_HI:
 	case GBA_REG_JOYSTAT:
