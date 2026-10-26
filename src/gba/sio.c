@@ -238,6 +238,116 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 	sio->siocnt = value;
 }
 
+uint16_t GBASIOReadRegister(struct GBASIO* sio, uint32_t address, uint16_t value) {
+	int id = 0;
+	if (sio->driver && sio->driver->deviceId) {
+		id = sio->driver->deviceId(sio->driver);
+	}
+
+	switch (sio->mode) {
+	case GBA_SIO_JOYBUS:
+		switch (address) {
+		case GBA_REG_SIODATA8:
+			mLOG(GBA_SIO, DEBUG, "JOY read: SIODATA8 (?) -> %04X", value);
+			break;
+		case GBA_REG_JOYCNT:
+			mLOG(GBA_SIO, DEBUG, "JOY read: CNT -> %04X", value);
+			break;
+		case GBA_REG_JOYSTAT:
+			mLOG(GBA_SIO, DEBUG, "JOY read: STAT -> %04X", value);
+			break;
+		case GBA_REG_JOY_TRANS_LO:
+			mLOG(GBA_SIO, DEBUG, "JOY read: TRANS_LO -> %04X", value);
+			break;
+		case GBA_REG_JOY_TRANS_HI:
+			mLOG(GBA_SIO, DEBUG, "JOY read: TRANS_HI -> %04X", value);
+			break;
+		default:
+			mLOG(GBA_SIO, GAME_ERROR, "JOY read: Unhandled %s -> %04X", GBAIORegisterNames[address >> 1], value);
+			break;
+		}
+		break;
+	case GBA_SIO_NORMAL_8:
+		switch (address) {
+		case GBA_REG_SIODATA32_LO:
+			mLOG(GBA_SIO, DEBUG, "NORMAL8 %i read: SIODATA32_LO (?) -> %04X", id, value);
+			break;
+		case GBA_REG_SIODATA32_HI:
+			mLOG(GBA_SIO, DEBUG, "NORMAL8 %i read: SIODATA32_HI (?) -> %04X", id, value);
+			break;
+		case GBA_REG_SIODATA8:
+			mLOG(GBA_SIO, DEBUG, "NORMAL8 %i read: SIODATA8 -> %04X", id, value);
+			break;
+		case GBA_REG_JOYCNT:
+			mLOG(GBA_SIO, DEBUG, "NORMAL8 %i read: JOYCNT (?) -> %04X", id, value);
+			break;
+		default:
+			mLOG(GBA_SIO, GAME_ERROR, "NORMAL8 %i read: Unhandled %s -> %04X", id, GBAIORegisterNames[address >> 1], value);
+			break;
+		}
+		break;
+	case GBA_SIO_NORMAL_32:
+		switch (address) {
+		case GBA_REG_SIODATA32_LO:
+			mLOG(GBA_SIO, DEBUG, "NORMAL32 %i read: SIODATA32_LO -> %04X", id, value);
+			break;
+		case GBA_REG_SIODATA32_HI:
+			mLOG(GBA_SIO, DEBUG, "NORMAL32 %i read: SIODATA32_HI -> %04X", id, value);
+			break;
+		case GBA_REG_SIODATA8:
+			mLOG(GBA_SIO, DEBUG, "NORMAL32 %i read: SIODATA8 (?) -> %04X", id, value);
+			break;
+		case GBA_REG_JOYCNT:
+			mLOG(GBA_SIO, DEBUG, "NORMAL32 %i read: JOYCNT (?) -> %04X", id, value);
+			break;
+		default:
+			mLOG(GBA_SIO, GAME_ERROR, "NORMAL32 %i read: Unhandled %s -> %04X", id, GBAIORegisterNames[address >> 1], value);
+			break;
+		}
+		break;
+	case GBA_SIO_MULTI:
+		switch (address) {
+		case GBA_REG_SIOMLT_SEND:
+			mLOG(GBA_SIO, DEBUG, "MULTI %i read: SIOMLT_SEND -> %04X", id, value);
+			break;
+		case GBA_REG_SIOMULTI0:
+			mLOG(GBA_SIO, DEBUG, "MULTI %i read: SIOMULTI0 -> %04X", id, value);
+			break;
+		case GBA_REG_SIOMULTI1:
+			mLOG(GBA_SIO, DEBUG, "MULTI %i read: SIOMULTI1 -> %04X", id, value);
+			break;
+		case GBA_REG_SIOMULTI2:
+			mLOG(GBA_SIO, DEBUG, "MULTI %i read: SIOMULTI2 -> %04X", id, value);
+			break;
+		case GBA_REG_SIOMULTI3:
+			mLOG(GBA_SIO, DEBUG, "MULTI %i read: SIOMULTI3 -> %04X", id, value);
+			break;
+		case GBA_REG_JOYCNT:
+			mLOG(GBA_SIO, DEBUG, "MULTI %i read: JOYCNT (?) -> %04X", id, value);
+			break;
+		default:
+			mLOG(GBA_SIO, GAME_ERROR, "MULTI %i read: Unhandled %s -> %04X", id, GBAIORegisterNames[address >> 1], value);
+			break;
+		}
+		break;
+	case GBA_SIO_UART:
+		switch (address) {
+		case GBA_REG_SIODATA8:
+			mLOG(GBA_SIO, DEBUG, "UART read: SIODATA8 -> %04X", value);
+			break;
+		default:
+			mLOG(GBA_SIO, GAME_ERROR, "UART read: Unhandled %s -> %04X", GBAIORegisterNames[address >> 1], value);
+			break;
+		}
+		break;
+	case GBA_SIO_GPIO:
+		mLOG(GBA_SIO, STUB, "GPIO read: Unhandled %s -> %04X", GBAIORegisterNames[address >> 1], value);
+		break;
+	}
+
+	return value;
+}
+
 uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value) {
 	int id = 0;
 	if (sio->driver && sio->driver->deviceId) {

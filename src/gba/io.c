@@ -951,15 +951,18 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case GBA_REG_TM2CNT_HI:
 	case GBA_REG_TM3CNT_HI:
 	case GBA_REG_KEYCNT:
-	case GBA_REG_SIOMULTI0:
-	case GBA_REG_SIOMULTI1:
+		break;
+	case GBA_REG_SIOMULTI0: // Alias for GBA_REG_SIODATA32_LO
+	case GBA_REG_SIOMULTI1: // Alias for GBA_REG_SIODATA32_HI
 	case GBA_REG_SIOMULTI2:
 	case GBA_REG_SIOMULTI3:
-	case GBA_REG_SIOMLT_SEND:
+	case GBA_REG_SIOMLT_SEND: // Alias for GBA_REG_SIODATA8
 	case GBA_REG_JOYCNT:
 	case GBA_REG_JOY_TRANS_LO:
 	case GBA_REG_JOY_TRANS_HI:
 	case GBA_REG_JOYSTAT:
+		gba->memory.io[address >> 1] = GBASIOReadRegister(&gba->sio, address, gba->memory.io[address >> 1]);
+		break;
 	case GBA_REG_IE:
 	case GBA_REG_IF:
 	case GBA_REG_WAITCNT:
