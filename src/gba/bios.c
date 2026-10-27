@@ -14,6 +14,9 @@
 
 mLOG_DEFINE_CATEGORY(GBA_BIOS, "GBA BIOS", "gba.bios");
 
+#define REG(X) (1 << X)
+#define PUSH(REGS) cpu->gprs[ARM_SP] = GBAStoreMultiple(cpu, cpu->gprs[ARM_SP], REGS, LSM_DB, NULL)
+
 static void _unLz77(struct GBA* gba, int width);
 static void _unHuffman(struct GBA* gba);
 static void _unRl(struct GBA* gba, int width);
@@ -585,6 +588,37 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	case GBA_SWI_SOUND_DRIVER_GET_JUMP_LIST:
 		ARMRaiseSWI(cpu);
+		return;
+	case GBA_SWI_BUG_JUMP_TO_EWRAM:
+		// Simulate the GBA BIOS SWI entry
+		ARMRaiseSWI(cpu);
+
+		// Save the regs that the BIOS uses
+		// push {r11, r12, lr}
+		PUSH(REG(11) | REG(12) | REG(ARM_LR));
+
+		// Save the SPSR to stack
+		cpu->gprs[11] = cpu->spsr.packed;
+		PUSH(REG(11));
+
+		// Switch from SVC to SYSTEM mode, keeping the IRQ dis/enabled as before
+		cpu->gprs[11] &= 0x80; // keep IRQ flag
+		cpu->gprs[11] |= MODE_SYSTEM;
+		cpu->cpsr.packed = cpu->gprs[11];
+		_ARMReadCPSR(cpu);
+
+		// Save SYSTEM mode `lr` to stack (and r2 for some reason)
+		PUSH(REG(2) | REG(ARM_LR));
+
+		// Set LR to hle-bios.s:54 / swi_complete
+		cpu->gprs[ARM_LR] = 0xA4;
+
+		// The address in EWRAM this will jump to
+		cpu->gprs[12] = 0x02002040;
+
+		// Jump to it
+		cpu->gprs[ARM_PC] = 0x02002040;
+		ARMWritePC(cpu);
 		return;
 	default:
 		mLOG(GBA_BIOS, STUB, "Stub software interrupt: %02X", immediate);
