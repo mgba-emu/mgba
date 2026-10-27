@@ -97,6 +97,7 @@ void mInterpolatorCosineInit(struct mInterpolatorCosine* interp, unsigned resolu
 	}
 
 	interp->lut = calloc(resolution + 1, sizeof(double));
+	interp->resolution = resolution;
 
 	unsigned i;
 	for(i = 0; i < resolution; ++i) {
