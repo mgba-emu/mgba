@@ -73,7 +73,7 @@ int16_t mInterpolatorSincInterpolate(const struct mInterpolator* interpolator, c
 	double offset = (time - x) / M_PI;
 
 	double sum = 0;
-	for (int i = 1 - interp->width; i <= interp->width; i++) {
+	for (int i = 1 - interp->width; i <= (int) interp->width; i++) {
 		double weight = fastWindowedSinc(interp, i - offset);
 		double sample = data->at(x + i, data->context);
 		sum += sample * weight;
