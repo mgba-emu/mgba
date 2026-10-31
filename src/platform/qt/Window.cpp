@@ -728,7 +728,6 @@ void Window::setFrameSize(int scale) {
 	}
 	QSize size(contentSize(true));
 	size *= scale;
-	m_config->setOption("scaleMultiplier", scale); // TODO: Port to other
 	resizeFrame(size);
 	if (lockFrameSize) {
 		m_display->setMaximumScale(scale);
@@ -744,6 +743,7 @@ void Window::recalculateFrameSize(const QSize& size) {
 	}
 
 	m_savedScale = factor;
+	m_config->setOption("scaleMultiplier", factor);
 	for (QMap<int, std::shared_ptr<Action>>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
 		std::shared_ptr<Action> frameSize = iter.value();
 		frameSize->setActive(iter.key() == factor);
