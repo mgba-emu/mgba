@@ -171,10 +171,10 @@ static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	uniforms[3].max.fvec3[0] = 1.0f;
 	uniforms[3].max.fvec3[1] = 1.0f;
 	uniforms[3].max.fvec3[2] = 1.0f;
-	mGLES2ShaderInit(&context->initialShader, _vertexShader, _fragmentShader, -1, -1, false, uniforms, 4);
-	mGLES2ShaderInit(&context->finalShader, NULL, NULL, 0, 0, false, NULL, 0);
-	mGLES2ShaderInit(&context->interframeShader, NULL, _interframeFragmentShader, -1, -1, false, NULL, 0);
-	mGLES2ShaderInit(&context->overlayShader, _vertexShader, _thruFragmentShader, -1, -1, false, NULL, 0);
+	mGLES2ShaderInit(&context->initialShader, _vertexShader, _fragmentShader, -1, -1, false, false, uniforms, 4);
+	mGLES2ShaderInit(&context->finalShader, NULL, NULL, 0, 0, false, false, NULL, 0);
+	mGLES2ShaderInit(&context->interframeShader, NULL, _interframeFragmentShader, -1, -1, false, false, NULL, 0);
+	mGLES2ShaderInit(&context->overlayShader, _vertexShader, _thruFragmentShader, -1, -1, false, false, NULL, 0);
 
 #ifdef BUILD_GLES3
 	if (context->initialShader.vao != (GLuint) -1) {
@@ -340,13 +340,19 @@ static void _drawShaderEx(struct mGLES2Context* context, struct mGLES2Shader* sh
 		drawW -= drawW % context->width;
 		drawH -= drawH % context->height;
 	}
+	GLint fbInternalFormat = GL_RGB;
+	GLenum fbType = GL_UNSIGNED_BYTE;
+	if (shader->floatFramebuffer) {
+		fbInternalFormat = GL_RGB32F;
+		fbType = GL_FLOAT;
+	}
 
 	if (shader->dirty) {
 		if (shader->tex && (shader->width <= 0 || shader->height <= 0)) {
 			GLint oldTex;
 			glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTex);
 			glBindTexture(GL_TEXTURE_2D, shader->tex);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, drawW + padW * 2, drawH + padH * 2, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_2D, 0, fbInternalFormat, drawW + padW * 2, drawH + padH * 2, 0, GL_RGB, fbType, 0);
 			glBindTexture(GL_TEXTURE_2D, oldTex);
 		}
 		shader->dirty = false;
@@ -613,10 +619,11 @@ void mGLES2ContextUseFramebuffer(struct mGLES2Context* context) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* fs, int width, int height, bool integerScaling, struct mGLES2Uniform* uniforms, size_t nUniforms) {
+void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* fs, int width, int height, bool integerScaling, bool floatFramebuffer, struct mGLES2Uniform* uniforms, size_t nUniforms) {
 	shader->width = width;
 	shader->height = height;
 	shader->integerScaling = integerScaling;
+	shader->floatFramebuffer = floatFramebuffer;
 	shader->filter = false;
 	shader->blend = false;
 	shader->dirty = true;
@@ -631,10 +638,16 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	GLint fbInternalFormat = GL_RGB;
+	GLenum fbType = GL_UNSIGNED_BYTE;
+	if (shader->floatFramebuffer) {
+		fbInternalFormat = GL_RGB32F;
+		fbType = GL_FLOAT;
+	}
 	if (shader->width > 0 && shader->height > 0) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, shader->width, shader->height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, fbInternalFormat, shader->width, shader->height, 0, GL_RGB, fbType, 0);
 	} else {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, fbInternalFormat, 512, 512, 0, GL_RGB, fbType, 0);
 	}
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shader->tex, 0);
@@ -1157,9 +1170,11 @@ bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 				int width = 0;
 				int height = 0;
 				int scaling = 0;
+				int floatFramebuffer = 0;
 				_lookupIntValue(&description, passName, "width", &width);
 				_lookupIntValue(&description, passName, "height", &height);
 				_lookupIntValue(&description, passName, "integerScaling", &scaling);
+				_lookupIntValue(&description, passName, "floatFramebuffer", &floatFramebuffer);
 
 				struct mGLES2UniformList uniformVector;
 				mGLES2UniformListInit(&uniformVector, 0);
@@ -1180,7 +1195,7 @@ bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 				}
 				mGLES2UniformListDeinit(&uniformVector);
 
-				mGLES2ShaderInit(&shaderBlock[n], vssrc, fssrc, width, height, scaling, uniformBlock, u);
+				mGLES2ShaderInit(&shaderBlock[n], vssrc, fssrc, width, height, scaling, floatFramebuffer, uniformBlock, u);
 				int b = 0;
 				_lookupIntValue(&description, passName, "blend", &b);
 				if (b) {
