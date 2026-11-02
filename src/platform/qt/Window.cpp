@@ -736,6 +736,10 @@ void Window::setFrameSize(int scale) {
 }
 
 void Window::recalculateFrameSize(const QSize& size) {
+	if (!m_wasOpened) {
+		return;
+	}
+
 	int factor = -1;
 	QSize baseSize(contentSize(true));
 	if (!baseSize.isEmpty() && size.width() % baseSize.width() == 0 && size.height() % baseSize.height() == 0 && size.width() / baseSize.width() == size.height() / baseSize.height()) {
@@ -1142,7 +1146,7 @@ void Window::reloadDisplayDriver() {
 	});
 
 	connect(m_display.get(), &QGBA::Display::contentSizeChanged, [this](const QSize& size) {
-		if (m_savedScale > 0 && !m_config->getOption("lockFrameSize").toInt()) {
+		if (m_savedScale > 0 && !size.isEmpty() && !m_config->getOption("lockFrameSize").toInt()) {
 			resizeFrame(size * m_savedScale);
 		}
 	});
