@@ -373,11 +373,11 @@ struct buffer_list
 
 struct buffer
 {
-   struct buffer_list  *last;       /* last buffer in use */
-   size_t               end_count;  /* bytes in the last buffer */
-   struct buffer_list  *current;    /* current buffer being read */
-   size_t               read_count; /* count of bytes read from current */
-   struct buffer_list   first;      /* the very first buffer */
+   struct buffer_list *last;       /* last buffer in use */
+   size_t              end_count;  /* bytes in the last buffer */
+   struct buffer_list *current;    /* current buffer being read */
+   size_t              read_count; /* count of bytes read from current */
+   struct buffer_list  first;      /* the very first buffer */
 };
 
 static void
@@ -871,7 +871,7 @@ read_png(struct display *dp, struct buffer *bp, const char *operation,
    int transforms)
 {
    png_structp pp;
-   png_infop   ip;
+   png_infop ip;
 
    /* This cleans out any previous read and sets operation and transforms to
     * empty.
@@ -931,7 +931,7 @@ update_display(struct display *dp)
     */
 {
    png_structp pp;
-   png_infop   ip;
+   png_infop ip;
 
    /* Now perform the initial read with a 0 transform. */
    read_png(dp, &dp->original_file, "original read", 0/*no transform*/);

@@ -1,8 +1,4 @@
-# Copyright (c) 2023-2024 Cosmin Truta.
-#
-# Use, modification and distribution are subject to the MIT License.
-# Please see the accompanying file LICENSE_MIT.txt
-#
+# Copyright (C) 2023 Cosmin Truta
 # SPDX-License-Identifier: MIT
 
 export CI_TARGET_ARCH=i586

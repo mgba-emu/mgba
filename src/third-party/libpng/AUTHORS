@@ -5,7 +5,9 @@ This is the list of PNG Reference Library ("libpng") Contributing
 Authors, for copyright and licensing purposes.
 
  * Adam Richter
+ * Alexander Smorkalov
  * Andreas Dilger
+ * Anthony Hurtado
  * Chris Blume
  * Cosmin Truta
  * Dave Martindale
@@ -14,8 +16,10 @@ Authors, for copyright and licensing purposes.
  * Glenn Randers-Pehrson
  * Greg Roelofs
  * Guy Eric Schalnat
+ * Halil Oktay
  * James Yu
  * John Bowler
+ * Joshua Inscoe
  * Kevin Bracey
  * Lucas Chollet
  * Magnus Holmgren
@@ -24,19 +28,24 @@ Authors, for copyright and licensing purposes.
  * Mans Rullgard
  * Matt Sarett
  * Mike Klein
+ * Mohammad Seet
  * Pascal Massimino
  * Paul Schmidt
+ * Petr Simecek
  * Philippe Antoine
  * Qiang Zhou
  * Sam Bushell
  * Samuel Williams
  * Simon-Pierre Cadieux
+ * Taegu Ha (하태구)
  * Tim Wegner
  * Tobias Stoeckmann
  * Tom Lane
  * Tom Tanner
  * Vadim Barkov
  * Willem van Schaik
+ * Yuelin Wang (王跃林)
+ * Yuki Sekiguchi
  * Zhijie Liang
  * Apple Inc.
     - Zixu Wang (王子旭)
@@ -56,6 +65,8 @@ Authors, for copyright and licensing purposes.
     - ZhangLixia (张利霞)
  * Samsung Group
     - Filip Wasil
+ * SpacemiT Hangzhou Technology, Co.
+    - Liang Junzhao (梁俊钊)
 
 The build projects, the build scripts, the test scripts, and other
 files in the "projects", "scripts" and "tests" directories, have

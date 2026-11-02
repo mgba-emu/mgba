@@ -1,6 +1,6 @@
 libpng-manual.txt - A description on how to use and modify libpng
 
- Copyright (c) 2018-2025 Cosmin Truta
+ Copyright (c) 2018-2026 Cosmin Truta
  Copyright (c) 1998-2018 Glenn Randers-Pehrson
 
  This document is released under the libpng license.
@@ -9,9 +9,9 @@ libpng-manual.txt - A description on how to use and modify libpng
 
  Based on:
 
- libpng version 1.6.36, December 2018, through 1.6.51 - November 2025
+ libpng version 1.6.36, December 2018, through 1.6.59 - September 2026
  Updated and distributed by Cosmin Truta
- Copyright (c) 2018-2025 Cosmin Truta
+ Copyright (c) 2018-2026 Cosmin Truta
 
  libpng versions 0.97, January 1998, through 1.6.35 - July 2018
  Updated and distributed by Glenn Randers-Pehrson
@@ -2318,7 +2318,7 @@ libpng provides two macros to help you in 1.5 and later versions:
    png_uint_32 height = PNG_PASS_ROWS(image_height, pass_number);
 
 Respectively these tell you the width and height of the sub-image
-corresponding to the numbered pass.  'pass' is in in the range 0 to 6 -
+corresponding to the numbered pass.  'pass' is in the range 0 to 6 -
 this can be confusing because the specification refers to the same passes
 as 1 to 7!  Be careful, you must check both the width and height before
 calling png_read_rows() and not call it for that pass if either is zero.
@@ -2457,7 +2457,7 @@ point to libpng-allocated storage with the following function:
 
 This function may be safely called when the relevant storage has
 already been freed, or has not yet been allocated, or was allocated
-by the user and not by libpng,  and will in those cases do nothing.
+by the user and not by libpng, and will in those cases do nothing.
 The "seq" parameter is ignored if only one item of the selected data
 type, such as PLTE, is allowed.  If "seq" is not -1, and multiple items
 are allowed for the data type identified in the mask, such as text or
@@ -3292,7 +3292,7 @@ disclaimer until after, so viewers working over modem connections
 don't have to wait for the disclaimer to go over the modem before
 they start seeing the image.  Finally, keywords should be full
 words, not abbreviations.  Keywords and text are in the ISO 8859-1
-(Latin-1) character set (a superset of regular ASCII) and can not
+(Latin-1) character set (a superset of regular ASCII) and cannot
 contain NUL characters, and should not contain control or other
 unprintable characters.  To make the comments widely readable, stick
 with basic ASCII, and avoid machine specific character set extensions
@@ -3694,7 +3694,7 @@ point to libpng-allocated storage with the following function:
 
 This function may be safely called when the relevant storage has
 already been freed, or has not yet been allocated, or was allocated
-by the user  and not by libpng,  and will in those cases do nothing.
+by the user and not by libpng, and will in those cases do nothing.
 The "seq" parameter is ignored if only one item of the selected data
 type, such as PLTE, is allowed.  If "seq" is not -1, and multiple items
 are allowed for the data type identified in the mask, such as text or

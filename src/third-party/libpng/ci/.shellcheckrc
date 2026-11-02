@@ -1,3 +1,6 @@
+# Copyright (C) 2023 Cosmin Truta
+# SPDX-License-Identifier: MIT
+
 # Disable the "expressions don't expand in single quotes, use double quotes"
 # advice. We need the regular expressions to remain uninterpolated.
 disable=SC2016

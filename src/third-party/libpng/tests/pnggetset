@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# pnggetset test:
+# Getter-to-setter roundtrips for various chunk types.
+exec ./pnggetset

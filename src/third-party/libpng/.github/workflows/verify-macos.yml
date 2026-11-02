@@ -1,3 +1,6 @@
+# Copyright (C) 2025 Cosmin Truta
+# SPDX-License-Identifier: MIT-0
+
 name: Verifying libpng on macOS
 
 on:
@@ -9,6 +12,9 @@ on:
     branches:
       - libpng16
       - libpng18
+
+permissions:
+  contents: read
 
 jobs:
   verify-macos:

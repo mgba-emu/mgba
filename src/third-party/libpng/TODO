@@ -1,5 +1,5 @@
 TODO list for libpng
---------------------
+====================
 
  * Fix all defects (duh!)
  * cHRM transformation.

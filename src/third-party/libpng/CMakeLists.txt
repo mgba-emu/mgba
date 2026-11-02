@@ -1,6 +1,6 @@
 # CMakeLists.txt - CMake lists for libpng
 #
-# Copyright (c) 2018-2025 Cosmin Truta
+# Copyright (c) 2018-2026 Cosmin Truta
 # Copyright (c) 2007-2018 Glenn Randers-Pehrson
 # Originally written by Christian Ehrlicher, 2007
 #
@@ -14,11 +14,11 @@
 #
 # SPDX-License-Identifier: libpng-2.0
 
-cmake_minimum_required(VERSION 3.14...4.0)
+cmake_minimum_required(VERSION 3.14...4.4)
 
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
-set(PNGLIB_REVISION 51)
+set(PNGLIB_REVISION 59)
 set(PNGLIB_SUBREVISION 0)
 #set(PNGLIB_SUBREVISION "git")
 set(PNGLIB_VERSION ${PNGLIB_MAJOR}.${PNGLIB_MINOR}.${PNGLIB_REVISION})
@@ -27,7 +27,7 @@ set(PNGLIB_SHARED_VERSION ${PNGLIB_ABI_VERSION}.${PNGLIB_REVISION}.${PNGLIB_SUBR
 
 project(libpng
         VERSION ${PNGLIB_VERSION}
-        LANGUAGES C ASM)
+        LANGUAGES C)
 
 include(CheckCSourceCompiles)
 include(CheckLibraryExists)
@@ -87,7 +87,7 @@ endif()
 option(PNG_TESTS "Build the libpng tests" ON)
 
 # Same as above, but for the third-party tools.
-# Although these tools are targetted at development environments only,
+# Although these tools are targeted at development environments only,
 # the users are allowed to override the option to build by default.
 if(ANDROID OR IOS)
   option(PNG_TOOLS "Build the libpng tools" OFF)
@@ -396,34 +396,37 @@ if(ld-version-script AND NOT (ANDROID OR APPLE))
 VERS_1 { global: sym1; local: *; };
 VERS_2 { global: sym2; main; } VERS_1;
 ")
-  set(_SAVED_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
+  # CMAKE_REQUIRED_FLAGS is a space-separated string, not a CMake list.
+  # Use string(APPEND) instead of list(APPEND) to prevent misparsing by
+  # try_compile under CMake 4.4 or newer.
+  set(_SAVED_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
   if(NOT CMAKE_HOST_SOLARIS)
     # Avoid using CMAKE_SHARED_LIBRARY_C_FLAGS in version script checks on
     # Solaris, because of an incompatibility with the Solaris link editor.
-    list(APPEND CMAKE_REQUIRED_FLAGS ${CMAKE_SHARED_LIBRARY_C_FLAGS})
+    string(APPEND CMAKE_REQUIRED_FLAGS " ${CMAKE_SHARED_LIBRARY_C_FLAGS}")
   endif()
-  list(APPEND CMAKE_REQUIRED_FLAGS
-              "-Wl,--version-script='${CMAKE_CURRENT_BINARY_DIR}/conftest.map'")
+  string(APPEND CMAKE_REQUIRED_FLAGS
+                " -Wl,--version-script='${CMAKE_CURRENT_BINARY_DIR}/conftest.map'")
   check_c_source_compiles("
 void sym1(void) {}
 void sym2(void) {}
 int main(void) { return 0; }
 " HAVE_LD_VERSION_SCRIPT)
   if(NOT HAVE_LD_VERSION_SCRIPT)
-    set(CMAKE_REQUIRED_FLAGS ${_SAVED_CMAKE_REQUIRED_FLAGS})
+    set(CMAKE_REQUIRED_FLAGS "${_SAVED_CMAKE_REQUIRED_FLAGS}")
     if(NOT CMAKE_HOST_SOLARIS)
       # Again, avoid using CMAKE_SHARED_LIBRARY_C_FLAGS in version script
       # checks on Solaris.
-      list(APPEND CMAKE_REQUIRED_FLAGS ${CMAKE_SHARED_LIBRARY_C_FLAGS})
+      string(APPEND CMAKE_REQUIRED_FLAGS " ${CMAKE_SHARED_LIBRARY_C_FLAGS}")
     endif()
-    list(APPEND CMAKE_REQUIRED_FLAGS "-Wl,-M -Wl,${CMAKE_CURRENT_BINARY_DIR}/conftest.map")
+    string(APPEND CMAKE_REQUIRED_FLAGS " -Wl,-M -Wl,${CMAKE_CURRENT_BINARY_DIR}/conftest.map")
     check_c_source_compiles("
 void sym1(void) {}
 void sym2(void) {}
 int main(void) { return 0; }
 " HAVE_SOLARIS_LD_VERSION_SCRIPT)
   endif()
-  set(CMAKE_REQUIRED_FLAGS ${_SAVED_CMAKE_REQUIRED_FLAGS})
+  set(CMAKE_REQUIRED_FLAGS "${_SAVED_CMAKE_REQUIRED_FLAGS}")
   file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/conftest.map")
 endif()
 
@@ -624,6 +627,9 @@ set(pngvalid_sources
 set(pngstest_sources
     contrib/libtests/pngstest.c
 )
+set(pnggetset_sources
+    contrib/libtests/pnggetset.c
+)
 set(pngunknown_sources
     contrib/libtests/pngunknown.c
 )
@@ -772,6 +778,8 @@ if(PNG_TESTS AND PNG_SHARED)
 
   set(PNGTEST_PNG "${CMAKE_CURRENT_SOURCE_DIR}/pngtest.png")
 
+  # pngtest tests:
+  # Basic read/write roundtrip using the sequential API.
   add_executable(pngtest ${pngtest_sources})
   target_link_libraries(pngtest
                         PRIVATE png_shared)
@@ -784,6 +792,18 @@ if(PNG_TESTS AND PNG_SHARED)
                COMMAND pngtest
                FILES "${TEST_PNG3_PNGS}")
 
+  # pnggetset test:
+  # Getter-to-setter roundtrips for various chunk types.
+  add_executable(pnggetset ${pnggetset_sources})
+  target_link_libraries(pnggetset
+                        PRIVATE png_shared)
+
+  png_add_test(NAME pnggetset
+               COMMAND pnggetset)
+
+  # pngvalid tests:
+  # Internal validation of standard and progressive reading,
+  # transforms, and gamma handling.
   add_executable(pngvalid ${pngvalid_sources})
   target_link_libraries(pngvalid
                         PRIVATE png_shared)
@@ -831,6 +851,9 @@ if(PNG_TESTS AND PNG_SHARED)
                COMMAND pngvalid
                OPTIONS --transform)
 
+  # pngstest tests:
+  # Format conversions through the simplified API,
+  # by gamma type and alpha type.
   add_executable(pngstest ${pngstest_sources})
   target_link_libraries(pngstest
                         PRIVATE png_shared)
@@ -887,6 +910,48 @@ if(PNG_TESTS AND PNG_SHARED)
     endforeach()
   endforeach()
 
+  # Large-stride test:
+  # Use stride_extra > 32767 to trigger row_bytes > 65535 for linear images.
+  png_add_test(NAME pngstest-large-stride
+               COMMAND pngstest
+               OPTIONS --stride-extra 33000 --tmpfile "large-stride-" --log
+               FILES "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/rgb-alpha-16-linear.png")
+
+  # Negative-stride test:
+  # Bottom-up layout through all read/write paths.
+  png_add_test(NAME pngstest-negative-stride
+               COMMAND pngstest
+               OPTIONS --negative-stride --tmpfile "negative-stride-" --log
+               FILES "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/gray-1.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/gray-16-linear.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/rgb-8-linear.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/rgb-16-linear.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/palette-8-tRNS.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/gray-alpha-8-linear.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/gray-alpha-16-linear.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/rgb-alpha-8-1.8.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/rgb-alpha-8-sRGB.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/rgb-alpha-16-linear.png")
+
+  # Negative-stride-extra test:
+  # Bottom-up layout with non-aligned padding.
+  png_add_test(NAME pngstest-negative-stride-extra
+               COMMAND pngstest
+               OPTIONS --negative-stride --stride-extra 7
+                       --tmpfile "negative-stride-extra-" --log
+               FILES "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/gray-1.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/gray-16-linear.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/rgb-8-linear.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/rgb-16-linear.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/palette-8-tRNS.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/gray-alpha-8-linear.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/gray-alpha-16-linear.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/rgb-alpha-8-1.8.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/rgb-alpha-8-sRGB.png"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/rgb-alpha-16-linear.png")
+
+  # pngunknown tests:
+  # Unknown chunk handling under various read policies.
   add_executable(pngunknown ${pngunknown_sources})
   target_link_libraries(pngunknown
                         PRIVATE png_shared)
@@ -921,6 +986,8 @@ if(PNG_TESTS AND PNG_SHARED)
                OPTIONS --strict vpAg=if-safe
                FILES "${PNGTEST_PNG}")
 
+  # pngimage tests:
+  # Image read validation against the pngsuite corpus.
   add_executable(pngimage ${pngimage_sources})
   target_link_libraries(pngimage
                         PRIVATE png_shared)
@@ -960,7 +1027,7 @@ function(create_symlink DEST_FILE)
     message(FATAL_ERROR "create_symlink: Missing arguments: FILE or TARGET")
   endif()
   if(_SYM_FILE AND _SYM_TARGET)
-    message(FATAL_ERROR "create_symlink: Mutually-exlusive arguments:"
+    message(FATAL_ERROR "create_symlink: Mutually-exclusive arguments:"
                         "FILE (${_SYM_FILE}) and TARGET (${_SYM_TARGET})")
   endif()
 
@@ -1050,10 +1117,17 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
           FRAMEWORK DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 
   if(PNG_SHARED)
-    # Create a symlink for libpng.dll.a => libpng16.dll.a on Cygwin
+    # Create an unversioned symlink to the shared library's link-time file.
     if(NOT WIN32 OR CYGWIN OR MINGW)
-      create_symlink(libpng${CMAKE_SHARED_LIBRARY_SUFFIX} TARGET png_shared)
-      install(FILES "$<TARGET_LINKER_FILE_DIR:png_shared>/libpng${CMAKE_SHARED_LIBRARY_SUFFIX}"
+      if(CYGWIN OR MINGW)
+        # The symlink is for the import library (e.g., libpng.dll.a => libpng16.dll.a).
+        set(libpng_symlink_name "libpng${CMAKE_IMPORT_LIBRARY_SUFFIX}")
+      else()
+        # The symlink is for the shared object (e.g., libpng.so => libpng16.so).
+        set(libpng_symlink_name "libpng${CMAKE_SHARED_LIBRARY_SUFFIX}")
+      endif()
+      create_symlink(${libpng_symlink_name} TARGET png_shared)
+      install(FILES "$<TARGET_LINKER_FILE_DIR:png_shared>/${libpng_symlink_name}"
               DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
   endif()

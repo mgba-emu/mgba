@@ -53,7 +53,7 @@ program are some elementary routines to read / write pgm- and ppm-files.
 It does not handle B&W pbm-files, but instead you could do pgm with bit-
 depth 1.
 
-The downside of this approach is that you can not use them on images
+The downside of this approach is that you cannot use them on images
 that require blocks of memory bigger than 64k (the DOS version). For
 larger images you will get an out-of-memory error.
 

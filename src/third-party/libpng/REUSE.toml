@@ -1,0 +1,9 @@
+version = 1
+
+[[annotations]]
+SPDX-License-Identifier = "MIT"
+path = "ci/**"
+
+[[annotations]]
+SPDX-License-Identifier = "MIT-0"
+path = ".github/workflows/**"

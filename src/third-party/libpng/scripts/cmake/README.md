@@ -4,7 +4,7 @@ CMake Files, Lists and Scripts for the PNG Reference Library
 Copyright Notice
 ----------------
 
- * Copyright (c) 2018-2024 Cosmin Truta.
+ * Copyright (c) 2018-2026 Cosmin Truta.
  * Copyright (c) 2007-2018 Glenn Randers-Pehrson.
  * Originally written by Christian Ehrlicher, 2007.
 
@@ -12,7 +12,7 @@ Use, modification and distribution of the CMake
 files in the libpng distribution are subject to
 the same licensing terms and conditions as libpng.
 Please see the copyright notice in `png.h` or visit
-http://libpng.org/pub/png/src/libpng-LICENSE.txt
+<http://libpng.org/pub/png/src/libpng-LICENSE.txt>
 
 File List
 ---------
