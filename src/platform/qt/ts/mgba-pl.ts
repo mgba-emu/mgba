@@ -3067,12 +3067,12 @@ Rozmiar pobierania: %3</translation>
         <location filename="../InputController.cpp" line="732"/>
         <location filename="../InputController.cpp" line="753"/>
         <source>Could not find a valid camera format!</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie znaleziono odpowiedniego formatu kamery!</translation>
     </message>
     <message>
         <location filename="../InputController.cpp" line="734"/>
         <source>Camera supported format: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Obsługiwany format kamery: %1</translation>
     </message>
 </context>
 <context>
