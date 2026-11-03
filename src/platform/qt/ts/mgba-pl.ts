@@ -11,7 +11,7 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="430"/>
         <source>Location</source>
-        <translation type="unfinished">Lokacja</translation>
+        <translation>Lokalizacja</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="432"/>
@@ -273,7 +273,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="32"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można załadować ustawień skryptu: nieznany format informacji o skrypcie %1</translation>
     </message>
 </context>
 <context>
@@ -281,7 +281,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="14"/>
         <source>Autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Skrypty autostartu</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
@@ -311,7 +311,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="29"/>
         <source>Select a script</source>
-        <translation type="unfinished"></translation>
+        <translation>Wybierz skrypt</translation>
     </message>
 </context>
 <context>
