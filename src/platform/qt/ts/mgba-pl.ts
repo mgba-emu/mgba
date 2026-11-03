@@ -6,7 +6,7 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="428"/>
         <source>Name</source>
-        <translation type="unfinished">Nazwa</translation>
+        <translation>Nazwa</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="430"/>
@@ -16,17 +16,17 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="432"/>
         <source>Platform</source>
-        <translation type="unfinished">Platforma</translation>
+        <translation>Platforma</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="434"/>
         <source>Size</source>
-        <translation type="unfinished">Rozmiar</translation>
+        <translation>Rozmiar</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="436"/>
         <source>CRC32</source>
-        <translation type="unfinished">CRC32</translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -132,7 +132,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="78"/>
         <source>Verifying download failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>Weryfikacja pobierania nie powiodła się. Zaktualizuj manualnie.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
@@ -244,7 +244,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../AudioProcessorDummy.cpp" line="31"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished">Nie można uruchomić procesora dźwięku bez wejścia</translation>
+        <translation>Nie można uruchomić procesora dźwięku bez wejścia</translation>
     </message>
 </context>
 <context>
@@ -257,7 +257,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="82"/>
         <source>Audio outputting to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Dźwięk jest odtwarzany do %1</translation>
     </message>
 </context>
 <context>
@@ -286,12 +286,12 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished">Dodaj</translation>
+        <translation>Dodaj</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
         <source>Remove</source>
-        <translation type="unfinished">Usuń</translation>
+        <translation>Usuń</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="53"/>
@@ -301,12 +301,12 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="63"/>
         <source>Move down</source>
-        <translation type="unfinished"></translation>
+        <translation>Przesuń w dół</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="73"/>
         <source>Run scripts when starting a game</source>
-        <translation type="unfinished"></translation>
+        <translation>Uruchom skrypty przy włączaniu gry</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="29"/>
@@ -319,7 +319,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../BattleChipModel.cpp" line="113"/>
         <source>Failed to open chip names list</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie udało się otworzyć listy nazw czipów</translation>
     </message>
 </context>
 <context>
@@ -543,42 +543,42 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="105"/>
         <source>Temporary file loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Załadowano plik tymczasowy</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="106"/>
         <source>The ROM appears to be loaded from a temporary directory, perhaps automatically extracted from an archive (e.g. a zip file).</source>
-        <translation type="unfinished"></translation>
+        <translation>Wygląda na to, że ROM został załadowany z tymczasowej lokalizacji, może jest on automatycznie wyekstraktowany z archiwum (t.j. plik zip).</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="154"/>
         <source>Could not open save file</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można było otworzyć pliku zapisu</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="155"/>
         <source>Failed to open save file; in-game saves cannot be updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można było otworzyć pliku zapisu; zapisy w grze nie mogą być aktualizowane.</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="228"/>
         <source>Would you like to copy the ROM to a different location? If you don&apos;t, this will likely lead to data loss (e.g. saves, screenshots, etc.).</source>
-        <translation type="unfinished"></translation>
+        <translation>Czy chciał(a)byś skopiować ROM do innej lokalizacji? Jeśli nie, prawdopodobnie spowoduje to utratę danych (t.j. zapisy, zrzuty ekranu, itd.).</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="235"/>
         <source>Copy failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopia się nie powiodła</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="235"/>
         <source>Failed to copy ROM. Do you want to try again?</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie udało się skopiować ROMu. Czy chcesz spróbować ponownie?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="242"/>
         <source>New ROM location</source>
-        <translation type="unfinished"></translation>
+        <translation>Nowa lokacja dla ROM</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="126"/>
@@ -606,7 +606,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../DebuggerConsole.ui" line="44"/>
         <source>Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontynuuj</translation>
     </message>
 </context>
 <context>
@@ -622,7 +622,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../DisplayGL.cpp" line="310"/>
         <source>Failed to create an OpenGL 3 context, trying old-style...</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie udało się utworzyć kontekstu OpenGL 3, próba starego stylu...</translation>
     </message>
 </context>
 <context>
@@ -1163,32 +1163,32 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
         <source>%1 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
         <source>%1 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + Wibracje</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>%1 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (Pochylenie)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
         <source>%1 (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (stary 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="99"/>
         <source>%1 (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (stary 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="100"/>
         <source>%1 (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (nowy)</translation>
     </message>
 </context>
 <context>
@@ -1233,17 +1233,17 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="44"/>
         <source>Mode 3: Full 15-bit bitmap</source>
-        <translation>Tryb 3: Pełna 15-bitowa mapa bitowa</translation>
+        <translation>Tryb 3: Pełna 15-bitowa bitmapa</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="45"/>
         <source>Mode 4: Full 8-bit bitmap</source>
-        <translation>Tryb 4: Pełna 8-bitowa mapa bitowa</translation>
+        <translation>Tryb 4: Pełna 8-bitowa bitmapa</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="46"/>
         <source>Mode 5: Small 15-bit bitmap</source>
-        <translation>Tryb 5: Mała 15-bitowa mapa bitowa</translation>
+        <translation>Tryb 5: Mała 15-bitowa bitmapa</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="50"/>
@@ -1293,7 +1293,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="59"/>
         <source>Enable OBJ</source>
-        <translation>Włącz OBI</translation>
+        <translation>Włącz OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="60"/>
@@ -1308,7 +1308,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="62"/>
         <source>Enable OBJ Window</source>
-        <translation>Włącz Okno OBI</translation>
+        <translation>Włącz Okno OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="66"/>
