@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2026 Ishan
+  ~ Android Port component of mGBA.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+  ~
+  ~ This program is distributed without any warranty. See the GNU General Public License for more details.
+  -->
+
+<resources>
+    <dimen name="spacing_small">4dp</dimen>
+    <dimen name="spacing_med">8dp</dimen>
+    <dimen name="spacing_medlarge">12dp</dimen>
+    <dimen name="spacing_large">16dp</dimen>
+    <dimen name="spacing_extralarge">32dp</dimen>
+    <dimen name="spacing_navigation">80dp</dimen>
+    <dimen name="spacing_navigation_rail">0dp</dimen>
+    <dimen name="spacing_refresh_end">72dp</dimen>
+    <dimen name="spacing_bottom_list_fab">96dp</dimen>
+    <dimen name="spacing_fab">24dp</dimen>
+    <dimen name="spacing_chip">20dp</dimen>
+
+</resources>

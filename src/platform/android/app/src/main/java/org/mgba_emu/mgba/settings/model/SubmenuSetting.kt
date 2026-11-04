@@ -1,0 +1,24 @@
+/*
+ * Copyright (C) 2026 Ishan
+ * Android Port component of mGBA.
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+ *
+ * This program is distributed without any warranty. See the GNU General Public License for more details.
+ */
+
+package org.mgba_emu.mgba.settings.model
+
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+
+class SubmenuSetting(
+    @StringRes titleId: Int = 0,
+    titleString: String = "",
+    @StringRes descriptionId: Int = 0,
+    descriptionString: String = "",
+    @DrawableRes val iconId: Int = 0,
+    val menuKey: Settings.MenuTag
+) : SettingsItem(Settings.EmptyPref(menuKey.name), titleId, titleString, descriptionId, descriptionString) {
+    override val type = TYPE_SUBMENU
+}

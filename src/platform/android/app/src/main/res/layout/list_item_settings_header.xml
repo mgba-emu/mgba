@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2026 Ishan
+  ~ Android Port component of mGBA.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+  ~
+  ~ This program is distributed without any warranty. See the GNU General Public License for more details.
+  -->
+
+<com.google.android.material.textview.MaterialTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/text_header_name"
+    style="@style/TextAppearance.Material3.TitleSmall"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="start|center_vertical"
+    android:paddingHorizontal="@dimen/spacing_large"
+    android:paddingTop="16dp"
+    android:paddingBottom="8dp"
+    android:textAlignment="viewStart"
+    android:textColor="?attr/colorPrimary"
+    android:textStyle="bold"
+    android:focusable="false"
+    tools:text="Header" />

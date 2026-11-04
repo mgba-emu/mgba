@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2026 Ishan
+  ~ Android Port component of mGBA.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+  ~
+  ~ This program is distributed without any warranty. See the GNU General Public License for more details.
+  -->
+
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:orientation="vertical">
+
+            <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/title"
+                style="@style/TextAppearance.Material3.HeadlineLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                tools:text="Title" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/link"
+                style="@style/TextAppearance.Material3.BodyLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:autoLink="all"
+                android:gravity="center"
+                tools:text="Link" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/copyright"
+                style="@style/TextAppearance.Material3.BodyLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:textStyle="bold"
+                tools:text="Copyright" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/licenseText"
+                style="@style/TextAppearance.Material3.BodyMedium"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_marginVertical="16dp"
+                android:fontFamily="monospace"
+                android:autoLink="all"
+                android:lineSpacingMultiplier="1.2"
+                android:textIsSelectable="true"
+                tools:text="License" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
