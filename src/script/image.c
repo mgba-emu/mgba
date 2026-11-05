@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/script.h>
+#include <mgba-util/vfs.h>
 
 struct mScriptPainter {
 	struct mPainter painter;
@@ -29,6 +30,28 @@ static struct mScriptValue* _mImageNew(unsigned width, unsigned height) {
 	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mImage));
 	result->value.opaque = image;
 	result->flags = mSCRIPT_VALUE_FLAG_DEINIT;
+	return result;
+}
+
+static struct mScriptValue* _mImageEncode(const struct mImage* image, const char* format) {
+	struct VFile* vf = VFileMemChunk(0, 0);
+	if (!vf) {
+		return NULL;
+	}
+	bool success = mImageSaveVF(image, vf, format);
+	if (!success) {
+		vf->close(vf);
+		return NULL;
+	}
+	ssize_t size = vf->size(vf);
+	const void* data = vf->map(vf, size, 0);
+	if (!data || size < 1) {
+		vf->close(vf);
+		return 0;
+	}
+	struct mScriptValue* result = mScriptStringCreateFromBytes(data, size);
+	vf->unmap(vf, (void*) data, size);
+	vf->close(vf);
 	return result;
 }
 
@@ -78,6 +101,11 @@ mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mImage, save)
 mSCRIPT_DEFINE_DEFAULTS_END;
 #endif
 
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mImage, WSTR, encode, _mImageEncode, 1, CHARP, format);
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mImage, encode)
+	mSCRIPT_CHARP("PNG")
+mSCRIPT_DEFINE_DEFAULTS_END;
+
 mSCRIPT_DEFINE_STRUCT(mImage)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
 		"A single, static image."
@@ -87,6 +115,8 @@ mSCRIPT_DEFINE_STRUCT(mImage)
 	mSCRIPT_DEFINE_DOCSTRING("Save the image to a file. Currently, only `PNG` format is supported")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mImage, save)
 #endif
+	mSCRIPT_DEFINE_DOCSTRING("Encode the image to a byte array. Currently, only `PNG` format is supported")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mImage, encode)
 	mSCRIPT_DEFINE_DOCSTRING("Get the ARGB value of the pixel at a given coordinate")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mImage, getPixel)
 	mSCRIPT_DEFINE_DOCSTRING("Set the ARGB value of the pixel at a given coordinate")
