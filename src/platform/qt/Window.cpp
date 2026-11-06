@@ -279,9 +279,9 @@ QSize Window::contentSize(bool fallback) const {
 	return size;
 }
 
-void Window::resizeFrame(const QSize& size) {
+void Window::resizeFrame(const QSize& size, bool force) {
 	QSize newSize(size);
-	if (!m_config->getOption("lockFrameSize").toInt()) {
+	if (force || !m_config->getOption("lockFrameSize").toInt()) {
 		m_savedSize = size;
 		if (windowHandle()) {
 			QRect geom = windowHandle()->screen()->availableGeometry();
@@ -790,7 +790,7 @@ void Window::showEvent(QShowEvent* event) {
 	DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));
 #endif
 	if (m_initialSize.isValid()) {
-		resizeFrame(m_initialSize);
+		resizeFrame(m_initialSize, true);
 	}
 	QVariant windowPos = m_config->getQtOption("windowPos", m_playerId > 0 ? QString("player%0").arg(m_playerId) : QString());
 	bool maximized = m_config->getQtOption("maximized").toBool();
@@ -836,9 +836,10 @@ void Window::closeEvent(QCloseEvent* event) {
 	m_config->setQtOption("windowPos", pos(), m_playerId > 0 ? QString("player%0").arg(m_playerId) : QString());
 	m_config->setQtOption("maximized", isMaximized());
 
-	if (m_savedScale > 0) {
-		m_config->setOption("height", GBA_VIDEO_VERTICAL_PIXELS * m_savedScale);
-		m_config->setOption("width", GBA_VIDEO_HORIZONTAL_PIXELS * m_savedScale);
+	QSize size = contentSize(true);
+	if (m_savedScale > 0 && !size.isEmpty()) {
+		m_config->setOption("height", size.height() * m_savedScale);
+		m_config->setOption("width", size.width() * m_savedScale);
 	}
 	saveConfig();
 	if (m_controller) {

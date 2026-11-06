@@ -62,7 +62,7 @@ public:
 
 	void argumentsPassed();
 
-	void resizeFrame(const QSize& size);
+	void resizeFrame(const QSize& size, bool force = false);
 
 	void updateMultiplayerStatus(bool canOpenAnother);
 	void updateMultiplayerActive(bool active);
