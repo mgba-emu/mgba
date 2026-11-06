@@ -83,6 +83,7 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver);
 
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value);
+uint16_t GBASIOReadRegister(struct GBASIO* sio, uint32_t address, uint16_t value);
 uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value);
 
 int32_t GBASIOTransferCycles(enum GBASIOMode mode, uint16_t siocnt, int connected);
