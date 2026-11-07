@@ -132,7 +132,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="78"/>
         <source>Verifying download failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>La verificación de la descarga ha fallado. Por favor, realizar la actualización manualmente.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
@@ -319,7 +319,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../BattleChipModel.cpp" line="113"/>
         <source>Failed to open chip names list</source>
-        <translation type="unfinished"></translation>
+        <translation>No se pudo abrir la lista de nombres de chips</translation>
     </message>
 </context>
 <context>
@@ -543,42 +543,42 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="105"/>
         <source>Temporary file loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Archivo temporal cargado</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="106"/>
         <source>The ROM appears to be loaded from a temporary directory, perhaps automatically extracted from an archive (e.g. a zip file).</source>
-        <translation type="unfinished"></translation>
+        <translation>La ROM parece cargarse desde un directorio temporal, tal vez extraída automáticamente de un archivo (por ejemplo, un archivo ZIP).</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="154"/>
         <source>Could not open save file</source>
-        <translation type="unfinished"></translation>
+        <translation>No se pudo abrir el archivo de guardado</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="155"/>
         <source>Failed to open save file; in-game saves cannot be updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>No se pudo abrir el archivo de guardado; las partidas guardadas no se pueden actualizar.</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="228"/>
         <source>Would you like to copy the ROM to a different location? If you don&apos;t, this will likely lead to data loss (e.g. saves, screenshots, etc.).</source>
-        <translation type="unfinished"></translation>
+        <translation>¿Le gustaría copiar la ROM a una ubicación diferente? Si no lo hace, es probable que se pierdan datos (por ejemplo, guardados, capturas de pantalla, etc.).</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="235"/>
         <source>Copy failed</source>
-        <translation type="unfinished"></translation>
+        <translation>La copia falló</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="235"/>
         <source>Failed to copy ROM. Do you want to try again?</source>
-        <translation type="unfinished"></translation>
+        <translation>No se pudo copiar la ROM. ¿Quieres volver a intentarlo?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="242"/>
         <source>New ROM location</source>
-        <translation type="unfinished"></translation>
+        <translation>Nueva ubicación de la ROM</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="126"/>
@@ -606,7 +606,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../DebuggerConsole.ui" line="44"/>
         <source>Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>Continuar</translation>
     </message>
 </context>
 <context>
@@ -4719,7 +4719,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="85"/>
         <source>Failed to open output file.</source>
-        <translation type="unfinished"></translation>
+        <translation>No se pudo abrir el archivo de salida.</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="96"/>
@@ -4914,7 +4914,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="108"/>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>Vista</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="118"/>
@@ -4944,7 +4944,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="143"/>
         <source>Clear console</source>
-        <translation type="unfinished"></translation>
+        <translation>Limpiar consola</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="67"/>
