@@ -122,7 +122,7 @@ typedef intptr_t ssize_t;
 #define ATOMIC_STORE_PTR(DST, SRC) InterlockedExchangePointer(&DST, SRC)
 #define ATOMIC_LOAD_PTR(DST, SRC) DST = InterlockedCompareExchangePointer(&SRC, 0, 0)
 #else
-// TODO
+/* TODO */
 #define ATOMIC_STORE(DST, SRC) ((DST) = (SRC))
 #define ATOMIC_LOAD(DST, SRC) ((DST) = (SRC))
 #define ATOMIC_ADD(DST, OP) ((DST) += (OP))
