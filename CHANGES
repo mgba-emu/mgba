@@ -73,6 +73,7 @@ Other fixes:
  - Scripting: Unset old callbacks when detaching emulator core
  - SDL: Use SDL_PumpEvents to ensure hotplug events are caught (fixes mgba.io/i/3406)
  - SDL: Fix controllers getting duplicated
+ - SDL: Fix controllers hotplugged after startup getting no bindings
  - SM83: Decode I/O-relative loads as ldh instead of ld (fixes mgba.io/i/3744)
 Misc:
  - 3DS: Change title ID to avoid conflict with commercial title (fixes mgba.io/i/3023)

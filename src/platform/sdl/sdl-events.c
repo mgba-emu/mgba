@@ -344,9 +344,14 @@ void mSDLDetachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 
 void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration* config) {
 	mInputMapLoad(context->bindings, SDL_BINDING_KEY, config);
+	// Base bindings are needed even if no device is attached yet
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	mInputMapLoad(context->bindings, SDL_BINDING_CONTROLLER, config);
+#else
+	mInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
+#endif
 	if (context->joystick) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		mInputMapLoad(context->bindings, SDL_BINDING_CONTROLLER, config);
 		char name[34] = {0};
 #if SDL_VERSION_ATLEAST(2, 24, 0)
 		SDL_GUIDToString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
@@ -355,7 +360,6 @@ void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration
 #endif
 		mInputProfileLoad(context->bindings, SDL_BINDING_CONTROLLER, config, name);
 #else
-		mInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
 		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick->joystick));
 		if (!name) {
 			return;
@@ -501,6 +505,9 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 #else
 			SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick->joystick), joystickName, sizeof(joystickName));
 #endif
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+			const char* serial = SDL_JoystickGetSerial(joystick->joystick);
+#endif
 			// Second pass: see if new controller matches preferred one for any player missing a controller
 			for (i = 0; i < MAX_PLAYERS; ++i) {
 				if (!events->players[i] || events->players[i]->joystick) {
@@ -509,13 +516,15 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				if (!events->preferredJoysticks[i].type || strcmp(events->preferredJoysticks[i].type, joystickName) != 0) {
 					continue;
 				}
-				if (events->preferredJoysticks[i].serial && strcmp(events->preferredJoysticks[i].type, joystickName) != 0) {
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+				if (events->preferredJoysticks[i].serial && serial && strcmp(events->preferredJoysticks[i].serial, serial) != 0) {
 					continue;
 				}
+#endif
 				mLOG(SDL_EVENTS, DEBUG, "Joystick matched player %" PRIz "i preferred device", i + 1);
 				events->players[i]->joystick = joystick;
-				if (config && joystickName[0]) {
-					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_CONTROLLER, config, joystickName);
+				if (config) {
+					mSDLPlayerLoadConfig(events->players[i], config);
 				}
 				return;
 			}
@@ -527,8 +536,8 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				}
 				mLOG(SDL_EVENTS, DEBUG, "Unmatched joystick assigned to player %" PRIz "i", i + 1);
 				events->players[i]->joystick = joystick;
-				if (config && joystickName[0]) {
-					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_CONTROLLER, config, joystickName);
+				if (config) {
+					mSDLPlayerLoadConfig(events->players[i], config);
 				}
 				break;
 			}
