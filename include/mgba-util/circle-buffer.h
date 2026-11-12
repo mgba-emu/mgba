@@ -27,6 +27,7 @@ int mCircleBufferWrite8(struct mCircleBuffer* buffer, int8_t value);
 int mCircleBufferWrite16(struct mCircleBuffer* buffer, int16_t value);
 int mCircleBufferWrite32(struct mCircleBuffer* buffer, int32_t value);
 size_t mCircleBufferWrite(struct mCircleBuffer* buffer, const void* input, size_t length);
+size_t mCircleBufferWriteForce(struct mCircleBuffer* buffer, const void* input, size_t length);
 size_t mCircleBufferWriteTruncate(struct mCircleBuffer* buffer, const void* input, size_t length);
 int mCircleBufferRead8(struct mCircleBuffer* buffer, int8_t* value);
 int mCircleBufferRead16(struct mCircleBuffer* buffer, int16_t* value);
