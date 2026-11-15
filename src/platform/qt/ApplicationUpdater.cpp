@@ -8,6 +8,7 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QMessageBox>
 #include <QRegularExpression>
 
 #include "ApplicationUpdatePrompt.h"
@@ -59,6 +60,16 @@ ApplicationUpdater::ApplicationUpdater(ConfigController* config, QObject* parent
 #else
 		QByteArray exe = qgetenv("APPIMAGE");
 #endif
+		if (exe.isEmpty()) {
+			QMessageBox* error = new QMessageBox;
+			error->setIcon(QMessageBox::Warning);
+			error->setStandardButtons(QMessageBox::Ok);
+			error->setWindowTitle(tr("Update failed"));
+			error->setText(tr("Unable to locate executable for updating."));
+			error->setAttribute(Qt::WA_DeleteOnClose);
+			error->show();
+			return;
+		}
 		QByteArray path = updateInfo().url.path().toUtf8();
 		mUpdateRegister(config->config(), exe.constData(), path.constData());
 		config->write();
