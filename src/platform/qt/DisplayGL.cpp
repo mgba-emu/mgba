@@ -337,6 +337,9 @@ bool DisplayGL::supportsFormat(const QSurfaceFormat& format) {
 		} else if (format.version() >= qMakePair(3, 2) && foundVersion > format.version()) {
 			// At least as good
 			s_supports[format] = true;
+		} else if (context.format().renderableType() == QSurfaceFormat::OpenGLES && format.version() >= qMakePair(3, 1) && foundVersion > format.version()) {
+			// At least as good
+			s_supports[format] = true;
 		} else if (format.majorVersion() == 1 && (foundVersion < qMakePair(3, 0) ||
 		           context.format().profile() == QSurfaceFormat::CompatibilityProfile ||
 		           context.format().testOption(QSurfaceFormat::DeprecatedFunctions))) {
