@@ -812,8 +812,10 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	const GLchar* shaderBuffer[4];
 	const GLubyte* version = glGetString(GL_VERSION);
 	if (strncmp((const char*) version, "OpenGL ES ", strlen("OpenGL ES ")) != 0) {
+		glRenderer->isEs = false;
 		shaderBuffer[0] = _gl3Header;
 	} else {
+		glRenderer->isEs = true;
 		shaderBuffer[0] = _gles3Header;
 	}
 
@@ -1441,6 +1443,12 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		glClearColor(0, 0, 0, 0);
 #ifdef GL_GLES_PROTOTYPES
 		glClearDepthf(1.f);
+#elif defined(USE_EPOXY)
+		if (glRenderer->isEs) {
+			glClearDepthf(1.f);
+		} else {
+			glClearDepth(1);
+		}
 #else
 		glClearDepth(1);
 #endif
