@@ -342,73 +342,83 @@ void mSDLDetachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 	mCircleBufferDeinit(&player->rotation.zHistory);
 }
 
+static void mSDLJoystickLoad(struct mSDLPlayer* context, const struct Configuration* config, const char* name) {
+	if (!context->joystick) {
+		return;
+	}
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	mInputMapLoad(context->bindings, SDL_BINDING_CONTROLLER, config);
+	mInputProfileLoad(context->bindings, SDL_BINDING_CONTROLLER, config, name);
+#else
+	mInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
+	mInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, name);
+#endif
+
+	const char* value;
+	char* end;
+	int numAxes = SDL_JoystickNumAxes(context->joystick->joystick);
+	int axis;
+	value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "tiltAxisX", name);
+	if (value) {
+		axis = strtol(value, &end, 0);
+		if (axis >= 0 && axis < numAxes && end && !*end) {
+			context->rotation.axisX = axis;
+		}
+	}
+	value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "tiltAxisY", name);
+	if (value) {
+		axis = strtol(value, &end, 0);
+		if (axis >= 0 && axis < numAxes && end && !*end) {
+			context->rotation.axisY = axis;
+		}
+	}
+	value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroAxisX", name);
+	if (value) {
+		axis = strtol(value, &end, 0);
+		if (axis >= 0 && axis < numAxes && end && !*end) {
+			context->rotation.gyroX = axis;
+		}
+	}
+	value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroAxisY", name);
+	if (value) {
+		axis = strtol(value, &end, 0);
+		if (axis >= 0 && axis < numAxes && end && !*end) {
+			context->rotation.gyroY = axis;
+		}
+	}
+	value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroAxisZ", name);
+	if (value) {
+		axis = strtol(value, &end, 0);
+		if (axis >= 0 && axis < numAxes && end && !*end) {
+			context->rotation.gyroZ = axis;
+		}
+	}
+	value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroSensitivity", name);
+	if (value) {
+		float sensitivity = strtof_u(value, &end);
+		if (end && !*end) {
+			context->rotation.gyroSensitivity = sensitivity;
+		}
+	}
+}
+
 void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration* config) {
 	mInputMapLoad(context->bindings, SDL_BINDING_KEY, config);
 	if (context->joystick) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		mInputMapLoad(context->bindings, SDL_BINDING_CONTROLLER, config);
 		char name[34] = {0};
 #if SDL_VERSION_ATLEAST(2, 24, 0)
 		SDL_GUIDToString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
 #else
 		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
 #endif
-		mInputProfileLoad(context->bindings, SDL_BINDING_CONTROLLER, config, name);
 #else
-		mInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
 		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick->joystick));
 		if (!name) {
 			return;
 		}
-		mInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, name);
 #endif
-
-		const char* value;
-		char* end;
-		int numAxes = SDL_JoystickNumAxes(context->joystick->joystick);
-		int axis;
-		value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "tiltAxisX", name);
-		if (value) {
-			axis = strtol(value, &end, 0);
-			if (axis >= 0 && axis < numAxes && end && !*end) {
-				context->rotation.axisX = axis;
-			}
-		}
-		value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "tiltAxisY", name);
-		if (value) {
-			axis = strtol(value, &end, 0);
-			if (axis >= 0 && axis < numAxes && end && !*end) {
-				context->rotation.axisY = axis;
-			}
-		}
-		value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroAxisX", name);
-		if (value) {
-			axis = strtol(value, &end, 0);
-			if (axis >= 0 && axis < numAxes && end && !*end) {
-				context->rotation.gyroX = axis;
-			}
-		}
-		value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroAxisY", name);
-		if (value) {
-			axis = strtol(value, &end, 0);
-			if (axis >= 0 && axis < numAxes && end && !*end) {
-				context->rotation.gyroY = axis;
-			}
-		}
-		value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroAxisZ", name);
-		if (value) {
-			axis = strtol(value, &end, 0);
-			if (axis >= 0 && axis < numAxes && end && !*end) {
-				context->rotation.gyroZ = axis;
-			}
-		}
-		value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroSensitivity", name);
-		if (value) {
-			float sensitivity = strtof_u(value, &end);
-			if (end && !*end) {
-				context->rotation.gyroSensitivity = sensitivity;
-			}
-		}
+		mSDLJoystickLoad(context, config, name);
 	}
 }
 
@@ -496,6 +506,10 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 			}
 
 			char joystickName[34] = {0};
+			const char* serial = NULL;
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+			serial = SDL_JoystickGetSerial(joystick->joystick);
+#endif
 #if SDL_VERSION_ATLEAST(2, 24, 0)
 			SDL_GUIDToString(SDL_JoystickGetGUID(joystick->joystick), joystickName, sizeof(joystickName));
 #else
@@ -509,13 +523,13 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				if (!events->preferredJoysticks[i].type || strcmp(events->preferredJoysticks[i].type, joystickName) != 0) {
 					continue;
 				}
-				if (events->preferredJoysticks[i].serial && strcmp(events->preferredJoysticks[i].type, joystickName) != 0) {
+				if (events->preferredJoysticks[i].serial && strcmp(events->preferredJoysticks[i].serial, serial) != 0) {
 					continue;
 				}
 				mLOG(SDL_EVENTS, DEBUG, "Joystick matched player %" PRIz "i preferred device", i + 1);
 				events->players[i]->joystick = joystick;
 				if (config && joystickName[0]) {
-					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_CONTROLLER, config, joystickName);
+					mSDLJoystickLoad(events->players[i], config, joystickName);
 				}
 				return;
 			}
@@ -528,7 +542,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				mLOG(SDL_EVENTS, DEBUG, "Unmatched joystick assigned to player %" PRIz "i", i + 1);
 				events->players[i]->joystick = joystick;
 				if (config && joystickName[0]) {
-					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_CONTROLLER, config, joystickName);
+					mSDLJoystickLoad(events->players[i], config, joystickName);
 				}
 				break;
 			}
