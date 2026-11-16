@@ -208,8 +208,8 @@ private:
 
 	std::unique_ptr<QGBA::Display> m_display;
 	QSize m_initialSize;
-	QSize m_savedSize;
-	int m_savedScale;
+	QSize m_frameSize;
+	int m_frameScale;
 
 	// TODO: Move these to a new class
 	ActionMapper m_actions;
