@@ -2380,7 +2380,7 @@ void Window::attachDisplay() {
 		if (m_frameScale > 0) {
 			m_display->setMaximumScale(m_frameScale);
 		} else {
-			if (m_frameSize.isEmpty() && m_display) {
+			if (m_frameSize.isEmpty()) {
 				m_frameSize = m_display->size();
 			}
 			m_display->setMaximumSize(m_frameSize);
