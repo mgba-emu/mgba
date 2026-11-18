@@ -70,7 +70,7 @@ int16_t mInterpolatorSincInterpolate(const struct mInterpolator* interpolator, c
 	UNUSED(sampleStep);
 	struct mInterpolatorSinc* interp = (struct mInterpolatorSinc*) interpolator;
 	unsigned x = time;
-	double offset = (time - x) / M_PI;
+	double offset = time - x;
 
 	double sum = 0;
 	for (int i = 1 - interp->width; i <= (int) interp->width; i++) {
