@@ -25,6 +25,7 @@
 #endif
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
+#include "libretro-vfs.h"
 
 #include "libretro_core_options.h"
 
@@ -359,6 +360,7 @@ unsigned retro_api_version(void) {
 
 void retro_set_environment(retro_environment_t env) {
 	environCallback = env;
+	libretroVFSInit(env);
 
 #ifdef M_CORE_GB
 	const struct GBColorPreset* presets;
