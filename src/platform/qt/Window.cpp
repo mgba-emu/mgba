@@ -725,7 +725,11 @@ void Window::setFrameSize(int scale) {
 	auto setSize = m_frameSizes[scale];
 	bool lockFrameSize = m_config->getOption("lockFrameSize").toInt();
 	if (!lockFrameSize) {
-		exitFullScreen();
+		if (isFullScreen()) {
+			exitFullScreen();
+		} else {
+			showNormal();
+		}
 	}
 	QSize size(contentSize(true));
 	size *= scale;
