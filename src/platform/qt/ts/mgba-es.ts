@@ -244,7 +244,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../AudioProcessorDummy.cpp" line="31"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished">No se puede iniciar el procesador de audio sin entrada</translation>
+        <translation>No se puede iniciar un procesador de audio sin señal de entrada</translation>
     </message>
 </context>
 <context>
@@ -3686,7 +3686,7 @@ Tamaño de descarga: %3</translation>
         <location filename="../MemoryDump.ui" line="108"/>
         <source>Dump across banks within region</source>
         <comment>Generate dump with bytes all within the same region of memory, even if it crosses the bank boundary</comment>
-        <translation type="unfinished">Volcar entre bancos de memoria</translation>
+        <translation>Volcar entre bancos de la región</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="25"/>
@@ -6316,7 +6316,7 @@ Si está configurado como OpenGL y estás viendo esto, tu tarjeta gráfica o con
     <message>
         <location filename="../Window.cpp" line="1040"/>
         <source>Crash</source>
-        <translation>Cierre inesperado</translation>
+        <translation>Cierre anómalo</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1041"/>
