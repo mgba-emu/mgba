@@ -137,6 +137,19 @@ size_t mCircleBufferWrite(struct mCircleBuffer* buffer, const void* input, size_
 	return length;
 }
 
+size_t mCircleBufferWriteForce(struct mCircleBuffer* buffer, const void* input, size_t length) {
+	if (length > buffer->capacity) {
+		input = (const void*) ((uintptr_t) input + length - buffer->capacity);
+		length = buffer->capacity;
+	}
+
+	if (buffer->size + length > buffer->capacity) {
+		mCircleBufferRead(buffer, NULL, buffer->size + length - buffer->capacity);
+	}
+
+	return mCircleBufferWrite(buffer, input, length);
+}
+
 size_t mCircleBufferWriteTruncate(struct mCircleBuffer* buffer, const void* input, size_t length) {
 	if (buffer->size + length > buffer->capacity) {
 		length = buffer->capacity - buffer->size;
