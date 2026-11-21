@@ -50,6 +50,8 @@ static void _updateFlags(struct GBAVideoSoftwareRenderer* renderer, struct GBAVi
 static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win);
 static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win);
 
+static void _stageSpriteLayer(struct GBAVideoSoftwareRenderer* renderer, int y);
+
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	memset(renderer, 0, sizeof(*renderer));
 	renderer->d.init = GBAVideoSoftwareRendererInit;
@@ -134,6 +136,8 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->winout = (struct WindowControl) { .priority = 3 };
 	softwareRenderer->oamDirty = 1;
 	softwareRenderer->oamMax = 0;
+
+	softwareRenderer->spriteLayerMask = 0;
 
 	softwareRenderer->mosaic = 0;
 	softwareRenderer->stereo = false;
@@ -561,6 +565,11 @@ static void GBAVideoSoftwareRendererPrepareWindow(struct GBAVideoSoftwareRendere
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
+	if (y == VIDEO_VERTICAL_TOTAL_PIXELS - 1) {
+		_stageSpriteLayer(softwareRenderer, 0);
+		return;
+	}
+
 	if (y == GBA_VIDEO_VERTICAL_PIXELS - 1) {
 		softwareRenderer->nextY = 0;
 	} else {
@@ -605,6 +614,9 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 				softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
 			}
 		}
+		if (y + 1 < GBA_VIDEO_VERTICAL_PIXELS) {
+			_stageSpriteLayer(softwareRenderer, y + 1);
+		}
 		return;
 	}
 
@@ -616,12 +628,13 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; ++x) {
 			row[x] = M_COLOR_WHITE;
 		}
+		if (y + 1 < GBA_VIDEO_VERTICAL_PIXELS) {
+			_stageSpriteLayer(softwareRenderer, y + 1);
+		}
 		return;
 	}
 
 	GBAVideoSoftwareRendererPreprocessBuffer(softwareRenderer);
-	softwareRenderer->spriteCyclesRemaining = GBARegisterDISPCNTIsHblankIntervalFree(softwareRenderer->dispcnt) ? OBJ_HBLANK_FREE_LENGTH : OBJ_LENGTH;
-	int spriteLayers = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
 
 	int w;
 	unsigned priority;
@@ -632,7 +645,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		softwareRenderer->currentWindow = softwareRenderer->windows[w].control;
 		GBAVideoSoftwareRendererPrepareWindow(softwareRenderer);
 		for (priority = 0; priority < 4; ++priority) {
-			if (spriteLayers & (1 << priority)) {
+			if (softwareRenderer->spriteLayerMask & (1 << priority)) {
 				GBAVideoSoftwareRendererPostprocessSprite(softwareRenderer, priority);
 			}
 			if (TEST_LAYER_ENABLED(0) && GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) < 2) {
@@ -728,6 +741,10 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 #else
 		memcpy(row, softwareRenderer->row, GBA_VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
 #endif
+	}
+
+	if (y + 1 < GBA_VIDEO_VERTICAL_PIXELS) {
+		_stageSpriteLayer(softwareRenderer, y + 1);
 	}
 }
 
@@ -892,14 +909,6 @@ void GBAVideoSoftwareRendererStepWindow(struct GBAVideoSoftwareRenderer* softwar
 }
 
 void GBAVideoSoftwareRendererPreprocessBuffer(struct GBAVideoSoftwareRenderer* softwareRenderer) {
-	int x;
-	for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; x += 4) {
-		softwareRenderer->spriteLayer[x] = FLAG_UNWRITTEN;
-		softwareRenderer->spriteLayer[x + 1] = FLAG_UNWRITTEN;
-		softwareRenderer->spriteLayer[x + 2] = FLAG_UNWRITTEN;
-		softwareRenderer->spriteLayer[x + 3] = FLAG_UNWRITTEN;
-	}
-
 	softwareRenderer->windows[0].endX = GBA_VIDEO_HORIZONTAL_PIXELS;
 	softwareRenderer->nWindows = 1;
 	if (GBARegisterDISPCNTIsWin0Enable(softwareRenderer->dispcnt) || GBARegisterDISPCNTIsWin1Enable(softwareRenderer->dispcnt) || GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt)) {
@@ -930,7 +939,7 @@ void GBAVideoSoftwareRendererPreprocessBuffer(struct GBAVideoSoftwareRenderer* s
 	softwareRenderer->forceTarget1 = false;
 
 	int w;
-	x = 0;
+	int x = 0;
 	for (w = 0; w < softwareRenderer->nWindows; ++w) {
 		// TOOD: handle objwin on backdrop
 		uint32_t backdrop = FLAG_UNWRITTEN | FLAG_PRIORITY | FLAG_IS_BACKGROUND;
@@ -1014,6 +1023,35 @@ void GBAVideoSoftwareRendererPostprocessBuffer(struct GBAVideoSoftwareRenderer* 
 			}
 		}
 	}
+}
+
+static void _stageSpriteLayer(struct GBAVideoSoftwareRenderer* softwareRenderer, int y) {
+	int x;
+	for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; x += 4) {
+		softwareRenderer->spriteLayer[x + 0] = FLAG_UNWRITTEN;
+		softwareRenderer->spriteLayer[x + 1] = FLAG_UNWRITTEN;
+		softwareRenderer->spriteLayer[x + 2] = FLAG_UNWRITTEN;
+		softwareRenderer->spriteLayer[x + 3] = FLAG_UNWRITTEN;
+	}
+	softwareRenderer->spriteLayerMask = 0;
+
+	if (!GBARegisterDISPCNTIsObjEnable(softwareRenderer->dispcnt) || softwareRenderer->d.disableOBJ) {
+		return;
+	}
+
+	if (softwareRenderer->oamDirty) {
+		softwareRenderer->oamMax = GBAVideoRendererCleanOAM(softwareRenderer->d.oam->obj, softwareRenderer->sprites, softwareRenderer->objOffsetY);
+		softwareRenderer->oamDirty = false;
+	}
+
+	softwareRenderer->forceTarget1 = false;
+
+	int32_t savedCycles = softwareRenderer->spriteCyclesRemaining;
+	softwareRenderer->spriteCyclesRemaining = GBARegisterDISPCNTIsHblankIntervalFree(softwareRenderer->dispcnt) ? OBJ_HBLANK_FREE_LENGTH : OBJ_LENGTH;
+
+	softwareRenderer->spriteLayerMask = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
+
+	softwareRenderer->spriteCyclesRemaining = savedCycles;
 }
 
 int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRenderer* renderer, int y) {
