@@ -398,10 +398,14 @@ void mCoreTakeScreenshot(struct mCore* core) {
 bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf) {
 #ifdef USE_PNG
 	size_t stride;
-	const void* pixels = 0;
+	const void* pixels = NULL;
 	unsigned width, height;
 	core->currentVideoSize(core, &width, &height);
 	core->getPixels(core, &pixels, &stride);
+	if (!pixels) {
+		return false;
+	}
+
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeader(png, width, height, mCOLOR_NATIVE);
 	bool success = PNGWritePixels(png, width, height, stride, pixels, mCOLOR_NATIVE);
