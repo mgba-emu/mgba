@@ -427,8 +427,7 @@ static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer) 
 static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
 	UNUSED(renderer);
 	UNUSED(stride);
-	UNUSED(pixels);
-	// Nothing to do
+	*pixels = NULL;
 }
 
 static void GBAVideoDummyRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels) {

@@ -1114,8 +1114,7 @@ static void GBVideoDummyRendererEnableSGBBorder(struct GBVideoRenderer* renderer
 static void GBVideoDummyRendererGetPixels(struct GBVideoRenderer* renderer, size_t* stride, const void** pixels) {
 	UNUSED(renderer);
 	UNUSED(stride);
-	UNUSED(pixels);
-	// Nothing to do
+	*pixels = NULL;
 }
 
 static void GBVideoDummyRendererPutPixels(struct GBVideoRenderer* renderer, size_t stride, const void* pixels) {
