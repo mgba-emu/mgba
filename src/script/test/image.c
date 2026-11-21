@@ -37,12 +37,13 @@ M_TEST_DEFINE(members) {
 	TEST_PROGRAM("assert(image)");
 	TEST_PROGRAM("assert(image.new)");
 	TEST_PROGRAM("assert(image.load)");
+	TEST_PROGRAM("assert(image.loadFromBuffer)");
 	TEST_PROGRAM("im = image.new(1, 1)");
 	TEST_PROGRAM("assert(im)");
 	TEST_PROGRAM("assert(im.width == 1)");
 	TEST_PROGRAM("assert(im.height == 1)");
 	TEST_PROGRAM("assert(im.save)");
-	TEST_PROGRAM("assert(im.save)");
+	TEST_PROGRAM("assert(im.saveToBuffer)");
 	TEST_PROGRAM("assert(im.getPixel)");
 	TEST_PROGRAM("assert(im.setPixel)");
 
@@ -100,6 +101,20 @@ M_TEST_DEFINE(saveLoadRoundTrip) {
 }
 #endif
 
+M_TEST_DEFINE(saveLoadBufferRoundTrip) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("im = image.new(1, 1)");
+	TEST_PROGRAM("im:setPixel(0, 0, 0xFF123456)");
+	TEST_PROGRAM("buf = im:saveToBuffer()");
+	TEST_PROGRAM("assert(buf)")
+	TEST_PROGRAM("im = image.loadFromBuffer(buf)");
+	TEST_PROGRAM("assert(im)");
+	TEST_PROGRAM("assert(im:getPixel(0, 0) == 0xFF123456)");
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_DEFINE(painterBasic) {
 	SETUP_LUA;
 
@@ -122,5 +137,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptImage,
 #ifdef USE_PNG
 	cmocka_unit_test(saveLoadRoundTrip),
 #endif
+	cmocka_unit_test(saveLoadBufferRoundTrip),
 	cmocka_unit_test(painterBasic),
 )

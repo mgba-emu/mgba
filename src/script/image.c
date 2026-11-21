@@ -45,6 +45,43 @@ static struct mScriptValue* _mImageLoad(const char* path) {
 }
 #endif
 
+static struct mScriptValue* _mImageLoadFromBuffer(struct mScriptString* buffer) {
+	struct VFile* vf = VFileFromConstMemory(buffer->buffer, buffer->size);
+	struct mImage* image = mImageLoadVF(vf);
+	vf->close(vf);
+	if (!image) {
+		return NULL;
+	}
+	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mImage));
+	result->value.opaque = image;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT;
+	return result;
+}
+
+static struct mScriptValue* _mImageSaveToBuffer(const struct mImage* image, const char* format) {
+	struct VFile* vf = VFileMemChunk(NULL, 0);
+	if (!vf) {
+		return NULL;
+	}
+	struct mScriptValue* ret = NULL;
+	if (!mImageSaveVF(image, vf, format)) {
+		goto out;
+	}
+	ssize_t size = vf->size(vf);
+	if (size < 1) {
+		goto out;
+	}
+	void* data = vf->map(vf, size, MAP_READ);
+	if (!data) {
+		goto out;
+	}
+	ret = mScriptStringCreateFromBytes(data, size);
+	vf->unmap(vf, data, size);
+out:
+	vf->close(vf);
+	return ret;
+}
+
 static struct mScriptValue* _mImageNewPainter(struct mScriptValue* image) {
 	mScriptValueRef(image);
 	struct mScriptPainter* painter = malloc(sizeof(*painter));
@@ -78,6 +115,11 @@ mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mImage, save)
 mSCRIPT_DEFINE_DEFAULTS_END;
 #endif
 
+mSCRIPT_DECLARE_STRUCT_C_METHOD_WITH_DEFAULTS(mImage, WSTR, saveToBuffer, _mImageSaveToBuffer, 1, CHARP, format);
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mImage, saveToBuffer)
+	mSCRIPT_CHARP("PNG")
+mSCRIPT_DEFINE_DEFAULTS_END;
+
 mSCRIPT_DEFINE_STRUCT(mImage)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
 		"A single, static image."
@@ -87,6 +129,8 @@ mSCRIPT_DEFINE_STRUCT(mImage)
 	mSCRIPT_DEFINE_DOCSTRING("Save the image to a file. Currently, only `PNG` format is supported")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mImage, save)
 #endif
+	mSCRIPT_DEFINE_DOCSTRING("Save the image into a buffer. Currently, only `PNG` format is supported")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mImage, saveToBuffer)
 	mSCRIPT_DEFINE_DOCSTRING("Get the ARGB value of the pixel at a given coordinate")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mImage, getPixel)
 	mSCRIPT_DEFINE_DOCSTRING("Set the ARGB value of the pixel at a given coordinate")
@@ -105,6 +149,7 @@ mSCRIPT_BIND_FUNCTION(mImageNew_Binding, W(mImage), _mImageNew, 2, U32, width, U
 #ifdef ENABLE_VFS
 mSCRIPT_BIND_FUNCTION(mImageLoad_Binding, W(mImage), _mImageLoad, 1, CHARP, path);
 #endif
+mSCRIPT_BIND_FUNCTION(mImageLoadFromBuffer_Binding, W(mImage), _mImageLoadFromBuffer, 1, STR, buffer);
 mSCRIPT_BIND_FUNCTION(mImageNewPainter_Binding, W(mScriptPainter), _mImageNewPainter, 1, W(mImage), image);
 
 void _mPainterSetBlend(struct mPainter* painter, bool enable) {
@@ -319,6 +364,7 @@ void mScriptContextAttachImage(struct mScriptContext* context) {
 #ifdef ENABLE_VFS
 		mSCRIPT_KV_PAIR(load, &mImageLoad_Binding),
 #endif
+		mSCRIPT_KV_PAIR(loadFromBuffer, &mImageLoadFromBuffer_Binding),
 		mSCRIPT_KV_PAIR(newPainter, &mImageNewPainter_Binding),
 		mSCRIPT_KV_SENTINEL
 	});
@@ -327,6 +373,7 @@ void mScriptContextAttachImage(struct mScriptContext* context) {
 #ifdef ENABLE_VFS
 	mScriptContextSetDocstring(context, "image.load", "Load an image from a path. Currently, only `PNG` format is supported");
 #endif
+	mScriptContextSetDocstring(context, "image.loadFromBuffer", "Load an image from a buffer. Currently, only `PNG` format is supported");
 	mScriptContextSetDocstring(context, "image.newPainter", "Create a new painter from an existing image");
 
 	mScriptContextExportConstants(context, "ALIGN", (struct mScriptKVPair[]) {
