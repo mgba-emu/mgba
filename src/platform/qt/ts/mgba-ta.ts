@@ -102,21 +102,21 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
 </translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="39"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="43"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
         <translation>
 இப்போது அதை பதிவிறக்கம் செய்து நிறுவ விரும்புகிறீர்களா? பதிவிறக்கம் முடிந்ததும் நீங்கள் முன்மாதிரியை மறுதொடக்கம் செய்ய வேண்டும்.</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="42"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="46"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
         <translation>
 இந்த மேடையில் ஆட்டோ அப்டேட் கிடைக்கவில்லை. நீங்கள் புதுப்பிக்க விரும்பினால் அதை கைமுறையாக செய்ய வேண்டும்.</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="46"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="50"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
@@ -125,22 +125,22 @@ Download size: %3</source>
  பதிவிறக்க அளவு: %3</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="64"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="68"/>
         <source>Downloading update...</source>
         <translation>புதுப்பிப்பைப் பதிவிறக்குகிறது ...</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="78"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
         <source>Verifying download failed. Please update manually.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="86"/>
         <source>Downloading failed. Please update manually.</source>
         <translation>பதிவிறக்கம் தோல்வியுற்றது. கைமுறையாக புதுப்பிக்கவும்.</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="84"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="88"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
         <translation>பதிவிறக்கம் முடிந்தது. %1 ஐ மறுதொடக்கம் செய்ய சரி என்பதை அழுத்தி புதுப்பிப்பை நிறுவவும்.</translation>
     </message>
@@ -148,22 +148,32 @@ Download size: %3</source>
 <context>
     <name>QGBA::ApplicationUpdater</name>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="95"/>
+        <location filename="../ApplicationUpdater.cpp" line="67"/>
+        <source>Update failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ApplicationUpdater.cpp" line="68"/>
+        <source>Unable to locate executable for updating.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ApplicationUpdater.cpp" line="106"/>
         <source>Stable</source>
         <translation>நிலையான</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="98"/>
+        <location filename="../ApplicationUpdater.cpp" line="109"/>
         <source>Development</source>
         <translation>வளர்ச்சி</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="100"/>
+        <location filename="../ApplicationUpdater.cpp" line="111"/>
         <source>Unknown</source>
         <translation>தெரியவில்லை</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="246"/>
+        <location filename="../ApplicationUpdater.cpp" line="257"/>
         <source>(None)</source>
         <translation>(எதுவுமில்லை)</translation>
     </message>
@@ -224,17 +234,17 @@ Download size: %3</source>
 <context>
     <name>QGBA::AudioDevice</name>
     <message>
-        <location filename="../AudioDevice.cpp" line="36"/>
+        <location filename="../AudioDevice.cpp" line="39"/>
         <source>Can&apos;t set format of context-less audio device</source>
         <translation>சூழல்-குறைவான ஆடியோ சாதனத்தின் வடிவமைப்பை அமைக்க முடியாது</translation>
     </message>
     <message>
-        <location filename="../AudioDevice.cpp" line="57"/>
+        <location filename="../AudioDevice.cpp" line="60"/>
         <source>Audio device is missing its core</source>
         <translation>ஆடியோ சாதனம் அதன் மையத்தைக் காணவில்லை</translation>
     </message>
     <message>
-        <location filename="../AudioDevice.cpp" line="85"/>
+        <location filename="../AudioDevice.cpp" line="90"/>
         <source>Writing data to read-only audio device</source>
         <translation>படிக்க மட்டும் ஆடியோ சாதனத்திற்கு தரவை எழுதுதல்</translation>
     </message>
@@ -250,12 +260,12 @@ Download size: %3</source>
 <context>
     <name>QGBA::AudioProcessorQt</name>
     <message>
-        <location filename="../AudioProcessorQt.cpp" line="57"/>
+        <location filename="../AudioProcessorQt.cpp" line="50"/>
         <source>Can&apos;t start an audio processor without input</source>
         <translation>உள்ளீடு இல்லாமல் ஆடியோ செயலியைத் தொடங்க முடியாது</translation>
     </message>
     <message>
-        <location filename="../AudioProcessorQt.cpp" line="82"/>
+        <location filename="../AudioProcessorQt.cpp" line="75"/>
         <source>Audio outputting to %1</source>
         <translation>% 1 க்கு ஆடியோ வெளியீடு</translation>
     </message>
@@ -852,17 +862,17 @@ Download size: %3</source>
         <translation>முன்னோக்கி கட்டுவதில் தோல்வி</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="177"/>
+        <location filename="../ForwarderView.cpp" line="186"/>
         <source>%1 installable package (*.%2)</source>
         <translation>%1 நிறுவக்கூடிய தொகுப்பு (*.%2)</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="193"/>
+        <location filename="../ForwarderView.cpp" line="202"/>
         <source>Select an image</source>
         <translation>ஒரு படத்தைத் தேர்ந்தெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="193"/>
+        <location filename="../ForwarderView.cpp" line="202"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
         <translation>படக் கோப்புகள் ( *.png *.jpg *.bmp)</translation>
     </message>
@@ -3238,37 +3248,37 @@ Download size: %3</source>
         <translation>பிழை ஏற்பட்டது</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="193"/>
+        <location filename="../LogController.cpp" line="197"/>
         <source>DEBUG</source>
         <translation>பிழைத்திருத்தம்</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="195"/>
+        <location filename="../LogController.cpp" line="199"/>
         <source>STUB</source>
         <translation>முளை</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="197"/>
+        <location filename="../LogController.cpp" line="201"/>
         <source>INFO</source>
         <translation>தகவல்</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="199"/>
+        <location filename="../LogController.cpp" line="203"/>
         <source>WARN</source>
         <translation>எச்சரிக்கை</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="201"/>
+        <location filename="../LogController.cpp" line="205"/>
         <source>ERROR</source>
         <translation>பிழை</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="203"/>
+        <location filename="../LogController.cpp" line="207"/>
         <source>FATAL</source>
         <translation>அபாயகரமான</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="205"/>
+        <location filename="../LogController.cpp" line="209"/>
         <source>GAME ERROR</source>
         <translation>விளையாட்டு பிழை</translation>
     </message>
@@ -5056,7 +5066,7 @@ Download size: %3</source>
         <translation>மென்பொருள் (QT)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1315"/>
+        <location filename="../SettingsView.ui" line="1355"/>
         <location filename="../SettingsView.cpp" line="179"/>
         <source>OpenGL</source>
         <translation>Opengl</translation>
@@ -5231,667 +5241,707 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     </message>
     <message>
         <location filename="../SettingsView.ui" line="140"/>
-        <location filename="../SettingsView.ui" line="162"/>
+        <location filename="../SettingsView.ui" line="202"/>
         <source>1536</source>
         <translation>1536</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="147"/>
+        <source>32</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="152"/>
+        <source>48</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="157"/>
+        <source>64</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="162"/>
+        <source>96</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="167"/>
+        <source>128</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="172"/>
+        <source>192</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="177"/>
+        <source>256</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="182"/>
+        <source>384</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="187"/>
         <source>512</source>
         <translation>512</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="152"/>
+        <location filename="../SettingsView.ui" line="192"/>
         <source>768</source>
         <translation>768</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="157"/>
+        <location filename="../SettingsView.ui" line="197"/>
         <source>1024</source>
         <translation>1024</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="167"/>
+        <location filename="../SettingsView.ui" line="207"/>
         <source>2048</source>
         <translation>2048</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="172"/>
+        <location filename="../SettingsView.ui" line="212"/>
         <source>3072</source>
         <translation>3072</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="177"/>
+        <location filename="../SettingsView.ui" line="217"/>
         <source>4096</source>
         <translation>4096</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="185"/>
+        <location filename="../SettingsView.ui" line="225"/>
         <source>samples</source>
         <translation>மாதிரிகள்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="194"/>
+        <location filename="../SettingsView.ui" line="234"/>
         <source>Sample rate:</source>
         <translation>மாதிரி வீதம்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="206"/>
-        <location filename="../SettingsView.ui" line="223"/>
+        <location filename="../SettingsView.ui" line="246"/>
+        <location filename="../SettingsView.ui" line="263"/>
         <source>44100</source>
         <translation>44100</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="213"/>
+        <location filename="../SettingsView.ui" line="253"/>
         <source>22050</source>
         <translation>22050</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="218"/>
+        <location filename="../SettingsView.ui" line="258"/>
         <source>32000</source>
         <translation>32000</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="228"/>
+        <location filename="../SettingsView.ui" line="268"/>
         <source>48000</source>
         <translation>48000</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="236"/>
+        <location filename="../SettingsView.ui" line="276"/>
         <source>Hz</source>
         <translation>எர்ட்ச்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="245"/>
+        <location filename="../SettingsView.ui" line="285"/>
         <source>Volume:</source>
         <translation>தொகுதி:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="276"/>
         <location filename="../SettingsView.ui" line="316"/>
-        <location filename="../SettingsView.ui" line="811"/>
-        <location filename="../SettingsView.ui" line="836"/>
+        <location filename="../SettingsView.ui" line="356"/>
+        <location filename="../SettingsView.ui" line="851"/>
+        <location filename="../SettingsView.ui" line="876"/>
         <source>Mute</source>
         <translation>ஒலிமுடக்கு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="285"/>
+        <location filename="../SettingsView.ui" line="325"/>
         <source>Fast forward volume:</source>
         <translation>வேகமாக முன்னோக்கி தொகுதி:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="325"/>
+        <location filename="../SettingsView.ui" line="365"/>
         <source>Audio in multiplayer:</source>
         <translation>மல்டிபிளேயரில் ஆடியோ:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="332"/>
+        <location filename="../SettingsView.ui" line="372"/>
         <source>All windows</source>
         <translation>அனைத்து சாளரங்கள்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="345"/>
+        <location filename="../SettingsView.ui" line="385"/>
         <source>Player 1 window only</source>
         <translation>பிளேயர் 1 சாளரம் மட்டுமே</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="355"/>
+        <location filename="../SettingsView.ui" line="395"/>
         <source>Currently active player window</source>
         <translation>தற்போது செயலில் உள்ள பிளேயர் சாளரம்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="388"/>
+        <location filename="../SettingsView.ui" line="428"/>
         <source>Display driver:</source>
         <translation>காட்சி இயக்கி:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="405"/>
+        <location filename="../SettingsView.ui" line="445"/>
         <source>Frameskip:</source>
         <translation>Framessk:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="414"/>
+        <location filename="../SettingsView.ui" line="454"/>
         <source>Skip every</source>
         <translation>ஒவ்வொன்றையும் தவிர்க்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="424"/>
-        <location filename="../SettingsView.ui" line="1199"/>
+        <location filename="../SettingsView.ui" line="464"/>
+        <location filename="../SettingsView.ui" line="1239"/>
         <source>frames</source>
         <translation>சட்டங்கள்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="475"/>
+        <location filename="../SettingsView.ui" line="515"/>
         <source>FPS target:</source>
         <translation>FPS இலக்கு:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="500"/>
+        <location filename="../SettingsView.ui" line="540"/>
         <source>frames per second</source>
         <translation>நொடிக்கு பிரேம்கள்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="516"/>
+        <location filename="../SettingsView.ui" line="556"/>
         <source>Sync:</source>
         <translation>ஒத்திசைவு:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="382"/>
-        <location filename="../SettingsView.ui" line="525"/>
+        <location filename="../SettingsView.ui" line="422"/>
+        <location filename="../SettingsView.ui" line="565"/>
         <source>Video</source>
         <translation>ஒளிதோற்றம்</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="105"/>
-        <location filename="../SettingsView.ui" line="532"/>
+        <location filename="../SettingsView.ui" line="572"/>
         <source>Audio</source>
         <translation>ஆடியோ</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="433"/>
+        <location filename="../SettingsView.ui" line="473"/>
         <source>Lock aspect ratio</source>
         <translation>பூட்டு விகித விகிதம்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="440"/>
+        <location filename="../SettingsView.ui" line="480"/>
         <source>Force integer scaling</source>
         <translation>முழு எண் அளவிடுதல்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="454"/>
+        <location filename="../SettingsView.ui" line="494"/>
         <source>Bilinear filtering</source>
         <translation>பிலினியர் வடிகட்டுதல்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="757"/>
+        <location filename="../SettingsView.ui" line="797"/>
         <source>Show filename instead of ROM name in library view</source>
         <translation>நூலகக் காட்சியில் ரோம் பெயருக்கு பதிலாக கோப்பு பெயரைக் காட்டு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="804"/>
-        <location filename="../SettingsView.ui" line="829"/>
+        <location filename="../SettingsView.ui" line="844"/>
+        <location filename="../SettingsView.ui" line="869"/>
         <source>Pause</source>
         <translation>இடைநிறுத்தம்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="795"/>
+        <location filename="../SettingsView.ui" line="835"/>
         <source>When inactive:</source>
         <translation>செயலற்ற போது:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="548"/>
+        <location filename="../SettingsView.ui" line="588"/>
         <source>On loading a game:</source>
         <translation>ஒரு விளையாட்டை ஏற்றும்போது:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="555"/>
+        <location filename="../SettingsView.ui" line="595"/>
         <source>Load last state</source>
         <translation>கடைசி நிலையை ஏற்றவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="565"/>
+        <location filename="../SettingsView.ui" line="605"/>
         <source>Load cheats</source>
         <translation>ஏமாற்றுகளை ஏற்றவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="599"/>
+        <location filename="../SettingsView.ui" line="639"/>
         <source>Save entered cheats</source>
         <translation>நுழைந்த ஏமாற்றுகளை சேமிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="820"/>
+        <location filename="../SettingsView.ui" line="860"/>
         <source>When minimized:</source>
         <translation>குறைக்கும்போது:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="959"/>
+        <location filename="../SettingsView.ui" line="999"/>
         <source>Current channel:</source>
         <translation>தற்போதைய சேனல்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="973"/>
+        <location filename="../SettingsView.ui" line="1013"/>
         <source>Current version:</source>
         <translation>தற்போதைய பதிப்பு:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="997"/>
+        <location filename="../SettingsView.ui" line="1037"/>
         <source>Update channel:</source>
         <translation>சேனலைப் புதுப்பிக்கவும்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1007"/>
+        <location filename="../SettingsView.ui" line="1047"/>
         <source>Available version:</source>
         <translation>கிடைக்கும் பதிப்பு:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1014"/>
+        <location filename="../SettingsView.ui" line="1054"/>
         <source>(Unknown)</source>
         <translation>(தெரியவில்லை)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1024"/>
+        <location filename="../SettingsView.ui" line="1064"/>
         <source>Last checked:</source>
         <translation>கடைசியாக சரிபார்க்கப்பட்டது:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1045"/>
+        <location filename="../SettingsView.ui" line="1085"/>
         <source>Automatically check on start</source>
         <translation>தொடக்கத்தில் தானாக சரிபார்க்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1052"/>
+        <location filename="../SettingsView.ui" line="1092"/>
         <source>Check now</source>
         <translation>இப்போது சரிபார்க்க</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2174"/>
+        <location filename="../SettingsView.ui" line="2214"/>
         <source>Default color palette only</source>
         <translation>இயல்புநிலை வண்ண தட்டு மட்டுமே</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2167"/>
+        <location filename="../SettingsView.ui" line="2207"/>
         <source>SGB color palette if available</source>
         <translation>கிடைத்தால் எச்சிபி வண்ணத் தட்டு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2181"/>
+        <location filename="../SettingsView.ui" line="2221"/>
         <source>GBC color palette if available</source>
         <translation>கிடைத்தால் சிபிசி வண்ணத் தட்டு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2188"/>
+        <location filename="../SettingsView.ui" line="2228"/>
         <source>SGB (preferred) or GBC color palette if available</source>
         <translation>கிடைத்தால் எச்சிபி (விருப்பமான) அல்லது சிபிசி வண்ணத் தட்டு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2200"/>
+        <location filename="../SettingsView.ui" line="2240"/>
         <source>Game Boy Camera</source>
         <translation>கேம் பாய் கேமரா</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2206"/>
+        <location filename="../SettingsView.ui" line="2246"/>
         <source>Driver:</source>
         <translation>இயக்கி:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2223"/>
+        <location filename="../SettingsView.ui" line="2263"/>
         <source>Source:</source>
         <translation>ஆதாரம்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="509"/>
+        <location filename="../SettingsView.ui" line="549"/>
         <source>Native (59.7275)</source>
         <translation>சொந்த (59.7275)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="447"/>
+        <location filename="../SettingsView.ui" line="487"/>
         <source>Interframe blending</source>
         <translation>இடைக்கால கலப்பு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="709"/>
+        <location filename="../SettingsView.ui" line="749"/>
         <source>Language</source>
         <translation>மொழி</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="726"/>
+        <location filename="../SettingsView.ui" line="766"/>
         <source>Library:</source>
         <translation>நூலகம்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="734"/>
+        <location filename="../SettingsView.ui" line="774"/>
         <source>List view</source>
         <translation>பட்டியல் பார்வை</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="739"/>
+        <location filename="../SettingsView.ui" line="779"/>
         <source>Tree view</source>
         <translation>மரக் காட்சி</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="747"/>
+        <location filename="../SettingsView.ui" line="787"/>
         <source>Show when no game open</source>
         <translation>விளையாட்டு திறக்கப்படாதபோது காட்டு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="764"/>
+        <location filename="../SettingsView.ui" line="804"/>
         <source>Clear cache</source>
         <translation>தெளிவான தற்காலிக சேமிப்பு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="778"/>
+        <location filename="../SettingsView.ui" line="818"/>
         <source>Allow opposing input directions</source>
         <translation>எதிரெதிர் உள்ளீட்டு திசைகளை அனுமதிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="785"/>
+        <location filename="../SettingsView.ui" line="825"/>
         <source>Suspend screensaver</source>
         <translation>ச்கிரீன்சேவரை இடைநீக்கம்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="852"/>
+        <location filename="../SettingsView.ui" line="892"/>
         <source>Dynamically update window title</source>
         <translation>சாளர தலைப்பை மாறும் புதுப்பிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="872"/>
+        <location filename="../SettingsView.ui" line="912"/>
         <source>Show filename instead of ROM name in title bar</source>
         <translation>தலைப்பு பட்டியில் ரோம் பெயருக்கு பதிலாக கோப்பு பெயரை காட்டு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="889"/>
+        <location filename="../SettingsView.ui" line="929"/>
         <source>Show OSD messages</source>
         <translation>OSD செய்திகளைக் காட்டு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="698"/>
+        <location filename="../SettingsView.ui" line="738"/>
         <source>Enable Discord Rich Presence</source>
         <translation>முரண்பாடு பணக்கார இருப்பை இயக்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="575"/>
+        <location filename="../SettingsView.ui" line="615"/>
         <source>Edit autorun scripts</source>
         <translation>ஆட்டோரூன் ச்கிரிப்ட்களைத் திருத்து</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="589"/>
+        <location filename="../SettingsView.ui" line="629"/>
         <source>Periodically autosave state</source>
         <translation>அவ்வப்போது ஆட்டோசேவ் நிலை</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="862"/>
+        <location filename="../SettingsView.ui" line="902"/>
         <source>Show FPS in title bar</source>
         <translation>தலைப்பு பட்டியில் FPS ஐக் காட்டு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="904"/>
+        <location filename="../SettingsView.ui" line="944"/>
         <source>Show frame count in OSD</source>
         <translation>OSD இல் பிரேம் எண்ணிக்கையைக் காட்டு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="911"/>
+        <location filename="../SettingsView.ui" line="951"/>
         <source>Show emulation info on reset</source>
         <translation>மீட்டமைப்பு குறித்த எமுலேசன் தகவலைக் காட்டு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="948"/>
+        <location filename="../SettingsView.ui" line="988"/>
         <source>Custom border:</source>
         <translation>தனிப்பயன் எல்லை:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1066"/>
+        <location filename="../SettingsView.ui" line="1106"/>
         <source>Fast forward speed:</source>
         <translation>வேகமாக முன்னோக்கி வேகம்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1097"/>
-        <location filename="../SettingsView.ui" line="1140"/>
+        <location filename="../SettingsView.ui" line="1137"/>
+        <location filename="../SettingsView.ui" line="1180"/>
         <source>Unbounded</source>
         <translation>எல்லையற்ற</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1109"/>
+        <location filename="../SettingsView.ui" line="1149"/>
         <source>Fast forward (held) speed:</source>
         <translation>வேகமாக முன்னோக்கி (வைத்திருக்கும்) வேகம்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1152"/>
+        <location filename="../SettingsView.ui" line="1192"/>
         <source>Autofire interval:</source>
         <translation>தன்னியக்க இடைவெளி:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1176"/>
+        <location filename="../SettingsView.ui" line="1216"/>
         <source>Enable rewind</source>
         <translation>ரிவைண்டை இயக்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1183"/>
+        <location filename="../SettingsView.ui" line="1223"/>
         <source>Rewind history:</source>
         <translation>வரலாற்றை முன்னாடி:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1208"/>
+        <location filename="../SettingsView.ui" line="1248"/>
         <source>Rewind speed:</source>
         <translation>வேகத்தை முன்னாடி:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1245"/>
+        <location filename="../SettingsView.ui" line="1285"/>
         <source>Idle loops:</source>
         <translation>செயலற்ற சுழல்கள்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1253"/>
+        <location filename="../SettingsView.ui" line="1293"/>
         <source>Run all</source>
         <translation>அனைத்தையும் இயக்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1258"/>
+        <location filename="../SettingsView.ui" line="1298"/>
         <source>Remove known</source>
         <translation>அறியப்பட்டதை அகற்று</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1263"/>
+        <location filename="../SettingsView.ui" line="1303"/>
         <source>Detect and remove</source>
         <translation>கண்டறிந்து அகற்றவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1271"/>
+        <location filename="../SettingsView.ui" line="1311"/>
         <source>Preload entire ROM into memory</source>
         <translation>முழு ROM ஐ நினைவகமாக ஏற்றவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="616"/>
+        <location filename="../SettingsView.ui" line="656"/>
         <source>Save state extra data:</source>
         <translation>மாநில கூடுதல் தரவைச் சேமிக்கவும்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="633"/>
-        <location filename="../SettingsView.ui" line="677"/>
+        <location filename="../SettingsView.ui" line="673"/>
+        <location filename="../SettingsView.ui" line="717"/>
         <source>Save game</source>
         <translation>விளையாட்டைச் சேமிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="660"/>
+        <location filename="../SettingsView.ui" line="700"/>
         <source>Load state extra data:</source>
         <translation>மாநில கூடுதல் தரவை ஏற்றவும்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1815"/>
+        <location filename="../SettingsView.ui" line="1855"/>
         <source>Models</source>
         <translation>மாதிரிகள்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1821"/>
+        <location filename="../SettingsView.ui" line="1861"/>
         <source>GB only:</source>
         <translation>சிபி மட்டும்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1831"/>
+        <location filename="../SettingsView.ui" line="1871"/>
         <source>SGB compatible:</source>
         <translation>எச்சிபி இணக்கமானது:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1841"/>
+        <location filename="../SettingsView.ui" line="1881"/>
         <source>GBC only:</source>
         <translation>சிபிசி மட்டும்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1851"/>
+        <location filename="../SettingsView.ui" line="1891"/>
         <source>GBC compatible:</source>
         <translation>சிபிசி இணக்கமானது:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1861"/>
+        <location filename="../SettingsView.ui" line="1901"/>
         <source>SGB and GBC compatible:</source>
         <translation>எச்சிபி மற்றும் சிபிசி இணக்கமானது:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1881"/>
+        <location filename="../SettingsView.ui" line="1921"/>
         <source>Game Boy palette</source>
         <translation>கேம் பாய் தட்டு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1887"/>
+        <location filename="../SettingsView.ui" line="1927"/>
         <source>Preset:</source>
         <translation>முன்னமைவு:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="623"/>
-        <location filename="../SettingsView.ui" line="667"/>
+        <location filename="../SettingsView.ui" line="663"/>
+        <location filename="../SettingsView.ui" line="707"/>
         <source>Screenshot</source>
         <translation>திரைக்காட்சி</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="643"/>
-        <location filename="../SettingsView.ui" line="684"/>
+        <location filename="../SettingsView.ui" line="683"/>
+        <location filename="../SettingsView.ui" line="724"/>
         <source>Cheat codes</source>
         <translation>ஏமாற்று குறியீடுகள்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1281"/>
+        <location filename="../SettingsView.ui" line="1321"/>
         <source>Enable Game Boy Player features by default</source>
         <translation>இயல்புநிலையாக கேம் பாய் பிளேயர் அம்சங்களை இயக்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1288"/>
+        <location filename="../SettingsView.ui" line="1328"/>
         <source>Enable VBA bug compatibility in ROM hacks</source>
         <translation>ரோம் ஏக்குகளில் VBA பிழை பொருந்தக்கூடிய தன்மையை இயக்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1302"/>
+        <location filename="../SettingsView.ui" line="1342"/>
         <source>Video renderer:</source>
         <translation>வீடியோ ரெண்டரிங்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1310"/>
+        <location filename="../SettingsView.ui" line="1350"/>
         <source>Software</source>
         <translation>மென்பொருள்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1323"/>
+        <location filename="../SettingsView.ui" line="1363"/>
         <source>OpenGL enhancements</source>
         <translation>Opengl மேம்பாடுகள்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1329"/>
+        <location filename="../SettingsView.ui" line="1369"/>
         <source>High-resolution scale:</source>
         <translation>உயர்-தெளிவுத்திறன் அளவுகோல்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1367"/>
+        <location filename="../SettingsView.ui" line="1407"/>
         <source>(240×160)</source>
         <translation>(240 × 160)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1396"/>
+        <location filename="../SettingsView.ui" line="1436"/>
         <source>GB BIOS file:</source>
         <translation>சிபி பயாச் கோப்பு:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="932"/>
-        <location filename="../SettingsView.ui" line="1415"/>
-        <location filename="../SettingsView.ui" line="1443"/>
-        <location filename="../SettingsView.ui" line="1471"/>
-        <location filename="../SettingsView.ui" line="1499"/>
-        <location filename="../SettingsView.ui" line="1557"/>
-        <location filename="../SettingsView.ui" line="1605"/>
-        <location filename="../SettingsView.ui" line="1653"/>
-        <location filename="../SettingsView.ui" line="1701"/>
-        <location filename="../SettingsView.ui" line="1749"/>
+        <location filename="../SettingsView.ui" line="972"/>
+        <location filename="../SettingsView.ui" line="1455"/>
+        <location filename="../SettingsView.ui" line="1483"/>
+        <location filename="../SettingsView.ui" line="1511"/>
+        <location filename="../SettingsView.ui" line="1539"/>
+        <location filename="../SettingsView.ui" line="1597"/>
+        <location filename="../SettingsView.ui" line="1645"/>
+        <location filename="../SettingsView.ui" line="1693"/>
+        <location filename="../SettingsView.ui" line="1741"/>
+        <location filename="../SettingsView.ui" line="1789"/>
         <source>Browse</source>
         <translation>உலாவு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1508"/>
+        <location filename="../SettingsView.ui" line="1548"/>
         <source>Use BIOS file if found</source>
         <translation>கிடைத்தால் பயாச் கோப்பைப் பயன்படுத்தவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1518"/>
+        <location filename="../SettingsView.ui" line="1558"/>
         <source>Skip BIOS intro</source>
         <translation>பயாச் அறிமுகத்தைத் தவிர்க்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1480"/>
+        <location filename="../SettingsView.ui" line="1520"/>
         <source>GBA BIOS file:</source>
         <translation>பயாச் கோப்பைப் பதிவிறக்கவும்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1452"/>
+        <location filename="../SettingsView.ui" line="1492"/>
         <source>GBC BIOS file:</source>
         <translation>சிபிசி பயாச் கோப்பு:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1424"/>
+        <location filename="../SettingsView.ui" line="1464"/>
         <source>SGB BIOS file:</source>
         <translation>எச்சிபி பயாச் கோப்பு:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1532"/>
+        <location filename="../SettingsView.ui" line="1572"/>
         <source>Save games</source>
         <translation>விளையாட்டுகளைச் சேமிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1566"/>
-        <location filename="../SettingsView.ui" line="1614"/>
-        <location filename="../SettingsView.ui" line="1662"/>
-        <location filename="../SettingsView.ui" line="1710"/>
-        <location filename="../SettingsView.ui" line="1758"/>
+        <location filename="../SettingsView.ui" line="1606"/>
+        <location filename="../SettingsView.ui" line="1654"/>
+        <location filename="../SettingsView.ui" line="1702"/>
+        <location filename="../SettingsView.ui" line="1750"/>
+        <location filename="../SettingsView.ui" line="1798"/>
         <source>Same directory as the ROM</source>
         <translation>ரோம் போன்ற அதே அடைவு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1580"/>
+        <location filename="../SettingsView.ui" line="1620"/>
         <source>Save states</source>
         <translation>மாநிலங்களை சேமிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1628"/>
+        <location filename="../SettingsView.ui" line="1668"/>
         <source>Screenshots</source>
         <translation>திரைக்காட்சிகள்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1676"/>
+        <location filename="../SettingsView.ui" line="1716"/>
         <source>Patches</source>
         <translation>திட்டுகள்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1724"/>
+        <location filename="../SettingsView.ui" line="1764"/>
         <source>Cheats</source>
         <translation>ஏமாற்றுக்காரர்கள்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1781"/>
+        <location filename="../SettingsView.ui" line="1821"/>
         <source>Log to file</source>
         <translation>தாக்கல் செய்ய பதிவு</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1788"/>
+        <location filename="../SettingsView.ui" line="1828"/>
         <source>Log to console</source>
         <translation>கன்சோலுக்கு பதிவு செய்யுங்கள்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1802"/>
+        <location filename="../SettingsView.ui" line="1842"/>
         <source>Select Log File</source>
         <translation>பதிவு கோப்பைத் தேர்ந்தெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1897"/>
+        <location filename="../SettingsView.ui" line="1937"/>
         <source>Default BG colors:</source>
         <translation>இயல்புநிலை பிசி வண்ணங்கள்:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1984"/>
+        <location filename="../SettingsView.ui" line="2024"/>
         <source>Default sprite colors 1:</source>
         <translation>இயல்புநிலை ச்ப்ரைட் வண்ணங்கள் 1:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2071"/>
+        <location filename="../SettingsView.ui" line="2111"/>
         <source>Default sprite colors 2:</source>
         <translation>இயல்புநிலை ச்ப்ரைட் வண்ணங்கள் 2:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1871"/>
+        <location filename="../SettingsView.ui" line="1911"/>
         <source>Super Game Boy borders</source>
         <translation>சூப்பர் கேம் பாய் எல்லைகள்</translation>
     </message>
@@ -6246,80 +6296,80 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 <context>
     <name>QGBA::Window</name>
     <message>
-        <location filename="../Window.cpp" line="354"/>
+        <location filename="../Window.cpp" line="374"/>
         <source>Archives (%1)</source>
         <translation>காப்பகங்கள் (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="359"/>
-        <location filename="../Window.cpp" line="375"/>
-        <location filename="../Window.cpp" line="402"/>
+        <location filename="../Window.cpp" line="379"/>
+        <location filename="../Window.cpp" line="395"/>
+        <location filename="../Window.cpp" line="422"/>
         <source>Select ROM</source>
         <translation>ராம் தேர்ந்தெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="393"/>
+        <location filename="../Window.cpp" line="413"/>
         <source>Select folder</source>
         <translation>கோப்புறையைத் தேர்ந்தெடு</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="537"/>
-        <location filename="../Window.cpp" line="544"/>
+        <location filename="../Window.cpp" line="557"/>
+        <location filename="../Window.cpp" line="564"/>
         <source>Select save</source>
         <translation>சேமி என்பதைத் தேர்ந்தெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="449"/>
+        <location filename="../Window.cpp" line="469"/>
         <source>Select patch</source>
         <translation>ஒட்டு தேர்ந்தெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="449"/>
+        <location filename="../Window.cpp" line="469"/>
         <source>Patches (*.ips *.ups *.bps)</source>
         <translation>திட்டுகள் ( *.ips *.ups *.bps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="460"/>
+        <location filename="../Window.cpp" line="480"/>
         <source>Select e-Reader dotcode</source>
         <translation>மின்-ரீடர் டாட் கோட் என்பதைத் தேர்ந்தெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="460"/>
+        <location filename="../Window.cpp" line="480"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
         <translation>மின்-வாசகர் அட்டை ( *.raw *.bin *.bmp)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="530"/>
+        <location filename="../Window.cpp" line="550"/>
         <source>Select image</source>
         <translation>படத்தைத் தேர்ந்தெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="530"/>
+        <location filename="../Window.cpp" line="550"/>
         <source>Image file (*.png *.gif *.jpg *.jpeg);;All files (*)</source>
         <translation>பட கோப்பு ( *.png *.gif *.jpg *.jpeg) ;; அனைத்து கோப்புகளும் ( *)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="544"/>
+        <location filename="../Window.cpp" line="564"/>
         <source>GameShark saves (*.sps *.xps)</source>
         <translation>கேம்சார்க் சேமிக்கிறது ( *.sps *.xps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="583"/>
+        <location filename="../Window.cpp" line="603"/>
         <source>Select video log</source>
         <translation>வீடியோ பதிவைத் தேர்ந்தெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="583"/>
+        <location filename="../Window.cpp" line="603"/>
         <source>Video logs (*.mvl)</source>
         <translation>வீடியோ பதிவுகள் (*.mvl)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1040"/>
+        <location filename="../Window.cpp" line="1084"/>
         <source>Crash</source>
         <translation>செயலிழப்பு</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1041"/>
+        <location filename="../Window.cpp" line="1085"/>
         <source>The game has crashed with the following error:
 
 %1</source>
@@ -6328,719 +6378,719 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
  %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1048"/>
+        <location filename="../Window.cpp" line="1092"/>
         <source>Couldn&apos;t Start</source>
         <translation>தொடங்க முடியவில்லை</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1049"/>
+        <location filename="../Window.cpp" line="1093"/>
         <source>Could not start game.</source>
         <translation>விளையாட்டைத் தொடங்க முடியவில்லை.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1063"/>
+        <location filename="../Window.cpp" line="1107"/>
         <source>Unimplemented BIOS call</source>
         <translation>சாத்தியமற்ற பயாச் அழைப்பு</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1064"/>
+        <location filename="../Window.cpp" line="1108"/>
         <source>This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience.</source>
         <translation>இந்த விளையாட்டு செயல்படுத்தப்படாத பயாச் அழைப்பைப் பயன்படுத்துகிறது. சிறந்த அனுபவத்திற்கு அதிகாரப்பூர்வ பயாசைப் பயன்படுத்தவும்.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1086"/>
+        <location filename="../Window.cpp" line="1130"/>
         <source>Failed to create an appropriate display device, falling back to software display. Games may run slowly, especially with larger windows.</source>
         <translation>பொருத்தமான காட்சி சாதனத்தை உருவாக்கத் தவறிவிட்டது, மென்பொருள் காட்சிக்கு மீண்டும் விழுகிறது. விளையாட்டுகள் மெதுவாக இயங்கக்கூடும், குறிப்பாக பெரிய சாளரங்களுடன்.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1187"/>
+        <location filename="../Window.cpp" line="1237"/>
         <source>Really make portable?</source>
         <translation>உண்மையில் சிறியதா?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1188"/>
+        <location filename="../Window.cpp" line="1238"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
         <translation>இது எமுலேட்டரை அதன் உள்ளமைவை இயங்கக்கூடிய அதே கோப்பகத்திலிருந்து ஏற்றும். நீங்கள் தொடர விரும்புகிறீர்களா?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1200"/>
+        <location filename="../Window.cpp" line="1250"/>
         <source>Restart needed</source>
         <translation>மறுதொடக்கம் தேவை</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1201"/>
+        <location filename="../Window.cpp" line="1251"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
         <translation>முன்மாதிரி மறுதொடக்கம் செய்யப்படும் வரை சில மாற்றங்கள் நடைமுறைக்கு வராது.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1252"/>
+        <location filename="../Window.cpp" line="1302"/>
         <source> -  Player %1 of %2</source>
         <translation> - %2 இல் %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1263"/>
+        <location filename="../Window.cpp" line="1313"/>
         <source>%1 - %2</source>
         <translation>% 1 - % 2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1265"/>
+        <location filename="../Window.cpp" line="1315"/>
         <source>%1 - %2 - %3</source>
         <translation>% 1 - % 2 - % 3</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1267"/>
+        <location filename="../Window.cpp" line="1317"/>
         <source>%1 - %2 (%3 fps) - %4</source>
         <translation>%1 - %2 ( %3 FPS) - %4</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1331"/>
+        <location filename="../Window.cpp" line="1381"/>
         <source>&amp;File</source>
         <translation>கோப்பு (&amp;f)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1333"/>
+        <location filename="../Window.cpp" line="1383"/>
         <source>Load &amp;ROM...</source>
         <translation>சுமை &amp; ரோம் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1336"/>
+        <location filename="../Window.cpp" line="1386"/>
         <source>Load ROM in archive...</source>
         <translation>காப்பகத்தில் ரோம் ஏற்றவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1337"/>
+        <location filename="../Window.cpp" line="1387"/>
         <source>Add folder to library...</source>
         <translation>நூலகத்தில் கோப்புறையைச் சேர்க்கவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="410"/>
+        <location filename="../Window.cpp" line="430"/>
         <source>Save games (%1)</source>
         <translation>விளையாட்டுகளைச் சேமிக்கவும் (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="411"/>
+        <location filename="../Window.cpp" line="431"/>
         <source>Select save game</source>
         <translation>சேமி விளையாட்டைத் தேர்ந்தெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="419"/>
+        <location filename="../Window.cpp" line="439"/>
         <source>mGBA save state files (%1)</source>
         <translation>மாநில கோப்புகளை சேமிக்கவும் (% 1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="421"/>
-        <location filename="../Window.cpp" line="426"/>
+        <location filename="../Window.cpp" line="441"/>
+        <location filename="../Window.cpp" line="446"/>
         <source>Select save state</source>
         <translation>சேமி நிலையைத் தேர்ந்தெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="468"/>
+        <location filename="../Window.cpp" line="488"/>
         <source>Select e-Reader card images</source>
         <translation>ஈ-ரீடர் அட்டை படங்களைத் தேர்ந்தெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="468"/>
+        <location filename="../Window.cpp" line="488"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
         <translation>பட கோப்பு ( *.png *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="469"/>
+        <location filename="../Window.cpp" line="489"/>
         <source>Conversion finished</source>
         <translation>மாற்றம் முடிந்தது</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="510"/>
+        <location filename="../Window.cpp" line="530"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
         <translation>%2 இ-ரீடர் கார்டுகளில் 1 வெற்றிகரமாக மாற்றப்பட்டது.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1341"/>
+        <location filename="../Window.cpp" line="1391"/>
         <source>Load alternate save game...</source>
         <translation>மாற்று சேமி விளையாட்டை ஏற்றவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1344"/>
+        <location filename="../Window.cpp" line="1394"/>
         <source>Load temporary save game...</source>
         <translation>தற்காலிக சேமிப்பு விளையாட்டை ஏற்றவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1377"/>
+        <location filename="../Window.cpp" line="1427"/>
         <source>Load &amp;patch...</source>
         <translation>சுமை &amp; இணைப்பு ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1380"/>
+        <location filename="../Window.cpp" line="1430"/>
         <source>Boot BIOS</source>
         <translation>துவக்க பயாச்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1474"/>
+        <location filename="../Window.cpp" line="1524"/>
         <source>Replace ROM...</source>
         <translation>ரோம் மாற்றவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1384"/>
+        <location filename="../Window.cpp" line="1434"/>
         <source>Scan e-Reader dotcodes...</source>
         <translation>ஈ-ரீடர் டாட்கோட்களை ச்கேன் செய்யுங்கள் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1825"/>
+        <location filename="../Window.cpp" line="1857"/>
         <source>Convert e-Reader card image to raw...</source>
         <translation>மின்-ரீடர் அட்டை படத்தை மூலமாக மாற்றவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1388"/>
+        <location filename="../Window.cpp" line="1438"/>
         <source>ROM &amp;info...</source>
         <translation>ரோமர் &amp; செய்தி ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1390"/>
+        <location filename="../Window.cpp" line="1440"/>
         <source>Recent</source>
         <translation>அண்மைக் கால</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1790"/>
+        <location filename="../Window.cpp" line="1822"/>
         <source>Make portable</source>
         <translation>சிறியதாக ஆக்குங்கள்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1393"/>
+        <location filename="../Window.cpp" line="1443"/>
         <source>&amp;Load state</source>
         <translation>&amp; சுமை நிலை</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1398"/>
+        <location filename="../Window.cpp" line="1448"/>
         <source>Load state file...</source>
         <translation>மாநில கோப்பை ஏற்றவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1403"/>
+        <location filename="../Window.cpp" line="1453"/>
         <source>&amp;Save state</source>
         <translation>&amp; மாநிலத்தை சேமிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1408"/>
+        <location filename="../Window.cpp" line="1458"/>
         <source>Save state file...</source>
         <translation>மாநில கோப்பை சேமிக்கவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1413"/>
+        <location filename="../Window.cpp" line="1463"/>
         <source>Quick load</source>
         <translation>விரைவான சுமை</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1414"/>
+        <location filename="../Window.cpp" line="1464"/>
         <source>Quick save</source>
         <translation>விரைவாக சேமிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1416"/>
+        <location filename="../Window.cpp" line="1466"/>
         <source>Load recent</source>
         <translation>அண்மைக் காலத்தில் ஏற்றவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1421"/>
+        <location filename="../Window.cpp" line="1471"/>
         <source>Save recent</source>
         <translation>அண்மையில் சேமிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1429"/>
+        <location filename="../Window.cpp" line="1479"/>
         <source>Undo load state</source>
         <translation>சுமை நிலையை செயல்தவிர்க்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1432"/>
+        <location filename="../Window.cpp" line="1482"/>
         <source>Undo save state</source>
         <translation>சேமிப்பதை செயல்தவிர்க்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1439"/>
-        <location filename="../Window.cpp" line="1444"/>
+        <location filename="../Window.cpp" line="1489"/>
+        <location filename="../Window.cpp" line="1494"/>
         <source>State &amp;%1</source>
         <translation>மாநிலம் &amp;%1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1570"/>
+        <location filename="../Window.cpp" line="1620"/>
         <source>Load camera image...</source>
         <translation>கேமரா படத்தை ஏற்றவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1350"/>
+        <location filename="../Window.cpp" line="1400"/>
         <source>Convert save game...</source>
         <translation>சேமி விளையாட்டை மாற்றவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="537"/>
+        <location filename="../Window.cpp" line="557"/>
         <source>GameShark saves (*.gsv *.sps *.xps)</source>
         <translation>கேம்சார்க் சேமிக்கிறது ( *.gsv *.sps *.xps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1159"/>
+        <location filename="../Window.cpp" line="1209"/>
         <source>Failed to start audio processor</source>
         <translation>ஆடியோ செயலியைத் தொடங்குவதில் தோல்வி</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1212"/>
+        <location filename="../Window.cpp" line="1262"/>
         <source>Reset needed</source>
         <translation>மீட்டமை தேவை</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1213"/>
+        <location filename="../Window.cpp" line="1263"/>
         <source>Some changes will not take effect until the game is reset.</source>
         <translation>விளையாட்டு மீட்டமைக்கப்படும் வரை சில மாற்றங்கள் நடைமுறைக்கு வராது.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1340"/>
+        <location filename="../Window.cpp" line="1390"/>
         <source>Save games</source>
         <translation>விளையாட்டுகளைச் சேமிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1353"/>
+        <location filename="../Window.cpp" line="1403"/>
         <source>Import GameShark Save...</source>
         <translation>இறக்குமதி கேம்சார்க் சேமி ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1356"/>
+        <location filename="../Window.cpp" line="1406"/>
         <source>Export GameShark Save...</source>
         <translation>ஏற்றுமதி கேம்சார்க் சேமி ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1363"/>
+        <location filename="../Window.cpp" line="1413"/>
         <source>Automatically determine</source>
         <translation>தானாக தீர்மானிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1367"/>
+        <location filename="../Window.cpp" line="1417"/>
         <source>Use player %0 save game</source>
         <translation>பிளேயரைப் பயன்படுத்தவும் %0 சேமி விளையாட்டைச் சேமிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1451"/>
+        <location filename="../Window.cpp" line="1501"/>
         <source>New multiplayer window</source>
         <translation>புதிய மல்டிபிளேயர் சாளரம்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1454"/>
+        <location filename="../Window.cpp" line="1504"/>
         <source>Connect to Dolphin...</source>
         <translation>டால்பினுடன் இணைக்கவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1460"/>
+        <location filename="../Window.cpp" line="1510"/>
         <source>Report bug...</source>
         <translation>பிழையைப் புகாரளிக்கவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1466"/>
+        <location filename="../Window.cpp" line="1516"/>
         <source>About...</source>
         <translation>பற்றி ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1467"/>
+        <location filename="../Window.cpp" line="1517"/>
         <source>E&amp;xit</source>
         <translation>வெளியேறு (&amp;x)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1469"/>
+        <location filename="../Window.cpp" line="1519"/>
         <source>&amp;Emulation</source>
         <translation>&amp; போன்மம்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1470"/>
+        <location filename="../Window.cpp" line="1520"/>
         <source>&amp;Reset</source>
         <translation>&amp; மீட்டமை</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1471"/>
+        <location filename="../Window.cpp" line="1521"/>
         <source>Sh&amp;utdown</source>
         <translation>Sh &amp; Utdown</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1475"/>
+        <location filename="../Window.cpp" line="1525"/>
         <source>Yank game pak</source>
         <translation>யாங்க் கேம் பாக்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1478"/>
+        <location filename="../Window.cpp" line="1528"/>
         <source>&amp;Pause</source>
         <translation>&amp; இடைநிறுத்தம்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1487"/>
+        <location filename="../Window.cpp" line="1537"/>
         <source>&amp;Next frame</source>
         <translation>&amp; அடுத்த சட்டகம்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1491"/>
+        <location filename="../Window.cpp" line="1541"/>
         <source>Fast forward (held)</source>
         <translation>வேகமாக முன்னோக்கி (நடைபெற்றது)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1497"/>
+        <location filename="../Window.cpp" line="1547"/>
         <source>&amp;Fast forward</source>
         <translation>&amp; வேகமாக முன்னோக்கி</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1501"/>
+        <location filename="../Window.cpp" line="1551"/>
         <source>Fast forward speed</source>
         <translation>வேகமாக முன்னோக்கி விரைவு</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1506"/>
+        <location filename="../Window.cpp" line="1556"/>
         <source>Unbounded</source>
         <translation>எல்லையற்ற</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1510"/>
+        <location filename="../Window.cpp" line="1560"/>
         <source>%0x</source>
         <translation>% 0x</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1514"/>
+        <location filename="../Window.cpp" line="1564"/>
         <source>Increase fast forward speed</source>
         <translation>வேகமாக முன்னோக்கி வேகத்தை அதிகரிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1521"/>
+        <location filename="../Window.cpp" line="1571"/>
         <source>Decrease fast forward speed</source>
         <translation>வேகமாக முன்னோக்கி வேகத்தைக் குறைக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1528"/>
+        <location filename="../Window.cpp" line="1578"/>
         <source>Rewind (held)</source>
         <translation>முன்னாடி (நடைபெற்றது)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1540"/>
+        <location filename="../Window.cpp" line="1590"/>
         <source>Re&amp;wind</source>
         <translation>மறு &amp; காற்று</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1545"/>
+        <location filename="../Window.cpp" line="1595"/>
         <source>Step backwards</source>
         <translation>பின்னோக்கி செல்லுங்கள்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1552"/>
+        <location filename="../Window.cpp" line="1602"/>
         <source>Solar sensor</source>
         <translation>சூரிய சென்சார்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1553"/>
+        <location filename="../Window.cpp" line="1603"/>
         <source>Increase solar level</source>
         <translation>சூரிய அளவை அதிகரிக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1554"/>
+        <location filename="../Window.cpp" line="1604"/>
         <source>Decrease solar level</source>
         <translation>சூரிய அளவைக் குறைக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1555"/>
+        <location filename="../Window.cpp" line="1605"/>
         <source>Brightest solar level</source>
         <translation>பிரகாசமான சூரிய நிலை</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1558"/>
+        <location filename="../Window.cpp" line="1608"/>
         <source>Darkest solar level</source>
         <translation>இருண்ட சூரிய நிலை</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1564"/>
+        <location filename="../Window.cpp" line="1614"/>
         <source>Brightness %1</source>
         <translation>ஒளி %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1572"/>
+        <location filename="../Window.cpp" line="1622"/>
         <source>Game Boy Printer...</source>
         <translation>கேம் பாய் பிரிண்டர் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1581"/>
+        <location filename="../Window.cpp" line="1631"/>
         <source>BattleChip Gate...</source>
         <translation>BATLECHIP வாயில் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1585"/>
+        <location filename="../Window.cpp" line="1635"/>
         <source>Audio/&amp;Video</source>
         <translation>ஆடியோ/&amp; வீடியோ</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1586"/>
+        <location filename="../Window.cpp" line="1636"/>
         <source>Frame size</source>
         <translation>சட்ட அளவு</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1588"/>
+        <location filename="../Window.cpp" line="1638"/>
         <source>%1×</source>
         <translation>%1 ×</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1629"/>
+        <location filename="../Window.cpp" line="1653"/>
         <source>Toggle fullscreen</source>
         <translation>மாற்று முழுத்திரை</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1632"/>
+        <location filename="../Window.cpp" line="1656"/>
         <source>&amp;Lock frame size</source>
         <translation>&amp; லாக் பிரேம் அளவு</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1645"/>
+        <location filename="../Window.cpp" line="1677"/>
         <source>Lock aspect ratio</source>
         <translation>பூட்டு விகித விகிதம்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1657"/>
+        <location filename="../Window.cpp" line="1689"/>
         <source>Force integer scaling</source>
         <translation>முழு எண் அளவிடுதல்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1669"/>
+        <location filename="../Window.cpp" line="1701"/>
         <source>Interframe blending</source>
         <translation>இடைக்கால கலப்பு</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1678"/>
+        <location filename="../Window.cpp" line="1710"/>
         <source>Bilinear filtering</source>
         <translation>பிலினியர் வடிகட்டுதல்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1686"/>
+        <location filename="../Window.cpp" line="1718"/>
         <source>Frame&amp;skip</source>
         <translation>சட்டகம் &amp; தவிர்க்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1699"/>
+        <location filename="../Window.cpp" line="1731"/>
         <source>Mute</source>
         <translation>ஒலிமுடக்கு</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1706"/>
+        <location filename="../Window.cpp" line="1738"/>
         <source>FPS target</source>
         <translation>FPS இலக்கு</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1714"/>
+        <location filename="../Window.cpp" line="1746"/>
         <source>Native (59.7275)</source>
         <translation>சொந்த (59.7275)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1729"/>
+        <location filename="../Window.cpp" line="1761"/>
         <source>Take &amp;screenshot</source>
         <translation>திரைக்காட்சி எடுத்துக் கொள்ளுங்கள்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1731"/>
+        <location filename="../Window.cpp" line="1763"/>
         <source>F12</source>
         <translation>எஃப் 12</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1735"/>
+        <location filename="../Window.cpp" line="1767"/>
         <source>Record A/V...</source>
         <translation>பதிவு a/v ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1736"/>
+        <location filename="../Window.cpp" line="1768"/>
         <source>Record GIF/WebP/APNG...</source>
         <translation>Gif/webp/apng ஐ பதிவு செய்யுங்கள் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1740"/>
+        <location filename="../Window.cpp" line="1772"/>
         <source>Video layers</source>
         <translation>வீடியோ அடுக்குகள்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1741"/>
+        <location filename="../Window.cpp" line="1773"/>
         <source>Audio channels</source>
         <translation>ஆடியோ சேனல்கள்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1743"/>
+        <location filename="../Window.cpp" line="1775"/>
         <source>Adjust layer placement...</source>
         <translation>அடுக்கு வேலைவாய்ப்பை சரிசெய்யவும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1747"/>
+        <location filename="../Window.cpp" line="1779"/>
         <source>Hide &amp;menu</source>
         <translation>&amp;மெனுவை மறை</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1752"/>
+        <location filename="../Window.cpp" line="1784"/>
         <source>&amp;Tools</source>
         <translation>கருவிகள் (&amp;t)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1753"/>
+        <location filename="../Window.cpp" line="1785"/>
         <source>View &amp;logs...</source>
         <translation>பார்வை &amp; பதிவுகள் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1755"/>
+        <location filename="../Window.cpp" line="1787"/>
         <source>Game &amp;overrides...</source>
         <translation>விளையாட்டு &amp; மேலெழுதும் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1768"/>
+        <location filename="../Window.cpp" line="1800"/>
         <source>Game Pak sensors...</source>
         <translation>கேம் பாக் சென்சார்கள் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1781"/>
+        <location filename="../Window.cpp" line="1813"/>
         <source>&amp;Cheats...</source>
         <translation>&amp; ஏமாற்றுக்காரர்கள் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1786"/>
+        <location filename="../Window.cpp" line="1818"/>
         <source>Create forwarder...</source>
         <translation>முன்னோக்கி உருவாக்கு ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1789"/>
+        <location filename="../Window.cpp" line="1821"/>
         <source>Settings...</source>
         <translation>அமைப்புகள் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1794"/>
+        <location filename="../Window.cpp" line="1826"/>
         <source>Open debugger console...</source>
         <translation>திறந்த பிழைத்திருத்த கன்சோல் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1796"/>
+        <location filename="../Window.cpp" line="1828"/>
         <source>Start &amp;GDB server...</source>
         <translation>தொடக்க &amp; GDB சேவையகம் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1783"/>
+        <location filename="../Window.cpp" line="1815"/>
         <source>Scripting...</source>
         <translation>ச்கிரிப்டிங் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1804"/>
+        <location filename="../Window.cpp" line="1836"/>
         <source>Game state views</source>
         <translation>விளையாட்டு நிலை காட்சிகள்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1805"/>
+        <location filename="../Window.cpp" line="1837"/>
         <source>View &amp;palette...</source>
         <translation>பார்வை &amp; தட்டு ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1806"/>
+        <location filename="../Window.cpp" line="1838"/>
         <source>View &amp;sprites...</source>
         <translation>பார்வை &amp; உருவங்கள் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1807"/>
+        <location filename="../Window.cpp" line="1839"/>
         <source>View &amp;tiles...</source>
         <translation>பார்வை &amp; ஓடுகள் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1808"/>
+        <location filename="../Window.cpp" line="1840"/>
         <source>View &amp;map...</source>
         <translation>பார்வை &amp; வரைபடம் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1809"/>
+        <location filename="../Window.cpp" line="1841"/>
         <source>&amp;Frame inspector...</source>
         <translation>&amp; பிரேம் இன்ச்பெக்டர் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1810"/>
+        <location filename="../Window.cpp" line="1842"/>
         <source>View memory...</source>
         <translation>நினைவகத்தைக் காண்க ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1811"/>
+        <location filename="../Window.cpp" line="1843"/>
         <source>Search memory...</source>
         <translation>தேடல் நினைவகம் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1812"/>
+        <location filename="../Window.cpp" line="1844"/>
         <source>View &amp;I/O registers...</source>
         <translation>காண்க &amp; i/o பதிவேடுகள் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1815"/>
+        <location filename="../Window.cpp" line="1847"/>
         <source>Log memory &amp;accesses...</source>
         <translation>பதிவு நினைவகம் &amp; அணுகல்கள் ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1829"/>
+        <location filename="../Window.cpp" line="1861"/>
         <source>Record debug video log...</source>
         <translation>பிழைத்திருத்த வீடியோ பதிவைப் பதிவுசெய்க ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1830"/>
+        <location filename="../Window.cpp" line="1862"/>
         <source>Stop debug video log</source>
         <translation>பிழைத்திருத்த வீடியோ பதிவை நிறுத்துங்கள்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1834"/>
+        <location filename="../Window.cpp" line="1866"/>
         <source>Exit fullscreen</source>
         <translation>முழுத்திரை வெளியேறவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1836"/>
+        <location filename="../Window.cpp" line="1868"/>
         <source>GameShark Button (held)</source>
         <translation>கேம்சார்க் பொத்தான் (நடைபெற்றது)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1842"/>
+        <location filename="../Window.cpp" line="1874"/>
         <source>Autofire</source>
         <translation>ஆட்டோஃபயர்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1843"/>
+        <location filename="../Window.cpp" line="1875"/>
         <source>Autofire A</source>
         <translation>ஆட்டோஃபயர் a</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1848"/>
+        <location filename="../Window.cpp" line="1880"/>
         <source>Autofire B</source>
         <translation>ஆட்டோஃபயர் ஆ</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1853"/>
+        <location filename="../Window.cpp" line="1885"/>
         <source>Autofire L</source>
         <translation>ஆட்டோஃபைர் எல்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1858"/>
+        <location filename="../Window.cpp" line="1890"/>
         <source>Autofire R</source>
         <translation>தன்னியக்க ஆர்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1863"/>
+        <location filename="../Window.cpp" line="1895"/>
         <source>Autofire Start</source>
         <translation>தன்னியக்க தொடக்க</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1868"/>
+        <location filename="../Window.cpp" line="1900"/>
         <source>Autofire Select</source>
         <translation>ஆட்டோஃபயர் தேர்ந்தெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1873"/>
+        <location filename="../Window.cpp" line="1905"/>
         <source>Autofire Up</source>
         <translation>ஆட்டோஃபைர் அப்</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1878"/>
+        <location filename="../Window.cpp" line="1910"/>
         <source>Autofire Right</source>
         <translation>தன்னியக்க சரியானது</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1883"/>
+        <location filename="../Window.cpp" line="1915"/>
         <source>Autofire Down</source>
         <translation>ஆட்டோஃபயர் கீழே</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1888"/>
+        <location filename="../Window.cpp" line="1920"/>
         <source>Autofire Left</source>
         <translation>ஆட்டோஃபயர் இடது</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="2093"/>
+        <location filename="../Window.cpp" line="2125"/>
         <source>Clear</source>
         <translation>தெளிவான</translation>
     </message>
