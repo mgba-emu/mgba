@@ -551,11 +551,6 @@ Hämtningsstorlek: %3</translation>
         <translation>Misslyckades med att öppna spelfil: %1</translation>
     </message>
     <message>
-        <location filename="../CoreManager.cpp" line="77"/>
-        <source>The ROM appears to be loaded from a temporary directory. This will likely lead to data loss (e.g. saves, screenshots, etc.) if you continue. Please put the ROM in a more suitable location and then re-open it. If you are loading the ROM from an archive, please extract the archive first.</source>
-        <translation>ROM-filen verkar vara inläst från en tillfällig katalog. Detta kommer sannolikt att leda till dataförlust (t.ex. sparade filer, skärmdumpar etc.) om du fortsätter. Placera ROM-filen på en mer lämplig plats och öppna den sedan igen. Om du läser in ROM-filen från ett arkiv, extrahera först arkivet.</translation>
-    </message>
-    <message>
         <location filename="../CoreManager.cpp" line="105"/>
         <source>Temporary file loaded</source>
         <translation>Tillfällig fil har lästs in</translation>

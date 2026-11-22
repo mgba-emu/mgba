@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" sourcelanguage="en_US" language="el">
+<TS version="2.1" language="el" sourcelanguage="en_US">
 <context>
     <name>LibraryTree</name>
     <message>
-        <location filename="../library/LibraryModel.cpp" line="427"/>
+        <location filename="../library/LibraryModel.cpp" line="428"/>
         <source>Name</source>
         <translation>Όνομα</translation>
     </message>
     <message>
-        <location filename="../library/LibraryModel.cpp" line="429"/>
+        <location filename="../library/LibraryModel.cpp" line="430"/>
         <source>Location</source>
         <translation>Τοποθεσία</translation>
     </message>
     <message>
-        <location filename="../library/LibraryModel.cpp" line="431"/>
+        <location filename="../library/LibraryModel.cpp" line="432"/>
         <source>Platform</source>
         <translation>Πλατφόρμα</translation>
     </message>
     <message>
-        <location filename="../library/LibraryModel.cpp" line="433"/>
+        <location filename="../library/LibraryModel.cpp" line="434"/>
         <source>Size</source>
         <translation>Μέγεθος</translation>
     </message>
     <message>
-        <location filename="../library/LibraryModel.cpp" line="435"/>
+        <location filename="../library/LibraryModel.cpp" line="436"/>
         <source>CRC32</source>
         <translation>CRC32</translation>
     </message>
@@ -95,28 +95,28 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <translation>Διατίθεται ενημέρωση</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="27"/>
         <source>An update to %1 is available.
 </source>
         <translation>Διατίθεται ενημέρωση στην έκδοση %1.
 </translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="38"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="43"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
         <translation>
 Θέλετε να κάνετε λήψη και εγκατάσταση τώρα; Θα χρειαστεί να επανεκκινήσετε τον εξομοιωτή όταν ολοκληρωθεί η λήψη.</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="46"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
         <translation>
 Οι αυτόματες ενημερώσεις δεν διατίθενται σε αυτήν την πλατφόρμα. Εάν επιθυμείτε να κάνετε ενημέρωση, θα πρέπει να το κάνετε χειροκίνητα.</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="45"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="50"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
@@ -125,17 +125,22 @@ Download size: %3</source>
 Μέγεθος λήψης: %3</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="68"/>
         <source>Downloading update...</source>
         <translation>Λήψη ενημέρωσης...</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="79"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
+        <source>Verifying download failed. Please update manually.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="86"/>
         <source>Downloading failed. Please update manually.</source>
         <translation>Η λήψη απέτυχε. Κάντε χειροκίνητη ενημέρωση.</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
+        <location filename="../ApplicationUpdatePrompt.cpp" line="88"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
         <translation>Η λήψη ολοκληρώθηκε. Επιλέξτε OK για επανεκκίνηση του %1 και εγκατάσταση της ενημέρωσης.</translation>
     </message>
@@ -143,22 +148,32 @@ Download size: %3</source>
 <context>
     <name>QGBA::ApplicationUpdater</name>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="90"/>
+        <location filename="../ApplicationUpdater.cpp" line="67"/>
+        <source>Update failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ApplicationUpdater.cpp" line="68"/>
+        <source>Unable to locate executable for updating.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ApplicationUpdater.cpp" line="106"/>
         <source>Stable</source>
         <translation>Σταθερό</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="93"/>
+        <location filename="../ApplicationUpdater.cpp" line="109"/>
         <source>Development</source>
         <translation>Ανάπτυξη</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="95"/>
+        <location filename="../ApplicationUpdater.cpp" line="111"/>
         <source>Unknown</source>
         <translation>Άγνωστο</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="239"/>
+        <location filename="../ApplicationUpdater.cpp" line="257"/>
         <source>(None)</source>
         <translation>(Καμία)</translation>
     </message>
@@ -209,9 +224,9 @@ Download size: %3</source>
         <translation>Μπλε</translation>
     </message>
     <message>
-        <location filename="../AssetTile.cpp" line="143"/>
         <location filename="../AssetTile.cpp" line="144"/>
         <location filename="../AssetTile.cpp" line="145"/>
+        <location filename="../AssetTile.cpp" line="146"/>
         <source>0x%0 (%1)</source>
         <translation>0x%0 (%1)</translation>
     </message>
@@ -219,30 +234,38 @@ Download size: %3</source>
 <context>
     <name>QGBA::AudioDevice</name>
     <message>
-        <location filename="../AudioDevice.cpp" line="35"/>
+        <location filename="../AudioDevice.cpp" line="39"/>
         <source>Can&apos;t set format of context-less audio device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AudioDevice.cpp" line="56"/>
+        <location filename="../AudioDevice.cpp" line="60"/>
         <source>Audio device is missing its core</source>
         <translation>Απουσιάζει ο πυρήνας της συσκευής ήχου</translation>
     </message>
     <message>
-        <location filename="../AudioDevice.cpp" line="84"/>
+        <location filename="../AudioDevice.cpp" line="90"/>
         <source>Writing data to read-only audio device</source>
         <translation>Εγγραφή δεδομένων σε συσκευή ήχου μόνο για ανάγνωση</translation>
     </message>
 </context>
 <context>
+    <name>QGBA::AudioProcessorDummy</name>
+    <message>
+        <location filename="../AudioProcessorDummy.cpp" line="31"/>
+        <source>Can&apos;t start an audio processor without input</source>
+        <translation type="unfinished">Δεν είναι δυνατή η έναρξη επεξεργαστή ήχου χωρίς είσοδο</translation>
+    </message>
+</context>
+<context>
     <name>QGBA::AudioProcessorQt</name>
     <message>
-        <location filename="../AudioProcessorQt.cpp" line="56"/>
+        <location filename="../AudioProcessorQt.cpp" line="50"/>
         <source>Can&apos;t start an audio processor without input</source>
         <translation>Δεν είναι δυνατή η έναρξη επεξεργαστή ήχου χωρίς είσοδο</translation>
     </message>
     <message>
-        <location filename="../AudioProcessorQt.cpp" line="81"/>
+        <location filename="../AudioProcessorQt.cpp" line="75"/>
         <source>Audio outputting to %1</source>
         <translation>Η έξοδος ήχου γίνεται στο %1</translation>
     </message>
@@ -250,7 +273,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::AudioProcessorSDL</name>
     <message>
-        <location filename="../AudioProcessorSDL.cpp" line="34"/>
+        <location filename="../AudioProcessorSDL.cpp" line="35"/>
         <source>Can&apos;t start an audio processor without input</source>
         <translation>Δεν είναι δυνατή η έναρξη επεξεργαστή ήχου χωρίς είσοδο</translation>
     </message>
@@ -258,7 +281,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::AutorunScriptModel</name>
     <message>
-        <location filename="../scripting/AutorunScriptModel.cpp" line="31"/>
+        <location filename="../scripting/AutorunScriptModel.cpp" line="32"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
         <translation>Δεν ήταν δυνατή η φόρτωση των ρυθμίσεων του script αυτόματης εκτέλεσης: άγνωστη μορφή πληροφοριών script %1</translation>
     </message>
@@ -296,9 +319,17 @@ Download size: %3</source>
         <translation>Εκτέλεση script κατά την εκκίνηση ενός παιχνιδιού</translation>
     </message>
     <message>
-        <location filename="../scripting/AutorunScriptView.cpp" line="28"/>
+        <location filename="../scripting/AutorunScriptView.cpp" line="29"/>
         <source>Select a script</source>
         <translation>Επιλογή script</translation>
+    </message>
+</context>
+<context>
+    <name>QGBA::BattleChipModel</name>
+    <message>
+        <location filename="../BattleChipModel.cpp" line="113"/>
+        <source>Failed to open chip names list</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -364,28 +395,28 @@ Download size: %3</source>
         <translation>Εμφάνιση σύνθετων επιλογών</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.cpp" line="115"/>
+        <location filename="../BattleChipView.cpp" line="112"/>
         <source>BattleChip data missing</source>
         <translation>Απουσία δεδομένων BattleChip</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.cpp" line="116"/>
+        <location filename="../BattleChipView.cpp" line="113"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
         <translation>Απουσιάζουν δεδομένα BattleChip. Τα BattleChip Gate θα εξακολουθούν να λειτουργούν, αλλά ορισμένα γραφικά θα απουσιάζουν. Θέλετε να κάνετε λήψη των δεδομένων τώρα;</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.cpp" line="182"/>
-        <location filename="../BattleChipView.cpp" line="201"/>
+        <location filename="../BattleChipView.cpp" line="179"/>
+        <location filename="../BattleChipView.cpp" line="198"/>
         <source>Select deck file</source>
         <translation>Επιλογή αρχείου deck</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.cpp" line="213"/>
+        <location filename="../BattleChipView.cpp" line="210"/>
         <source>Incompatible deck</source>
         <translation>Μη έγκυρο deck</translation>
     </message>
     <message>
-        <location filename="../BattleChipView.cpp" line="214"/>
+        <location filename="../BattleChipView.cpp" line="211"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
         <translation>Το επιλεγμένο deck δεν είναι συμβατό με αυτό το Chip Gate</translation>
     </message>
@@ -393,12 +424,12 @@ Download size: %3</source>
 <context>
     <name>QGBA::CheatsModel</name>
     <message>
-        <location filename="../CheatsModel.cpp" line="53"/>
+        <location filename="../CheatsModel.cpp" line="54"/>
         <source>(untitled)</source>
         <translation>(χωρίς τίτλο)</translation>
     </message>
     <message>
-        <location filename="../CheatsModel.cpp" line="211"/>
+        <location filename="../CheatsModel.cpp" line="212"/>
         <source>Failed to open cheats file: %1</source>
         <translation>Αποτυχία ανοίγματος αρχείου cheat: %1</translation>
     </message>
@@ -446,19 +477,19 @@ Download size: %3</source>
         <translation>Εισαγάγετε τους κωδικούς εδώ...</translation>
     </message>
     <message>
-        <location filename="../CheatsView.cpp" line="49"/>
-        <location filename="../CheatsView.cpp" line="57"/>
+        <location filename="../CheatsView.cpp" line="50"/>
+        <location filename="../CheatsView.cpp" line="58"/>
         <source>Autodetect (recommended)</source>
         <translation>Αυτόματος εντοπισμός (προτείνεται)</translation>
     </message>
     <message>
-        <location filename="../CheatsView.cpp" line="87"/>
-        <location filename="../CheatsView.cpp" line="94"/>
+        <location filename="../CheatsView.cpp" line="88"/>
+        <location filename="../CheatsView.cpp" line="95"/>
         <source>Select cheats file</source>
         <translation>Επιλογή αρχείου cheat</translation>
     </message>
     <message>
-        <location filename="../CheatsView.cpp" line="186"/>
+        <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
         <translation>Δεν ήταν δυνατή η προσθήκη ορισμένων cheat. Βεβαιωθείτε ότι έχουν σωστή μορφή ή/και δοκιμάστε άλλους τύπους cheat.</translation>
     </message>
@@ -466,48 +497,48 @@ Download size: %3</source>
 <context>
     <name>QGBA::CoreController</name>
     <message>
-        <location filename="../CoreController.cpp" line="104"/>
+        <location filename="../CoreController.cpp" line="106"/>
         <source>Reset r%1-%2 %3</source>
         <translation>Επανεκκίνηση r%1-%2 %3</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="552"/>
-        <location filename="../CoreController.cpp" line="569"/>
+        <location filename="../CoreController.cpp" line="554"/>
+        <location filename="../CoreController.cpp" line="571"/>
         <source>Rewinding not currently enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="608"/>
+        <location filename="../CoreController.cpp" line="610"/>
         <source>Reset the game?</source>
         <translation>Επανεκκίνηση παιχνιδιού;</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="609"/>
+        <location filename="../CoreController.cpp" line="611"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
         <translation>Τα περισσότερα παιχνίδια απαιτούν επανεκκίνηση για τη φόρτωση νέων αποθηκευμένων δεδομένων. Θέλετε να κάνετε επανεκκίνηση τώρα;</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="827"/>
+        <location filename="../CoreController.cpp" line="829"/>
         <source>Failed to open save file: %1</source>
         <translation>Αποτυχία ανοίγματος αρχείου αποθηκευμένων δεδομένων: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="885"/>
+        <location filename="../CoreController.cpp" line="887"/>
         <source>Failed to open game file: %1</source>
         <translation>Αποτυχία ανοίγματος αρχείου παιχνιδιού: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="915"/>
+        <location filename="../CoreController.cpp" line="917"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="1030"/>
+        <location filename="../CoreController.cpp" line="1032"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="1047"/>
+        <location filename="../CoreController.cpp" line="1049"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -515,24 +546,54 @@ Download size: %3</source>
 <context>
     <name>QGBA::CoreManager</name>
     <message>
-        <location filename="../CoreManager.cpp" line="52"/>
+        <location filename="../CoreManager.cpp" line="58"/>
         <source>Failed to open game file: %1</source>
         <translation>Αποτυχία ανοίγματος αρχείου παιχνιδιού: %1</translation>
     </message>
     <message>
-        <location filename="../CoreManager.cpp" line="77"/>
-        <source>The ROM appears to be loaded from a temporary directory. This will likely lead to data loss (e.g. saves, screenshots, etc.) if you continue. Please put the ROM in a more suitable location and then re-open it. If you are loading the ROM from an archive, please extract the archive first.</source>
-        <translation>Η ROM φαίνεται να έχει φορτωθεί από προσωρινό κατάλογο. Εάν συνεχίσετε, αυτό θα οδηγήσει κατά πάσα πιθανότητα σε απώλεια δεδομένων (π.χ. αποθηκευμένα δεδομένα, στιγμιότυπα οθόνης κ.λπ.). Τοποθετήστε τη ROM σε μια πιο κατάλληλη τοποθεσία και ανοίξτε την ξανά. Εάν κάνετε φόρτωση της ROM από συμπιεσμένο αρχείο, απσυμπιέστε το πρώτα.</translation>
+        <location filename="../CoreManager.cpp" line="105"/>
+        <source>Temporary file loaded</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreManager.cpp" line="95"/>
+        <location filename="../CoreManager.cpp" line="106"/>
+        <source>The ROM appears to be loaded from a temporary directory, perhaps automatically extracted from an archive (e.g. a zip file).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../CoreManager.cpp" line="154"/>
+        <source>Could not open save file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../CoreManager.cpp" line="155"/>
+        <source>Failed to open save file; in-game saves cannot be updated.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../CoreManager.cpp" line="228"/>
+        <source>Would you like to copy the ROM to a different location? If you don&apos;t, this will likely lead to data loss (e.g. saves, screenshots, etc.).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../CoreManager.cpp" line="235"/>
+        <source>Copy failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../CoreManager.cpp" line="235"/>
+        <source>Failed to copy ROM. Do you want to try again?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../CoreManager.cpp" line="242"/>
+        <source>New ROM location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../CoreManager.cpp" line="126"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
         <translation>Δεν ήταν δυνατή η φόρτωση του παιχνιδιού. Είστε σίγουροι ότι είναι στη σωστή μορφή;</translation>
-    </message>
-    <message>
-        <location filename="../CoreManager.cpp" line="122"/>
-        <source>Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -543,20 +604,25 @@ Download size: %3</source>
         <translation>Εντοπισμός σφαλμάτων</translation>
     </message>
     <message>
-        <location filename="../DebuggerConsole.ui" line="20"/>
+        <location filename="../DebuggerConsole.ui" line="27"/>
         <source>Enter command (try `help` for more info)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DebuggerConsole.ui" line="27"/>
+        <location filename="../DebuggerConsole.ui" line="34"/>
         <source>Break</source>
         <translation>Παύση</translation>
+    </message>
+    <message>
+        <location filename="../DebuggerConsole.ui" line="44"/>
+        <source>Continue</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QGBA::DebuggerConsoleController</name>
     <message>
-        <location filename="../DebuggerConsoleController.cpp" line="183"/>
+        <location filename="../DebuggerConsoleController.cpp" line="190"/>
         <source>Could not open CLI history for writing</source>
         <translation>Δεν ήταν δυνατό το άνοιγμα του ιστορικού CLI για εγγραφή</translation>
     </message>
@@ -564,7 +630,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::DisplayGL</name>
     <message>
-        <location filename="../DisplayGL.cpp" line="314"/>
+        <location filename="../DisplayGL.cpp" line="310"/>
         <source>Failed to create an OpenGL 3 context, trying old-style...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -607,12 +673,12 @@ Download size: %3</source>
         <translation>Επανεκκίνηση κατά τη σύνδεση</translation>
     </message>
     <message>
-        <location filename="../DolphinConnector.cpp" line="57"/>
+        <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Couldn&apos;t Connect</source>
         <translation>Αδυναμία σύνδεσης</translation>
     </message>
     <message>
-        <location filename="../DolphinConnector.cpp" line="58"/>
+        <location filename="../DolphinConnector.cpp" line="59"/>
         <source>Could not connect to Dolphin.</source>
         <translation>Δεν ήταν δυνατή η σύνδεση στο Dolphin.</translation>
     </message>
@@ -620,12 +686,12 @@ Download size: %3</source>
 <context>
     <name>QGBA::ForwarderGenerator</name>
     <message>
-        <location filename="../ForwarderGenerator.cpp" line="83"/>
+        <location filename="../ForwarderGenerator.cpp" line="84"/>
         <source>3DS</source>
         <translation>3DS</translation>
     </message>
     <message>
-        <location filename="../ForwarderGenerator.cpp" line="85"/>
+        <location filename="../ForwarderGenerator.cpp" line="86"/>
         <source>Vita</source>
         <translation>Vita</translation>
     </message>
@@ -633,12 +699,12 @@ Download size: %3</source>
 <context>
     <name>QGBA::ForwarderGenerator3DS</name>
     <message>
-        <location filename="../ForwarderGenerator3DS.cpp" line="29"/>
+        <location filename="../ForwarderGenerator3DS.cpp" line="30"/>
         <source>Icon</source>
         <translation>Εικονίδιο</translation>
     </message>
     <message>
-        <location filename="../ForwarderGenerator3DS.cpp" line="30"/>
+        <location filename="../ForwarderGenerator3DS.cpp" line="31"/>
         <source>Banner</source>
         <translation>Μπάνερ</translation>
     </message>
@@ -646,17 +712,17 @@ Download size: %3</source>
 <context>
     <name>QGBA::ForwarderGeneratorVita</name>
     <message>
-        <location filename="../ForwarderGeneratorVita.cpp" line="25"/>
+        <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Bubble</source>
         <translation>Φούσκα</translation>
     </message>
     <message>
-        <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
+        <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
         <source>Background</source>
         <translation>Φόντο</translation>
     </message>
     <message>
-        <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
+        <location filename="../ForwarderGeneratorVita.cpp" line="28"/>
         <source>Startup</source>
         <translation>Εκκίνηση</translation>
     </message>
@@ -761,52 +827,52 @@ Download size: %3</source>
         <translation>Επιλογή αρχείου εικόνας</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="22"/>
+        <location filename="../ForwarderView.cpp" line="23"/>
         <source>Select ROM file</source>
         <translation>Επιλογή αρχείου ROM</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="23"/>
+        <location filename="../ForwarderView.cpp" line="24"/>
         <source>Select output filename</source>
         <translation>Επιλογή ονόματος αρχείου εξόδου</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="24"/>
+        <location filename="../ForwarderView.cpp" line="25"/>
         <source>Select base file</source>
         <translation>Επιλογή αρχείου βάσης</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="36"/>
+        <location filename="../ForwarderView.cpp" line="37"/>
         <source>Build finished</source>
         <translation>Η δόμηση ολοκληρώθηκε</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="37"/>
+        <location filename="../ForwarderView.cpp" line="38"/>
         <source>Forwarder finished building</source>
         <translation>Η δόμηση του διαβιβαστή ολοκληρώθηκε</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="44"/>
+        <location filename="../ForwarderView.cpp" line="45"/>
         <source>Build failed</source>
         <translation>Αποτυχία δόμησης</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="45"/>
+        <location filename="../ForwarderView.cpp" line="46"/>
         <source>Failed to build forwarder</source>
         <translation>Η δόμηση του διαβιβαστή απέτυχε</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="176"/>
+        <location filename="../ForwarderView.cpp" line="186"/>
         <source>%1 installable package (*.%2)</source>
         <translation>Εγκαταστάσιμο πακέτο %1 (*.%2)</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="192"/>
+        <location filename="../ForwarderView.cpp" line="202"/>
         <source>Select an image</source>
         <translation>Επιλογή εικόνας</translation>
     </message>
     <message>
-        <location filename="../ForwarderView.cpp" line="192"/>
+        <location filename="../ForwarderView.cpp" line="202"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
         <translation>Αρχεία εικόνας (*.png *.jpg *.bmp)</translation>
     </message>
@@ -849,52 +915,52 @@ Download size: %3</source>
         <translation>Επαναφορά</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="591"/>
+        <location filename="../FrameView.cpp" line="592"/>
         <source>Export frame</source>
         <translation>Εξαγωγή καρέ</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="592"/>
+        <location filename="../FrameView.cpp" line="593"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="622"/>
+        <location filename="../FrameView.cpp" line="623"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="624"/>
+        <location filename="../FrameView.cpp" line="625"/>
         <source>Background</source>
         <translation>Φόντο</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="627"/>
+        <location filename="../FrameView.cpp" line="628"/>
         <source>Window</source>
         <translation>Παράθυρο</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="630"/>
+        <location filename="../FrameView.cpp" line="631"/>
         <source>Objwin</source>
         <translation>Objwin</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="635"/>
+        <location filename="../FrameView.cpp" line="636"/>
         <source>Sprite</source>
         <translation>Μπλοκ εικονοστοιχείων</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="638"/>
+        <location filename="../FrameView.cpp" line="639"/>
         <source>Backdrop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="641"/>
+        <location filename="../FrameView.cpp" line="642"/>
         <source>Frame</source>
         <translation>Καρέ</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="647"/>
+        <location filename="../FrameView.cpp" line="648"/>
         <source>%1 %2</source>
         <translation>%1 %2</translation>
     </message>
@@ -902,7 +968,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::GBAApp</name>
     <message>
-        <location filename="../GBAApp.cpp" line="82"/>
+        <location filename="../GBAApp.cpp" line="84"/>
         <source>Enable Discord Rich Presence</source>
         <translation type="unfinished"></translation>
     </message>
@@ -910,22 +976,22 @@ Download size: %3</source>
 <context>
     <name>QGBA::GBAKeyEditor</name>
     <message>
-        <location filename="../GBAKeyEditor.cpp" line="69"/>
+        <location filename="../GBAKeyEditor.cpp" line="70"/>
         <source>Clear Button</source>
         <translation>Εκκαθάριση κουμπιού</translation>
     </message>
     <message>
-        <location filename="../GBAKeyEditor.cpp" line="81"/>
+        <location filename="../GBAKeyEditor.cpp" line="82"/>
         <source>Clear Analog</source>
         <translation>Εκκαθάριση αναλογικού κουμπιού</translation>
     </message>
     <message>
-        <location filename="../GBAKeyEditor.cpp" line="92"/>
+        <location filename="../GBAKeyEditor.cpp" line="93"/>
         <source>Refresh</source>
         <translation>Ανανέωση</translation>
     </message>
     <message>
-        <location filename="../GBAKeyEditor.cpp" line="102"/>
+        <location filename="../GBAKeyEditor.cpp" line="103"/>
         <source>Set all</source>
         <translation>Ορισμός όλων</translation>
     </message>
@@ -933,62 +999,62 @@ Download size: %3</source>
 <context>
     <name>QGBA::GDBWindow</name>
     <message>
-        <location filename="../GDBWindow.cpp" line="31"/>
+        <location filename="../GDBWindow.cpp" line="32"/>
         <source>Server settings</source>
         <translation>Ρυθμίσεις διακομιστή</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="37"/>
+        <location filename="../GDBWindow.cpp" line="38"/>
         <source>Local port</source>
         <translation>Τοπική θύρα</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="39"/>
+        <location filename="../GDBWindow.cpp" line="40"/>
         <source>Bind address</source>
         <translation>Σύνδεση διεύθυνσης</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="52"/>
+        <location filename="../GDBWindow.cpp" line="53"/>
         <source>Write watchpoints behavior</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="63"/>
+        <location filename="../GDBWindow.cpp" line="64"/>
         <source>Standard GDB</source>
         <translation>Τυπικό GDB</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="68"/>
+        <location filename="../GDBWindow.cpp" line="69"/>
         <source>Internal change detection</source>
         <translation>Εντοπισμός εσωτερικής αλλαγής</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="72"/>
+        <location filename="../GDBWindow.cpp" line="73"/>
         <source>Break on all writes</source>
         <translation>Παύση σε όλες τις εγγραφές</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="82"/>
+        <location filename="../GDBWindow.cpp" line="83"/>
         <source>Break</source>
         <translation>Παύση</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="124"/>
+        <location filename="../GDBWindow.cpp" line="125"/>
         <source>Stop</source>
         <translation>Διακοπή</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="137"/>
+        <location filename="../GDBWindow.cpp" line="138"/>
         <source>Start</source>
         <translation>Έναρξη</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="145"/>
+        <location filename="../GDBWindow.cpp" line="146"/>
         <source>Crash</source>
         <translation>Κατάρρευση</translation>
     </message>
     <message>
-        <location filename="../GDBWindow.cpp" line="145"/>
+        <location filename="../GDBWindow.cpp" line="146"/>
         <source>Could not start GDB server</source>
         <translation>Δεν ήταν δυνατή η έναρξη του διακομιστή GDB</translation>
     </message>
@@ -1041,17 +1107,17 @@ Download size: %3</source>
         <translation>Παράλειψη καρέ</translation>
     </message>
     <message>
-        <location filename="../GIFView.cpp" line="63"/>
+        <location filename="../GIFView.cpp" line="64"/>
         <source>Failed to open output file: %1</source>
         <translation>Αποτυχία ανοίγματος αρχείου εξόδου: %1</translation>
     </message>
     <message>
-        <location filename="../GIFView.cpp" line="90"/>
+        <location filename="../GIFView.cpp" line="91"/>
         <source>Select output file</source>
         <translation>Επιλογή αρχείου εξόδου</translation>
     </message>
     <message>
-        <location filename="../GIFView.cpp" line="90"/>
+        <location filename="../GIFView.cpp" line="91"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
         <translation>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</translation>
     </message>
@@ -1149,584 +1215,574 @@ Download size: %3</source>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="367"/>
-        <location filename="../IOViewer.cpp" line="870"/>
-        <location filename="../IOViewer.cpp" line="883"/>
+        <location filename="../IOViewer.cpp" line="871"/>
+        <location filename="../IOViewer.cpp" line="884"/>
         <source>B</source>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="39"/>
+        <location filename="../IOViewer.cpp" line="40"/>
         <source>Background mode</source>
         <translation>Λειτουργία παρασκηνίου</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="40"/>
+        <location filename="../IOViewer.cpp" line="41"/>
         <source>Mode 0: 4 tile layers</source>
         <translation>Λειτουργία 0: 4 επίπεδα πλακιδίων</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="41"/>
+        <location filename="../IOViewer.cpp" line="42"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
         <translation>Λειτουργία 1: 2 επίπεδα πλακιδίων + 1 περιστρεφόμενο/κλιμακωτό επίπεδο πλακιδίων</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="42"/>
+        <location filename="../IOViewer.cpp" line="43"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="43"/>
+        <location filename="../IOViewer.cpp" line="44"/>
         <source>Mode 3: Full 15-bit bitmap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="44"/>
+        <location filename="../IOViewer.cpp" line="45"/>
         <source>Mode 4: Full 8-bit bitmap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="45"/>
+        <location filename="../IOViewer.cpp" line="46"/>
         <source>Mode 5: Small 15-bit bitmap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="49"/>
+        <location filename="../IOViewer.cpp" line="50"/>
         <source>CGB Mode</source>
         <translation>Λειτουργία CGB</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="50"/>
+        <location filename="../IOViewer.cpp" line="51"/>
         <source>Frame select</source>
         <translation>Επιλογή καρέ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="51"/>
+        <location filename="../IOViewer.cpp" line="52"/>
         <source>Unlocked HBlank</source>
         <translation>Ξεκλειδωμένο HBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="52"/>
+        <location filename="../IOViewer.cpp" line="53"/>
         <source>Linear OBJ tile mapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="53"/>
+        <location filename="../IOViewer.cpp" line="54"/>
         <source>Force blank screen</source>
         <translation>Επιβολή κενής οθόνης</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="54"/>
+        <location filename="../IOViewer.cpp" line="55"/>
         <source>Enable background 0</source>
         <translation>Ενεργοποίηση φόντου 0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="55"/>
+        <location filename="../IOViewer.cpp" line="56"/>
         <source>Enable background 1</source>
         <translation>Ενεργοποίηση φόντου 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="56"/>
+        <location filename="../IOViewer.cpp" line="57"/>
         <source>Enable background 2</source>
         <translation>Ενεργοποίηση φόντου 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="57"/>
+        <location filename="../IOViewer.cpp" line="58"/>
         <source>Enable background 3</source>
         <translation>Ενεργοποίηση φόντου 3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="58"/>
+        <location filename="../IOViewer.cpp" line="59"/>
         <source>Enable OBJ</source>
         <translation>Ενεργοποίηση OBJ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="59"/>
+        <location filename="../IOViewer.cpp" line="60"/>
         <source>Enable Window 0</source>
         <translation>Ενεργοποίηση παραθύρου 0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="60"/>
+        <location filename="../IOViewer.cpp" line="61"/>
         <source>Enable Window 1</source>
         <translation>Ενεργοποίηση παραθύρου 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="61"/>
+        <location filename="../IOViewer.cpp" line="62"/>
         <source>Enable OBJ Window</source>
         <translation>Ενεργοποίηση παραθύρου OBJ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="65"/>
+        <location filename="../IOViewer.cpp" line="66"/>
         <source>Swap green components</source>
         <translation>Εναλλαγή πράσινων στοιχείων</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="69"/>
+        <location filename="../IOViewer.cpp" line="70"/>
         <source>Currently in VBlank</source>
         <translation>Επί του παρόντος στο VBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="70"/>
+        <location filename="../IOViewer.cpp" line="71"/>
         <source>Currently in HBlank</source>
         <translation>Επί του παρόντος στο HBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="71"/>
+        <location filename="../IOViewer.cpp" line="72"/>
         <source>Currently in VCounter</source>
         <translation>Επί του παρόντος στο VCounter</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="72"/>
+        <location filename="../IOViewer.cpp" line="73"/>
         <source>Enable VBlank IRQ generation</source>
         <translation>Ενεργοποίηση δημιουργίας IRQ VBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="73"/>
+        <location filename="../IOViewer.cpp" line="74"/>
         <source>Enable HBlank IRQ generation</source>
         <translation>Ενεργοποίηση δημιουργίας IRQ ΗBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="74"/>
+        <location filename="../IOViewer.cpp" line="75"/>
         <source>Enable VCounter IRQ generation</source>
         <translation>Ενεργοποίηση δημιουργίας IRQ VCounter</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="75"/>
+        <location filename="../IOViewer.cpp" line="76"/>
         <source>VCounter scanline</source>
         <translation>Γραμμή σάρωσης VCounter</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="79"/>
+        <location filename="../IOViewer.cpp" line="80"/>
         <source>Current scanline</source>
         <translation>Τρέχουσα γραμμή σάρωσης</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="83"/>
-        <location filename="../IOViewer.cpp" line="92"/>
-        <location filename="../IOViewer.cpp" line="101"/>
-        <location filename="../IOViewer.cpp" line="111"/>
-        <source>Priority</source>
-        <translation>Προτεραιότητα</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="84"/>
         <location filename="../IOViewer.cpp" line="93"/>
         <location filename="../IOViewer.cpp" line="102"/>
         <location filename="../IOViewer.cpp" line="112"/>
-        <source>Tile data base (* 16kB)</source>
-        <translation>Βάση δεδομένων πλακιδίων (* 16kB)</translation>
+        <source>Priority</source>
+        <translation>Προτεραιότητα</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="85"/>
         <location filename="../IOViewer.cpp" line="94"/>
         <location filename="../IOViewer.cpp" line="103"/>
         <location filename="../IOViewer.cpp" line="113"/>
-        <source>Enable mosaic</source>
-        <translation>Ενεργοποίηση μωσαϊκού</translation>
+        <source>Tile data base (* 16kB)</source>
+        <translation>Βάση δεδομένων πλακιδίων (* 16kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="86"/>
         <location filename="../IOViewer.cpp" line="95"/>
         <location filename="../IOViewer.cpp" line="104"/>
         <location filename="../IOViewer.cpp" line="114"/>
-        <source>Enable 256-color</source>
-        <translation>Ενεργοποίηση 256 χρωμάτων</translation>
+        <source>Enable mosaic</source>
+        <translation>Ενεργοποίηση μωσαϊκού</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="87"/>
         <location filename="../IOViewer.cpp" line="96"/>
         <location filename="../IOViewer.cpp" line="105"/>
         <location filename="../IOViewer.cpp" line="115"/>
-        <source>Tile map base (* 2kB)</source>
-        <translation>Βάση χάρτη πλακιδίων (* 2kB)</translation>
+        <source>Enable 256-color</source>
+        <translation>Ενεργοποίηση 256 χρωμάτων</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="88"/>
         <location filename="../IOViewer.cpp" line="97"/>
-        <location filename="../IOViewer.cpp" line="107"/>
-        <location filename="../IOViewer.cpp" line="117"/>
+        <location filename="../IOViewer.cpp" line="106"/>
+        <location filename="../IOViewer.cpp" line="116"/>
+        <source>Tile map base (* 2kB)</source>
+        <translation>Βάση χάρτη πλακιδίων (* 2kB)</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="89"/>
+        <location filename="../IOViewer.cpp" line="98"/>
+        <location filename="../IOViewer.cpp" line="108"/>
+        <location filename="../IOViewer.cpp" line="118"/>
         <source>Background dimensions</source>
         <translation>Διαστάσεις φόντου</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="106"/>
-        <location filename="../IOViewer.cpp" line="116"/>
+        <location filename="../IOViewer.cpp" line="107"/>
+        <location filename="../IOViewer.cpp" line="117"/>
         <source>Overflow wraps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="121"/>
-        <location filename="../IOViewer.cpp" line="129"/>
-        <location filename="../IOViewer.cpp" line="137"/>
-        <location filename="../IOViewer.cpp" line="145"/>
-        <location filename="../IOViewer.cpp" line="1364"/>
-        <location filename="../IOViewer.cpp" line="1405"/>
+        <location filename="../IOViewer.cpp" line="122"/>
+        <location filename="../IOViewer.cpp" line="130"/>
+        <location filename="../IOViewer.cpp" line="138"/>
+        <location filename="../IOViewer.cpp" line="146"/>
+        <location filename="../IOViewer.cpp" line="1365"/>
+        <location filename="../IOViewer.cpp" line="1406"/>
         <source>Horizontal offset</source>
         <translation>Οριζόντια μετατόπιση</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="125"/>
-        <location filename="../IOViewer.cpp" line="133"/>
-        <location filename="../IOViewer.cpp" line="141"/>
-        <location filename="../IOViewer.cpp" line="149"/>
-        <location filename="../IOViewer.cpp" line="1360"/>
-        <location filename="../IOViewer.cpp" line="1401"/>
+        <location filename="../IOViewer.cpp" line="126"/>
+        <location filename="../IOViewer.cpp" line="134"/>
+        <location filename="../IOViewer.cpp" line="142"/>
+        <location filename="../IOViewer.cpp" line="150"/>
+        <location filename="../IOViewer.cpp" line="1361"/>
+        <location filename="../IOViewer.cpp" line="1402"/>
         <source>Vertical offset</source>
         <translation>Κάθετη μετατόπιση</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="153"/>
-        <location filename="../IOViewer.cpp" line="158"/>
-        <location filename="../IOViewer.cpp" line="163"/>
-        <location filename="../IOViewer.cpp" line="168"/>
-        <location filename="../IOViewer.cpp" line="173"/>
-        <location filename="../IOViewer.cpp" line="182"/>
-        <location filename="../IOViewer.cpp" line="191"/>
-        <location filename="../IOViewer.cpp" line="196"/>
-        <location filename="../IOViewer.cpp" line="201"/>
-        <location filename="../IOViewer.cpp" line="206"/>
-        <location filename="../IOViewer.cpp" line="211"/>
-        <location filename="../IOViewer.cpp" line="220"/>
-        <source>Fractional part</source>
-        <translation>Κλασματικό μέρος</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="154"/>
         <location filename="../IOViewer.cpp" line="159"/>
         <location filename="../IOViewer.cpp" line="164"/>
         <location filename="../IOViewer.cpp" line="169"/>
+        <location filename="../IOViewer.cpp" line="174"/>
+        <location filename="../IOViewer.cpp" line="183"/>
         <location filename="../IOViewer.cpp" line="192"/>
         <location filename="../IOViewer.cpp" line="197"/>
         <location filename="../IOViewer.cpp" line="202"/>
         <location filename="../IOViewer.cpp" line="207"/>
+        <location filename="../IOViewer.cpp" line="212"/>
+        <location filename="../IOViewer.cpp" line="221"/>
+        <source>Fractional part</source>
+        <translation>Κλασματικό μέρος</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="155"/>
+        <location filename="../IOViewer.cpp" line="160"/>
+        <location filename="../IOViewer.cpp" line="165"/>
+        <location filename="../IOViewer.cpp" line="170"/>
+        <location filename="../IOViewer.cpp" line="193"/>
+        <location filename="../IOViewer.cpp" line="198"/>
+        <location filename="../IOViewer.cpp" line="203"/>
+        <location filename="../IOViewer.cpp" line="208"/>
         <source>Integer part</source>
         <translation>Ακέραιο μέρος</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="174"/>
-        <location filename="../IOViewer.cpp" line="183"/>
-        <location filename="../IOViewer.cpp" line="212"/>
-        <location filename="../IOViewer.cpp" line="221"/>
+        <location filename="../IOViewer.cpp" line="175"/>
+        <location filename="../IOViewer.cpp" line="184"/>
+        <location filename="../IOViewer.cpp" line="213"/>
+        <location filename="../IOViewer.cpp" line="222"/>
         <source>Integer part (low)</source>
         <translation>Ακέραιο μέρος (χαμηλό)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="178"/>
-        <location filename="../IOViewer.cpp" line="187"/>
-        <location filename="../IOViewer.cpp" line="216"/>
-        <location filename="../IOViewer.cpp" line="225"/>
+        <location filename="../IOViewer.cpp" line="179"/>
+        <location filename="../IOViewer.cpp" line="188"/>
+        <location filename="../IOViewer.cpp" line="217"/>
+        <location filename="../IOViewer.cpp" line="226"/>
         <source>Integer part (high)</source>
         <translation>Ακέραιο μέρος (υψηλό)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="229"/>
-        <location filename="../IOViewer.cpp" line="234"/>
+        <location filename="../IOViewer.cpp" line="230"/>
+        <location filename="../IOViewer.cpp" line="235"/>
         <source>End x</source>
         <translation>Τελικό x</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="230"/>
-        <location filename="../IOViewer.cpp" line="235"/>
+        <location filename="../IOViewer.cpp" line="231"/>
+        <location filename="../IOViewer.cpp" line="236"/>
         <source>Start x</source>
         <translation>Αρχικό x</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="239"/>
-        <location filename="../IOViewer.cpp" line="244"/>
+        <location filename="../IOViewer.cpp" line="240"/>
+        <location filename="../IOViewer.cpp" line="245"/>
         <source>End y</source>
         <translation>Τελικό y</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="240"/>
-        <location filename="../IOViewer.cpp" line="245"/>
+        <location filename="../IOViewer.cpp" line="241"/>
+        <location filename="../IOViewer.cpp" line="246"/>
         <source>Start y</source>
         <translation>Αρχικό y</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="249"/>
+        <location filename="../IOViewer.cpp" line="250"/>
         <source>Window 0 enable BG 0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="250"/>
+        <location filename="../IOViewer.cpp" line="251"/>
         <source>Window 0 enable BG 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="251"/>
+        <location filename="../IOViewer.cpp" line="252"/>
         <source>Window 0 enable BG 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="252"/>
+        <location filename="../IOViewer.cpp" line="253"/>
         <source>Window 0 enable BG 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="253"/>
+        <location filename="../IOViewer.cpp" line="254"/>
         <source>Window 0 enable OBJ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="254"/>
+        <location filename="../IOViewer.cpp" line="255"/>
         <source>Window 0 enable blend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="255"/>
+        <location filename="../IOViewer.cpp" line="256"/>
         <source>Window 1 enable BG 0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="256"/>
+        <location filename="../IOViewer.cpp" line="257"/>
         <source>Window 1 enable BG 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="257"/>
+        <location filename="../IOViewer.cpp" line="258"/>
         <source>Window 1 enable BG 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="258"/>
+        <location filename="../IOViewer.cpp" line="259"/>
         <source>Window 1 enable BG 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="259"/>
+        <location filename="../IOViewer.cpp" line="260"/>
         <source>Window 1 enable OBJ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="260"/>
+        <location filename="../IOViewer.cpp" line="261"/>
         <source>Window 1 enable blend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="264"/>
+        <location filename="../IOViewer.cpp" line="265"/>
         <source>Outside window enable BG 0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="265"/>
+        <location filename="../IOViewer.cpp" line="266"/>
         <source>Outside window enable BG 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="266"/>
+        <location filename="../IOViewer.cpp" line="267"/>
         <source>Outside window enable BG 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="267"/>
+        <location filename="../IOViewer.cpp" line="268"/>
         <source>Outside window enable BG 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="268"/>
+        <location filename="../IOViewer.cpp" line="269"/>
         <source>Outside window enable OBJ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="269"/>
+        <location filename="../IOViewer.cpp" line="270"/>
         <source>Outside window enable blend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="270"/>
+        <location filename="../IOViewer.cpp" line="271"/>
         <source>OBJ window enable BG 0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="271"/>
+        <location filename="../IOViewer.cpp" line="272"/>
         <source>OBJ window enable BG 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="272"/>
+        <location filename="../IOViewer.cpp" line="273"/>
         <source>OBJ window enable BG 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="273"/>
+        <location filename="../IOViewer.cpp" line="274"/>
         <source>OBJ window enable BG 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="274"/>
+        <location filename="../IOViewer.cpp" line="275"/>
         <source>OBJ window enable OBJ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="275"/>
+        <location filename="../IOViewer.cpp" line="276"/>
         <source>OBJ window enable blend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="280"/>
+        <location filename="../IOViewer.cpp" line="281"/>
         <source>Background mosaic size vertical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="279"/>
+        <location filename="../IOViewer.cpp" line="280"/>
         <source>Background mosaic size horizontal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="282"/>
+        <location filename="../IOViewer.cpp" line="283"/>
         <source>Object mosaic size vertical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="281"/>
+        <location filename="../IOViewer.cpp" line="282"/>
         <source>Object mosaic size horizontal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="288"/>
+        <location filename="../IOViewer.cpp" line="289"/>
         <source>BG 0 target 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="289"/>
+        <location filename="../IOViewer.cpp" line="290"/>
         <source>BG 1 target 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="290"/>
+        <location filename="../IOViewer.cpp" line="291"/>
         <source>BG 2 target 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="291"/>
+        <location filename="../IOViewer.cpp" line="292"/>
         <source>BG 3 target 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="292"/>
+        <location filename="../IOViewer.cpp" line="293"/>
         <source>OBJ target 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="293"/>
+        <location filename="../IOViewer.cpp" line="294"/>
         <source>Backdrop target 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="294"/>
+        <location filename="../IOViewer.cpp" line="295"/>
         <source>Blend mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="295"/>
+        <location filename="../IOViewer.cpp" line="296"/>
         <source>Disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="296"/>
+        <location filename="../IOViewer.cpp" line="297"/>
         <source>Additive blending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="297"/>
+        <location filename="../IOViewer.cpp" line="298"/>
         <source>Brighten</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="298"/>
+        <location filename="../IOViewer.cpp" line="299"/>
         <source>Darken</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="300"/>
+        <location filename="../IOViewer.cpp" line="301"/>
         <source>BG 0 target 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="301"/>
+        <location filename="../IOViewer.cpp" line="302"/>
         <source>BG 1 target 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="302"/>
+        <location filename="../IOViewer.cpp" line="303"/>
         <source>BG 2 target 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="303"/>
+        <location filename="../IOViewer.cpp" line="304"/>
         <source>BG 3 target 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="304"/>
+        <location filename="../IOViewer.cpp" line="305"/>
         <source>OBJ target 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="305"/>
+        <location filename="../IOViewer.cpp" line="306"/>
         <source>Backdrop target 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="309"/>
+        <location filename="../IOViewer.cpp" line="310"/>
         <source>Blend A (target 1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="310"/>
+        <location filename="../IOViewer.cpp" line="311"/>
         <source>Blend B (target 2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="314"/>
+        <location filename="../IOViewer.cpp" line="315"/>
         <source>Blend Y</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="328"/>
-        <location filename="../IOViewer.cpp" line="1099"/>
-        <source>Sweep shifts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="329"/>
         <location filename="../IOViewer.cpp" line="1100"/>
-        <source>Sweep subtract</source>
+        <source>Sweep shifts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="330"/>
         <location filename="../IOViewer.cpp" line="1101"/>
-        <source>Sweep time (in 1/128s)</source>
+        <source>Sweep subtract</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="334"/>
-        <location filename="../IOViewer.cpp" line="350"/>
-        <location filename="../IOViewer.cpp" line="374"/>
-        <location filename="../IOViewer.cpp" line="396"/>
-        <location filename="../IOViewer.cpp" line="1105"/>
-        <location filename="../IOViewer.cpp" line="1128"/>
-        <location filename="../IOViewer.cpp" line="1153"/>
-        <location filename="../IOViewer.cpp" line="1178"/>
-        <source>Sound length</source>
+        <location filename="../IOViewer.cpp" line="331"/>
+        <location filename="../IOViewer.cpp" line="1102"/>
+        <source>Sweep time (in 1/128s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="335"/>
         <location filename="../IOViewer.cpp" line="351"/>
+        <location filename="../IOViewer.cpp" line="375"/>
+        <location filename="../IOViewer.cpp" line="397"/>
         <location filename="../IOViewer.cpp" line="1106"/>
         <location filename="../IOViewer.cpp" line="1129"/>
-        <source>Duty cycle</source>
+        <location filename="../IOViewer.cpp" line="1154"/>
+        <location filename="../IOViewer.cpp" line="1179"/>
+        <source>Sound length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="336"/>
         <location filename="../IOViewer.cpp" line="352"/>
-        <location filename="../IOViewer.cpp" line="397"/>
-        <location filename="../IOViewer.cpp" line="1110"/>
-        <location filename="../IOViewer.cpp" line="1133"/>
-        <location filename="../IOViewer.cpp" line="1182"/>
-        <source>Envelope step time</source>
+        <location filename="../IOViewer.cpp" line="1107"/>
+        <location filename="../IOViewer.cpp" line="1130"/>
+        <source>Duty cycle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1736,7 +1792,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1111"/>
         <location filename="../IOViewer.cpp" line="1134"/>
         <location filename="../IOViewer.cpp" line="1183"/>
-        <source>Envelope increase</source>
+        <source>Envelope step time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1746,27 +1802,25 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1112"/>
         <location filename="../IOViewer.cpp" line="1135"/>
         <location filename="../IOViewer.cpp" line="1184"/>
-        <source>Initial volume</source>
-        <translation>Αρχική ένταση</translation>
+        <source>Envelope increase</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="342"/>
-        <location filename="../IOViewer.cpp" line="360"/>
-        <location filename="../IOViewer.cpp" line="388"/>
-        <source>Sound frequency</source>
-        <translation>Συχνότητα ήχου</translation>
+        <location filename="../IOViewer.cpp" line="339"/>
+        <location filename="../IOViewer.cpp" line="355"/>
+        <location filename="../IOViewer.cpp" line="400"/>
+        <location filename="../IOViewer.cpp" line="1113"/>
+        <location filename="../IOViewer.cpp" line="1136"/>
+        <location filename="../IOViewer.cpp" line="1185"/>
+        <source>Initial volume</source>
+        <translation>Αρχική ένταση</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="343"/>
         <location filename="../IOViewer.cpp" line="361"/>
         <location filename="../IOViewer.cpp" line="389"/>
-        <location filename="../IOViewer.cpp" line="411"/>
-        <location filename="../IOViewer.cpp" line="1121"/>
-        <location filename="../IOViewer.cpp" line="1144"/>
-        <location filename="../IOViewer.cpp" line="1171"/>
-        <location filename="../IOViewer.cpp" line="1197"/>
-        <source>Timed</source>
-        <translation type="unfinished"></translation>
+        <source>Sound frequency</source>
+        <translation>Συχνότητα ήχου</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="344"/>
@@ -1777,440 +1831,440 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1145"/>
         <location filename="../IOViewer.cpp" line="1172"/>
         <location filename="../IOViewer.cpp" line="1198"/>
+        <source>Timed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="345"/>
+        <location filename="../IOViewer.cpp" line="363"/>
+        <location filename="../IOViewer.cpp" line="391"/>
+        <location filename="../IOViewer.cpp" line="413"/>
+        <location filename="../IOViewer.cpp" line="1123"/>
+        <location filename="../IOViewer.cpp" line="1146"/>
+        <location filename="../IOViewer.cpp" line="1173"/>
+        <location filename="../IOViewer.cpp" line="1199"/>
         <source>Reset</source>
         <translation>Επαναφορά</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="368"/>
+        <location filename="../IOViewer.cpp" line="369"/>
         <source>Double-size wave table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="369"/>
+        <location filename="../IOViewer.cpp" line="370"/>
         <source>Active wave table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="370"/>
-        <location filename="../IOViewer.cpp" line="1149"/>
+        <location filename="../IOViewer.cpp" line="371"/>
+        <location filename="../IOViewer.cpp" line="1150"/>
         <source>Enable channel 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="375"/>
-        <location filename="../IOViewer.cpp" line="1157"/>
+        <location filename="../IOViewer.cpp" line="376"/>
+        <location filename="../IOViewer.cpp" line="1158"/>
         <source>Volume</source>
         <translation>Ένταση ήχου</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="376"/>
-        <location filename="../IOViewer.cpp" line="1158"/>
+        <location filename="../IOViewer.cpp" line="377"/>
+        <location filename="../IOViewer.cpp" line="1159"/>
         <source>0%</source>
         <translation>0%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="377"/>
-        <location filename="../IOViewer.cpp" line="434"/>
-        <location filename="../IOViewer.cpp" line="1159"/>
+        <location filename="../IOViewer.cpp" line="378"/>
+        <location filename="../IOViewer.cpp" line="435"/>
+        <location filename="../IOViewer.cpp" line="1160"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="378"/>
-        <location filename="../IOViewer.cpp" line="433"/>
-        <location filename="../IOViewer.cpp" line="1160"/>
+        <location filename="../IOViewer.cpp" line="379"/>
+        <location filename="../IOViewer.cpp" line="434"/>
+        <location filename="../IOViewer.cpp" line="1161"/>
         <source>50%</source>
         <translation>50%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="379"/>
-        <location filename="../IOViewer.cpp" line="432"/>
-        <location filename="../IOViewer.cpp" line="1161"/>
+        <location filename="../IOViewer.cpp" line="380"/>
+        <location filename="../IOViewer.cpp" line="433"/>
+        <location filename="../IOViewer.cpp" line="1162"/>
         <source>25%</source>
         <translation>25%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="380"/>
         <location filename="../IOViewer.cpp" line="381"/>
         <location filename="../IOViewer.cpp" line="382"/>
         <location filename="../IOViewer.cpp" line="383"/>
+        <location filename="../IOViewer.cpp" line="384"/>
         <source>75%</source>
         <translation>75%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="405"/>
-        <location filename="../IOViewer.cpp" line="1188"/>
-        <source>Clock divider</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../IOViewer.cpp" line="406"/>
         <location filename="../IOViewer.cpp" line="1189"/>
-        <source>Register stages</source>
+        <source>Clock divider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="407"/>
         <location filename="../IOViewer.cpp" line="1190"/>
-        <source>15</source>
-        <translation>15</translation>
+        <source>Register stages</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="408"/>
         <location filename="../IOViewer.cpp" line="1191"/>
+        <source>15</source>
+        <translation>15</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="409"/>
+        <location filename="../IOViewer.cpp" line="1192"/>
         <source>7</source>
         <translation>7</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="410"/>
-        <location filename="../IOViewer.cpp" line="1193"/>
+        <location filename="../IOViewer.cpp" line="411"/>
+        <location filename="../IOViewer.cpp" line="1194"/>
         <source>Shifter frequency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="418"/>
+        <location filename="../IOViewer.cpp" line="419"/>
         <source>PSG volume right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="419"/>
-        <source>PSG volume left</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../IOViewer.cpp" line="420"/>
-        <location filename="../IOViewer.cpp" line="1209"/>
-        <source>Enable channel 1 right</source>
+        <source>PSG volume left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="421"/>
         <location filename="../IOViewer.cpp" line="1210"/>
-        <source>Enable channel 2 right</source>
+        <source>Enable channel 1 right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="422"/>
         <location filename="../IOViewer.cpp" line="1211"/>
-        <source>Enable channel 3 right</source>
+        <source>Enable channel 2 right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="423"/>
         <location filename="../IOViewer.cpp" line="1212"/>
-        <source>Enable channel 4 right</source>
+        <source>Enable channel 3 right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="424"/>
         <location filename="../IOViewer.cpp" line="1213"/>
-        <source>Enable channel 1 left</source>
+        <source>Enable channel 4 right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="425"/>
         <location filename="../IOViewer.cpp" line="1214"/>
-        <source>Enable channel 2 left</source>
+        <source>Enable channel 1 left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="426"/>
         <location filename="../IOViewer.cpp" line="1215"/>
-        <source>Enable channel 3 left</source>
+        <source>Enable channel 2 left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="427"/>
         <location filename="../IOViewer.cpp" line="1216"/>
+        <source>Enable channel 3 left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="428"/>
+        <location filename="../IOViewer.cpp" line="1217"/>
         <source>Enable channel 4 left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="431"/>
+        <location filename="../IOViewer.cpp" line="432"/>
         <source>PSG master volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="437"/>
+        <location filename="../IOViewer.cpp" line="438"/>
         <source>Loud channel A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="438"/>
+        <location filename="../IOViewer.cpp" line="439"/>
         <source>Loud channel B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="439"/>
+        <location filename="../IOViewer.cpp" line="440"/>
         <source>Enable channel A right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="440"/>
+        <location filename="../IOViewer.cpp" line="441"/>
         <source>Enable channel A left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="441"/>
+        <location filename="../IOViewer.cpp" line="442"/>
         <source>Channel A timer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="442"/>
-        <location filename="../IOViewer.cpp" line="449"/>
+        <location filename="../IOViewer.cpp" line="443"/>
+        <location filename="../IOViewer.cpp" line="450"/>
         <source>0</source>
         <translation>0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="443"/>
-        <location filename="../IOViewer.cpp" line="450"/>
-        <location filename="../IOViewer.cpp" line="779"/>
-        <location filename="../IOViewer.cpp" line="794"/>
-        <location filename="../IOViewer.cpp" line="810"/>
-        <location filename="../IOViewer.cpp" line="826"/>
-        <location filename="../IOViewer.cpp" line="992"/>
-        <location filename="../IOViewer.cpp" line="1002"/>
-        <location filename="../IOViewer.cpp" line="1012"/>
+        <location filename="../IOViewer.cpp" line="444"/>
+        <location filename="../IOViewer.cpp" line="451"/>
+        <location filename="../IOViewer.cpp" line="780"/>
+        <location filename="../IOViewer.cpp" line="795"/>
+        <location filename="../IOViewer.cpp" line="811"/>
+        <location filename="../IOViewer.cpp" line="827"/>
+        <location filename="../IOViewer.cpp" line="993"/>
+        <location filename="../IOViewer.cpp" line="1003"/>
+        <location filename="../IOViewer.cpp" line="1013"/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="445"/>
+        <location filename="../IOViewer.cpp" line="446"/>
         <source>Channel A reset</source>
         <translation>Επαναφορά καναλιού A</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="446"/>
+        <location filename="../IOViewer.cpp" line="447"/>
         <source>Enable channel B right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="447"/>
+        <location filename="../IOViewer.cpp" line="448"/>
         <source>Enable channel B left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="448"/>
+        <location filename="../IOViewer.cpp" line="449"/>
         <source>Channel B timer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="452"/>
+        <location filename="../IOViewer.cpp" line="453"/>
         <source>Channel B reset</source>
         <translation>Επαναφορά καναλιού B</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="456"/>
-        <location filename="../IOViewer.cpp" line="1220"/>
+        <location filename="../IOViewer.cpp" line="457"/>
+        <location filename="../IOViewer.cpp" line="1221"/>
         <source>Active channel 1</source>
         <translation>Ενεργό κανάλι 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="457"/>
-        <location filename="../IOViewer.cpp" line="1221"/>
+        <location filename="../IOViewer.cpp" line="458"/>
+        <location filename="../IOViewer.cpp" line="1222"/>
         <source>Active channel 2</source>
         <translation>Ενεργό κανάλι 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="458"/>
-        <location filename="../IOViewer.cpp" line="1222"/>
+        <location filename="../IOViewer.cpp" line="459"/>
+        <location filename="../IOViewer.cpp" line="1223"/>
         <source>Active channel 3</source>
         <translation>Ενεργό κανάλι 3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="459"/>
-        <location filename="../IOViewer.cpp" line="1223"/>
+        <location filename="../IOViewer.cpp" line="460"/>
+        <location filename="../IOViewer.cpp" line="1224"/>
         <source>Active channel 4</source>
         <translation>Ενεργό κανάλι 4</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="460"/>
-        <location filename="../IOViewer.cpp" line="1224"/>
+        <location filename="../IOViewer.cpp" line="461"/>
+        <location filename="../IOViewer.cpp" line="1225"/>
         <source>Enable audio</source>
         <translation>Ενεργοποίηση ήχου</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="466"/>
+        <location filename="../IOViewer.cpp" line="467"/>
         <source>Bias</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="467"/>
+        <location filename="../IOViewer.cpp" line="468"/>
         <source>Resolution</source>
         <translation>Ανάλυση</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="477"/>
         <location filename="../IOViewer.cpp" line="478"/>
         <location filename="../IOViewer.cpp" line="479"/>
         <location filename="../IOViewer.cpp" line="480"/>
-        <location filename="../IOViewer.cpp" line="484"/>
+        <location filename="../IOViewer.cpp" line="481"/>
         <location filename="../IOViewer.cpp" line="485"/>
         <location filename="../IOViewer.cpp" line="486"/>
         <location filename="../IOViewer.cpp" line="487"/>
-        <location filename="../IOViewer.cpp" line="491"/>
+        <location filename="../IOViewer.cpp" line="488"/>
         <location filename="../IOViewer.cpp" line="492"/>
         <location filename="../IOViewer.cpp" line="493"/>
         <location filename="../IOViewer.cpp" line="494"/>
-        <location filename="../IOViewer.cpp" line="498"/>
+        <location filename="../IOViewer.cpp" line="495"/>
         <location filename="../IOViewer.cpp" line="499"/>
         <location filename="../IOViewer.cpp" line="500"/>
         <location filename="../IOViewer.cpp" line="501"/>
-        <location filename="../IOViewer.cpp" line="505"/>
+        <location filename="../IOViewer.cpp" line="502"/>
         <location filename="../IOViewer.cpp" line="506"/>
         <location filename="../IOViewer.cpp" line="507"/>
         <location filename="../IOViewer.cpp" line="508"/>
-        <location filename="../IOViewer.cpp" line="512"/>
+        <location filename="../IOViewer.cpp" line="509"/>
         <location filename="../IOViewer.cpp" line="513"/>
         <location filename="../IOViewer.cpp" line="514"/>
         <location filename="../IOViewer.cpp" line="515"/>
-        <location filename="../IOViewer.cpp" line="519"/>
+        <location filename="../IOViewer.cpp" line="516"/>
         <location filename="../IOViewer.cpp" line="520"/>
         <location filename="../IOViewer.cpp" line="521"/>
         <location filename="../IOViewer.cpp" line="522"/>
-        <location filename="../IOViewer.cpp" line="526"/>
+        <location filename="../IOViewer.cpp" line="523"/>
         <location filename="../IOViewer.cpp" line="527"/>
         <location filename="../IOViewer.cpp" line="528"/>
         <location filename="../IOViewer.cpp" line="529"/>
-        <location filename="../IOViewer.cpp" line="533"/>
+        <location filename="../IOViewer.cpp" line="530"/>
         <location filename="../IOViewer.cpp" line="534"/>
-        <location filename="../IOViewer.cpp" line="538"/>
+        <location filename="../IOViewer.cpp" line="535"/>
         <location filename="../IOViewer.cpp" line="539"/>
-        <location filename="../IOViewer.cpp" line="543"/>
+        <location filename="../IOViewer.cpp" line="540"/>
         <location filename="../IOViewer.cpp" line="544"/>
-        <location filename="../IOViewer.cpp" line="548"/>
+        <location filename="../IOViewer.cpp" line="545"/>
         <location filename="../IOViewer.cpp" line="549"/>
-        <location filename="../IOViewer.cpp" line="1246"/>
+        <location filename="../IOViewer.cpp" line="550"/>
         <location filename="../IOViewer.cpp" line="1247"/>
-        <location filename="../IOViewer.cpp" line="1251"/>
+        <location filename="../IOViewer.cpp" line="1248"/>
         <location filename="../IOViewer.cpp" line="1252"/>
-        <location filename="../IOViewer.cpp" line="1256"/>
+        <location filename="../IOViewer.cpp" line="1253"/>
         <location filename="../IOViewer.cpp" line="1257"/>
-        <location filename="../IOViewer.cpp" line="1261"/>
+        <location filename="../IOViewer.cpp" line="1258"/>
         <location filename="../IOViewer.cpp" line="1262"/>
-        <location filename="../IOViewer.cpp" line="1266"/>
+        <location filename="../IOViewer.cpp" line="1263"/>
         <location filename="../IOViewer.cpp" line="1267"/>
-        <location filename="../IOViewer.cpp" line="1271"/>
+        <location filename="../IOViewer.cpp" line="1268"/>
         <location filename="../IOViewer.cpp" line="1272"/>
-        <location filename="../IOViewer.cpp" line="1276"/>
+        <location filename="../IOViewer.cpp" line="1273"/>
         <location filename="../IOViewer.cpp" line="1277"/>
-        <location filename="../IOViewer.cpp" line="1281"/>
+        <location filename="../IOViewer.cpp" line="1278"/>
         <location filename="../IOViewer.cpp" line="1282"/>
-        <location filename="../IOViewer.cpp" line="1286"/>
+        <location filename="../IOViewer.cpp" line="1283"/>
         <location filename="../IOViewer.cpp" line="1287"/>
-        <location filename="../IOViewer.cpp" line="1291"/>
+        <location filename="../IOViewer.cpp" line="1288"/>
         <location filename="../IOViewer.cpp" line="1292"/>
-        <location filename="../IOViewer.cpp" line="1296"/>
+        <location filename="../IOViewer.cpp" line="1293"/>
         <location filename="../IOViewer.cpp" line="1297"/>
-        <location filename="../IOViewer.cpp" line="1301"/>
+        <location filename="../IOViewer.cpp" line="1298"/>
         <location filename="../IOViewer.cpp" line="1302"/>
-        <location filename="../IOViewer.cpp" line="1306"/>
+        <location filename="../IOViewer.cpp" line="1303"/>
         <location filename="../IOViewer.cpp" line="1307"/>
-        <location filename="../IOViewer.cpp" line="1311"/>
+        <location filename="../IOViewer.cpp" line="1308"/>
         <location filename="../IOViewer.cpp" line="1312"/>
-        <location filename="../IOViewer.cpp" line="1316"/>
+        <location filename="../IOViewer.cpp" line="1313"/>
         <location filename="../IOViewer.cpp" line="1317"/>
-        <location filename="../IOViewer.cpp" line="1321"/>
+        <location filename="../IOViewer.cpp" line="1318"/>
         <location filename="../IOViewer.cpp" line="1322"/>
+        <location filename="../IOViewer.cpp" line="1323"/>
         <source>Sample</source>
         <translation>Δείγμα</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="561"/>
-        <location filename="../IOViewer.cpp" line="569"/>
-        <location filename="../IOViewer.cpp" line="606"/>
-        <location filename="../IOViewer.cpp" line="614"/>
-        <location filename="../IOViewer.cpp" line="651"/>
-        <location filename="../IOViewer.cpp" line="659"/>
-        <location filename="../IOViewer.cpp" line="696"/>
-        <location filename="../IOViewer.cpp" line="704"/>
+        <location filename="../IOViewer.cpp" line="562"/>
+        <location filename="../IOViewer.cpp" line="570"/>
+        <location filename="../IOViewer.cpp" line="607"/>
+        <location filename="../IOViewer.cpp" line="615"/>
+        <location filename="../IOViewer.cpp" line="652"/>
+        <location filename="../IOViewer.cpp" line="660"/>
+        <location filename="../IOViewer.cpp" line="697"/>
+        <location filename="../IOViewer.cpp" line="705"/>
         <source>Address (low)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="565"/>
-        <location filename="../IOViewer.cpp" line="573"/>
-        <location filename="../IOViewer.cpp" line="610"/>
-        <location filename="../IOViewer.cpp" line="618"/>
-        <location filename="../IOViewer.cpp" line="655"/>
-        <location filename="../IOViewer.cpp" line="663"/>
-        <location filename="../IOViewer.cpp" line="700"/>
-        <location filename="../IOViewer.cpp" line="708"/>
+        <location filename="../IOViewer.cpp" line="566"/>
+        <location filename="../IOViewer.cpp" line="574"/>
+        <location filename="../IOViewer.cpp" line="611"/>
+        <location filename="../IOViewer.cpp" line="619"/>
+        <location filename="../IOViewer.cpp" line="656"/>
+        <location filename="../IOViewer.cpp" line="664"/>
+        <location filename="../IOViewer.cpp" line="701"/>
+        <location filename="../IOViewer.cpp" line="709"/>
         <source>Address (high)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1116"/>
-        <location filename="../IOViewer.cpp" line="1139"/>
-        <location filename="../IOViewer.cpp" line="1166"/>
+        <location filename="../IOViewer.cpp" line="1117"/>
+        <location filename="../IOViewer.cpp" line="1140"/>
+        <location filename="../IOViewer.cpp" line="1167"/>
         <source>Sound frequency (low)</source>
         <translation>Συχνότητα ήχου (χαμηλή)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1120"/>
-        <location filename="../IOViewer.cpp" line="1143"/>
-        <location filename="../IOViewer.cpp" line="1170"/>
+        <location filename="../IOViewer.cpp" line="1121"/>
+        <location filename="../IOViewer.cpp" line="1144"/>
+        <location filename="../IOViewer.cpp" line="1171"/>
         <source>Sound frequency (high)</source>
         <translation>Συχνότητα ήχου (υψηλή)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1424"/>
+        <location filename="../IOViewer.cpp" line="1425"/>
         <source>Source (high)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1428"/>
+        <location filename="../IOViewer.cpp" line="1429"/>
         <source>Source (low)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1432"/>
+        <location filename="../IOViewer.cpp" line="1433"/>
         <source>Destination (high)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1436"/>
+        <location filename="../IOViewer.cpp" line="1437"/>
         <source>Destination (low)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="1499"/>
-        <location filename="../IOViewer.cpp" line="1511"/>
-        <source>Green (low)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1500"/>
         <location filename="../IOViewer.cpp" line="1512"/>
+        <source>Green (low)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1501"/>
+        <location filename="../IOViewer.cpp" line="1513"/>
         <source>Green (high)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="577"/>
-        <location filename="../IOViewer.cpp" line="622"/>
-        <location filename="../IOViewer.cpp" line="667"/>
-        <location filename="../IOViewer.cpp" line="712"/>
+        <location filename="../IOViewer.cpp" line="578"/>
+        <location filename="../IOViewer.cpp" line="623"/>
+        <location filename="../IOViewer.cpp" line="668"/>
+        <location filename="../IOViewer.cpp" line="713"/>
         <source>Word count</source>
         <translation>Πλήθος λέξεων</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="581"/>
-        <location filename="../IOViewer.cpp" line="626"/>
-        <location filename="../IOViewer.cpp" line="671"/>
-        <location filename="../IOViewer.cpp" line="716"/>
-        <source>Destination offset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../IOViewer.cpp" line="582"/>
-        <location filename="../IOViewer.cpp" line="588"/>
         <location filename="../IOViewer.cpp" line="627"/>
-        <location filename="../IOViewer.cpp" line="633"/>
         <location filename="../IOViewer.cpp" line="672"/>
-        <location filename="../IOViewer.cpp" line="678"/>
         <location filename="../IOViewer.cpp" line="717"/>
-        <location filename="../IOViewer.cpp" line="723"/>
-        <source>Increment</source>
+        <source>Destination offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2222,7 +2276,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="679"/>
         <location filename="../IOViewer.cpp" line="718"/>
         <location filename="../IOViewer.cpp" line="724"/>
-        <source>Decrement</source>
+        <source>Increment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2234,56 +2288,59 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="680"/>
         <location filename="../IOViewer.cpp" line="719"/>
         <location filename="../IOViewer.cpp" line="725"/>
-        <source>Fixed</source>
+        <source>Decrement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="585"/>
+        <location filename="../IOViewer.cpp" line="591"/>
         <location filename="../IOViewer.cpp" line="630"/>
+        <location filename="../IOViewer.cpp" line="636"/>
         <location filename="../IOViewer.cpp" line="675"/>
+        <location filename="../IOViewer.cpp" line="681"/>
         <location filename="../IOViewer.cpp" line="720"/>
+        <location filename="../IOViewer.cpp" line="726"/>
+        <source>Fixed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="586"/>
+        <location filename="../IOViewer.cpp" line="631"/>
+        <location filename="../IOViewer.cpp" line="676"/>
+        <location filename="../IOViewer.cpp" line="721"/>
         <source>Increment and reload</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="587"/>
-        <location filename="../IOViewer.cpp" line="632"/>
-        <location filename="../IOViewer.cpp" line="677"/>
-        <location filename="../IOViewer.cpp" line="722"/>
+        <location filename="../IOViewer.cpp" line="588"/>
+        <location filename="../IOViewer.cpp" line="633"/>
+        <location filename="../IOViewer.cpp" line="678"/>
+        <location filename="../IOViewer.cpp" line="723"/>
         <source>Source offset</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="593"/>
-        <location filename="../IOViewer.cpp" line="638"/>
-        <location filename="../IOViewer.cpp" line="683"/>
-        <location filename="../IOViewer.cpp" line="729"/>
-        <source>Repeat</source>
-        <translation>Επανάληψη</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="594"/>
         <location filename="../IOViewer.cpp" line="639"/>
         <location filename="../IOViewer.cpp" line="684"/>
         <location filename="../IOViewer.cpp" line="730"/>
-        <source>32-bit</source>
-        <translation>32-bit</translation>
+        <source>Repeat</source>
+        <translation>Επανάληψη</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="595"/>
         <location filename="../IOViewer.cpp" line="640"/>
         <location filename="../IOViewer.cpp" line="685"/>
         <location filename="../IOViewer.cpp" line="731"/>
-        <source>Start timing</source>
-        <translation type="unfinished"></translation>
+        <source>32-bit</source>
+        <translation>32-bit</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="596"/>
         <location filename="../IOViewer.cpp" line="641"/>
         <location filename="../IOViewer.cpp" line="686"/>
         <location filename="../IOViewer.cpp" line="732"/>
-        <location filename="../IOViewer.cpp" line="1442"/>
-        <source>Immediate</source>
+        <source>Start timing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2291,12 +2348,9 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="642"/>
         <location filename="../IOViewer.cpp" line="687"/>
         <location filename="../IOViewer.cpp" line="733"/>
-        <location filename="../IOViewer.cpp" line="944"/>
-        <location filename="../IOViewer.cpp" line="961"/>
-        <location filename="../IOViewer.cpp" line="1091"/>
-        <location filename="../IOViewer.cpp" line="1552"/>
-        <source>VBlank</source>
-        <translation>VBlank</translation>
+        <location filename="../IOViewer.cpp" line="1443"/>
+        <source>Immediate</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="598"/>
@@ -2305,22 +2359,21 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="734"/>
         <location filename="../IOViewer.cpp" line="945"/>
         <location filename="../IOViewer.cpp" line="962"/>
-        <location filename="../IOViewer.cpp" line="1443"/>
-        <source>HBlank</source>
-        <translation>HBlank</translation>
+        <location filename="../IOViewer.cpp" line="1092"/>
+        <location filename="../IOViewer.cpp" line="1553"/>
+        <source>VBlank</source>
+        <translation>VBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="601"/>
-        <location filename="../IOViewer.cpp" line="646"/>
-        <location filename="../IOViewer.cpp" line="691"/>
-        <location filename="../IOViewer.cpp" line="737"/>
-        <location filename="../IOViewer.cpp" line="784"/>
-        <location filename="../IOViewer.cpp" line="800"/>
-        <location filename="../IOViewer.cpp" line="816"/>
-        <location filename="../IOViewer.cpp" line="832"/>
-        <location filename="../IOViewer.cpp" line="892"/>
-        <source>IRQ</source>
-        <translation>IRQ</translation>
+        <location filename="../IOViewer.cpp" line="599"/>
+        <location filename="../IOViewer.cpp" line="644"/>
+        <location filename="../IOViewer.cpp" line="689"/>
+        <location filename="../IOViewer.cpp" line="735"/>
+        <location filename="../IOViewer.cpp" line="946"/>
+        <location filename="../IOViewer.cpp" line="963"/>
+        <location filename="../IOViewer.cpp" line="1444"/>
+        <source>HBlank</source>
+        <translation>HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="602"/>
@@ -2331,57 +2384,61 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="801"/>
         <location filename="../IOViewer.cpp" line="817"/>
         <location filename="../IOViewer.cpp" line="833"/>
-        <location filename="../IOViewer.cpp" line="1073"/>
-        <location filename="../IOViewer.cpp" line="1450"/>
-        <location filename="../IOViewer.cpp" line="1454"/>
+        <location filename="../IOViewer.cpp" line="893"/>
+        <source>IRQ</source>
+        <translation>IRQ</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="603"/>
+        <location filename="../IOViewer.cpp" line="648"/>
+        <location filename="../IOViewer.cpp" line="693"/>
+        <location filename="../IOViewer.cpp" line="739"/>
+        <location filename="../IOViewer.cpp" line="786"/>
+        <location filename="../IOViewer.cpp" line="802"/>
+        <location filename="../IOViewer.cpp" line="818"/>
+        <location filename="../IOViewer.cpp" line="834"/>
+        <location filename="../IOViewer.cpp" line="1074"/>
+        <location filename="../IOViewer.cpp" line="1451"/>
+        <location filename="../IOViewer.cpp" line="1455"/>
         <source>Enable</source>
         <translation>Ενεργοποίηση</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="644"/>
-        <location filename="../IOViewer.cpp" line="689"/>
-        <location filename="../IOViewer.cpp" line="735"/>
+        <location filename="../IOViewer.cpp" line="645"/>
+        <location filename="../IOViewer.cpp" line="690"/>
+        <location filename="../IOViewer.cpp" line="736"/>
         <source>Audio FIFO</source>
         <translation>FIFO ήχου</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="726"/>
+        <location filename="../IOViewer.cpp" line="727"/>
         <source>Video Capture</source>
         <translation>Καταγραφή βίντεο</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="728"/>
+        <location filename="../IOViewer.cpp" line="729"/>
         <source>DRQ</source>
         <translation>DRQ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="774"/>
-        <location filename="../IOViewer.cpp" line="789"/>
-        <location filename="../IOViewer.cpp" line="805"/>
-        <location filename="../IOViewer.cpp" line="821"/>
-        <location filename="../IOViewer.cpp" line="1043"/>
-        <location filename="../IOViewer.cpp" line="1055"/>
-        <location filename="../IOViewer.cpp" line="1059"/>
-        <location filename="../IOViewer.cpp" line="1063"/>
+        <location filename="../IOViewer.cpp" line="775"/>
+        <location filename="../IOViewer.cpp" line="790"/>
+        <location filename="../IOViewer.cpp" line="806"/>
+        <location filename="../IOViewer.cpp" line="822"/>
+        <location filename="../IOViewer.cpp" line="1044"/>
+        <location filename="../IOViewer.cpp" line="1056"/>
+        <location filename="../IOViewer.cpp" line="1060"/>
+        <location filename="../IOViewer.cpp" line="1064"/>
         <source>Value</source>
         <translation>Τιμή</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="778"/>
-        <location filename="../IOViewer.cpp" line="793"/>
-        <location filename="../IOViewer.cpp" line="809"/>
-        <location filename="../IOViewer.cpp" line="825"/>
+        <location filename="../IOViewer.cpp" line="779"/>
+        <location filename="../IOViewer.cpp" line="794"/>
+        <location filename="../IOViewer.cpp" line="810"/>
+        <location filename="../IOViewer.cpp" line="826"/>
         <source>Scale</source>
         <translation>Κλίμακα</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="780"/>
-        <location filename="../IOViewer.cpp" line="795"/>
-        <location filename="../IOViewer.cpp" line="811"/>
-        <location filename="../IOViewer.cpp" line="827"/>
-        <location filename="../IOViewer.cpp" line="1070"/>
-        <source>1/64</source>
-        <translation>1/64</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="781"/>
@@ -2389,618 +2446,627 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="812"/>
         <location filename="../IOViewer.cpp" line="828"/>
         <location filename="../IOViewer.cpp" line="1071"/>
-        <source>1/256</source>
-        <translation>1/256</translation>
+        <source>1/64</source>
+        <translation>1/64</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="782"/>
         <location filename="../IOViewer.cpp" line="797"/>
         <location filename="../IOViewer.cpp" line="813"/>
         <location filename="../IOViewer.cpp" line="829"/>
-        <location filename="../IOViewer.cpp" line="1068"/>
+        <location filename="../IOViewer.cpp" line="1072"/>
+        <source>1/256</source>
+        <translation>1/256</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="783"/>
+        <location filename="../IOViewer.cpp" line="798"/>
+        <location filename="../IOViewer.cpp" line="814"/>
+        <location filename="../IOViewer.cpp" line="830"/>
+        <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/1024</source>
         <translation>1/1024</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="799"/>
-        <location filename="../IOViewer.cpp" line="815"/>
-        <location filename="../IOViewer.cpp" line="831"/>
+        <location filename="../IOViewer.cpp" line="800"/>
+        <location filename="../IOViewer.cpp" line="816"/>
+        <location filename="../IOViewer.cpp" line="832"/>
         <source>Cascade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="869"/>
-        <location filename="../IOViewer.cpp" line="882"/>
+        <location filename="../IOViewer.cpp" line="870"/>
+        <location filename="../IOViewer.cpp" line="883"/>
         <source>A</source>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="871"/>
-        <location filename="../IOViewer.cpp" line="884"/>
+        <location filename="../IOViewer.cpp" line="872"/>
+        <location filename="../IOViewer.cpp" line="885"/>
         <source>Select</source>
         <translation>Select</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="872"/>
-        <location filename="../IOViewer.cpp" line="885"/>
+        <location filename="../IOViewer.cpp" line="873"/>
+        <location filename="../IOViewer.cpp" line="886"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="873"/>
-        <location filename="../IOViewer.cpp" line="886"/>
+        <location filename="../IOViewer.cpp" line="874"/>
+        <location filename="../IOViewer.cpp" line="887"/>
         <source>Right</source>
         <translation>Δεξί</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="874"/>
-        <location filename="../IOViewer.cpp" line="887"/>
+        <location filename="../IOViewer.cpp" line="875"/>
+        <location filename="../IOViewer.cpp" line="888"/>
         <source>Left</source>
         <translation>Αριστερό</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="875"/>
-        <location filename="../IOViewer.cpp" line="888"/>
+        <location filename="../IOViewer.cpp" line="876"/>
+        <location filename="../IOViewer.cpp" line="889"/>
         <source>Up</source>
         <translation>Πάνω</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="876"/>
-        <location filename="../IOViewer.cpp" line="889"/>
+        <location filename="../IOViewer.cpp" line="877"/>
+        <location filename="../IOViewer.cpp" line="890"/>
         <source>Down</source>
         <translation>Κάτω</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="877"/>
-        <location filename="../IOViewer.cpp" line="890"/>
+        <location filename="../IOViewer.cpp" line="878"/>
+        <location filename="../IOViewer.cpp" line="891"/>
         <source>R</source>
         <translation>R</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="878"/>
-        <location filename="../IOViewer.cpp" line="891"/>
+        <location filename="../IOViewer.cpp" line="879"/>
+        <location filename="../IOViewer.cpp" line="892"/>
         <source>L</source>
         <translation>L</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="893"/>
+        <location filename="../IOViewer.cpp" line="894"/>
         <source>Condition</source>
         <translation>Συνθήκη</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="897"/>
+        <location filename="../IOViewer.cpp" line="898"/>
         <source>SC</source>
         <translation>SC</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="898"/>
+        <location filename="../IOViewer.cpp" line="899"/>
         <source>SD</source>
         <translation>SD</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="899"/>
+        <location filename="../IOViewer.cpp" line="900"/>
         <source>SI</source>
         <translation>SI</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="900"/>
+        <location filename="../IOViewer.cpp" line="901"/>
         <source>SO</source>
         <translation>SO</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="946"/>
-        <location filename="../IOViewer.cpp" line="963"/>
+        <location filename="../IOViewer.cpp" line="947"/>
+        <location filename="../IOViewer.cpp" line="964"/>
         <source>VCounter</source>
         <translation>VCounter</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="947"/>
-        <location filename="../IOViewer.cpp" line="964"/>
-        <source>Timer 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../IOViewer.cpp" line="948"/>
         <location filename="../IOViewer.cpp" line="965"/>
-        <source>Timer 1</source>
+        <source>Timer 0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="949"/>
         <location filename="../IOViewer.cpp" line="966"/>
-        <source>Timer 2</source>
+        <source>Timer 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="950"/>
         <location filename="../IOViewer.cpp" line="967"/>
-        <source>Timer 3</source>
+        <source>Timer 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="951"/>
         <location filename="../IOViewer.cpp" line="968"/>
-        <source>SIO</source>
-        <translation>SIO</translation>
+        <source>Timer 3</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="952"/>
         <location filename="../IOViewer.cpp" line="969"/>
-        <source>DMA 0</source>
-        <translation>DMA 0</translation>
+        <source>SIO</source>
+        <translation>SIO</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="953"/>
         <location filename="../IOViewer.cpp" line="970"/>
-        <source>DMA 1</source>
-        <translation>DMA 1</translation>
+        <source>DMA 0</source>
+        <translation>DMA 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="954"/>
         <location filename="../IOViewer.cpp" line="971"/>
-        <source>DMA 2</source>
-        <translation>DMA 2</translation>
+        <source>DMA 1</source>
+        <translation>DMA 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="955"/>
         <location filename="../IOViewer.cpp" line="972"/>
-        <source>DMA 3</source>
-        <translation>DMA 3</translation>
+        <source>DMA 2</source>
+        <translation>DMA 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="956"/>
         <location filename="../IOViewer.cpp" line="973"/>
-        <source>Keypad</source>
-        <translation type="unfinished"></translation>
+        <source>DMA 3</source>
+        <translation>DMA 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="957"/>
         <location filename="../IOViewer.cpp" line="974"/>
+        <source>Keypad</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="958"/>
+        <location filename="../IOViewer.cpp" line="975"/>
         <source>Gamepak</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="978"/>
+        <location filename="../IOViewer.cpp" line="979"/>
         <source>SRAM wait</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="979"/>
-        <location filename="../IOViewer.cpp" line="985"/>
-        <location filename="../IOViewer.cpp" line="995"/>
-        <location filename="../IOViewer.cpp" line="1001"/>
-        <location filename="../IOViewer.cpp" line="1005"/>
-        <source>4</source>
-        <translation>4</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="980"/>
         <location filename="../IOViewer.cpp" line="986"/>
         <location filename="../IOViewer.cpp" line="996"/>
+        <location filename="../IOViewer.cpp" line="1002"/>
         <location filename="../IOViewer.cpp" line="1006"/>
-        <source>3</source>
-        <translation>3</translation>
+        <source>4</source>
+        <translation>4</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="981"/>
         <location filename="../IOViewer.cpp" line="987"/>
-        <location filename="../IOViewer.cpp" line="991"/>
         <location filename="../IOViewer.cpp" line="997"/>
         <location filename="../IOViewer.cpp" line="1007"/>
-        <source>2</source>
-        <translation>2</translation>
+        <source>3</source>
+        <translation>3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="982"/>
         <location filename="../IOViewer.cpp" line="988"/>
+        <location filename="../IOViewer.cpp" line="992"/>
         <location filename="../IOViewer.cpp" line="998"/>
         <location filename="../IOViewer.cpp" line="1008"/>
-        <location filename="../IOViewer.cpp" line="1011"/>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="983"/>
+        <location filename="../IOViewer.cpp" line="989"/>
+        <location filename="../IOViewer.cpp" line="999"/>
+        <location filename="../IOViewer.cpp" line="1009"/>
+        <location filename="../IOViewer.cpp" line="1012"/>
         <source>8</source>
         <translation>8</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="984"/>
+        <location filename="../IOViewer.cpp" line="985"/>
         <source>Cart 0 non-sequential</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="990"/>
+        <location filename="../IOViewer.cpp" line="991"/>
         <source>Cart 0 sequential</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="994"/>
+        <location filename="../IOViewer.cpp" line="995"/>
         <source>Cart 1 non-sequential</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1000"/>
+        <location filename="../IOViewer.cpp" line="1001"/>
         <source>Cart 1 sequential</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1004"/>
+        <location filename="../IOViewer.cpp" line="1005"/>
         <source>Cart 2 non-sequential</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1010"/>
+        <location filename="../IOViewer.cpp" line="1011"/>
         <source>Cart 2 sequential</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1014"/>
+        <location filename="../IOViewer.cpp" line="1015"/>
         <source>PHI terminal</source>
         <translation>Τερματικό PHI</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1015"/>
-        <location filename="../IOViewer.cpp" line="1451"/>
+        <location filename="../IOViewer.cpp" line="1016"/>
+        <location filename="../IOViewer.cpp" line="1452"/>
         <source>Disable</source>
         <translation>Απενεργοποίηση</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1016"/>
+        <location filename="../IOViewer.cpp" line="1017"/>
         <source>4.19MHz</source>
         <translation>4.19MHz</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1017"/>
+        <location filename="../IOViewer.cpp" line="1018"/>
         <source>8.38MHz</source>
         <translation>8.38MHz</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1018"/>
+        <location filename="../IOViewer.cpp" line="1019"/>
         <source>16.78MHz</source>
         <translation>16.78MHz</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1020"/>
+        <location filename="../IOViewer.cpp" line="1021"/>
         <source>Gamepak prefetch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1026"/>
+        <location filename="../IOViewer.cpp" line="1027"/>
         <source>Enable IRQs</source>
         <translation>Ενεργοποίηση IRQ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1034"/>
+        <location filename="../IOViewer.cpp" line="1035"/>
         <source>Right/A</source>
         <translation>Δεξί/A</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1035"/>
+        <location filename="../IOViewer.cpp" line="1036"/>
         <source>Left/B</source>
         <translation>Αριστερό/B</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1036"/>
+        <location filename="../IOViewer.cpp" line="1037"/>
         <source>Up/Select</source>
         <translation>Πάνω/Select</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1037"/>
+        <location filename="../IOViewer.cpp" line="1038"/>
         <source>Down/Start</source>
         <translation>Κάτω/Start</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1038"/>
+        <location filename="../IOViewer.cpp" line="1039"/>
         <source>Active D-pad</source>
         <translation>Ενεργό D-pad</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1039"/>
+        <location filename="../IOViewer.cpp" line="1040"/>
         <source>Active face buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1047"/>
+        <location filename="../IOViewer.cpp" line="1048"/>
         <source>Internal clock</source>
         <translation>Εσωτερικό ρολόι</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1048"/>
+        <location filename="../IOViewer.cpp" line="1049"/>
         <source>32× clocking (CGB only)</source>
         <translation>Χρονισμός 32× (μόνο CGB)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1049"/>
+        <location filename="../IOViewer.cpp" line="1050"/>
         <source>Transfer active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1067"/>
+        <location filename="../IOViewer.cpp" line="1068"/>
         <source>Divider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1069"/>
+        <location filename="../IOViewer.cpp" line="1070"/>
         <source>1/16</source>
         <translation>1/16</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1092"/>
-        <location filename="../IOViewer.cpp" line="1553"/>
+        <location filename="../IOViewer.cpp" line="1093"/>
+        <location filename="../IOViewer.cpp" line="1554"/>
         <source>LCD STAT</source>
         <translation>LCD STAT</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1093"/>
-        <location filename="../IOViewer.cpp" line="1554"/>
-        <source>Timer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../IOViewer.cpp" line="1094"/>
         <location filename="../IOViewer.cpp" line="1555"/>
-        <source>Serial</source>
+        <source>Timer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1095"/>
         <location filename="../IOViewer.cpp" line="1556"/>
+        <source>Serial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1096"/>
+        <location filename="../IOViewer.cpp" line="1557"/>
         <source>Joypad</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1202"/>
+        <location filename="../IOViewer.cpp" line="1203"/>
         <source>Volume right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1203"/>
+        <location filename="../IOViewer.cpp" line="1204"/>
         <source>Output right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1204"/>
+        <location filename="../IOViewer.cpp" line="1205"/>
         <source>Volume left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1205"/>
+        <location filename="../IOViewer.cpp" line="1206"/>
         <source>Output left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1326"/>
+        <location filename="../IOViewer.cpp" line="1327"/>
         <source>Background enable/priority</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1327"/>
+        <location filename="../IOViewer.cpp" line="1328"/>
         <source>Enable sprites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1328"/>
+        <location filename="../IOViewer.cpp" line="1329"/>
         <source>Double-height sprites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1329"/>
+        <location filename="../IOViewer.cpp" line="1330"/>
         <source>Background tile map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1330"/>
-        <location filename="../IOViewer.cpp" line="1339"/>
+        <location filename="../IOViewer.cpp" line="1331"/>
+        <location filename="../IOViewer.cpp" line="1340"/>
         <source>0x9800 – 0x9BFF</source>
         <translation>0x9800 – 0x9BFF</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1331"/>
-        <location filename="../IOViewer.cpp" line="1340"/>
+        <location filename="../IOViewer.cpp" line="1332"/>
+        <location filename="../IOViewer.cpp" line="1341"/>
         <source>0x9C00 – 0x9FFF</source>
         <translation>0x9C00 – 0x9FFF</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1333"/>
+        <location filename="../IOViewer.cpp" line="1334"/>
         <source>Background tile data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1334"/>
+        <location filename="../IOViewer.cpp" line="1335"/>
         <source>0x8800 – 0x87FF</source>
         <translation>0x8800 – 0x87FF</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1335"/>
+        <location filename="../IOViewer.cpp" line="1336"/>
         <source>0x8000 – 0x8FFF</source>
         <translation>0x8000 – 0x8FFF</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1337"/>
+        <location filename="../IOViewer.cpp" line="1338"/>
         <source>Enable window</source>
         <translation>Ενεργοποίηση παραθύρου</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1338"/>
+        <location filename="../IOViewer.cpp" line="1339"/>
         <source>Window tile map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1342"/>
+        <location filename="../IOViewer.cpp" line="1343"/>
         <source>Enable LCD</source>
         <translation>Ενεργοποίηση LCD</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1346"/>
+        <location filename="../IOViewer.cpp" line="1347"/>
         <source>Mode</source>
         <translation>Λειτουργία</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1347"/>
+        <location filename="../IOViewer.cpp" line="1348"/>
         <source>0: HBlank</source>
         <translation>0: HBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1348"/>
+        <location filename="../IOViewer.cpp" line="1349"/>
         <source>1: VBlank</source>
         <translation>1: VBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1349"/>
+        <location filename="../IOViewer.cpp" line="1350"/>
         <source>2: OAM scan</source>
         <translation>2: Σάρωση OAM</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1350"/>
+        <location filename="../IOViewer.cpp" line="1351"/>
         <source>3: HDraw</source>
         <translation>3: HDraw</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1352"/>
+        <location filename="../IOViewer.cpp" line="1353"/>
         <source>In LYC</source>
         <translation>Σε LYC</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1353"/>
+        <location filename="../IOViewer.cpp" line="1354"/>
         <source>Enable HBlank (mode 0) IRQ</source>
         <translation>Ενεργοποίηση IRQ HBlank (λειτουργία 0)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1354"/>
+        <location filename="../IOViewer.cpp" line="1355"/>
         <source>Enable VBlank (mode 1) IRQ</source>
         <translation>Ενεργοποίηση IRQ VBlank (λειτουργία 1)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1355"/>
+        <location filename="../IOViewer.cpp" line="1356"/>
         <source>Enable OAM (mode 2) IRQ</source>
         <translation>Ενεργοποίηση IRQ OAM (λειτουργία 2)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1356"/>
+        <location filename="../IOViewer.cpp" line="1357"/>
         <source>Enable LYC IRQ</source>
         <translation>Ενεργοποίηση IRQ LYC</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1368"/>
+        <location filename="../IOViewer.cpp" line="1369"/>
         <source>Current Y coordinate</source>
         <translation>Τρέχουσα συντεταγμένη Y</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1372"/>
+        <location filename="../IOViewer.cpp" line="1373"/>
         <source>Comparison Y coordinate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1376"/>
+        <location filename="../IOViewer.cpp" line="1377"/>
         <source>Start upper byte</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="1380"/>
-        <location filename="../IOViewer.cpp" line="1387"/>
-        <location filename="../IOViewer.cpp" line="1394"/>
-        <source>Color 0 shade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1381"/>
         <location filename="../IOViewer.cpp" line="1388"/>
         <location filename="../IOViewer.cpp" line="1395"/>
-        <source>Color 1 shade</source>
+        <source>Color 0 shade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1382"/>
         <location filename="../IOViewer.cpp" line="1389"/>
         <location filename="../IOViewer.cpp" line="1396"/>
-        <source>Color 2 shade</source>
+        <source>Color 1 shade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1383"/>
         <location filename="../IOViewer.cpp" line="1390"/>
         <location filename="../IOViewer.cpp" line="1397"/>
+        <source>Color 2 shade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1384"/>
+        <location filename="../IOViewer.cpp" line="1391"/>
+        <location filename="../IOViewer.cpp" line="1398"/>
         <source>Color 3 shade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1411"/>
+        <location filename="../IOViewer.cpp" line="1412"/>
         <source>Prepare to switch speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1412"/>
+        <location filename="../IOViewer.cpp" line="1413"/>
         <source>Double speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1418"/>
+        <location filename="../IOViewer.cpp" line="1419"/>
         <source>VRAM bank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1440"/>
+        <location filename="../IOViewer.cpp" line="1441"/>
         <source>Length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1441"/>
+        <location filename="../IOViewer.cpp" line="1442"/>
         <source>Timing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1448"/>
+        <location filename="../IOViewer.cpp" line="1449"/>
         <source>Write bit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1449"/>
+        <location filename="../IOViewer.cpp" line="1450"/>
         <source>Read bit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1452"/>
         <location filename="../IOViewer.cpp" line="1453"/>
+        <location filename="../IOViewer.cpp" line="1454"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="1493"/>
-        <location filename="../IOViewer.cpp" line="1505"/>
-        <source>Current index</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Άγνωστο</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1494"/>
         <location filename="../IOViewer.cpp" line="1506"/>
+        <source>Current index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1495"/>
+        <location filename="../IOViewer.cpp" line="1507"/>
         <source>Auto-increment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1498"/>
-        <location filename="../IOViewer.cpp" line="1510"/>
+        <location filename="../IOViewer.cpp" line="1499"/>
+        <location filename="../IOViewer.cpp" line="1511"/>
         <source>Red</source>
         <translation>Κόκκινο</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1501"/>
-        <location filename="../IOViewer.cpp" line="1513"/>
+        <location filename="../IOViewer.cpp" line="1502"/>
+        <location filename="../IOViewer.cpp" line="1514"/>
         <source>Blue</source>
         <translation>Μπλε</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1517"/>
+        <location filename="../IOViewer.cpp" line="1518"/>
         <source>Sprite ordering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1518"/>
+        <location filename="../IOViewer.cpp" line="1519"/>
         <source>OAM order</source>
         <translation>Σειρά OAM</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1519"/>
+        <location filename="../IOViewer.cpp" line="1520"/>
         <source>x coordinate sorting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1530"/>
+        <location filename="../IOViewer.cpp" line="1531"/>
         <source>WRAM bank</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3022,8 +3088,8 @@ Download size: %3</source>
 <context>
     <name>QGBA::KeyEditor</name>
     <message>
-        <location filename="../KeyEditor.cpp" line="45"/>
-        <location filename="../KeyEditor.cpp" line="206"/>
+        <location filename="../KeyEditor.cpp" line="46"/>
+        <location filename="../KeyEditor.cpp" line="207"/>
         <source>---</source>
         <translation>---</translation>
     </message>
@@ -3100,27 +3166,27 @@ Download size: %3</source>
         <translation>Ακύρωση</translation>
     </message>
     <message>
-        <location filename="../LoadSaveState.cpp" line="75"/>
+        <location filename="../LoadSaveState.cpp" line="76"/>
         <source>Load State</source>
         <translation>Φόρτωση κατάστασης</translation>
     </message>
     <message>
-        <location filename="../LoadSaveState.cpp" line="75"/>
+        <location filename="../LoadSaveState.cpp" line="76"/>
         <source>Save State</source>
         <translation>Αποθήκευση κατάστασης</translation>
     </message>
     <message>
-        <location filename="../LoadSaveState.cpp" line="184"/>
+        <location filename="../LoadSaveState.cpp" line="185"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LoadSaveState.cpp" line="193"/>
+        <location filename="../LoadSaveState.cpp" line="194"/>
         <source>Corrupted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LoadSaveState.cpp" line="228"/>
+        <location filename="../LoadSaveState.cpp" line="229"/>
         <source>Slot %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3128,43 +3194,43 @@ Download size: %3</source>
 <context>
     <name>QGBA::LogConfigModel</name>
     <message>
-        <location filename="../LogConfigModel.cpp" line="90"/>
-        <location filename="../LogConfigModel.cpp" line="111"/>
+        <location filename="../LogConfigModel.cpp" line="91"/>
+        <location filename="../LogConfigModel.cpp" line="112"/>
         <source>Default</source>
         <translation>Προεπιλογή</translation>
     </message>
     <message>
-        <location filename="../LogConfigModel.cpp" line="92"/>
+        <location filename="../LogConfigModel.cpp" line="93"/>
         <source>Fatal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogConfigModel.cpp" line="94"/>
+        <location filename="../LogConfigModel.cpp" line="95"/>
         <source>Error</source>
         <translation>Σφάλμα</translation>
     </message>
     <message>
-        <location filename="../LogConfigModel.cpp" line="96"/>
+        <location filename="../LogConfigModel.cpp" line="97"/>
         <source>Warning</source>
         <translation>Προειδοποίηση</translation>
     </message>
     <message>
-        <location filename="../LogConfigModel.cpp" line="98"/>
+        <location filename="../LogConfigModel.cpp" line="99"/>
         <source>Info</source>
         <translation>Πληροφορίες</translation>
     </message>
     <message>
-        <location filename="../LogConfigModel.cpp" line="100"/>
+        <location filename="../LogConfigModel.cpp" line="101"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Εντοπισμός σφαλμάτων</translation>
     </message>
     <message>
-        <location filename="../LogConfigModel.cpp" line="102"/>
+        <location filename="../LogConfigModel.cpp" line="103"/>
         <source>Stub</source>
         <translation>Stub</translation>
     </message>
     <message>
-        <location filename="../LogConfigModel.cpp" line="104"/>
+        <location filename="../LogConfigModel.cpp" line="105"/>
         <source>Game Error</source>
         <translation>Σφάλμα παιχνιδιού</translation>
     </message>
@@ -3172,47 +3238,47 @@ Download size: %3</source>
 <context>
     <name>QGBA::LogController</name>
     <message>
-        <location filename="../LogController.cpp" line="96"/>
+        <location filename="../LogController.cpp" line="110"/>
         <source>[%1] %2: %3</source>
         <translation>[%1] %2: %3</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="107"/>
+        <location filename="../LogController.cpp" line="121"/>
         <source>An error occurred</source>
         <translation>Προέκυψε σφάλμα</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="179"/>
+        <location filename="../LogController.cpp" line="197"/>
         <source>DEBUG</source>
         <translation>ΕΝΤΟΠΙΣΜΟΣ ΣΦΑΛΜΑΤΩΝ</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="181"/>
+        <location filename="../LogController.cpp" line="199"/>
         <source>STUB</source>
         <translation>STUB</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="183"/>
+        <location filename="../LogController.cpp" line="201"/>
         <source>INFO</source>
         <translation>ΠΛΗΡΟΦΟΡΙΕΣ</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="185"/>
+        <location filename="../LogController.cpp" line="203"/>
         <source>WARN</source>
         <translation>ΠΡΟΕΙΔΟΠΟΙΗΣΗ</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="187"/>
+        <location filename="../LogController.cpp" line="205"/>
         <source>ERROR</source>
         <translation>ΣΦΑΛΜΑ</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="189"/>
+        <location filename="../LogController.cpp" line="207"/>
         <source>FATAL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="191"/>
+        <location filename="../LogController.cpp" line="209"/>
         <source>GAME ERROR</source>
         <translation>ΣΦΑΛΜΑ ΠΑΙΧΝΙΔΙΟΥ</translation>
     </message>
@@ -3303,82 +3369,82 @@ Download size: %3</source>
         <translation>Αντιγραφή</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="48"/>
+        <location filename="../MapView.cpp" line="49"/>
         <source>Priority</source>
         <translation>Προτεραιότητα</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="49"/>
-        <location filename="../MapView.cpp" line="62"/>
+        <location filename="../MapView.cpp" line="50"/>
+        <location filename="../MapView.cpp" line="63"/>
         <source>Map base</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="50"/>
-        <location filename="../MapView.cpp" line="63"/>
+        <location filename="../MapView.cpp" line="51"/>
+        <location filename="../MapView.cpp" line="64"/>
         <source>Tile base</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="51"/>
+        <location filename="../MapView.cpp" line="52"/>
         <source>Size</source>
         <translation>Μέγεθος</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="52"/>
-        <location filename="../MapView.cpp" line="64"/>
+        <location filename="../MapView.cpp" line="53"/>
+        <location filename="../MapView.cpp" line="65"/>
         <source>Offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="53"/>
+        <location filename="../MapView.cpp" line="54"/>
         <source>Xform</source>
         <translation>Xform</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="108"/>
+        <location filename="../MapView.cpp" line="109"/>
         <source>Map Addr.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="109"/>
+        <location filename="../MapView.cpp" line="110"/>
         <source>Mirror</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="146"/>
+        <location filename="../MapView.cpp" line="147"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="148"/>
+        <location filename="../MapView.cpp" line="149"/>
         <source>Both</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="150"/>
+        <location filename="../MapView.cpp" line="151"/>
         <source>Horizontal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="152"/>
+        <location filename="../MapView.cpp" line="153"/>
         <source>Vertical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="183"/>
         <location filename="../MapView.cpp" line="184"/>
-        <location filename="../MapView.cpp" line="239"/>
+        <location filename="../MapView.cpp" line="185"/>
+        <location filename="../MapView.cpp" line="240"/>
         <source>N/A</source>
         <translation>Μ/Δ</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="282"/>
+        <location filename="../MapView.cpp" line="283"/>
         <source>Export map</source>
         <translation>Εξαγωγή χάρτη</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="283"/>
+        <location filename="../MapView.cpp" line="284"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
@@ -3386,8 +3452,8 @@ Download size: %3</source>
 <context>
     <name>QGBA::MemoryAccessLogController</name>
     <message>
-        <location filename="../MemoryAccessLogController.cpp" line="117"/>
-        <location filename="../MemoryAccessLogController.cpp" line="126"/>
+        <location filename="../MemoryAccessLogController.cpp" line="118"/>
+        <location filename="../MemoryAccessLogController.cpp" line="127"/>
         <source>Failed to open memory log file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3395,149 +3461,149 @@ Download size: %3</source>
 <context>
     <name>QGBA::MemoryAccessLogModel</name>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="67"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="68"/>
         <source>Data read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="69"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="70"/>
         <source>Data written</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="71"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="72"/>
         <source>Code executed</source>
         <translation>Ο κωδικός εκτελέστηκε</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="73"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="74"/>
         <source>Code aborted</source>
         <translation>Ο κωδικός απορρίφθηκε</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="75"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="76"/>
         <source>8-bit access</source>
         <translation>Πρόσβαση 8-bit</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="77"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="78"/>
         <source>16-bit access</source>
         <translation>Πρόσβαση 16-bit</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="79"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="80"/>
         <source>32-bit access</source>
         <translation>Πρόσβαση 32-bit</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="81"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="82"/>
         <source>64-bit access</source>
         <translation>Πρόσβαση 64-bit</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="95"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="96"/>
         <source>Accessed by instruction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="97"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="98"/>
         <source>Accessed by DMA</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="99"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="100"/>
         <source>Accessed by BIOS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="101"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="102"/>
         <source>Compressed data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="103"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="104"/>
         <source>Accessed by memory copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="105"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="106"/>
         <source>(Unknown extra bit 5)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="107"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="108"/>
         <source>(Unknown extra bit 6)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="109"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="110"/>
         <source>(Unknown extra bit 7)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="111"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="112"/>
         <source>Invalid instruction</source>
         <translation>Μη έγκυρη οδηγία</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="113"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="114"/>
         <source>Invalid read</source>
         <translation>Μη έγκυρη ανάγνωση</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="115"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="116"/>
         <source>Invalid write</source>
         <translation>Μη έγκυρη εγγραφή</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="117"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="118"/>
         <source>Invalid executable address</source>
         <translation>Μη έγκυρη διεύθυνση εκτελέσιμου</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="119"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="120"/>
         <source>(Private bit 0)</source>
         <translation>(Ιδιωτικό bit 0)</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="121"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="122"/>
         <source>(Private bit 1)</source>
         <translation>(Ιδιωτικό bit 1)</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="125"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="126"/>
         <source>ARM code</source>
         <translation>Κώδικας ARM</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="127"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="128"/>
         <source>Instruction opcode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="129"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="130"/>
         <source>(Private bit 2)</source>
         <translation>(Ιδιωτικό bit 2)</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="134"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="135"/>
         <source>Thumb code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="136"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="137"/>
         <source>Instruction operand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="138"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="139"/>
         <source>(Private bit 3)</source>
         <translation>(Ιδιωτικό bit 3)</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogModel.cpp" line="146"/>
+        <location filename="../MemoryAccessLogModel.cpp" line="147"/>
         <source>(Unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">(Άγνωστο)</translation>
     </message>
 </context>
 <context>
@@ -3595,16 +3661,16 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="104"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Διακοπή</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogView.cpp" line="96"/>
-        <location filename="../MemoryAccessLogView.cpp" line="111"/>
+        <location filename="../MemoryAccessLogView.cpp" line="97"/>
+        <location filename="../MemoryAccessLogView.cpp" line="112"/>
         <source>Select access log file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogView.cpp" line="96"/>
+        <location filename="../MemoryAccessLogView.cpp" line="97"/>
         <source>Memory access logs (*.mal)</source>
         <translation>Αρχεία προσπέλασης μνήμης (*.mal)</translation>
     </message>
@@ -3633,70 +3699,70 @@ Download size: %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryDump.cpp" line="24"/>
+        <location filename="../MemoryDump.cpp" line="25"/>
         <source>Save memory region</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryDump.cpp" line="30"/>
+        <location filename="../MemoryDump.cpp" line="31"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Αποτυχία ανοίγματος αρχείου εξόδου: %1</translation>
     </message>
 </context>
 <context>
     <name>QGBA::MemoryModel</name>
     <message>
-        <location filename="../MemoryModel.cpp" line="45"/>
+        <location filename="../MemoryModel.cpp" line="46"/>
         <source>Copy selection</source>
         <translation>Αντιγραφή επιλογής</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="50"/>
+        <location filename="../MemoryModel.cpp" line="51"/>
         <source>Save selection</source>
         <translation>Αποθήκευση επιλογής</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="55"/>
+        <location filename="../MemoryModel.cpp" line="56"/>
         <source>Paste</source>
         <translation>Επικόλληση</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="60"/>
+        <location filename="../MemoryModel.cpp" line="61"/>
         <source>Load</source>
         <translation>Φόρτωση</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="118"/>
+        <location filename="../MemoryModel.cpp" line="119"/>
         <source>All</source>
         <translation>Όλα</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="168"/>
+        <location filename="../MemoryModel.cpp" line="169"/>
         <source>Load TBL</source>
         <translation>Φόρτωση TBL</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="222"/>
+        <location filename="../MemoryModel.cpp" line="223"/>
         <source>Save selected memory</source>
         <translation>Αποθήκευση επιλεγμένης μνήμης</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="228"/>
+        <location filename="../MemoryModel.cpp" line="229"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Αποτυχία ανοίγματος αρχείου εξόδου: %1</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="236"/>
+        <location filename="../MemoryModel.cpp" line="237"/>
         <source>Load memory</source>
         <translation>Φόρτωση μνήμης</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="242"/>
+        <location filename="../MemoryModel.cpp" line="243"/>
         <source>Failed to open input file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="357"/>
+        <location filename="../MemoryModel.cpp" line="358"/>
         <source>ISO-8859-1</source>
         <translation>ISO-8859-1</translation>
     </message>
@@ -3962,7 +4028,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::MessagePainter</name>
     <message>
-        <location filename="../MessagePainter.cpp" line="81"/>
+        <location filename="../MessagePainter.cpp" line="82"/>
         <source>Frame %1</source>
         <translation>Καρέ %1</translation>
     </message>
@@ -3970,32 +4036,32 @@ Download size: %3</source>
 <context>
     <name>QGBA::MultiplayerController</name>
     <message>
-        <location filename="../MultiplayerController.cpp" line="313"/>
+        <location filename="../MultiplayerController.cpp" line="314"/>
         <source>Couldn&apos;t find available save ID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MultiplayerController.cpp" line="367"/>
+        <location filename="../MultiplayerController.cpp" line="368"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MultiplayerController.cpp" line="407"/>
+        <location filename="../MultiplayerController.cpp" line="408"/>
         <source>Clearing invalid save ID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MultiplayerController.cpp" line="416"/>
+        <location filename="../MultiplayerController.cpp" line="417"/>
         <source>Clearing invalid preferred ID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MultiplayerController.cpp" line="437"/>
+        <location filename="../MultiplayerController.cpp" line="438"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MultiplayerController.cpp" line="451"/>
+        <location filename="../MultiplayerController.cpp" line="452"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4059,7 +4125,7 @@ Download size: %3</source>
     </message>
     <message>
         <location filename="../ObjView.ui" line="430"/>
-        <location filename="../ObjView.cpp" line="181"/>
+        <location filename="../ObjView.cpp" line="182"/>
         <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4104,7 +4170,7 @@ Download size: %3</source>
     </message>
     <message>
         <location filename="../ObjView.ui" line="592"/>
-        <location filename="../ObjView.cpp" line="190"/>
+        <location filename="../ObjView.cpp" line="191"/>
         <source>Normal</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4129,51 +4195,51 @@ Download size: %3</source>
         <translation>Πλακίδιο</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="160"/>
-        <location filename="../ObjView.cpp" line="249"/>
+        <location filename="../ObjView.cpp" line="161"/>
+        <location filename="../ObjView.cpp" line="250"/>
         <source>0x%0</source>
         <translation>0x%0</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="182"/>
         <location filename="../ObjView.cpp" line="183"/>
         <location filename="../ObjView.cpp" line="184"/>
         <location filename="../ObjView.cpp" line="185"/>
-        <location filename="../ObjView.cpp" line="257"/>
+        <location filename="../ObjView.cpp" line="186"/>
         <location filename="../ObjView.cpp" line="258"/>
         <location filename="../ObjView.cpp" line="259"/>
         <location filename="../ObjView.cpp" line="260"/>
+        <location filename="../ObjView.cpp" line="261"/>
         <source>---</source>
         <translation>---</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="193"/>
+        <location filename="../ObjView.cpp" line="194"/>
         <source>Trans</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="196"/>
+        <location filename="../ObjView.cpp" line="197"/>
         <source>OBJWIN</source>
         <translation>OBJWIN</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="199"/>
+        <location filename="../ObjView.cpp" line="200"/>
         <source>Invalid</source>
         <translation>Μη έγκυρο</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="256"/>
-        <location filename="../ObjView.cpp" line="261"/>
+        <location filename="../ObjView.cpp" line="257"/>
+        <location filename="../ObjView.cpp" line="262"/>
         <source>N/A</source>
         <translation>Μ/Δ</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="287"/>
+        <location filename="../ObjView.cpp" line="288"/>
         <source>Export sprite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="288"/>
+        <location filename="../ObjView.cpp" line="289"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
@@ -4314,17 +4380,17 @@ Download size: %3</source>
         <translation>Προεπιλογή παλέτας</translation>
     </message>
     <message>
-        <location filename="../OverrideView.cpp" line="67"/>
+        <location filename="../OverrideView.cpp" line="68"/>
         <source>Official MBCs</source>
         <translation>Επίσημα MBC</translation>
     </message>
     <message>
-        <location filename="../OverrideView.cpp" line="71"/>
+        <location filename="../OverrideView.cpp" line="72"/>
         <source>Licensed MBCs</source>
         <translation>Αδειοδοτημένα MBC</translation>
     </message>
     <message>
-        <location filename="../OverrideView.cpp" line="75"/>
+        <location filename="../OverrideView.cpp" line="76"/>
         <source>Unlicensed MBCs</source>
         <translation>Μη αδειοδοτημένα MBC</translation>
     </message>
@@ -4392,35 +4458,35 @@ Download size: %3</source>
         <translation>Εξαγωγή OBJ</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="118"/>
+        <location filename="../PaletteView.cpp" line="119"/>
         <source>#%0</source>
         <translation>#%0</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="119"/>
+        <location filename="../PaletteView.cpp" line="120"/>
         <source>0x%0</source>
         <translation>0x%0</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="120"/>
         <location filename="../PaletteView.cpp" line="121"/>
         <location filename="../PaletteView.cpp" line="122"/>
         <location filename="../PaletteView.cpp" line="123"/>
+        <location filename="../PaletteView.cpp" line="124"/>
         <source>0x%0 (%1)</source>
         <translation>0x%0 (%1)</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="135"/>
+        <location filename="../PaletteView.cpp" line="136"/>
         <source>Export palette</source>
         <translation>Εξαγωγή παλέτας</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="136"/>
+        <location filename="../PaletteView.cpp" line="137"/>
         <source>Windows PAL (*.pal);;Adobe Color Table (*.act)</source>
         <translation>Windows PAL (*.pal);;Adobe Color Table (*.act)</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="142"/>
+        <location filename="../PaletteView.cpp" line="143"/>
         <source>Failed to open output palette file: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4481,12 +4547,12 @@ Download size: %3</source>
         <translation>Αντιγραφή</translation>
     </message>
     <message>
-        <location filename="../PrinterView.cpp" line="59"/>
+        <location filename="../PrinterView.cpp" line="60"/>
         <source>Save Printout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PrinterView.cpp" line="59"/>
+        <location filename="../PrinterView.cpp" line="60"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
@@ -4494,22 +4560,22 @@ Download size: %3</source>
 <context>
     <name>QGBA::ROMInfo</name>
     <message>
-        <location filename="../ROMInfo.cpp" line="47"/>
-        <location filename="../ROMInfo.cpp" line="61"/>
-        <location filename="../ROMInfo.cpp" line="69"/>
-        <location filename="../ROMInfo.cpp" line="77"/>
-        <location filename="../ROMInfo.cpp" line="88"/>
-        <location filename="../ROMInfo.cpp" line="101"/>
+        <location filename="../ROMInfo.cpp" line="48"/>
+        <location filename="../ROMInfo.cpp" line="62"/>
+        <location filename="../ROMInfo.cpp" line="70"/>
+        <location filename="../ROMInfo.cpp" line="78"/>
+        <location filename="../ROMInfo.cpp" line="89"/>
+        <location filename="../ROMInfo.cpp" line="102"/>
         <source>(unknown)</source>
         <translation>(άγνωστο)</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.cpp" line="56"/>
+        <location filename="../ROMInfo.cpp" line="57"/>
         <source> bytes</source>
         <translation> bytes</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.cpp" line="91"/>
+        <location filename="../ROMInfo.cpp" line="92"/>
         <source>(no database present)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4582,12 +4648,12 @@ Download size: %3</source>
 <context>
     <name>QGBA::ReportView</name>
     <message>
-        <location filename="../ReportView.cpp" line="419"/>
+        <location filename="../ReportView.cpp" line="436"/>
         <source>Bug report archive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ReportView.cpp" line="419"/>
+        <location filename="../ReportView.cpp" line="436"/>
         <source>ZIP archive (*.zip)</source>
         <translation>Συμπιεσμένο αρχείο ZIP (*.zip)</translation>
     </message>
@@ -4630,62 +4696,68 @@ Download size: %3</source>
 <context>
     <name>QGBA::SaveConverter</name>
     <message>
-        <location filename="../SaveConverter.cpp" line="38"/>
+        <location filename="../SaveConverter.cpp" line="39"/>
         <source>Save games and save states (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="39"/>
+        <location filename="../SaveConverter.cpp" line="40"/>
         <source>Select save game or save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="51"/>
+        <location filename="../SaveConverter.cpp" line="52"/>
         <source>Save games (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="52"/>
+        <location filename="../SaveConverter.cpp" line="53"/>
         <source>Select save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="73"/>
+        <location filename="../SaveConverter.cpp" line="74"/>
+        <location filename="../SaveConverter.cpp" line="85"/>
         <source>Conversion failed</source>
         <translation>Η μετατροπή απέτυχε</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="73"/>
+        <location filename="../SaveConverter.cpp" line="74"/>
         <source>Failed to convert the save game. This is probably a bug.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="89"/>
-        <source>No file selected</source>
+        <location filename="../SaveConverter.cpp" line="85"/>
+        <source>Failed to open output file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="96"/>
+        <source>No file selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SaveConverter.cpp" line="103"/>
         <source>Could not open file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="111"/>
+        <location filename="../SaveConverter.cpp" line="118"/>
         <source>No valid formats found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="119"/>
+        <location filename="../SaveConverter.cpp" line="126"/>
         <source>Please select a valid input file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="130"/>
+        <location filename="../SaveConverter.cpp" line="137"/>
         <source>No valid conversions found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="659"/>
+        <location filename="../SaveConverter.cpp" line="666"/>
         <source>Cannot convert save games between platforms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4711,97 +4783,97 @@ Download size: %3</source>
         <translation>Αρχείο εξόδου</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="454"/>
+        <location filename="../SaveConverter.cpp" line="461"/>
         <source>%1 %2 save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="458"/>
+        <location filename="../SaveConverter.cpp" line="465"/>
         <source>little endian</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="461"/>
+        <location filename="../SaveConverter.cpp" line="468"/>
         <source>big endian</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="472"/>
+        <location filename="../SaveConverter.cpp" line="479"/>
         <source>SRAM</source>
         <translation>SRAM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="476"/>
+        <location filename="../SaveConverter.cpp" line="483"/>
         <source>%1 flash</source>
         <translation>%1 flash</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="480"/>
+        <location filename="../SaveConverter.cpp" line="487"/>
         <source>%1 EEPROM</source>
         <translation>%1 EEPROM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="486"/>
+        <location filename="../SaveConverter.cpp" line="493"/>
         <source> + RTC</source>
         <translation> + RTC</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="495"/>
+        <location filename="../SaveConverter.cpp" line="502"/>
         <source>%1 SRAM + RTC</source>
         <translation>%1 SRAM + RTC</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="497"/>
+        <location filename="../SaveConverter.cpp" line="504"/>
         <source>%1 SRAM</source>
         <translation>%1 SRAM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="502"/>
+        <location filename="../SaveConverter.cpp" line="509"/>
         <source>packed MBC2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="504"/>
+        <location filename="../SaveConverter.cpp" line="511"/>
         <source>unpacked MBC2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="509"/>
+        <location filename="../SaveConverter.cpp" line="516"/>
         <source>MBC6 flash</source>
         <translation>MBC6 flash</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="511"/>
+        <location filename="../SaveConverter.cpp" line="518"/>
         <source>MBC6 combined SRAM + flash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="513"/>
+        <location filename="../SaveConverter.cpp" line="520"/>
         <source>MBC6 SRAM</source>
         <translation>MBC6 SRAM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="517"/>
+        <location filename="../SaveConverter.cpp" line="524"/>
         <source>TAMA5</source>
         <translation>TAMA5</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="529"/>
+        <location filename="../SaveConverter.cpp" line="536"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="533"/>
+        <location filename="../SaveConverter.cpp" line="540"/>
         <source>%1 save state with embedded %2 save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="536"/>
+        <location filename="../SaveConverter.cpp" line="543"/>
         <source>%1 SharkPort %2 save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="539"/>
+        <location filename="../SaveConverter.cpp" line="546"/>
         <source>%1 GameShark Advance SP %2 save game</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4809,12 +4881,12 @@ Download size: %3</source>
 <context>
     <name>QGBA::ScriptingController</name>
     <message>
-        <location filename="../scripting/ScriptingController.cpp" line="279"/>
+        <location filename="../scripting/ScriptingController.cpp" line="281"/>
         <source>Lua scripts (*.lua)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingController.cpp" line="281"/>
+        <location filename="../scripting/ScriptingController.cpp" line="283"/>
         <source>All files (*.*)</source>
         <translation>Όλα τα αρχεία (*.*)</translation>
     </message>
@@ -4822,7 +4894,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::ScriptingTextBuffer</name>
     <message>
-        <location filename="../scripting/ScriptingTextBuffer.cpp" line="44"/>
+        <location filename="../scripting/ScriptingTextBuffer.cpp" line="45"/>
         <source>Untitled buffer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4885,7 +4957,7 @@ Download size: %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.cpp" line="66"/>
+        <location filename="../scripting/ScriptingView.cpp" line="67"/>
         <source>Select script to load</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4978,59 +5050,59 @@ Download size: %3</source>
 <context>
     <name>QGBA::SettingsView</name>
     <message>
-        <location filename="../SettingsView.cpp" line="157"/>
-        <location filename="../SettingsView.cpp" line="232"/>
+        <location filename="../SettingsView.cpp" line="158"/>
+        <location filename="../SettingsView.cpp" line="233"/>
         <source>Qt Multimedia</source>
         <translation>Πολυμέσα Qt</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="164"/>
+        <location filename="../SettingsView.cpp" line="165"/>
         <source>SDL</source>
         <translation>SDL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="172"/>
+        <location filename="../SettingsView.cpp" line="173"/>
         <source>Software (Qt)</source>
         <translation>Λογισμικό (Qt)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1315"/>
-        <location filename="../SettingsView.cpp" line="178"/>
+        <location filename="../SettingsView.ui" line="1355"/>
+        <location filename="../SettingsView.cpp" line="179"/>
         <source>OpenGL</source>
         <translation>OpenGL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="185"/>
+        <location filename="../SettingsView.cpp" line="186"/>
         <source>OpenGL (force version 1.x)</source>
         <translation>OpenGL (επιβολή έκδοσης 1.x)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="218"/>
+        <location filename="../SettingsView.cpp" line="219"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="225"/>
+        <location filename="../SettingsView.cpp" line="226"/>
         <source>None (Still Image)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="334"/>
+        <location filename="../SettingsView.cpp" line="335"/>
         <source>Keyboard</source>
         <translation>Πληκτρολόγιο</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="346"/>
+        <location filename="../SettingsView.cpp" line="347"/>
         <source>Controllers</source>
         <translation>Χειριστήρια</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="411"/>
+        <location filename="../SettingsView.cpp" line="412"/>
         <source>Shortcuts</source>
         <translation>Συντομεύσεις</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="414"/>
+        <location filename="../SettingsView.cpp" line="415"/>
         <source>Shaders are not supported when the display driver is not OpenGL.
 
 If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
@@ -5039,55 +5111,55 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 Εάν έχει οριστεί σε OpenGL και εξακολουθείτε να το βλέπετε αυτό, η κάρτα γραφικών ή τα προγράμματα οδήγησής σας ενδέχεται να είναι πολύ παλιά.</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="418"/>
-        <location filename="../SettingsView.cpp" line="432"/>
-        <location filename="../SettingsView.cpp" line="445"/>
-        <location filename="../SettingsView.cpp" line="447"/>
+        <location filename="../SettingsView.cpp" line="419"/>
+        <location filename="../SettingsView.cpp" line="433"/>
+        <location filename="../SettingsView.cpp" line="446"/>
+        <location filename="../SettingsView.cpp" line="448"/>
         <source>Shaders</source>
         <translation>Shader</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="468"/>
+        <location filename="../SettingsView.cpp" line="469"/>
         <source>Select BIOS</source>
         <translation>Επιλογή BIOS</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="475"/>
+        <location filename="../SettingsView.cpp" line="476"/>
         <source>Select directory</source>
         <translation>Επιλογή καταλόγου</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="483"/>
+        <location filename="../SettingsView.cpp" line="484"/>
         <source>Select image</source>
         <translation>Επιλογή εικόνας</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="483"/>
+        <location filename="../SettingsView.cpp" line="484"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
         <translation>Αρχείο εικόνας (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="877"/>
+        <location filename="../SettingsView.cpp" line="878"/>
         <source>(%1×%2)</source>
         <translation>(%1×%2)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="895"/>
+        <location filename="../SettingsView.cpp" line="896"/>
         <source>Never</source>
         <translation>Ποτέ</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="900"/>
+        <location filename="../SettingsView.cpp" line="901"/>
         <source>Just now</source>
         <translation>Μόλις τώρα</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="904"/>
+        <location filename="../SettingsView.cpp" line="905"/>
         <source>Less than an hour ago</source>
         <translation>Πριν από λιγότερο από μία ώρα</translation>
     </message>
     <message numerus="yes">
-        <location filename="../SettingsView.cpp" line="909"/>
+        <location filename="../SettingsView.cpp" line="910"/>
         <source>%n hour(s) ago</source>
         <translation>
             <numerusform>πριν από %n ώρα</numerusform>
@@ -5095,7 +5167,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../SettingsView.cpp" line="913"/>
+        <location filename="../SettingsView.cpp" line="914"/>
         <source>%n day(s) ago</source>
         <translation>
             <numerusform>πριν από %n ημέρα</numerusform>
@@ -5169,667 +5241,707 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     </message>
     <message>
         <location filename="../SettingsView.ui" line="140"/>
-        <location filename="../SettingsView.ui" line="162"/>
+        <location filename="../SettingsView.ui" line="202"/>
         <source>1536</source>
         <translation>1536</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="147"/>
+        <source>32</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="152"/>
+        <source>48</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="157"/>
+        <source>64</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="162"/>
+        <source>96</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="167"/>
+        <source>128</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="172"/>
+        <source>192</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="177"/>
+        <source>256</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="182"/>
+        <source>384</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="187"/>
         <source>512</source>
         <translation>512</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="152"/>
+        <location filename="../SettingsView.ui" line="192"/>
         <source>768</source>
         <translation>768</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="157"/>
+        <location filename="../SettingsView.ui" line="197"/>
         <source>1024</source>
         <translation>1024</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="167"/>
+        <location filename="../SettingsView.ui" line="207"/>
         <source>2048</source>
         <translation>2048</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="172"/>
+        <location filename="../SettingsView.ui" line="212"/>
         <source>3072</source>
         <translation>3072</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="177"/>
+        <location filename="../SettingsView.ui" line="217"/>
         <source>4096</source>
         <translation>4096</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="185"/>
+        <location filename="../SettingsView.ui" line="225"/>
         <source>samples</source>
         <translation>δείγματα</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="194"/>
+        <location filename="../SettingsView.ui" line="234"/>
         <source>Sample rate:</source>
         <translation>Ρυθμός δειγματοληψίας:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="206"/>
-        <location filename="../SettingsView.ui" line="223"/>
+        <location filename="../SettingsView.ui" line="246"/>
+        <location filename="../SettingsView.ui" line="263"/>
         <source>44100</source>
         <translation>44100</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="213"/>
+        <location filename="../SettingsView.ui" line="253"/>
         <source>22050</source>
         <translation>22050</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="218"/>
+        <location filename="../SettingsView.ui" line="258"/>
         <source>32000</source>
         <translation>32000</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="228"/>
+        <location filename="../SettingsView.ui" line="268"/>
         <source>48000</source>
         <translation>48000</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="236"/>
+        <location filename="../SettingsView.ui" line="276"/>
         <source>Hz</source>
         <translation>Hz</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="245"/>
+        <location filename="../SettingsView.ui" line="285"/>
         <source>Volume:</source>
         <translation>Ένταση ήχου:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="276"/>
         <location filename="../SettingsView.ui" line="316"/>
-        <location filename="../SettingsView.ui" line="811"/>
-        <location filename="../SettingsView.ui" line="836"/>
+        <location filename="../SettingsView.ui" line="356"/>
+        <location filename="../SettingsView.ui" line="851"/>
+        <location filename="../SettingsView.ui" line="876"/>
         <source>Mute</source>
         <translation>Σίγαση</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="285"/>
+        <location filename="../SettingsView.ui" line="325"/>
         <source>Fast forward volume:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="325"/>
+        <location filename="../SettingsView.ui" line="365"/>
         <source>Audio in multiplayer:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="332"/>
+        <location filename="../SettingsView.ui" line="372"/>
         <source>All windows</source>
         <translation>Σε όλα τα παράθυρα</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="345"/>
+        <location filename="../SettingsView.ui" line="385"/>
         <source>Player 1 window only</source>
         <translation>Μόνο στο παράθυρο του παίκτη 1</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="355"/>
+        <location filename="../SettingsView.ui" line="395"/>
         <source>Currently active player window</source>
         <translation>Στο παράθυρο του ενεργού παίκτη</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="388"/>
+        <location filename="../SettingsView.ui" line="428"/>
         <source>Display driver:</source>
         <translation>Οδηγός απεικόνισης:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="405"/>
+        <location filename="../SettingsView.ui" line="445"/>
         <source>Frameskip:</source>
         <translation>Παράλειψη καρέ:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="414"/>
+        <location filename="../SettingsView.ui" line="454"/>
         <source>Skip every</source>
         <translation>Παράλειψη κάθε</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="424"/>
-        <location filename="../SettingsView.ui" line="1199"/>
+        <location filename="../SettingsView.ui" line="464"/>
+        <location filename="../SettingsView.ui" line="1239"/>
         <source>frames</source>
         <translation>καρέ</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="475"/>
+        <location filename="../SettingsView.ui" line="515"/>
         <source>FPS target:</source>
         <translation>Στόχος FPS:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="500"/>
+        <location filename="../SettingsView.ui" line="540"/>
         <source>frames per second</source>
         <translation>καρέ ανά δευτερόλεπτο</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="516"/>
+        <location filename="../SettingsView.ui" line="556"/>
         <source>Sync:</source>
         <translation>Συγχρονισμός:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="382"/>
-        <location filename="../SettingsView.ui" line="525"/>
+        <location filename="../SettingsView.ui" line="422"/>
+        <location filename="../SettingsView.ui" line="565"/>
         <source>Video</source>
         <translation>Βίντεο</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="105"/>
-        <location filename="../SettingsView.ui" line="532"/>
+        <location filename="../SettingsView.ui" line="572"/>
         <source>Audio</source>
         <translation>Ήχος</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="433"/>
+        <location filename="../SettingsView.ui" line="473"/>
         <source>Lock aspect ratio</source>
         <translation>Κλείδωμα λόγου διαστάσεων</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="440"/>
+        <location filename="../SettingsView.ui" line="480"/>
         <source>Force integer scaling</source>
         <translation>Επιβολή ακέραιας κλιμάκωσης</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="454"/>
+        <location filename="../SettingsView.ui" line="494"/>
         <source>Bilinear filtering</source>
         <translation>Διγραμμικό φιλτράρισμα</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="757"/>
+        <location filename="../SettingsView.ui" line="797"/>
         <source>Show filename instead of ROM name in library view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="804"/>
-        <location filename="../SettingsView.ui" line="829"/>
+        <location filename="../SettingsView.ui" line="844"/>
+        <location filename="../SettingsView.ui" line="869"/>
         <source>Pause</source>
         <translation>Παύση</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="795"/>
+        <location filename="../SettingsView.ui" line="835"/>
         <source>When inactive:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="548"/>
+        <location filename="../SettingsView.ui" line="588"/>
         <source>On loading a game:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="555"/>
+        <location filename="../SettingsView.ui" line="595"/>
         <source>Load last state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="565"/>
+        <location filename="../SettingsView.ui" line="605"/>
         <source>Load cheats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="599"/>
+        <location filename="../SettingsView.ui" line="639"/>
         <source>Save entered cheats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="820"/>
+        <location filename="../SettingsView.ui" line="860"/>
         <source>When minimized:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="959"/>
+        <location filename="../SettingsView.ui" line="999"/>
         <source>Current channel:</source>
         <translation>Τρέχον κανάλι:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="973"/>
+        <location filename="../SettingsView.ui" line="1013"/>
         <source>Current version:</source>
         <translation>Τρέχουσα έκδοση:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="997"/>
+        <location filename="../SettingsView.ui" line="1037"/>
         <source>Update channel:</source>
         <translation>Κανάλι ενημερώσεων:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1007"/>
+        <location filename="../SettingsView.ui" line="1047"/>
         <source>Available version:</source>
         <translation>Διαθέσιμη έκδοση:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1014"/>
+        <location filename="../SettingsView.ui" line="1054"/>
         <source>(Unknown)</source>
         <translation>(Άγνωστο)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1024"/>
+        <location filename="../SettingsView.ui" line="1064"/>
         <source>Last checked:</source>
         <translation>Τελευταίος έλεγχος:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1045"/>
+        <location filename="../SettingsView.ui" line="1085"/>
         <source>Automatically check on start</source>
         <translation>Αυτόματος έλεγχος κατά την εκκίνηση</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1052"/>
+        <location filename="../SettingsView.ui" line="1092"/>
         <source>Check now</source>
         <translation>Έλεγχος τώρα</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2174"/>
+        <location filename="../SettingsView.ui" line="2214"/>
         <source>Default color palette only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2167"/>
+        <location filename="../SettingsView.ui" line="2207"/>
         <source>SGB color palette if available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2181"/>
+        <location filename="../SettingsView.ui" line="2221"/>
         <source>GBC color palette if available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2188"/>
+        <location filename="../SettingsView.ui" line="2228"/>
         <source>SGB (preferred) or GBC color palette if available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2200"/>
+        <location filename="../SettingsView.ui" line="2240"/>
         <source>Game Boy Camera</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2206"/>
+        <location filename="../SettingsView.ui" line="2246"/>
         <source>Driver:</source>
         <translation>Οδηγός:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2223"/>
+        <location filename="../SettingsView.ui" line="2263"/>
         <source>Source:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="509"/>
+        <location filename="../SettingsView.ui" line="549"/>
         <source>Native (59.7275)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Εγγενής (59.7275)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="447"/>
+        <location filename="../SettingsView.ui" line="487"/>
         <source>Interframe blending</source>
         <translation>Παρεμβολή μεταξύ διαδοχικών καρέ</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="709"/>
+        <location filename="../SettingsView.ui" line="749"/>
         <source>Language</source>
         <translation>Γλώσσα</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="726"/>
+        <location filename="../SettingsView.ui" line="766"/>
         <source>Library:</source>
         <translation>Βιβλιοθήκη:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="734"/>
+        <location filename="../SettingsView.ui" line="774"/>
         <source>List view</source>
         <translation>Προβολή λίστας</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="739"/>
+        <location filename="../SettingsView.ui" line="779"/>
         <source>Tree view</source>
         <translation>Προβολή δέντρου</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="747"/>
+        <location filename="../SettingsView.ui" line="787"/>
         <source>Show when no game open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="764"/>
+        <location filename="../SettingsView.ui" line="804"/>
         <source>Clear cache</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="778"/>
+        <location filename="../SettingsView.ui" line="818"/>
         <source>Allow opposing input directions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="785"/>
+        <location filename="../SettingsView.ui" line="825"/>
         <source>Suspend screensaver</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="852"/>
+        <location filename="../SettingsView.ui" line="892"/>
         <source>Dynamically update window title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="872"/>
+        <location filename="../SettingsView.ui" line="912"/>
         <source>Show filename instead of ROM name in title bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="889"/>
+        <location filename="../SettingsView.ui" line="929"/>
         <source>Show OSD messages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="698"/>
+        <location filename="../SettingsView.ui" line="738"/>
         <source>Enable Discord Rich Presence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="575"/>
+        <location filename="../SettingsView.ui" line="615"/>
         <source>Edit autorun scripts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="589"/>
+        <location filename="../SettingsView.ui" line="629"/>
         <source>Periodically autosave state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="862"/>
+        <location filename="../SettingsView.ui" line="902"/>
         <source>Show FPS in title bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="904"/>
+        <location filename="../SettingsView.ui" line="944"/>
         <source>Show frame count in OSD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="911"/>
+        <location filename="../SettingsView.ui" line="951"/>
         <source>Show emulation info on reset</source>
         <translation>Εμφάνιση πληροφοριών εξομοίωσης κατά την επανεκκίνηση</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="948"/>
+        <location filename="../SettingsView.ui" line="988"/>
         <source>Custom border:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1066"/>
+        <location filename="../SettingsView.ui" line="1106"/>
         <source>Fast forward speed:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1097"/>
-        <location filename="../SettingsView.ui" line="1140"/>
+        <location filename="../SettingsView.ui" line="1137"/>
+        <location filename="../SettingsView.ui" line="1180"/>
         <source>Unbounded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1109"/>
+        <location filename="../SettingsView.ui" line="1149"/>
         <source>Fast forward (held) speed:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1152"/>
+        <location filename="../SettingsView.ui" line="1192"/>
         <source>Autofire interval:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1176"/>
+        <location filename="../SettingsView.ui" line="1216"/>
         <source>Enable rewind</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1183"/>
+        <location filename="../SettingsView.ui" line="1223"/>
         <source>Rewind history:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1208"/>
+        <location filename="../SettingsView.ui" line="1248"/>
         <source>Rewind speed:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1245"/>
+        <location filename="../SettingsView.ui" line="1285"/>
         <source>Idle loops:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1253"/>
+        <location filename="../SettingsView.ui" line="1293"/>
         <source>Run all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1258"/>
+        <location filename="../SettingsView.ui" line="1298"/>
         <source>Remove known</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1263"/>
+        <location filename="../SettingsView.ui" line="1303"/>
         <source>Detect and remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1271"/>
+        <location filename="../SettingsView.ui" line="1311"/>
         <source>Preload entire ROM into memory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="616"/>
+        <location filename="../SettingsView.ui" line="656"/>
         <source>Save state extra data:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="633"/>
-        <location filename="../SettingsView.ui" line="677"/>
+        <location filename="../SettingsView.ui" line="673"/>
+        <location filename="../SettingsView.ui" line="717"/>
         <source>Save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="660"/>
+        <location filename="../SettingsView.ui" line="700"/>
         <source>Load state extra data:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1815"/>
+        <location filename="../SettingsView.ui" line="1855"/>
         <source>Models</source>
         <translation>Μοντέλα</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1821"/>
+        <location filename="../SettingsView.ui" line="1861"/>
         <source>GB only:</source>
         <translation>Μόνο GB:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1831"/>
+        <location filename="../SettingsView.ui" line="1871"/>
         <source>SGB compatible:</source>
         <translation>Συμβατό με SGB:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1841"/>
+        <location filename="../SettingsView.ui" line="1881"/>
         <source>GBC only:</source>
         <translation>Μόνο GBC:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1851"/>
+        <location filename="../SettingsView.ui" line="1891"/>
         <source>GBC compatible:</source>
         <translation>Συμβατό με GBC:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1861"/>
+        <location filename="../SettingsView.ui" line="1901"/>
         <source>SGB and GBC compatible:</source>
         <translation>Συμβατό με SGB και GBC:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1881"/>
+        <location filename="../SettingsView.ui" line="1921"/>
         <source>Game Boy palette</source>
         <translation>Παλέτα Game Boy</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1887"/>
+        <location filename="../SettingsView.ui" line="1927"/>
         <source>Preset:</source>
         <translation>Προεπιλογή:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="623"/>
-        <location filename="../SettingsView.ui" line="667"/>
+        <location filename="../SettingsView.ui" line="663"/>
+        <location filename="../SettingsView.ui" line="707"/>
         <source>Screenshot</source>
         <translation>Στιγμιότυπο οθόνης</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="643"/>
-        <location filename="../SettingsView.ui" line="684"/>
+        <location filename="../SettingsView.ui" line="683"/>
+        <location filename="../SettingsView.ui" line="724"/>
         <source>Cheat codes</source>
         <translation>Κωδικοί cheat</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1281"/>
+        <location filename="../SettingsView.ui" line="1321"/>
         <source>Enable Game Boy Player features by default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1288"/>
+        <location filename="../SettingsView.ui" line="1328"/>
         <source>Enable VBA bug compatibility in ROM hacks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1302"/>
+        <location filename="../SettingsView.ui" line="1342"/>
         <source>Video renderer:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1310"/>
+        <location filename="../SettingsView.ui" line="1350"/>
         <source>Software</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1323"/>
+        <location filename="../SettingsView.ui" line="1363"/>
         <source>OpenGL enhancements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1329"/>
+        <location filename="../SettingsView.ui" line="1369"/>
         <source>High-resolution scale:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1367"/>
+        <location filename="../SettingsView.ui" line="1407"/>
         <source>(240×160)</source>
         <translation>(240×160)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1396"/>
+        <location filename="../SettingsView.ui" line="1436"/>
         <source>GB BIOS file:</source>
         <translation>Αρχείο BIOS για GB:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="932"/>
-        <location filename="../SettingsView.ui" line="1415"/>
-        <location filename="../SettingsView.ui" line="1443"/>
-        <location filename="../SettingsView.ui" line="1471"/>
-        <location filename="../SettingsView.ui" line="1499"/>
-        <location filename="../SettingsView.ui" line="1557"/>
-        <location filename="../SettingsView.ui" line="1605"/>
-        <location filename="../SettingsView.ui" line="1653"/>
-        <location filename="../SettingsView.ui" line="1701"/>
-        <location filename="../SettingsView.ui" line="1749"/>
+        <location filename="../SettingsView.ui" line="972"/>
+        <location filename="../SettingsView.ui" line="1455"/>
+        <location filename="../SettingsView.ui" line="1483"/>
+        <location filename="../SettingsView.ui" line="1511"/>
+        <location filename="../SettingsView.ui" line="1539"/>
+        <location filename="../SettingsView.ui" line="1597"/>
+        <location filename="../SettingsView.ui" line="1645"/>
+        <location filename="../SettingsView.ui" line="1693"/>
+        <location filename="../SettingsView.ui" line="1741"/>
+        <location filename="../SettingsView.ui" line="1789"/>
         <source>Browse</source>
         <translation>Περιήγηση</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1508"/>
+        <location filename="../SettingsView.ui" line="1548"/>
         <source>Use BIOS file if found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1518"/>
+        <location filename="../SettingsView.ui" line="1558"/>
         <source>Skip BIOS intro</source>
         <translation>Παράλειψη εισαγωγής BIOS</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1480"/>
+        <location filename="../SettingsView.ui" line="1520"/>
         <source>GBA BIOS file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1452"/>
+        <location filename="../SettingsView.ui" line="1492"/>
         <source>GBC BIOS file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1424"/>
+        <location filename="../SettingsView.ui" line="1464"/>
         <source>SGB BIOS file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1532"/>
+        <location filename="../SettingsView.ui" line="1572"/>
         <source>Save games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1566"/>
-        <location filename="../SettingsView.ui" line="1614"/>
-        <location filename="../SettingsView.ui" line="1662"/>
-        <location filename="../SettingsView.ui" line="1710"/>
-        <location filename="../SettingsView.ui" line="1758"/>
+        <location filename="../SettingsView.ui" line="1606"/>
+        <location filename="../SettingsView.ui" line="1654"/>
+        <location filename="../SettingsView.ui" line="1702"/>
+        <location filename="../SettingsView.ui" line="1750"/>
+        <location filename="../SettingsView.ui" line="1798"/>
         <source>Same directory as the ROM</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1580"/>
+        <location filename="../SettingsView.ui" line="1620"/>
         <source>Save states</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1628"/>
+        <location filename="../SettingsView.ui" line="1668"/>
         <source>Screenshots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1676"/>
+        <location filename="../SettingsView.ui" line="1716"/>
         <source>Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1724"/>
+        <location filename="../SettingsView.ui" line="1764"/>
         <source>Cheats</source>
         <translation>Cheat</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1781"/>
+        <location filename="../SettingsView.ui" line="1821"/>
         <source>Log to file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1788"/>
+        <location filename="../SettingsView.ui" line="1828"/>
         <source>Log to console</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1802"/>
+        <location filename="../SettingsView.ui" line="1842"/>
         <source>Select Log File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1897"/>
+        <location filename="../SettingsView.ui" line="1937"/>
         <source>Default BG colors:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1984"/>
+        <location filename="../SettingsView.ui" line="2024"/>
         <source>Default sprite colors 1:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2071"/>
+        <location filename="../SettingsView.ui" line="2111"/>
         <source>Default sprite colors 2:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1871"/>
+        <location filename="../SettingsView.ui" line="1911"/>
         <source>Super Game Boy borders</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5837,48 +5949,48 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 <context>
     <name>QGBA::ShaderSelector</name>
     <message>
-        <location filename="../ShaderSelector.cpp" line="77"/>
+        <location filename="../ShaderSelector.cpp" line="78"/>
         <source>No shader active</source>
         <translation>Κανένα ενεργό shader</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="91"/>
-        <location filename="../ShaderSelector.cpp" line="94"/>
+        <location filename="../ShaderSelector.cpp" line="92"/>
+        <location filename="../ShaderSelector.cpp" line="95"/>
         <source>Load shader</source>
         <translation>Φόρτωση shader</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="93"/>
+        <location filename="../ShaderSelector.cpp" line="94"/>
         <source>mGBA Shaders</source>
         <translation>Shader του mGBA</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="124"/>
+        <location filename="../ShaderSelector.cpp" line="125"/>
         <source>Error loading shader</source>
         <translation>Σφάλμα φόρτωσης shader</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="124"/>
+        <location filename="../ShaderSelector.cpp" line="125"/>
         <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
         <translation>Δεν ήταν δυνατή η επιτυχής φόρτωση του shader «%1».</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="146"/>
+        <location filename="../ShaderSelector.cpp" line="147"/>
         <source>No shader loaded</source>
         <translation>Δεν έχει φορτωθεί shader</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="154"/>
+        <location filename="../ShaderSelector.cpp" line="155"/>
         <source>by %1</source>
         <translation>από %1</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="165"/>
+        <location filename="../ShaderSelector.cpp" line="166"/>
         <source>Preprocessing</source>
         <translation>Προεπεξεργασία</translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="172"/>
+        <location filename="../ShaderSelector.cpp" line="173"/>
         <source>Pass %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5921,17 +6033,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 <context>
     <name>QGBA::ShortcutModel</name>
     <message>
-        <location filename="../ShortcutModel.cpp" line="67"/>
+        <location filename="../ShortcutModel.cpp" line="68"/>
         <source>Action</source>
         <translation>Ενέργεια</translation>
     </message>
     <message>
-        <location filename="../ShortcutModel.cpp" line="69"/>
+        <location filename="../ShortcutModel.cpp" line="70"/>
         <source>Keyboard</source>
         <translation>Πληκτρολόγιο</translation>
     </message>
     <message>
-        <location filename="../ShortcutModel.cpp" line="71"/>
+        <location filename="../ShortcutModel.cpp" line="72"/>
         <source>Gamepad</source>
         <translation>Χειριστήριο</translation>
     </message>
@@ -5951,7 +6063,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShortcutView.ui" line="42"/>
         <source>Gamepad</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Χειριστήριο</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="49"/>
@@ -5962,18 +6074,18 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 <context>
     <name>QGBA::TileView</name>
     <message>
-        <location filename="../TileView.cpp" line="226"/>
+        <location filename="../TileView.cpp" line="227"/>
         <source>Export tiles</source>
         <translation>Εξαγωγή πλακιδίων</translation>
     </message>
     <message>
-        <location filename="../TileView.cpp" line="227"/>
-        <location filename="../TileView.cpp" line="239"/>
+        <location filename="../TileView.cpp" line="228"/>
+        <location filename="../TileView.cpp" line="240"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
-        <location filename="../TileView.cpp" line="238"/>
+        <location filename="../TileView.cpp" line="239"/>
         <source>Export tile</source>
         <translation>Εξαγωγή πλακιδίου</translation>
     </message>
@@ -6051,17 +6163,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 <context>
     <name>QGBA::VideoView</name>
     <message>
-        <location filename="../VideoView.cpp" line="226"/>
+        <location filename="../VideoView.cpp" line="224"/>
         <source>Failed to open output video file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.cpp" line="247"/>
+        <location filename="../VideoView.cpp" line="245"/>
         <source>Native (%0x%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.cpp" line="262"/>
+        <location filename="../VideoView.cpp" line="260"/>
         <source>Select output file</source>
         <translation>Επιλογή αρχείου εξόδου</translation>
     </message>
@@ -6178,86 +6290,86 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.ui" line="575"/>
         <source>Show advanced</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Εμφάνιση σύνθετων επιλογών</translation>
     </message>
 </context>
 <context>
     <name>QGBA::Window</name>
     <message>
-        <location filename="../Window.cpp" line="351"/>
+        <location filename="../Window.cpp" line="374"/>
         <source>Archives (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="356"/>
-        <location filename="../Window.cpp" line="372"/>
-        <location filename="../Window.cpp" line="399"/>
+        <location filename="../Window.cpp" line="379"/>
+        <location filename="../Window.cpp" line="395"/>
+        <location filename="../Window.cpp" line="422"/>
         <source>Select ROM</source>
         <translation>Επιλογή ROM</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="390"/>
+        <location filename="../Window.cpp" line="413"/>
         <source>Select folder</source>
         <translation>Επιλογή φακέλου</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="534"/>
-        <location filename="../Window.cpp" line="541"/>
+        <location filename="../Window.cpp" line="557"/>
+        <location filename="../Window.cpp" line="564"/>
         <source>Select save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="446"/>
+        <location filename="../Window.cpp" line="469"/>
         <source>Select patch</source>
         <translation>Επιλογή patch</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="446"/>
+        <location filename="../Window.cpp" line="469"/>
         <source>Patches (*.ips *.ups *.bps)</source>
         <translation>Patch (*.ips *.ups *.bps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="457"/>
+        <location filename="../Window.cpp" line="480"/>
         <source>Select e-Reader dotcode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="457"/>
+        <location filename="../Window.cpp" line="480"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
         <translation>Κάρτα e-Reader (*.raw *.bin *.bmp)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="527"/>
+        <location filename="../Window.cpp" line="550"/>
         <source>Select image</source>
         <translation>Επιλογή εικόνας</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="527"/>
+        <location filename="../Window.cpp" line="550"/>
         <source>Image file (*.png *.gif *.jpg *.jpeg);;All files (*)</source>
         <translation>Αρχείο εικόνας (*.png *.gif *.jpg *.jpeg);;Όλα τα αρχεία (*)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="541"/>
+        <location filename="../Window.cpp" line="564"/>
         <source>GameShark saves (*.sps *.xps)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="580"/>
+        <location filename="../Window.cpp" line="603"/>
         <source>Select video log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="580"/>
+        <location filename="../Window.cpp" line="603"/>
         <source>Video logs (*.mvl)</source>
         <translation>Αρχεία καταγραφής βίντεο (*.mvl)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1036"/>
+        <location filename="../Window.cpp" line="1084"/>
         <source>Crash</source>
         <translation>Κατάρρευση</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1037"/>
+        <location filename="../Window.cpp" line="1085"/>
         <source>The game has crashed with the following error:
 
 %1</source>
@@ -6266,719 +6378,719 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1044"/>
+        <location filename="../Window.cpp" line="1092"/>
         <source>Couldn&apos;t Start</source>
         <translation>Αδυναμία εκκίνησης</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1045"/>
+        <location filename="../Window.cpp" line="1093"/>
         <source>Could not start game.</source>
         <translation>Δεν ήταν δυνατή η εκκίνηση του παιχνιδιού.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1059"/>
+        <location filename="../Window.cpp" line="1107"/>
         <source>Unimplemented BIOS call</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1060"/>
+        <location filename="../Window.cpp" line="1108"/>
         <source>This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1082"/>
+        <location filename="../Window.cpp" line="1130"/>
         <source>Failed to create an appropriate display device, falling back to software display. Games may run slowly, especially with larger windows.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1180"/>
+        <location filename="../Window.cpp" line="1237"/>
         <source>Really make portable?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1181"/>
+        <location filename="../Window.cpp" line="1238"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1193"/>
+        <location filename="../Window.cpp" line="1250"/>
         <source>Restart needed</source>
         <translation>Απαιτείται επανεκκίνηση</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1194"/>
+        <location filename="../Window.cpp" line="1251"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1245"/>
+        <location filename="../Window.cpp" line="1302"/>
         <source> -  Player %1 of %2</source>
         <translation> -  Παίκτης %1 από %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1256"/>
+        <location filename="../Window.cpp" line="1313"/>
         <source>%1 - %2</source>
         <translation>%1 - %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1258"/>
+        <location filename="../Window.cpp" line="1315"/>
         <source>%1 - %2 - %3</source>
         <translation>%1 - %2 - %3</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1260"/>
+        <location filename="../Window.cpp" line="1317"/>
         <source>%1 - %2 (%3 fps) - %4</source>
         <translation>%1 - %2 (%3 fps) - %4</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1324"/>
+        <location filename="../Window.cpp" line="1381"/>
         <source>&amp;File</source>
         <translation>&amp;Αρχείο</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1326"/>
+        <location filename="../Window.cpp" line="1383"/>
         <source>Load &amp;ROM...</source>
         <translation>Φόρτωση &amp;ROM...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1329"/>
+        <location filename="../Window.cpp" line="1386"/>
         <source>Load ROM in archive...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1330"/>
+        <location filename="../Window.cpp" line="1387"/>
         <source>Add folder to library...</source>
         <translation>Προσθήκη φακέλου στη βιβλιοθήκη...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="407"/>
+        <location filename="../Window.cpp" line="430"/>
         <source>Save games (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="408"/>
+        <location filename="../Window.cpp" line="431"/>
         <source>Select save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="416"/>
+        <location filename="../Window.cpp" line="439"/>
         <source>mGBA save state files (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="418"/>
-        <location filename="../Window.cpp" line="423"/>
+        <location filename="../Window.cpp" line="441"/>
+        <location filename="../Window.cpp" line="446"/>
         <source>Select save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="465"/>
+        <location filename="../Window.cpp" line="488"/>
         <source>Select e-Reader card images</source>
         <translation>Επιλογή εικόνων καρτών e-Reader</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="465"/>
+        <location filename="../Window.cpp" line="488"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
         <translation>Αρχείο εικόνας (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="466"/>
+        <location filename="../Window.cpp" line="489"/>
         <source>Conversion finished</source>
         <translation>Η μετατροπή ολοκληρώθηκε</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="507"/>
+        <location filename="../Window.cpp" line="530"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1334"/>
+        <location filename="../Window.cpp" line="1391"/>
         <source>Load alternate save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1337"/>
+        <location filename="../Window.cpp" line="1394"/>
         <source>Load temporary save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1370"/>
+        <location filename="../Window.cpp" line="1427"/>
         <source>Load &amp;patch...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1373"/>
+        <location filename="../Window.cpp" line="1430"/>
         <source>Boot BIOS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1467"/>
+        <location filename="../Window.cpp" line="1524"/>
         <source>Replace ROM...</source>
         <translation>Αντικατάσταση ROM...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1377"/>
+        <location filename="../Window.cpp" line="1434"/>
         <source>Scan e-Reader dotcodes...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1818"/>
+        <location filename="../Window.cpp" line="1857"/>
         <source>Convert e-Reader card image to raw...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1381"/>
+        <location filename="../Window.cpp" line="1438"/>
         <source>ROM &amp;info...</source>
         <translation>Πλ&amp;ηροφορίες ROM...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1383"/>
+        <location filename="../Window.cpp" line="1440"/>
         <source>Recent</source>
         <translation>Πρόσφατα</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1783"/>
+        <location filename="../Window.cpp" line="1822"/>
         <source>Make portable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1386"/>
+        <location filename="../Window.cpp" line="1443"/>
         <source>&amp;Load state</source>
         <translation>&amp;Φόρτωση κατάστασης</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1391"/>
+        <location filename="../Window.cpp" line="1448"/>
         <source>Load state file...</source>
         <translation>Φόρτωση αρχείου κατάστασης...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1396"/>
+        <location filename="../Window.cpp" line="1453"/>
         <source>&amp;Save state</source>
         <translation type="unfinished">Απο&amp;θήκευση κατάστασης</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1401"/>
+        <location filename="../Window.cpp" line="1458"/>
         <source>Save state file...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1406"/>
+        <location filename="../Window.cpp" line="1463"/>
         <source>Quick load</source>
         <translation>Γρήγορη φόρτωση</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1407"/>
+        <location filename="../Window.cpp" line="1464"/>
         <source>Quick save</source>
         <translation>Γρήγορη αποθήκευση</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1409"/>
+        <location filename="../Window.cpp" line="1466"/>
         <source>Load recent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1414"/>
+        <location filename="../Window.cpp" line="1471"/>
         <source>Save recent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1422"/>
+        <location filename="../Window.cpp" line="1479"/>
         <source>Undo load state</source>
         <translation>Αναίρεση φόρτωσης κατάστασης</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1425"/>
+        <location filename="../Window.cpp" line="1482"/>
         <source>Undo save state</source>
         <translation>Αναίρεση αποθήκευσης κατάστασης</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1432"/>
-        <location filename="../Window.cpp" line="1437"/>
+        <location filename="../Window.cpp" line="1489"/>
+        <location filename="../Window.cpp" line="1494"/>
         <source>State &amp;%1</source>
         <translation>Κατάσταση &amp;%1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1563"/>
+        <location filename="../Window.cpp" line="1620"/>
         <source>Load camera image...</source>
         <translation>Φόρτωση εικόνας κάμερας...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1343"/>
+        <location filename="../Window.cpp" line="1400"/>
         <source>Convert save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="534"/>
+        <location filename="../Window.cpp" line="557"/>
         <source>GameShark saves (*.gsv *.sps *.xps)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1155"/>
+        <location filename="../Window.cpp" line="1209"/>
         <source>Failed to start audio processor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1205"/>
+        <location filename="../Window.cpp" line="1262"/>
         <source>Reset needed</source>
         <translation>Απαιτείται επανεκκίνηση</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1206"/>
+        <location filename="../Window.cpp" line="1263"/>
         <source>Some changes will not take effect until the game is reset.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1333"/>
+        <location filename="../Window.cpp" line="1390"/>
         <source>Save games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1346"/>
+        <location filename="../Window.cpp" line="1403"/>
         <source>Import GameShark Save...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1349"/>
+        <location filename="../Window.cpp" line="1406"/>
         <source>Export GameShark Save...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1356"/>
+        <location filename="../Window.cpp" line="1413"/>
         <source>Automatically determine</source>
         <translation>Αυτόματος προσδιορισμός</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1360"/>
+        <location filename="../Window.cpp" line="1417"/>
         <source>Use player %0 save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1444"/>
+        <location filename="../Window.cpp" line="1501"/>
         <source>New multiplayer window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1447"/>
+        <location filename="../Window.cpp" line="1504"/>
         <source>Connect to Dolphin...</source>
         <translation>Σύνδεση στο Dolphin...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1453"/>
+        <location filename="../Window.cpp" line="1510"/>
         <source>Report bug...</source>
         <translation>Αναφορά σφάλματος...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1459"/>
+        <location filename="../Window.cpp" line="1516"/>
         <source>About...</source>
         <translation>Πληροφορίες...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1460"/>
+        <location filename="../Window.cpp" line="1517"/>
         <source>E&amp;xit</source>
         <translation>Έ&amp;ξοδος</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1462"/>
+        <location filename="../Window.cpp" line="1519"/>
         <source>&amp;Emulation</source>
         <translation>&amp;Εξομοίωση</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1463"/>
+        <location filename="../Window.cpp" line="1520"/>
         <source>&amp;Reset</source>
         <translation>Επανε&amp;κκίνηση</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1464"/>
+        <location filename="../Window.cpp" line="1521"/>
         <source>Sh&amp;utdown</source>
         <translation>Τε&amp;ρματισμός</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1468"/>
+        <location filename="../Window.cpp" line="1525"/>
         <source>Yank game pak</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1471"/>
+        <location filename="../Window.cpp" line="1528"/>
         <source>&amp;Pause</source>
         <translation>&amp;Παύση</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1480"/>
+        <location filename="../Window.cpp" line="1537"/>
         <source>&amp;Next frame</source>
         <translation>&amp;Επόμενο καρέ</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1484"/>
+        <location filename="../Window.cpp" line="1541"/>
         <source>Fast forward (held)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1490"/>
+        <location filename="../Window.cpp" line="1547"/>
         <source>&amp;Fast forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1494"/>
+        <location filename="../Window.cpp" line="1551"/>
         <source>Fast forward speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1499"/>
+        <location filename="../Window.cpp" line="1556"/>
         <source>Unbounded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1503"/>
+        <location filename="../Window.cpp" line="1560"/>
         <source>%0x</source>
         <translation>%0x</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1507"/>
+        <location filename="../Window.cpp" line="1564"/>
         <source>Increase fast forward speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1514"/>
+        <location filename="../Window.cpp" line="1571"/>
         <source>Decrease fast forward speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1521"/>
+        <location filename="../Window.cpp" line="1578"/>
         <source>Rewind (held)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1533"/>
+        <location filename="../Window.cpp" line="1590"/>
         <source>Re&amp;wind</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1538"/>
+        <location filename="../Window.cpp" line="1595"/>
         <source>Step backwards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1545"/>
+        <location filename="../Window.cpp" line="1602"/>
         <source>Solar sensor</source>
         <translation>Ηλιακός αισθητήρας</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1546"/>
+        <location filename="../Window.cpp" line="1603"/>
         <source>Increase solar level</source>
         <translation>Αύξηση ηλιακού επιπέδου</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1547"/>
+        <location filename="../Window.cpp" line="1604"/>
         <source>Decrease solar level</source>
         <translation>Μείωση ηλιακού επιπέδου</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1548"/>
+        <location filename="../Window.cpp" line="1605"/>
         <source>Brightest solar level</source>
         <translation>Το φωτεινότερο ηλιακό επίπεδο</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1551"/>
+        <location filename="../Window.cpp" line="1608"/>
         <source>Darkest solar level</source>
         <translation>Το σκοτεινότερο ηλιακό επίπεδο</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1557"/>
+        <location filename="../Window.cpp" line="1614"/>
         <source>Brightness %1</source>
         <translation>Φωτεινότητα %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1565"/>
+        <location filename="../Window.cpp" line="1622"/>
         <source>Game Boy Printer...</source>
         <translation>Game Boy Printer...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1574"/>
+        <location filename="../Window.cpp" line="1631"/>
         <source>BattleChip Gate...</source>
         <translation>BattleChip Gate...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1578"/>
+        <location filename="../Window.cpp" line="1635"/>
         <source>Audio/&amp;Video</source>
         <translation>Ήχος/&amp;Βίντεο</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1579"/>
+        <location filename="../Window.cpp" line="1636"/>
         <source>Frame size</source>
         <translation>Μέγεθος καρέ</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1581"/>
+        <location filename="../Window.cpp" line="1638"/>
         <source>%1×</source>
         <translation>%1×</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1622"/>
+        <location filename="../Window.cpp" line="1653"/>
         <source>Toggle fullscreen</source>
         <translation>Εναλλαγή πλήρους οθόνης</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1625"/>
+        <location filename="../Window.cpp" line="1656"/>
         <source>&amp;Lock frame size</source>
         <translation>Κ&amp;λείδωμα μεγέθους καρέ</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1638"/>
+        <location filename="../Window.cpp" line="1677"/>
         <source>Lock aspect ratio</source>
         <translation>Κλείδωμα λόγου διαστάσεων</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1650"/>
+        <location filename="../Window.cpp" line="1689"/>
         <source>Force integer scaling</source>
         <translation>Επιβολή ακέραιας κλιμάκωσης</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1662"/>
+        <location filename="../Window.cpp" line="1701"/>
         <source>Interframe blending</source>
         <translation>Παρεμβολή μεταξύ διαδοχικών καρέ</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1671"/>
+        <location filename="../Window.cpp" line="1710"/>
         <source>Bilinear filtering</source>
         <translation>Διγραμμικό φιλτράρισμα</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1679"/>
+        <location filename="../Window.cpp" line="1718"/>
         <source>Frame&amp;skip</source>
         <translation>Παράλει&amp;ψη καρέ</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1692"/>
+        <location filename="../Window.cpp" line="1731"/>
         <source>Mute</source>
         <translation>Σίγαση</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1699"/>
+        <location filename="../Window.cpp" line="1738"/>
         <source>FPS target</source>
         <translation>Στόχος FPS</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1707"/>
+        <location filename="../Window.cpp" line="1746"/>
         <source>Native (59.7275)</source>
         <translation>Εγγενής (59.7275)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1722"/>
+        <location filename="../Window.cpp" line="1761"/>
         <source>Take &amp;screenshot</source>
         <translation>Λήψη &amp;στιγμιότυπου</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1724"/>
+        <location filename="../Window.cpp" line="1763"/>
         <source>F12</source>
         <translation>F12</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1728"/>
+        <location filename="../Window.cpp" line="1767"/>
         <source>Record A/V...</source>
         <translation>Καταγραφή ήχου/βίντεο...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1729"/>
+        <location filename="../Window.cpp" line="1768"/>
         <source>Record GIF/WebP/APNG...</source>
         <translation>Καταγραφή GIF/WebP/APNG...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1733"/>
+        <location filename="../Window.cpp" line="1772"/>
         <source>Video layers</source>
         <translation>Επίπεδα βίντεο</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1734"/>
+        <location filename="../Window.cpp" line="1773"/>
         <source>Audio channels</source>
         <translation>Κανάλια ήχου</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1736"/>
+        <location filename="../Window.cpp" line="1775"/>
         <source>Adjust layer placement...</source>
         <translation>Προσαρμογή τοποθέτησης επιπέδων...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1740"/>
+        <location filename="../Window.cpp" line="1779"/>
         <source>Hide &amp;menu</source>
         <translation>Απόκρυψη &amp;μενού</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1745"/>
+        <location filename="../Window.cpp" line="1784"/>
         <source>&amp;Tools</source>
         <translation>Ερ&amp;γαλεία</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1746"/>
+        <location filename="../Window.cpp" line="1785"/>
         <source>View &amp;logs...</source>
         <translation>Προβολή αρχείων κατα&amp;γραφής...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1748"/>
+        <location filename="../Window.cpp" line="1787"/>
         <source>Game &amp;overrides...</source>
         <translation>Παρακάμ&amp;ψεις παιχνιδιού...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1761"/>
+        <location filename="../Window.cpp" line="1800"/>
         <source>Game Pak sensors...</source>
         <translation>Αισθητήρες Game Pak...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1774"/>
+        <location filename="../Window.cpp" line="1813"/>
         <source>&amp;Cheats...</source>
         <translation>&amp;Cheat...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1779"/>
+        <location filename="../Window.cpp" line="1818"/>
         <source>Create forwarder...</source>
         <translation>Δημιουργία διαβιβαστή...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1782"/>
+        <location filename="../Window.cpp" line="1821"/>
         <source>Settings...</source>
         <translation>Ρυθμίσεις...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1787"/>
+        <location filename="../Window.cpp" line="1826"/>
         <source>Open debugger console...</source>
         <translation>Άνοιγμα κονσόλας αποσφαλμάτωσης...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1789"/>
+        <location filename="../Window.cpp" line="1828"/>
         <source>Start &amp;GDB server...</source>
         <translation>Εκκίνηση διακομιστή &amp;GDB...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1776"/>
+        <location filename="../Window.cpp" line="1815"/>
         <source>Scripting...</source>
         <translation>Σύνταξη script...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1797"/>
+        <location filename="../Window.cpp" line="1836"/>
         <source>Game state views</source>
         <translation>Προβολές κατάστασης παιχνιδιού</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1798"/>
+        <location filename="../Window.cpp" line="1837"/>
         <source>View &amp;palette...</source>
         <translation>Προβολή &amp;παλέτας...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1799"/>
+        <location filename="../Window.cpp" line="1838"/>
         <source>View &amp;sprites...</source>
         <translation>Προβολή &amp;μπλοκ εικονοστοιχείων...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1800"/>
+        <location filename="../Window.cpp" line="1839"/>
         <source>View &amp;tiles...</source>
         <translation>Προβολή π&amp;λακιδίων...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1801"/>
+        <location filename="../Window.cpp" line="1840"/>
         <source>View &amp;map...</source>
         <translation>Προβολή &amp;χάρτη...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1802"/>
+        <location filename="../Window.cpp" line="1841"/>
         <source>&amp;Frame inspector...</source>
         <translation>Επι&amp;θεώρηση καρέ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1803"/>
+        <location filename="../Window.cpp" line="1842"/>
         <source>View memory...</source>
         <translation>Προβολή μνήμης...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1804"/>
+        <location filename="../Window.cpp" line="1843"/>
         <source>Search memory...</source>
         <translation>Αναζήτηση μνήμης...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1805"/>
+        <location filename="../Window.cpp" line="1844"/>
         <source>View &amp;I/O registers...</source>
         <translation>Προβολή καταχωρητών &amp;I/O...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1808"/>
+        <location filename="../Window.cpp" line="1847"/>
         <source>Log memory &amp;accesses...</source>
         <translation>Καταγραφή π&amp;ροσπελάσεων μνήμης...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1822"/>
+        <location filename="../Window.cpp" line="1861"/>
         <source>Record debug video log...</source>
         <translation>Καταγραφή βίντεο αποσφαλμάτωσης...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1823"/>
+        <location filename="../Window.cpp" line="1862"/>
         <source>Stop debug video log</source>
         <translation>Διακοπή βίντεο αποσφαλμάτωσης</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1827"/>
+        <location filename="../Window.cpp" line="1866"/>
         <source>Exit fullscreen</source>
         <translation>Έξοδος από πλήρη οθόνη</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1829"/>
+        <location filename="../Window.cpp" line="1868"/>
         <source>GameShark Button (held)</source>
         <translation>Κουμπί GameShark (πατημένο)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1835"/>
+        <location filename="../Window.cpp" line="1874"/>
         <source>Autofire</source>
         <translation>Αυτοπυροδότηση</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1836"/>
+        <location filename="../Window.cpp" line="1875"/>
         <source>Autofire A</source>
         <translation>Αυτοπυροδότηση A</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1841"/>
+        <location filename="../Window.cpp" line="1880"/>
         <source>Autofire B</source>
         <translation>Αυτοπυροδότηση B</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1846"/>
+        <location filename="../Window.cpp" line="1885"/>
         <source>Autofire L</source>
         <translation>Αυτοπυροδότηση L</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1851"/>
+        <location filename="../Window.cpp" line="1890"/>
         <source>Autofire R</source>
         <translation>Αυτοπυροδότηση R</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1856"/>
+        <location filename="../Window.cpp" line="1895"/>
         <source>Autofire Start</source>
         <translation>Αυτοπυροδότηση Start</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1861"/>
+        <location filename="../Window.cpp" line="1900"/>
         <source>Autofire Select</source>
         <translation>Αυτοπυροδότηση Select</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1866"/>
+        <location filename="../Window.cpp" line="1905"/>
         <source>Autofire Up</source>
         <translation>Αυτοπυροδότηση πάνω</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1871"/>
+        <location filename="../Window.cpp" line="1910"/>
         <source>Autofire Right</source>
         <translation>Αυτοπυροδότηση δεξιού</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1876"/>
+        <location filename="../Window.cpp" line="1915"/>
         <source>Autofire Down</source>
         <translation>Αυτοπυροδότηση κάτω</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1881"/>
+        <location filename="../Window.cpp" line="1920"/>
         <source>Autofire Left</source>
         <translation>Αυτοπυροδότηση αριστερού</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="2086"/>
+        <location filename="../Window.cpp" line="2125"/>
         <source>Clear</source>
         <translation>Εκκαθάριση</translation>
     </message>
