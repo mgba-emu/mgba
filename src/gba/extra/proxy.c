@@ -216,7 +216,9 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 	struct GBAVideoProxyRenderer* proxyRenderer = logger->context;
 	switch (item->type) {
 	case DIRTY_REGISTER:
-		proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item->address, item->value);
+		if (item->address < GBA_REG_SOUND1CNT_LO) {
+			proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item->address, item->value);
+		}
 		break;
 	case DIRTY_PALETTE:
 		if (item->address < GBA_SIZE_PALETTE_RAM) {
@@ -225,7 +227,7 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		}
 		break;
 	case DIRTY_OAM:
-		if (item->address < GBA_SIZE_OAM) {
+		if ((item->address << 1) < GBA_SIZE_OAM) {
 			STORE_16LE(item->value, item->address << 1, logger->oam);
 			proxyRenderer->backend->writeOAM(proxyRenderer->backend, item->address);
 		}
@@ -285,7 +287,7 @@ uint16_t GBAVideoProxyRendererWriteVideoRegister(struct GBAVideoRenderer* render
 		value &= 0x01FF;
 		break;
 	}
-	if (address > GBA_REG_BLDY) {
+	if (address >= GBA_REG_SOUND1CNT_LO) {
 		return value;
 	}
 	if (renderer->cache) {

@@ -32,6 +32,10 @@ ApplicationUpdatePrompt::ApplicationUpdatePrompt(QWidget* parent)
 	QString path = QCoreApplication::applicationDirPath();
 	QFileInfo finfo(path + "/../../AppRun");
 	available = finfo.exists() && finfo.isExecutable();
+	if (!available) {
+		finfo = QFileInfo(path + "/AppRun");
+		available = finfo.exists() && finfo.isExecutable();
+	}
 #else
 	available = false;
 #endif

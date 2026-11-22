@@ -17,7 +17,7 @@ static void _mSDLAudioCallback(void* context, Uint8* data, int len);
 #endif
 
 bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext) {
-#if defined(_WIN32) && SDL_VERSION_ATLEAST(2, 0, 8)
+#if defined(_WIN32) && SDL_VERSION_ATLEAST(2, 0, 8) && !SDL_VERSION_ATLEAST(3, 0, 0)
 	if (!getenv("SDL_AUDIODRIVER")) {
 		_putenv_s("SDL_AUDIODRIVER", "directsound");
 	}
@@ -27,6 +27,8 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext)
 		return false;
 	}
 
+	memset(&context->desiredSpec, 0, sizeof(context->desiredSpec));
+	memset(&context->obtainedSpec, 0, sizeof(context->obtainedSpec));
 	context->desiredSpec.freq = context->sampleRate;
 	context->desiredSpec.channels = 2;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
@@ -54,8 +56,21 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext)
 	context->core = NULL;
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-	SDL_GetAudioStreamFormat(context->stream, NULL, &context->obtainedSpec);
+	SDL_GetAudioStreamFormat(context->stream, &context->obtainedSpec, NULL);
 #endif
+	if (context->obtainedSpec.channels == 0) {
+		// This should never happen, but let's make sure
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+		SDL_DestroyAudioStream(context->stream);
+#elif SDL_VERSION_ATLEAST(2, 0, 0)
+		SDL_PauseAudioDevice(context->deviceId, 1);
+		SDL_CloseAudioDevice(context->deviceId);
+#else
+		SDL_PauseAudio(1);
+		SDL_CloseAudio();
+#endif
+		return false;
+	}
 
 	mAudioBufferInit(&context->buffer, context->samples, context->obtainedSpec.channels);
 	mAudioResamplerInit(&context->resampler, mINTERPOLATOR_SINC);
@@ -124,12 +139,8 @@ static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
 		return;
 #endif
 	}
-	struct mAudioBuffer* buffer = NULL;
-	unsigned sampleRate = 32768;
-	if (audioContext->core) {
-		buffer = audioContext->core->getAudioBuffer(audioContext->core);
-		sampleRate = audioContext->core->audioSampleRate(audioContext->core);
-	}
+	struct mAudioBuffer* buffer = audioContext->core->getAudioBuffer(audioContext->core);
+	unsigned sampleRate = audioContext->core->audioSampleRate(audioContext->core);
 	double fauxClock = 1;
 	if (audioContext->sync) {
 		if (audioContext->sync->fpsTarget > 0 && audioContext->core) {
@@ -138,6 +149,13 @@ static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
 		mCoreSyncLockAudio(audioContext->sync);
 		audioContext->sync->audioHighWater = audioContext->samples + audioContext->resampler.highWaterMark + audioContext->resampler.lowWaterMark + (audioContext->samples >> 6);
 		audioContext->sync->audioHighWater *= sampleRate / (fauxClock * audioContext->obtainedSpec.freq);
+
+		if (audioContext->resampler.source) {
+			size_t destSize = mAudioBufferCapacity(audioContext->resampler.source);
+			if (audioContext->sync->audioHighWater >= destSize) {
+				audioContext->sync->audioHighWater = destSize;
+			}
+		}
 	}
 	mAudioResamplerSetSource(&audioContext->resampler, buffer, sampleRate / fauxClock, true);
 	mAudioResamplerProcess(&audioContext->resampler);

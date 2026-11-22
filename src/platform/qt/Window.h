@@ -62,12 +62,14 @@ public:
 
 	void argumentsPassed();
 
-	void resizeFrame(const QSize& size);
+	void resizeFrame(const QSize& size, bool force = false);
 
 	void updateMultiplayerStatus(bool canOpenAnother);
 	void updateMultiplayerActive(bool active);
 
 	InputController* inputController() { return &m_inputController; }
+
+	QSize contentSize(bool fallback) const;
 
 signals:
 	void startDrawing();
@@ -183,6 +185,9 @@ private:
 
 	void ensureScripting();
 
+	void setFrameSize(int scale);
+	void recalculateFrameSize(const QSize&);
+
 	template <typename T, typename... A> std::function<void()> openTView(A... arg);
 	template <typename T, typename... A> std::function<void()> openControllerTView(A... arg);
 	template <typename T, typename... A> std::function<void()> openNamedTView(QPointer<T>*, bool keepalive, A... arg);
@@ -203,8 +208,8 @@ private:
 
 	std::unique_ptr<QGBA::Display> m_display;
 	QSize m_initialSize;
-	QSize m_savedSize;
-	int m_savedScale;
+	QSize m_frameSize;
+	int m_frameScale;
 
 	// TODO: Move these to a new class
 	ActionMapper m_actions;

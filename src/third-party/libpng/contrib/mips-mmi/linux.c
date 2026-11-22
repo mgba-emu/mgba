@@ -57,12 +57,14 @@ __asm__(".macro        parse_r var r\n\t"
 
 #define HWCAP_LOONGSON_CPUCFG (1 << 14)
 
-static int cpucfg_available(void)
+static int
+cpucfg_available(void)
 {
     return getauxval(AT_HWCAP) & HWCAP_LOONGSON_CPUCFG;
 }
 
-static int strstart(const char *str, const char *pfx, const char **ptr)
+static int
+strstart(const char *str, const char *pfx, const char **ptr)
 {
     while (*pfx && *pfx == *str) {
         pfx++;
@@ -74,7 +76,8 @@ static int strstart(const char *str, const char *pfx, const char **ptr)
 }
 
 /* Most toolchains have no CPUCFG support yet */
-static uint32_t read_cpucfg(uint32_t reg)
+static uint32_t
+read_cpucfg(uint32_t reg)
 {
         uint32_t __res;
 
@@ -94,7 +97,8 @@ static uint32_t read_cpucfg(uint32_t reg)
 
 #define LOONGSON_CFG1_MMI    (1 << 4)
 
-static int cpu_flags_cpucfg(void)
+static int
+cpu_flags_cpucfg(void)
 {
     int flags = 0;
     uint32_t cfg1 = read_cpucfg(LOONGSON_CFG1);
@@ -105,7 +109,8 @@ static int cpu_flags_cpucfg(void)
     return flags;
 }
 
-static int cpu_flags_cpuinfo(void)
+static int
+cpu_flags_cpuinfo(void)
 {
     FILE *f = fopen("/proc/cpuinfo", "r");
     char buf[200];
@@ -131,7 +136,8 @@ static int cpu_flags_cpuinfo(void)
     return flags;
 }
 
-static int png_have_mmi()
+static int
+png_have_mmi()
 {
     if (cpucfg_available())
         return cpu_flags_cpucfg();

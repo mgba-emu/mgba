@@ -1105,13 +1105,13 @@ int main(int argc, char* argv[]) {
 
 	audrvClose(&audrenDriver);
 	audrenExit();
+	free(buffers);
 	GUIFontDestroy(font);
 
 	glDeinit();
 	hidTeardown();
 
 	psmExit();
-	audoutExit();
 	romfsExit();
 	eglDeinit();
 	socketExit();

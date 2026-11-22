@@ -22,10 +22,6 @@ using namespace QGBA;
 AudioProcessorQt::AudioProcessorQt(QObject* parent)
 	: AudioProcessor(parent)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-	m_recheckTimer.setInterval(1);
-	connect(&m_recheckTimer, &QTimer::timeout, this, &AudioProcessorQt::recheckUnderflow);
-#endif
 }
 
 void AudioProcessorQt::setInput(std::shared_ptr<CoreController> controller) {
@@ -39,9 +35,6 @@ void AudioProcessorQt::setInput(std::shared_ptr<CoreController> controller) {
 }
 
 void AudioProcessorQt::stop() {
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-	m_recheckTimer.stop();
-#endif
 	if (m_audioOutput) {
 		m_audioOutput->stop();
 		m_audioOutput.reset();
@@ -80,13 +73,7 @@ bool AudioProcessorQt::start() {
 		QAudioDevice device(QMediaDevices::defaultAudioOutput());
 		m_audioOutput = std::make_unique<QAudioSink>(device, format);
 		LOG(QT, INFO) << tr("Audio outputting to %1").arg(device.description());
-		connect(m_audioOutput.get(), &QAudioSink::stateChanged, this, [this](QAudio::State state) {
-			if (state != QAudio::IdleState) {
-				return;
-			}
-			recheckUnderflow();
-			m_recheckTimer.start();
-		});
+		m_audioOutput->setBufferSize(m_sampleRate / 10);
 #endif
 	}
 
@@ -102,9 +89,6 @@ bool AudioProcessorQt::start() {
 }
 
 void AudioProcessorQt::pause() {
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-	m_recheckTimer.stop();
-#endif
 	if (m_audioOutput) {
 		m_audioOutput->suspend();
 	}
@@ -139,16 +123,3 @@ unsigned AudioProcessorQt::sampleRate() const {
 	}
 	return m_audioOutput->format().sampleRate();
 }
-
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-void AudioProcessorQt::recheckUnderflow() {
-	if (!m_device) {
-		m_recheckTimer.stop();
-		return;
-	}
-	if (m_device->bytesAvailable()) {
-		start();
-		m_recheckTimer.stop();
-	}
-}
-#endif

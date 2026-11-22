@@ -8,7 +8,7 @@ com pnglibconf.h - library build configuration
 com
 version
 com
-com Copyright (c) 2018-2025 Cosmin Truta
+com Copyright (c) 2018-2026 Cosmin Truta
 com Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
 com
 com This code is released under the libpng license.
@@ -763,8 +763,10 @@ setting sRGB_PROFILE_CHECKS default 2
 
 option ALIGNED_MEMORY
 
-# Buggy compilers (e.g., gcc 2.7.2.2) need PNG_NO_POINTER_INDEXING
-# See png[wr]util.c, normally this should always be *on*
+# The option to control pointer indexing has been deprecated in
+# libpng 1.6.56 and removed from libpng 1.8.
+# It used to control a workaround for old and buggy compilers such
+# as gcc 2.7.2.2, but the workaround, itself, was untested and buggy.
 
 option POINTER_INDEXING
 

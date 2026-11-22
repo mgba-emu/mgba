@@ -367,7 +367,7 @@ ssize_t _vfzRead(struct VFile* vf, void* buffer, size_t size) {
 		}
 		if (vfz->readSize < vfz->bufferSize + vfz->bufferStart) {
 			void* start = &((uint8_t*) vfz->buffer)[vfz->readSize - vfz->bufferStart];
-			size_t toRead = vfz->bufferSize - vfz->readSize - vfz->bufferStart;
+			size_t toRead = vfz->bufferSize - (vfz->readSize - vfz->bufferStart);
 			if (toRead > BLOCK_SIZE) {
 				toRead = BLOCK_SIZE;
 			}
@@ -424,7 +424,7 @@ void* _vfzMap(struct VFile* vf, size_t size, int flags) {
 	}
 	size_t start = vfz->bufferStart;
 	if (size > vfz->readSize) {
-		vf->read(vf, 0, size - vfz->readSize);
+		vf->read(vf, NULL, size - vfz->readSize);
 	}
 	if (vfz->bufferStart != start) {
 		return NULL;

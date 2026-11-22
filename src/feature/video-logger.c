@@ -490,11 +490,12 @@ static bool _decompress(struct VFile* dest, struct VFile* src, size_t compressed
 }
 #endif
 
-void mVideoLoggerAttachChannel(struct mVideoLogger* logger, struct mVideoLogContext* context, size_t channelId) {
-	if (channelId >= mVL_MAX_CHANNELS) {
-		return;
+bool mVideoLoggerAttachChannel(struct mVideoLogger* logger, struct mVideoLogContext* context, size_t channelId) {
+	if (channelId >= context->nChannels) {
+		return false;
 	}
 	logger->dataContext = &context->channels[channelId];
+	return true;
 }
 
 struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core) {
@@ -1004,7 +1005,9 @@ static ssize_t mVideoLoggerReadChannel(struct mVideoLogChannel* channel, void* d
 		if (size <= 0) {
 			return size;
 		}
-		data = (uint8_t*) data + size;
+		if (data) {
+			data = (uint8_t*) data + size;
+		}
 		length -= size;
 	}
 	if (channel->injecting || !_fillBuffer(context, channelId, BUFFER_BASE_SIZE)) {

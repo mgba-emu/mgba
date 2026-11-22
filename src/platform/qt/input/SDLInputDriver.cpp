@@ -88,7 +88,7 @@ void SDLInputDriver::setPlayerId(int id) {
 
 bool SDLInputDriver::supportsPolling() const {
 	// XXX: SDL_PumpEvents can cause the runloop to re-enter, at least on Windows
-	// So to avoic re-entering the SDL polling in the meantime, we have to reject
+	// So to avoid re-entering the SDL polling in the meantime, we have to reject
 	// polling while locked.
 	if (!s_eventsRwLock.tryLockForRead(0)) {
 		return false;
@@ -182,7 +182,12 @@ QList<std::shared_ptr<Gamepad>> SDLInputDriver::connectedGamepads() const {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 void SDLInputDriver::updateGamepads() {
 	QSignalBlocker blocker(&m_gamepadTimer);
-	QWriteLocker locker(&s_eventsRwLock);
+	// XXX: SDL_PumpEvents can cause the runloop to re-enter, at least on Windows
+	// So to avoid re-entering the SDL polling in the meantime, we have to reject
+	// polling while locked.
+	if (!s_eventsRwLock.tryLockForWrite(0)) {
+		return;
+	}
 	if (m_config) {
 		mSDLUpdateJoysticks(&s_sdlEvents, m_config->input());
 	}
@@ -208,6 +213,7 @@ void SDLInputDriver::updateGamepads() {
 	std::sort(m_gamepads.begin(), m_gamepads.end(), [](const auto& a, const auto& b) {
 		return a->m_index < b->m_index;
 	});
+	s_eventsRwLock.unlock();
 }
 #endif
 

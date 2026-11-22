@@ -1,3 +1,6 @@
+# Copyright (C) 2024 Cosmin Truta
+# SPDX-License-Identifier: MIT-0
+
 name: Linting libpng
 
 on:
@@ -9,6 +12,9 @@ on:
     branches:
       - libpng16
       - libpng18
+
+permissions:
+  contents: read
 
 jobs:
   lint:

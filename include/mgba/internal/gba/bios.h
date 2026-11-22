@@ -62,6 +62,8 @@ enum GBASwi {
 	GBA_SWI_SOUND_DRIVER_VSYNC_OFF = 0x28,
 	GBA_SWI_SOUND_DRIVER_VSYNC_ON = 0x29,
 	GBA_SWI_SOUND_DRIVER_GET_JUMP_LIST = 0x2A,
+	/* Not intended but useful: Jumps to 0x02002040 */
+	GBA_SWI_BUG_JUMP_TO_EWRAM = 0xD4,
 };
 
 struct ARMCore;

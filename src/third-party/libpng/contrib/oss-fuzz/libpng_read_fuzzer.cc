@@ -21,8 +21,10 @@
 
 #define PNG_INTERNAL
 #include "png.h"
+#include "nalloc.h"
 
 #define PNG_CLEANUP \
+  nalloc_end(); \
   if(png_handler.png_ptr) \
   { \
     if (png_handler.row_ptr) \
@@ -101,6 +103,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < kPngHeaderSize) {
     return 0;
   }
+  nalloc_init(nullptr);
 
   std::vector<unsigned char> v(data, data + size);
   if (png_sig_cmp(v.data(), 0, kPngHeaderSize)) {
@@ -120,6 +123,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
+  nalloc_start(data, size);
   png_handler.info_ptr = png_create_info_struct(png_handler.png_ptr);
   if (!png_handler.info_ptr) {
     PNG_CLEANUP

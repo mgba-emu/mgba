@@ -7,6 +7,7 @@
 
 #include <QAudioFormat>
 #include <QIODevice>
+#include <QTimer>
 
 #include <mgba-util/audio-buffer.h>
 #include <mgba-util/audio-resampler.h>
@@ -34,12 +35,16 @@ protected:
 	virtual qint64 readData(char* data, qint64 maxSize) override;
 	virtual qint64 writeData(const char* data, qint64 maxSize) override;
 
+private slots:
+	void update();
+
 private:
 	size_t m_samples = 512;
 	QAudioFormat m_format;
 	mCoreThread* m_context;
 	mAudioBuffer m_buffer;
 	mAudioResampler m_resampler;
+	mutable QTimer m_updateTimer;
 
 	void adjustResampler();
 };

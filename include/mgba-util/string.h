@@ -31,6 +31,7 @@ size_t toUtf8(uint32_t unichar, char* buffer);
 size_t toUtf16(uint32_t unichar, uint16_t* buffer);
 int utfcmp(const uint16_t* utf16, const char* utf8, size_t utf16Length, size_t utf8Length);
 char* utf16to8(const uint16_t* utf16, size_t length);
+uint16_t* utf8to16(const char* utf8, size_t length);
 uint32_t utf8Char(const char** unicode, size_t* length);
 uint32_t utf16Char(const uint16_t** unicode, size_t* length);
 char* latin1ToUtf8(const char* latin1, size_t length);

@@ -19,6 +19,7 @@ Features:
  - Initial support for bootleg GBA multicarts
  - Debugger: Add range watchpoints
  - Debugger: Add enabling/disabling for breakpoints and watchpoints
+ - Debugger: Show SPSR register and PSR mode fields
  - "Headless" frontend for running tests, automation, etc.
 Emulation fixes:
  - ARM: Add framework for coprocessor support
@@ -47,6 +48,7 @@ Emulation fixes:
  - GBA Video: Properly clear VRAM on reset (fixes mgba.io/i/3690)
 Other fixes:
  - 3DS: Don't detach autosave thread (fixes mgba.io/i/3561)
+ - CMake: Fix minizip unztell64 detection outside default library paths
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
  - Core: Don't leave initial empty state in rewind queue
  - Debugger: Fix writing to specific segment in command-line debugger
@@ -132,6 +134,7 @@ Misc:
  - Res: Port MMPX shader
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
  - SDL: Differentiate controllers based on serial number (fixes mgba.io/i/880)
+ - VFS: Fix loading 7-Zip files with Unicode filenames on Windows (fixes mbga.io/i/3823)
 
 0.10.5: (2025-03-08)
 Other fixes:

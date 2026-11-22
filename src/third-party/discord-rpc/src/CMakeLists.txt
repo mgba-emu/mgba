@@ -23,7 +23,24 @@ if(WIN32)
     add_definitions(-DDISCORD_WINDOWS)
     set(BASE_RPC_SRC ${BASE_RPC_SRC} connection_win.cpp discord_register_win.cpp)
     if (NOT MSVC)
-        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include/mingw-std-threads)
+        # Use the bundled mingw-std-threads only if the C++
+        # runtime lacks native std::thread/mutex/condition_variable
+        # support to avoid naming conflicts as encountered in
+        # https://github.com/mgba-emu/mgba/issues/3900
+        include(CheckCXXSourceCompiles)
+        check_cxx_source_compiles(
+          "#include <condition_variable>
+           #include <mutex>
+           #include <thread>
+           int main() {
+              std::mutex m;
+              std::condition_variable cv;
+              std::thread t;
+              return 0;
+            }" MINGW_NATIVE_STD_THREAD_SUPPORT)
+        if (NOT MINGW_NATIVE_STD_THREAD_SUPPORT)
+            include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include/mingw-std-threads)
+        endif()
     endif()
     add_library(discord-rpc STATIC ${BASE_RPC_SRC})
     if (MSVC)

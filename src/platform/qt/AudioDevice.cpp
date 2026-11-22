@@ -24,6 +24,9 @@ AudioDevice::AudioDevice(QObject* parent)
 	setOpenMode(ReadOnly);
 	mAudioBufferInit(&m_buffer, 0x4000, 2);
 	mAudioResamplerInit(&m_resampler, mINTERPOLATOR_SINC);
+	m_updateTimer.setSingleShot(false);
+	m_updateTimer.setInterval(1);
+	connect(&m_updateTimer, &QTimer::timeout, this, &AudioDevice::update);
 }
 
 AudioDevice::~AudioDevice() {
@@ -63,13 +66,15 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 	}
 
 	mCoreSyncLockAudio(&m_context->impl->sync);
+	mAudioResamplerSetSource(&m_resampler, m_context->core->getAudioBuffer(m_context->core), m_context->core->audioSampleRate(m_context->core), true);
 	mAudioResamplerProcess(&m_resampler);
-	if (mAudioBufferAvailable(&m_buffer) < 128) {
-		mCoreSyncConsumeAudio(&m_context->impl->sync);
+	mCoreSyncConsumeAudio(&m_context->impl->sync);
+	if (mAudioBufferAvailable(&m_buffer) < 32) {
 		// Audio is running slow...let's wait a tiny bit for more to come in
 		QThread::usleep(100);
 		mCoreSyncLockAudio(&m_context->impl->sync);
 		mAudioResamplerProcess(&m_resampler);
+		mCoreSyncConsumeAudio(&m_context->impl->sync);
 	}
 	quint64 available = std::min<quint64>({
 		mAudioBufferAvailable(&m_buffer),
@@ -77,7 +82,7 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 		std::numeric_limits<int>::max()
 	});
 	mAudioBufferRead(&m_buffer, reinterpret_cast<int16_t*>(data), available);
-	mCoreSyncConsumeAudio(&m_context->impl->sync);
+	m_updateTimer.start();
 	return available * sizeof(mStereoSample);
 }
 
@@ -94,6 +99,7 @@ qint64 AudioDevice::bytesAvailable() const {
 	if (!m_context->core) {
 		return true;
 	}
+	m_updateTimer.start();
 	int available = mAudioBufferAvailable(&m_buffer);
 	return available * sizeof(mStereoSample);
 }
@@ -107,7 +113,28 @@ qint64 AudioDevice::bytesAvailable() {
 	mAudioResamplerProcess(&m_resampler);
 	int available = mAudioBufferAvailable(&m_buffer);
 	mCoreSyncUnlockAudio(&m_context->impl->sync);
+	m_updateTimer.start();
 	return available * sizeof(mStereoSample);
+}
+
+void AudioDevice::update() {
+	if (!m_context->core) {
+		return;
+	}
+
+	bool wasAvailable = mAudioBufferAvailable(&m_buffer);
+
+	mCoreSyncLockAudio(&m_context->impl->sync);
+	mAudioResamplerProcess(&m_resampler);
+	mCoreSyncConsumeAudio(&m_context->impl->sync);
+
+	if (!wasAvailable && mAudioBufferAvailable(&m_buffer)) {
+		emit readyRead();
+	}
+
+	if (mAudioBufferFull(&m_buffer)) {
+		m_updateTimer.stop();
+	}
 }
 
 void AudioDevice::adjustResampler() {
@@ -116,4 +143,11 @@ void AudioDevice::adjustResampler() {
 	mAudioResamplerSetDestination(&m_resampler, &m_buffer, m_format.sampleRate() * fauxClock);
 	m_context->impl->sync.audioHighWater = m_samples + m_resampler.highWaterMark + m_resampler.lowWaterMark;
 	m_context->impl->sync.audioHighWater *= core->audioSampleRate(core) / (m_format.sampleRate() * fauxClock);
+
+	if (m_resampler.source) {
+		size_t destSize = mAudioBufferCapacity(m_resampler.source);
+		if (m_context->impl->sync.audioHighWater >= destSize) {
+			m_context->impl->sync.audioHighWater = destSize;
+		}
+	}
 }

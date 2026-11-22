@@ -832,7 +832,7 @@ BOOL FillBitmap (
         cxNewSize = cxWinSize - 2 * MARGIN;
         cyNewSize = cyWinSize - 2 * MARGIN;
 
-        /* stretch the image to it's window determined size */
+        /* stretch the image to its window determined size */
 
         /* the following two are mathematically the same, but the first
          * has side-effects because of rounding

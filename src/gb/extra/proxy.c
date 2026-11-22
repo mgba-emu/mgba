@@ -187,7 +187,7 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 	case DIRTY_BUFFER:
 		switch (item->address) {
 		case BUFFER_OAM:
-			if (item->value2 / sizeof(struct GBObj) > GB_VIDEO_MAX_OBJ) {
+			if (item->value2 > sizeof(legacyBuffer)) {
 				return false;
 			}
 			logger->readData(logger, legacyBuffer, item->value2, true);

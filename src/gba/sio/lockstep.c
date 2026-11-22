@@ -847,6 +847,7 @@ static void _setData(struct GBASIOLockstepCoordinator* coordinator, uint32_t id,
 }
 
 void _setReady(struct GBASIOLockstepCoordinator* coordinator, struct GBASIOLockstepPlayer* activePlayer, int playerId, enum GBASIOMode mode) {
+	mASSERT_DEBUG(playerId >= 0 && playerId < MAX_GBAS);
 	activePlayer->otherModes[playerId] = mode;
 	bool ready = true;
 	int i;
@@ -937,7 +938,7 @@ void _lockstepEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 		if (!event) {
 			break;
 		}
-		if (event->timestamp > GBASIOLockstepTime(player)) {
+		if (event->timestamp - GBASIOLockstepTime(player) > 0) {
 			break;
 		}
 		player->queue = event->next;

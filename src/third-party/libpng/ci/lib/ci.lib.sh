@@ -1,8 +1,4 @@
-# Copyright (c) 2019-2025 Cosmin Truta.
-#
-# Use, modification and distribution are subject to the MIT License.
-# Please see the accompanying file LICENSE_MIT.txt
-#
+# Copyright (C) 2019 Cosmin Truta
 # SPDX-License-Identifier: MIT
 
 test -f "$BASH_SOURCE" || {

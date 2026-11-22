@@ -58,6 +58,7 @@ struct mGLES2Shader {
 	int width;
 	int height;
 	bool integerScaling;
+	bool floatFramebuffer;
 	bool filter;
 	bool blend;
 	bool dirty;
@@ -101,7 +102,7 @@ struct mGLES2Context {
 void mGLES2ContextCreate(struct mGLES2Context*);
 void mGLES2ContextUseFramebuffer(struct mGLES2Context*);
 
-void mGLES2ShaderInit(struct mGLES2Shader*, const char* vs, const char* fs, int width, int height, bool integerScaling, struct mGLES2Uniform* uniforms, size_t nUniforms);
+void mGLES2ShaderInit(struct mGLES2Shader*, const char* vs, const char* fs, int width, int height, bool integerScaling, bool floatFramebuffer, struct mGLES2Uniform* uniforms, size_t nUniforms);
 void mGLES2ShaderDeinit(struct mGLES2Shader*);
 void mGLES2ShaderAttach(struct mGLES2Context*, struct mGLES2Shader*, size_t nShaders);
 void mGLES2ShaderDetach(struct mGLES2Context*);

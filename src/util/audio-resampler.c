@@ -83,7 +83,7 @@ size_t mAudioResamplerProcess(struct mAudioResampler* resampler) {
 		if (timestamp + resampler->highWaterMark >= mAudioBufferAvailable(resampler->source)) {
 			break;
 		}
-		if (mAudioBufferAvailable(resampler->destination) == mAudioBufferCapacity(resampler->destination)) {
+		if (mAudioBufferFull(resampler->destination)) {
 			break;
 		}
 

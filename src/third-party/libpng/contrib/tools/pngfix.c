@@ -427,7 +427,7 @@ uarb_print(uarb num, int digits, FILE *out)
  * (Copied from contrib/libtests/pngvalid.c)
  */
 static void
-make_random_bytes(png_uint_32* seed, void* pv, size_t size)
+make_random_bytes(png_uint_32 *seed, void *pv, size_t size)
 {
    png_uint_32 u0 = seed[0], u1 = seed[1];
    png_bytep bytes = voidcast(png_bytep, pv);
@@ -706,7 +706,6 @@ struct global
 static int
 global_end(struct global *global)
 {
-
    int rc;
 
    IDAT_list_end(&global->idat_cache);
@@ -1476,7 +1475,7 @@ calc_image_size(struct file *file)
 
                if (pw > 0)
                {
-                  int  digits;
+                  int digits;
 
                   /* calculate 1+((pw*pd+7)>>3) in row_bytes */
                   digits = uarb_mult_digit(row_bytes, uarb_set(row_bytes, 7),
@@ -1498,7 +1497,7 @@ calc_image_size(struct file *file)
 
       case PNG_INTERLACE_NONE:
          {
-            int  digits;
+            int digits;
             udigit row_width[2], row_bytes[3];
 
             /* As above, but use image_width in place of the pass width: */
@@ -1569,7 +1568,7 @@ chunk_end(struct chunk **chunk_var)
 }
 
 static void
-chunk_init(struct chunk * const chunk, struct file * const file)
+chunk_init(struct chunk *chunk, struct file *file)
    /* When a chunk is initialized the file length/type/pos are copied into the
     * corresponding chunk fields and the new chunk is registered in the file
     * structure.  There can only be one chunk at a time.
@@ -1778,7 +1777,7 @@ IDAT_end(struct IDAT **idat_var)
 }
 
 static void
-IDAT_init(struct IDAT * const idat, struct file * const file)
+IDAT_init(struct IDAT *idat, struct file *file)
    /* When the chunk is png_IDAT instantiate an IDAT control structure in place
     * of a chunk control structure.  The IDAT will instantiate a chunk control
     * structure using the file alloc routine.
@@ -2492,7 +2491,7 @@ zlib_run(struct zlib *zlib)
    {
       struct IDAT_list *list = zlib->idat->idat_list_head;
       struct IDAT_list *last = zlib->idat->idat_list_tail;
-      int        skip = 0;
+      int skip = 0;
 
       /* 'rewrite_offset' is the offset of the LZ data within the chunk, for
        * IDAT it should be 0:
@@ -3848,11 +3847,11 @@ int
 main(int argc, const char **argv)
 {
    char temp_name[FILENAME_MAX+1];
-   const char *  prog = *argv;
-   const char *  outfile = NULL;
-   const char *  suffix = NULL;
-   const char *  prefix = NULL;
-   int           done = 0; /* if at least one file is processed */
+   const char *prog = *argv;
+   const char *outfile = NULL;
+   const char *suffix = NULL;
+   const char *prefix = NULL;
+   int done = 0; /* if at least one file is processed */
    struct global global;
 
    global_init(&global);

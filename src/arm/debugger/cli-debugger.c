@@ -40,15 +40,37 @@ static struct CLIDebuggerCommandAlias _armCommandAliases[] = {
 	{ 0, 0 }
 };
 
+static inline const char* _getPSRModeString(union PSR psr) {
+	switch (psr.priv) {
+	case MODE_USER:
+		return "usr";
+	case MODE_FIQ:
+		return "fiq";
+	case MODE_IRQ:
+		return "irq";
+	case MODE_SUPERVISOR:
+		return "svc";
+	case MODE_ABORT:
+		return "abt";
+	case MODE_UNDEFINED:
+		return "und";
+	case MODE_SYSTEM:
+		return "sys";
+	default:
+		return "invalid";
+	}
+}
+
 static inline void _printPSR(struct CLIDebuggerBackend* be, union PSR psr) {
-	be->printf(be, "%08X [%c%c%c%c%c%c%c]\n", psr.packed,
+	be->printf(be, "%08X [%c%c%c%c%c%c%c] (%s)\n", psr.packed,
 	           psr.n ? 'N' : '-',
 	           psr.z ? 'Z' : '-',
 	           psr.c ? 'C' : '-',
 	           psr.v ? 'V' : '-',
 	           psr.i ? 'I' : '-',
 	           psr.f ? 'F' : '-',
-	           psr.t ? 'T' : '-');
+	           psr.t ? 'T' : '-',
+	           _getPSRModeString(psr));
 }
 
 static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVector* dv) {
@@ -141,6 +163,10 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	}
 	be->printf(be, "cpsr: ");
 	_printPSR(be, cpu->cpsr);
+	if (cpu->cpsr.priv != MODE_USER && cpu->cpsr.priv != MODE_SYSTEM) {
+		be->printf(be, "spsr: ");
+		_printPSR(be, cpu->spsr);
+	}
 	be->printf(be, "Cycle: %" PRIu64 "\n", mTimingGlobalTime(debugger->p->d.p->core->timing));
 	int instructionLength;
 	enum ExecutionMode mode = cpu->cpsr.t;

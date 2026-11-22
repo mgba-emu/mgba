@@ -7,6 +7,10 @@
 
 #ifdef USE_LZMA
 
+#ifdef _WIN32
+#define USE_WINDOWS_FILE
+#endif
+
 #include <mgba-util/memory.h>
 #include <mgba-util/string.h>
 #include <mgba-util/table.h>
@@ -115,16 +119,28 @@ static void _vd7zFreeTemp(ISzAllocPtr p, void* address) {
 
 struct VDir* VDirOpen7z(const char* path, int flags) {
 	if (flags & O_WRONLY || flags & O_CREAT) {
-		return 0;
+		return NULL;
 	}
 
-	struct VDir7z* vd = malloc(sizeof(struct VDir7z));
+	struct VDir7z* vd = malloc(sizeof(*vd));
+#ifdef USE_WINDOWS_FILE
+	uint16_t* utf16Path = utf8to16(path, strlen(path));
+	if (!utf16Path) {
+		return NULL;
+	}
 
-	// What does any of this mean, Igor?
+	if (InFile_OpenW(&vd->archiveStream.file, utf16Path)) {
+		free(vd);
+		free(utf16Path);
+		return NULL;
+	}
+	free(utf16Path);
+#else
 	if (InFile_Open(&vd->archiveStream.file, path)) {
 		free(vd);
-		return 0;
+		return NULL;
 	}
+#endif
 
 	vd->allocImp.d.Alloc = _vd7zAlloc;
 	vd->allocImp.d.Free = _vd7zFree;
@@ -152,7 +168,7 @@ struct VDir* VDirOpen7z(const char* path, int flags) {
 		free(vd->lookStream.buf);
 		TableDeinit(&vd->allocImp.allocs);
 		free(vd);
-		return 0;
+		return NULL;
 	}
 
 	vd->dirent.index = -1;

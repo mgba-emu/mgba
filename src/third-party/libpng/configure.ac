@@ -25,7 +25,7 @@ AC_PREREQ([2.68])
 
 dnl Version number stuff here:
 
-AC_INIT([libpng],[1.6.51],[png-mng-implement@lists.sourceforge.net])
+AC_INIT([libpng],[1.6.59],[png-mng-implement@lists.sourceforge.net])
 AC_CONFIG_MACRO_DIR([scripts/autoconf])
 
 # libpng does not follow GNU file name conventions (hence 'foreign')
@@ -46,10 +46,10 @@ dnl automake, so the following is not necessary (and is not defined anyway):
 dnl AM_PREREQ([1.11.2])
 dnl stop configure from automagically running automake
 
-PNGLIB_VERSION=1.6.51
+PNGLIB_VERSION=1.6.59
 PNGLIB_MAJOR=1
 PNGLIB_MINOR=6
-PNGLIB_RELEASE=51
+PNGLIB_RELEASE=59
 
 dnl End of version number stuff
 

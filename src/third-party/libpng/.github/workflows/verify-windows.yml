@@ -1,3 +1,6 @@
+# Copyright (C) 2025 Cosmin Truta
+# SPDX-License-Identifier: MIT-0
+
 name: Verifying libpng on Windows
 
 on:
@@ -10,28 +13,42 @@ on:
       - libpng16
       - libpng18
 
+permissions:
+  contents: read
+
 jobs:
   verify-windows:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - os: windows-2025
+            vcpkg_triplet: x64-windows
+            cmake_generator: Visual Studio 18 2026
+            cmake_generator_platform: x64
+          - os: windows-11-arm
+            vcpkg_triplet: arm64-windows
+            cmake_generator: Visual Studio 18 2026
+            cmake_generator_platform: ARM64
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
       - name: Set up vcpkg cache
         uses: actions/cache@v4
         with:
           path: C:/vcpkg/installed
-          key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json', '**/vcpkg.json') }}
-          restore-keys: ${{ runner.os }}-vcpkg-
+          key: ${{ runner.os }}-vcpkg-${{ matrix.vcpkg_triplet }}-${{ hashFiles('vcpkg.json', '**/vcpkg.json') }}
+          restore-keys: ${{ runner.os }}-vcpkg-${{ matrix.vcpkg_triplet }}-
       - name: Install dependencies
         run: |
-          vcpkg install zlib:x64-windows
+          vcpkg install zlib:${{ matrix.vcpkg_triplet }}
           vcpkg integrate install
       - name: Check out the code
         uses: actions/checkout@v4
       - name: Run the CMake verification script
         run: bash ./ci/ci_verify_cmake.sh
         env:
-          CI_CMAKE_GENERATOR: Visual Studio 17 2022
-          CI_CMAKE_GENERATOR_PLATFORM: x64
+          CI_CMAKE_GENERATOR: ${{ matrix.cmake_generator }}
+          CI_CMAKE_GENERATOR_PLATFORM: ${{ matrix.cmake_generator_platform }}
           CI_CMAKE_TOOLCHAIN_FILE: C:/vcpkg/scripts/buildsystems/vcpkg.cmake
           CI_CMAKE_BUILD_FLAGS: -j2
           CI_CTEST_FLAGS: -j2

@@ -187,6 +187,10 @@ LogController* LogController::global() {
 	return &s_global;
 }
 
+void LogController::installGlobalLogger() {
+	mLogSetThreadLogger(&s_global.m_logger);
+}
+
 QString LogController::toString(int level) {
 	switch (level) {
 	case mLOG_DEBUG:

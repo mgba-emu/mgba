@@ -96,6 +96,7 @@ public:
 	int framebufferHandle() override;
 	QSize contentSize() const override { return m_cachedContentSize; }
 	void setMaximumSize(const QSize& size) override;
+	void setMaximumScale(int scale) override;
 
 	static bool highestCompatible(QSurfaceFormat&);
 	static bool supportsFormat(const QSurfaceFormat&);
@@ -124,7 +125,7 @@ protected:
 	virtual void resizeEvent(QResizeEvent*) override;
 
 private slots:
-	void updateContentSize();
+	void setContentSize(const QSize&);
 
 private:
 	void resizePainter();
@@ -174,6 +175,7 @@ public slots:
 	void unpause();
 	void resize(const QSize& size);
 	void setMaximumSize(const QSize& size);
+	void setMaximumScale(int scale);
 	void lockAspectRatio(bool lock);
 	void lockIntegerScaling(bool lock);
 	void interframeBlending(bool enable);
@@ -187,12 +189,12 @@ public slots:
 	bool setShaders(struct VDir*);
 	void clearShaders();
 	VideoShader* shaders();
-	QSize contentSize() const;
 
 signals:
 	void created();
 	void started();
 	void texSwapped();
+	void contentSizeChanged(const QSize&);
 
 private slots:
 	void doStop();
@@ -204,6 +206,7 @@ private:
 	void dequeue();
 	void dequeueAll(bool keep = false);
 	void recenterLayers();
+	void cacheContentSize();
 
 	std::array<std::array<uint32_t, 0x100000>, 3> m_buffers;
 	QList<uint32_t*> m_free;
@@ -234,6 +237,7 @@ private:
 	QSize m_size;
 	QSize m_dims;
 	QSize m_maxSize;
+	int m_maxScale = 0;
 	MessagePainter* m_messagePainter = nullptr;
 	QElapsedTimer m_delayTimer;
 	std::shared_ptr<VideoProxy> m_videoProxy;
@@ -241,6 +245,7 @@ private:
 	QList<qint64> m_frametimes;
 	QList<qint64> m_starttimes;
 	bool m_drawFrametimes = false;
+	QSize m_cachedContentSize;
 };
 
 }

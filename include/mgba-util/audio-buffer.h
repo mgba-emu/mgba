@@ -22,6 +22,7 @@ void mAudioBufferDeinit(struct mAudioBuffer* buffer);
 
 size_t mAudioBufferAvailable(const struct mAudioBuffer* buffer);
 size_t mAudioBufferCapacity(const struct mAudioBuffer* buffer);
+bool mAudioBufferFull(const struct mAudioBuffer* buffer);
 
 void mAudioBufferClear(struct mAudioBuffer* buffer);
 int16_t mAudioBufferPeek(const struct mAudioBuffer* buffer, unsigned channel, size_t offset);

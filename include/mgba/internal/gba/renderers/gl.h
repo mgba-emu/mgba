@@ -207,6 +207,7 @@ struct GBAVideoGLRenderer {
 	int lastY;
 
 	int scale;
+	bool isEs;
 };
 
 void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer);

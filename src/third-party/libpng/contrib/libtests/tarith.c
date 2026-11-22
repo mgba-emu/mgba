@@ -72,18 +72,18 @@ static int verbose = 0;
 
 int validation_ascii_to_fp(int count, int argc, char **argv)
 {
-   int    showall = 0;
-   double max_error=2;      /* As a percentage error-in-last-digit/.5 */
-   double max_error_abs=17; /* Used when precision is DBL_DIG */
+   int showall = 0;
+   double max_error = 2;      /* As a percentage error-in-last-digit/.5 */
+   double max_error_abs = 17; /* Used when precision is DBL_DIG */
    double max = 0;
    double max_abs = 0;
-   double test = 0; /* Important to test this. */
-   int    precision = 5;
-   int    nonfinite = 0;
-   int    finite = 0;
-   int    ok = 0;
-   int    failcount = 0;
-   int    minorarith = 0;
+   double test = 0;           /* Important to test this. */
+   int precision = 5;
+   int nonfinite = 0;
+   int finite = 0;
+   int ok = 0;
+   int failcount = 0;
+   int minorarith = 0;
 
    while (--argc > 0)
    {
