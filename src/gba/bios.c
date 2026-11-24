@@ -772,14 +772,14 @@ static void _unHuffman(struct GBA* gba) {
 	}
 	// We assume the signature byte (0x20) is correct
 	int treesize = (cpu->memory.load8(cpu, source + 4, 0) << 1) + 1;
-	int block = 0;
+	uint32_t block = 0;
 	uint32_t treeBase = source + 5;
 	source += 5 + treesize;
 	uint32_t nPointer = treeBase;
 	HuffmanNode node;
 	int bitsRemaining;
-	int readBits;
-	int bitsSeen = 0;
+	unsigned readBits;
+	unsigned bitsSeen = 0;
 	node = cpu->memory.load8(cpu, nPointer, 0);
 	while (remaining > 0) {
 		uint32_t bitstream = cpu->memory.load32(cpu, source, 0);
