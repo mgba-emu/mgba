@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2022 Jeffrey Pfau
+/* Copyright (c) 2013-2026 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,6 +6,7 @@
 #include "util/test/suite.h"
 
 #include <mgba-util/crc32.h>
+#include <mgba-util/hash.h>
 #include <mgba-util/md5.h>
 #include <mgba-util/sha1.h>
 
@@ -202,6 +203,48 @@ M_TEST_DEFINE(twoBlockSha1) {
 	}), 20);
 }
 
+M_TEST_DEFINE(hash32Value) {
+	uint8_t buffer[16] = {
+		0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF
+	};
+	uint32_t output = hash32(buffer, sizeof(buffer), 0);
+	assert_int_equal(output, 0x191573dd);
+}
+
+M_TEST_DEFINE(hash32Seed) {
+	uint8_t buffer[16] = {
+		0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF
+	};
+	uint32_t output = hash32(buffer, sizeof(buffer), 1);
+	assert_int_equal(output, 0xbba77653);
+}
+
+M_TEST_DEFINE(hash32Alignment) {
+	uint8_t buffer0[16] = {
+		0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF
+	};
+	uint8_t buffer1[17] = {
+		0x0, 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF
+	};
+	uint8_t buffer2[18] = {
+		0x0, 0x0, 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF
+	};
+	uint8_t buffer3[19] = {
+		0x0, 0x0, 0x0, 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF
+	};
+	uint32_t output = hash32(buffer0, 16, 0);
+	assert_int_equal(output, 0x191573dd);
+
+	output = hash32(&buffer1[1], 16, 0);
+	assert_int_equal(output, 0x191573dd);
+
+	output = hash32(&buffer2[2], 16, 0);
+	assert_int_equal(output, 0x191573dd);
+
+	output = hash32(&buffer3[3], 16, 0);
+	assert_int_equal(output, 0x191573dd);
+}
+
 M_TEST_SUITE_DEFINE(Hashes,
 	cmocka_unit_test(emptyCrc32),
 	cmocka_unit_test(newlineCrc32),
@@ -219,4 +262,7 @@ M_TEST_SUITE_DEFINE(Hashes,
 	cmocka_unit_test(fullBlockSha1),
 	cmocka_unit_test(overflowBlockSha1),
 	cmocka_unit_test(twoBlockSha1),
+	cmocka_unit_test(hash32Value),
+	cmocka_unit_test(hash32Seed),
+	cmocka_unit_test(hash32Alignment),
 )

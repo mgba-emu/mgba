@@ -29,7 +29,15 @@ static inline uint32_t rotl32(uint32_t x, int8_t r) {
 
 static FORCE_INLINE uint32_t getblock32(const uint32_t* p, ssize_t i) {
 	uint32_t ret;
-	LOAD_32LE(ret, i << 2, p);
+	if (((uintptr_t) p) & 3) {
+		const uint8_t* bp = (const uint8_t*) &p[i];
+		ret = bp[0];
+		ret |= bp[1] << 8;
+		ret |= bp[2] << 16;
+		ret |= bp[3] << 24;
+	} else {
+		LOAD_32LE(ret, i << 2, p);
+	}
 	return ret;
 }
 
