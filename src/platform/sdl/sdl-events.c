@@ -476,7 +476,16 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	// Most of what we want is in SDL_JoystickUpdate, but e.g. udev hotplug
 	// is only pumped in SDL_PumpEvents proper
+#ifdef _WIN32
+	// XXX: The message loop can cause the Qt event loop to re-enter, which can
+	// cause deadlocks in some circumstances. We don't care about the message
+	// loop anyway, so we temporarily disable it
+	SDL_SetHintWithPriority(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, "0", SDL_HINT_OVERRIDE);
+#endif
 	SDL_PumpEvents();
+#ifdef _WIN32
+	SDL_ResetHint(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP);
+#endif
 	SDL_Event event;
 	while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_JOYDEVICEADDED, SDL_JOYDEVICEREMOVED) > 0) {
 		if (event.type == SDL_JOYDEVICEADDED) {
