@@ -523,7 +523,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				if (!events->preferredJoysticks[i].type || strcmp(events->preferredJoysticks[i].type, joystickName) != 0) {
 					continue;
 				}
-				if (events->preferredJoysticks[i].serial && strcmp(events->preferredJoysticks[i].serial, serial) != 0) {
+				if (serial && events->preferredJoysticks[i].serial && strcmp(events->preferredJoysticks[i].serial, serial) != 0) {
 					continue;
 				}
 				mLOG(SDL_EVENTS, DEBUG, "Joystick matched player %" PRIz "i preferred device", i + 1);
