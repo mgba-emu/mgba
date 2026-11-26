@@ -18,8 +18,18 @@
 #include <windows.h>
 #endif
 
+#ifdef __LIBRETRO__
+struct VFile* VFileOpenLibretro(const char* path, int flags);
+#endif
+
 #ifdef ENABLE_VFS
 struct VFile* VFileOpen(const char* path, int flags) {
+#ifdef __LIBRETRO__
+	struct VFile* vfLibretro = VFileOpenLibretro(path, flags);
+	if (vfLibretro) {
+		return vfLibretro;
+	}
+#endif
 #ifdef ENABLE_VFS_FILE
 	const char* chflags;
 	switch (flags & O_ACCMODE) {
