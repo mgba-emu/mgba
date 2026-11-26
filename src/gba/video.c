@@ -210,7 +210,7 @@ void _startHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	// Begin Hblank
 	GBARegisterDISPSTAT dispstat = video->p->memory.io[GBA_REG(DISPSTAT)];
 	dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
-	if (video->vcount < GBA_VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
+	if ((video->vcount < GBA_VIDEO_VERTICAL_PIXELS || video->vcount == VIDEO_VERTICAL_TOTAL_PIXELS - 1) && video->frameskipCounter <= 0) {
 		video->renderer->drawScanline(video->renderer, video->vcount);
 	}
 
